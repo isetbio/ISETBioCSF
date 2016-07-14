@@ -9,6 +9,16 @@
 % whose use is demonstrated in the tutorial
 %   t_colorGaborConeCurrentEyeMovementsResponseInstances.
 %
+% The output goes into a place determined by
+%   colorGaborDetectOutputDir
+% which itself checks for a preference set by
+%   ISETColorDetectPreferencesTemplate
+% which you may want to edit before running this and other scripts that
+% produce substantial output.  The output within the main output directory
+% is sorted by directories whose names are computed from parameters.  This
+% naming is done in routine
+%   paramsToDirName.
+%
 %  7/9/16  npc Wrote it.
 
 %% Initialize
@@ -50,6 +60,11 @@ temporalParams.stimulusSamplingIntervalInSeconds = 1/frameRate;
 
 % Optionally, have zero amplitude eye movements
 temporalParams.eyesDoNotMove = false; 
+
+% These are not used in this tutorial, but we need them to set the output
+% filename.
+temporalParams.millisecondsToInclude = 50;
+temporalParams.millisecondsToIncludeOffset = 35;
 
 % Optional CRT raster effects.
 % 

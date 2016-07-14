@@ -8,6 +8,16 @@
 % C) Fit an ellipse to the thresholds.
 %
 % The fit ellipse may be compared with actual psychophysical data.
+%
+% The intput comes from and the output goes into a place determined by
+%   colorGaborDetectOutputDir
+% which itself checks for a preference set by
+%   ISETColorDetectPreferencesTemplate
+% which you may want to edit before running this and other scripts that
+% produce substantial output.  The output within the main output directory
+% is sorted by directories whose names are computed from parameters.  This
+% naming is done in routine
+%   paramsToDirName.
 % 
 % 7/11/16  npc Wrote it.
 % 7/13/16  dhb More.

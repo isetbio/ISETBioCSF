@@ -11,6 +11,20 @@
 %   t_colorGaborDetectFindThresholds
 % which shows how to use the data to find the thresholds.
 %
+% Although this is called a tutorial, we actually use it for real
+% calculations. With the parameters as set, it will generate a lot of data
+% and take a long time to run.
+%
+% The output goes into a place determined by
+%   colorGaborDetectOutputDir
+% which itself checks for a preference set by
+%   ISETColorDetectPreferencesTemplate
+% which you may want to edit before running this and other scripts that
+% produce substantial output.  The output within the main output directory
+% is sorted by directories whose names are computed from parameters.  This
+% naming is done in routine
+%   paramsToDirName.
+%
 % 7/9/16  npc Wrote it.
 
 %% Initialize
@@ -31,6 +45,9 @@ exportToPDF = false;
 renderVideo = false;
 
 %% Parameters that define how much we do here
+%
+% Make these numbers small (trialNum = 2, deltaAngle = 90,
+% nContrastsPerDirection = 2) to run through something more quickly.
 
 % Define how many noisy data instances to generate
 trialsNum = 500; %500;
