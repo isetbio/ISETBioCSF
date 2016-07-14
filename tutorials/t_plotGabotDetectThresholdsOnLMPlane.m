@@ -133,7 +133,7 @@ circleInLMPlane = [circleIn2D(1,:) ; circleIn2D(2,:) ; zeros(size(circleIn2D(1,:
 ellipsoidInLMPlane = PointsOnEllipsoidFind(fitQ,circleInLMPlane);
 
 %% Plot the thresholds in the LM contrast plane
-contrastLim = 0.2;
+contrastLim = 0.05;
 figure; clf; hold on; set(gca,'FontSize',axisFontSize);
 plot(thresholdConeContrasts(1,:),thresholdConeContrasts(2,:),'ro','MarkerFaceColor','r','MarkerSize',markerSize);
 plot(ellipsoidInLMPlane(1,:),ellipsoidInLMPlane(2,:),'r','LineWidth',2);
