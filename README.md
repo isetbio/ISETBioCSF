@@ -1,6 +1,4 @@
-# IBIOColorDetectOld
-
-THIS IS AN OLD VERSION OF THE RESPOSITORY, WHICH WE WILL KEEP AROUND FOR A WHILE.  IT GOT BLOATED ACCIDENTLY, SO THE NEW VERSION (WITHOUT OLD IN ITS NAME) IS TRIMMED DOWN.
+# IBIOColorDetect
 
 An isetbio computational observer for threshold detection thresholds of color Gabor stimuli.  The goal of these calculations is to understand how various factors early in the visual pathways limit performance on this simple and rigorously characterized visual task.
 
