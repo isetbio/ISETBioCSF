@@ -8,6 +8,16 @@
 % C) Fit an ellipse to the thresholds.
 %
 % The fit ellipse may be compared with actual psychophysical data.
+%
+% The intput comes from and the output goes into a place determined by
+%   colorGaborDetectOutputDir
+% which itself checks for a preference set by
+%   ISETColorDetectPreferencesTemplate
+% which you may want to edit before running this and other scripts that
+% produce substantial output.  The output within the main output directory
+% is sorted by directories whose names are computed from parameters.  This
+% naming is done in routine
+%   paramsToDirName.
 % 
 % 7/11/16  npc Wrote it.
 % 7/13/16  dhb More.
@@ -25,10 +35,10 @@ titleFontSize = 16;
 axisFontSize = 12;
 
 %% Read the output of t_colorGaborDetectFindThresholds
-conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.33_em0_use50_off35_b0_l1_LMS1.00_0.00_0.00_mfv1.00';
+conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.33_em0_use50_off35_b0_l1_LMS0.62_0.31_0.07_mfv1.00';
 classificationPerformanceFile = 'ClassificationPerformance_photocurrents_kFold5_pca200';
-%responseFile = 'colorGaborDetectResponses_LMS_1.00_0.00_0.00_4angles';
 dataDir = colorGaborDetectOutputDir(conditionDir,'output');
+figureDir = colorGaborDetectOutputDir(conditionDir,'figures');
 theData = load(fullfile(dataDir,classificationPerformanceFile));
 
 % Extract data from loaded struct into convenient form
@@ -48,7 +58,7 @@ end
 %
 % And make a plot of each along with its fit
 hFig = figure(1); clf;
-set(hFig, 'Position', [10 10 680 590], 'Color', [1 1 1]);
+set(hFig, 'Position', [10 10 1600 1000], 'Color', [1 1 1]);
 for ii = 1:size(theData.testConeContrasts,2)
     % Get the performance data for this test direction, as a function of
     % contrast.
@@ -80,6 +90,9 @@ for ii = 1:size(theData.testConeContrasts,2)
     % Convert threshold contrast to threshold cone contrasts
     thresholdConeContrasts(:,ii) = testConeContrasts(:,ii)*thresholdContrasts(ii);
 end
+if (exist('FigureSave','file'))
+    FigureSave(fullfile(figureDir,'LMPsychoFunctions'),hFig,'pdf');
+end
 
 %% Thresholds are generally symmetric around the contrast origin
 %
@@ -96,56 +109,42 @@ for ii = 1:size(thresholdConeContrasts,2)
     end
 end
 
-%% Fit the data with an ellipse
-% This method fits in the plane, although the underlying principles are
-% different from our ellipsoid fitting method.  It can fail if there aren't
-% enough points, or if the data are better described as two parallel lines.
-%  In that case we don't plot.
-try
-    [ellipseZ, ellipseA, ellipseB, ellipseAlpha] = fitellipse([thresholdConeContrastsForFitting0(1,:)' ;thresholdConeContrastsForFitting0(2,:)']);
-    fitEllipseOK = true;
-catch
-    fprintf('Ellipse fit failed, skipping and moving on\n');
-    fitEllipseOK = false;
-end
+%% Fit ellipse
+%
+% This method fits a 3D ellipsoid and extracts the LM plane of
+% the fit.
+%
+% The fit will be very bad off the LM plane, since there are no data there.
+% But we don't care, because we are only going to look at the fit in the LM
+% plane.  To make the fit stable, we generate data for fitting that are off
+% the LM plane by simply producing shrunken and shifted copies of the in
+% plane data.  A little klugy.
+thresholdConeContrastsForFitting1 = 0.5*thresholdConeContrastsForFitting0;
+thresholdConeContrastsForFitting1(3,:) = 0.5;
+thresholdConeContrastsForFitting2 = 0.5*thresholdConeContrastsForFitting0;
+thresholdConeContrastsForFitting2(3,:) = -0.5;
+thresholdContrastsForFitting = [thresholdConeContrastsForFitting0 thresholdConeContrastsForFitting1 thresholdConeContrastsForFitting2];
+[fitA,fitAinv,fitQ,fitEllParams] = EllipsoidFit(thresholdContrastsForFitting);
 
-% % This method tries fitting a 3D ellipsoid and extracting the LM plane of
-% % the fit.  But it doesn't yet work.
-% %
-% % The fit will be very bad off the LM plane, since there are no data
-% % there.  But we don't care, because we are only going to look at the fit
-% % in the LM plane.  To make the fit stable, we generate data for fitting
-% % that are off the LM plane by simply producing shifted copies of the in
-% % plane data.  A little klugy.
-% thresholdConeContrastsForFitting1 = thresholdConeContrastsForFitting0;
-% thresholdConeContrastsForFitting1(3,:) = 0.5;
-% thresholdConeContrastsForFitting2 = thresholdConeContrasts;
-% thresholdConeContrastsForFitting2(3,:) = -0.5;
-% thresholdContrastsForFitting = [thresholdConeContrastsForFitting0 thresholdConeContrastsForFitting1 thresholdConeContrastsForFitting2];
-% [fitA,fitAinv,fitQ,fitEllParams] = EllipsoidFit(thresholdContrastsForFitting);
-% 
-% % Get the LM plane ellipse from the fit
-% nThetaEllipse = 200;
-% circleIn2D = UnitCircleGenerate(nThetaEllipse);
-% circleInLMPlane = [circleIn2D(1,:) ; circleIn2D(2,:) ; zeros(size(circleIn2D(1,:)))];
-% ellipsoidInLMPlane = PointsOnEllipsoidFind(fitQ,circleInLMPlane);
+% Get the LM plane ellipse from the fit
+nThetaEllipse = 200;
+circleIn2D = UnitCircleGenerate(nThetaEllipse);
+circleInLMPlane = [circleIn2D(1,:) ; circleIn2D(2,:) ; zeros(size(circleIn2D(1,:)))];
+ellipsoidInLMPlane = PointsOnEllipsoidFind(fitQ,circleInLMPlane);
 
 %% Plot the thresholds in the LM contrast plane
-contrastLim = 0.2;
+contrastLim = 0.05;
 figure; clf; hold on; set(gca,'FontSize',axisFontSize);
 plot(thresholdConeContrasts(1,:),thresholdConeContrasts(2,:),'ro','MarkerFaceColor','r','MarkerSize',markerSize);
-% plot(ellipsoidInLMPlane(1,:),ellipsoidInLMPlane(2,:),'r','LineWidth',2);
-if (fitEllipseOK)
-    plotellipse(ellipseZ,ellipseA,ellipseB,ellipseAlpha,'r');
-end
+plot(ellipsoidInLMPlane(1,:),ellipsoidInLMPlane(2,:),'r','LineWidth',2);
 plot([-contrastLim contrastLim],[0 0],'k:','LineWidth',2);
 plot([0 0],[-contrastLim contrastLim],'k:','LineWidth',2);
 xlabel('L contrast','FontSize',labelFontSize); ylabel('M contrast','FontSize',labelFontSize);
 title('M versus L','FontSize',titleFontSize);
 xlim([-contrastLim contrastLim]); ylim([-contrastLim contrastLim]);
-% set(gca,'XTick',[-0.015 -0.010 -0.005 0 0.005 0.010 0.015]);
-% set(gca,'XTickLabel',{'-0.015' '' '' '' '' '' '0.015'});
-% set(gca,'YTick',[-0.015 -0.010 -0.005 0 0.005 0.010 0.015]);
-% set(gca,'YTickLabel',{'-0.015' '' '' '' '' '' '0.015'});
 axis('square');
+if (exist('FigureSave','file'))
+    FigureSave(fullfile(figureDir,'LMThresholdContour'),gcf,'pdf');
+end
+    
 

@@ -7,6 +7,16 @@
 % The scene sequence generation logic illustrated here is encapsulated in a
 % fancier manner in colorGaborSceneSequenceCreate.
 %
+% The output goes into a place determined by
+%   colorGaborDetectOutputDir
+% which itself checks for a preference set by
+%   ISETColorDetectPreferencesTemplate
+% which you may want to edit before running this and other scripts that
+% produce substantial output.  The output within the main output directory
+% is sorted by directories whose names are computed from parameters.  This
+% naming is done in routine
+%   paramsToDirName.
+%
 % See also t_colorGaborScene, colorGaborSceneSequenceCreate
 %
 % 7/8/16  dhb  Wrote it.
@@ -29,6 +39,7 @@ gaborParams.contrast = 1;
 gaborParams.ang = 0;
 gaborParams.ph = 0;
 gaborParams.coneContrasts = [0.06 -0.06 0]';
+%gaborParams.coneContrasts = [0.20 0.20 0.20]';
 gaborParams.backgroundxyY = [0.27 0.30 49.8]';
 gaborParams.monitorFile = 'CRT-MODEL';
 gaborParams.viewingDistance = 0.75;
@@ -43,6 +54,12 @@ temporalParams.stimulusDurationInSeconds = 5*temporalParams.windowTauInSeconds;
 temporalParams.stimulusSamplingIntervalInSeconds = 1/frameRate;
 [sampleTimes,gaussianTemporalWindow] = gaussianTemporalWindowCreate(temporalParams);
 nSampleTimes = length(sampleTimes);
+
+% These are not used in this tutorial, but we need them to set the output
+% filename.
+temporalParams.eyesDoNotMove = false; 
+temporalParams.millisecondsToInclude = 50;
+temporalParams.millisecondsToIncludeOffset = 35;
 
 % Plot the temporal window, just to make sure it looks right
 figure(1); clf;
@@ -62,10 +79,10 @@ end
 
 %% Create the OI object we'll use to compute the retinal images from the scenes
 %
-% Then oop over scenes and compute the optical image for each one 
+% Then loop over scenes and compute the optical image for each one 
 oiParams.fieldOfViewDegs = gaborParams.fieldOfViewDegs;
 oiParams.offAxis = false;
-oiParams.blur = false;
+oiParams.blur = true;
 oiParams.lens = true;
 theBaseOI = colorDetectOpticalImageConstruct(oiParams);
 

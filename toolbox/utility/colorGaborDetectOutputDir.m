@@ -1,10 +1,23 @@
 function theDir = colorGaborDetectOutputDir(conditionDir,subDir)
+% theDir = colorGaborDetectOutputDir(conditionDir,subDir)
+%
+% Return where output files should go.  This uses a base directory
+% determined by the IBIOColorDetect preference 'outputBaseDir' if it
+% exists, and otherwise creates a directory IBIOColorDetectOutput at the
+% same level as IBIOColorDetect.
+%
+% See also IBIOColorDetectPreferencesTemplate.
 
 if (ispref('IBIOColorDetect','outputBaseDir'))
     topDir = fullfile(getpref('IBIOColorDetect','outputBaseDir'),conditionDir);
 else
     [p,~] = fileparts(which(mfilename()));
-    topDir = fullfile(p(1:strfind(p,'IBIOColorDetect')+numel('IBIOColorDetect')-1),conditionDir);
+    topBaseDir = fullfile(p(1:strfind(p,'IBIOColorDetect')+numel('IBIOColorDetect')-1),conditionDir);
+    topBaseDir = fullfile(topBaseDir,'..','IBIOColorDetectOutput');
+    if (~exist(topBaseDir,'dir'))
+        mkdir(topBaseDir);
+    end
+    topDir = fullfile(topBaseDir,conditionDir);
 end
 
 if (~exist(topDir,'dir'))
