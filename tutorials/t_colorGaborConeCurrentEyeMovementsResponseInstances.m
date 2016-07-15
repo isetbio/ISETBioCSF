@@ -62,8 +62,9 @@ baseStimulusLength = 1;
 
 % Number of contrasts to run in each color direction
 nContrastsPerDirection = 10; % 10;
-lowContrast = 0.001;
+lowContrast = 0.01;
 highContrast = 0.4;
+contrastScale = 'log';    % choose between 'linear' and 'log'
 
 %% Define parameters of simulation
 %
@@ -149,8 +150,11 @@ for angleIndex = 1:numel(LMangles)
 end
 
 % Contrasts
-testContrasts = linspace(lowContrast, highContrast, nContrastsPerDirection);
-
+if (strcmp(contrastScale, 'linear'))
+    testContrasts = linspace(lowContrast, highContrast, nContrastsPerDirection);
+else
+    testContrasts = logspace(log10(lowContrast), log10(highContrast), nContrastsPerDirection);
+end
 %% Generate data for the no stimulus condition
 tic
 gaborParams.coneContrasts = [0 0 0]';
