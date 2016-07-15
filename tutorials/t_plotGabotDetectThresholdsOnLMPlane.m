@@ -35,7 +35,7 @@ titleFontSize = 16;
 axisFontSize = 12;
 
 %% Read the output of t_colorGaborDetectFindThresholds
-conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.33_nem1_use50_off35_b1_l1_LMS0.62_0.31_0.07_mfv1.00';
+conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.33_nem0_use50_off35_b1_l1_LMS0.62_0.31_0.07_mfv1.00';
 classificationPerformanceFile = 'ClassificationPerformance_photocurrents_kFold5_pca200';
 dataDir = colorGaborDetectOutputDir(conditionDir,'output');
 figureDir = colorGaborDetectOutputDir(conditionDir,'figures');
