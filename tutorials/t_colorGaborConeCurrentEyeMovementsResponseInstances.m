@@ -2,10 +2,13 @@
 %
 % Show how to generate a number of response instances for a given stimulus condition.
 % This tutorial relies on routine
-%   colorDetectResponseInstanceArrayConstruct
-% which does most of the hard work.  The basic code underlying colorDetectResponseInstanceArrayConstruct
+%   colorDetectResponseInstanceFastArrayConstruct
+% which does most of the hard work.  The basic principles underlying colorDetectResponseInstanceFastArrayConstruct
 % itself is demonstrated in tutorial 
-%   t_colorGaborConeCurrentEyeMovementsMovie.
+%   t_colorGaborConeCurrentEyeMovementsMovie
+% but the actual routine has some tricks to make it go fast.  There is also
+% colorDetectResponseInstanceArrayConstruct that works more like the
+% tutorial.ß
 %
 % This tutorial saves its output in a .mat file, which is then read in by
 %   t_colorGaborDetectFindPerformance

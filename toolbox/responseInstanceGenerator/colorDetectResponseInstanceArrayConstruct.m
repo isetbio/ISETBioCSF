@@ -4,6 +4,10 @@ function responseInstanceArray = colorDetectResponseInstanceArrayConstruct(stimu
 % Construct an array of nTrials response instances given the
 % simulationTimeStep, gaborParams, temporalParams, theOI, theMosaic
 %
+% See t_t_colorGaborConeCurrentEyeMovementsMovie for the idea, and
+% colorDetectResponseInstanceFastArrayConstruct for a version that uses some
+% tricks to run faster.
+%
 %  7/10/16  npc Wrote it.
 
 % Inform user regarding the computation progress

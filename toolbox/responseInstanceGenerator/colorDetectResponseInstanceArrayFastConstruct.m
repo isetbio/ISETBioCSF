@@ -2,7 +2,9 @@ function responseInstanceArray = colorDetectResponseInstanceArrayFastConstruct(s
 % responseInstanceArray = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, temporalParams, theOI, theMosaic)
 % 
 % Construct an array of nTrials response instances given the
-% simulationTimeStep, gaborParams, temporalParams, theOI, theMosaic
+% simulationTimeStep, gaborParams, temporalParams, theOI, theMosaic.
+%
+% This is a sped up version of colorDetectResponseInstanceArrayConstruct.
 %
 %  7/10/16  npc Wrote it.
 

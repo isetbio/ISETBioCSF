@@ -108,7 +108,7 @@ xCircle = UnitCircleGenerate(nThetaEllipse);
 xCirclePlane = [xCircle(1,:) ; xCircle(2,:) ; zeros(size(xCircle(1,:)))];
 xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
-figure; clf;
+fig3fig = figure; clf;
 set(gcf,'Position',[100 100 700 350]);
 subplot(1,3,1); hold on
 plot(xEllipsoidPlane(1,:),xEllipsoidPlane(2,:),'r','LineWidth',3);
@@ -123,6 +123,7 @@ set(gca,'YTick',[-0.015 -0.010 -0.005 0 0.005 0.010 0.015]);
 set(gca,'YTickLabel',{'-0.015' '' '' '' '' '' '0.015'});
 axis('square');
 
+figure(fig3fig);
 xCircle = UnitCircleGenerate(nThetaEllipse);
 xCirclePlane = [xCircle(1,:) ; zeros(size(xCircle(1,:))) ; xCircle(2,:) ];
 xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
@@ -303,6 +304,38 @@ xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
 subplot(1,3,3); hold on
 plot(xEllipsoidPlane(1,:),xEllipsoidPlane(2,:),'y','LineWidth',1);
+
+%% Make a standalone figure in the LM plane of the constant size condition.
+%
+% This is matched up to what the computational observer code produces.
+markerSize = 12;
+labelFontSize = 16;
+titleFontSize = 16;
+axisFontSize = 12;
+
+conditionStr = 'HT,cs';
+theSf = 2;
+[A,Ainv,Q,theBgLMS] = PoirsonWandellEllipsoidParameters(conditionStr,theSf);
+nThetaEllipse = 200;
+xCircle = UnitCircleGenerate(nThetaEllipse);
+xCirclePlane = [xCircle(1,:) ; xCircle(2,:) ; zeros(size(xCircle(1,:)))];
+xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
+xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
+contrastLim = 0.06;
+figure; clf; hold on; set(gca,'FontSize',axisFontSize);
+plot(xEllipsoidPlane(1,:),xEllipsoidPlane(2,:),'r','LineWidth',3);
+plot([-contrastLim contrastLim],[0 0],'k:','LineWidth',2);
+plot([0 0],[-contrastLim contrastLim],'k:','LineWidth',2);
+xlabel('L contrast','FontSize',labelFontSize); ylabel('M contrast','FontSize',labelFontSize);
+title('M versus L','FontSize',titleFontSize);
+xlim([-contrastLim contrastLim]); ylim([-contrastLim contrastLim]);
+axis('square');
+if (exist('FigureSave','file'))
+    if (~exist('figures','dir'))
+        mkdir('figures');
+    end
+    FigureSave(fullfile('figures','PWLMThresholdContour'),gcf,'pdf');
+end
 
 %% Put warning back
 warning(s.state,s.identifier);
