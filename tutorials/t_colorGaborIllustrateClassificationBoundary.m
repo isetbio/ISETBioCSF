@@ -14,7 +14,7 @@ AddToMatlabPathDynamically(fullfile(fileparts(which(mfilename)),'../toolbox'));
 %% Define parameters of analysis
 %
 % Condition directory that has the response instances
-conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.33_em0_use50_off35_b0_l1_LMS1.00_0.00_0.00_mfv1.00';
+conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.33_nem0_use50_off35_b0_l1_LMS1.00_0.00_0.00_mfv1.00';
 
 % Signal source: select between 'photocurrents' and 'isomerizations'
 signalSource = 'photocurrents';
@@ -26,13 +26,19 @@ kFold = 5;
 PCAComponents = 200;
 
 % Specify the conditions we would like to plot. 
-ColorDirection = 6;
+colorDirection = 6;
 contrastLevel = 5;
+
+% PCA axes to plot
+% Choose two principal components to serve as the axis of the figure
+PCAAxis1 = 1;
+PCAAxis2 = 100;
 
 %% Get data saved by t_colorGaborConeCurrentEyeMovementsResponseInstances
 %
-% The file ending in _0 gives us the no stimulus data
+% The file ending in _0 gives us the no stimulus (zero contrast) data
 dataDir = colorGaborDetectOutputDir(conditionDir,'output');
+figureDir = colorGaborDetectOutputDir(conditionDir,'figures');
 responseFile = 'responseInstances_0';
 responsesFullFile = fullfile(dataDir, sprintf('%s.mat',responseFile));
 classificationPerformanceFile = fullfile(dataDir, sprintf('ClassificationPerformance_%s_kFold%0.0f_pca%0.0f.mat',signalSource,kFold,PCAComponents));
@@ -62,20 +68,16 @@ for iTrial = 1:nTrials
 end
 fprintf('done\n');
 
-%% Do SVM for each test contrast and color direction.
+%% Do SVM for specified test contrast and color direction.
 %
-% The work is done inside routine ClassifyForOneDirection.  We needed to
-% encapsulate it there to make parfor happy.
-%
-% If you don't have a computer configured to work with parfor, you may need
-% to change the parfor just to plain for.
+% The work is done inside routine ClassifyForOneDirection. 
 tic
-thisResponseFile = sprintf('responseInstances_%d',ColorDirection);
+thisResponseFile = sprintf('responseInstances_%d',colorDirection);
 thisResponseFullFile = fullfile(dataDir, sprintf('%s.mat',thisResponseFile));
 theStimData = load(thisResponseFullFile);
 theStimData = theStimData.theStimData;
 
-fprintf('\nInserting (%d,%d) stimulus data from %d trials into design matrix ...', ColorDirection, contrastLevel, nTrials);
+fprintf('\nInserting (%d,%d) stimulus data from %d trials into design matrix ...', colorDirection, contrastLevel, nTrials);
 for iTrial = 1:nTrials
     % Put data into the right form for SVM.
     % This loop overwrites the stimlus data each time through, a
@@ -101,43 +103,42 @@ else
 end
 
 % Perform SVM classification for this stimulus vs the zero contrast stimulus
-fprintf('\tRunning SVM for chromatic direction %d, contrast %2.2f ...',ColorDirection,testContrasts(contrastLevel));
+fprintf('\tRunning SVM for chromatic direction %d, contrast %2.2f ...',colorDirection,testContrasts(contrastLevel));
 [usePercentCorrect,useStdErr,svm] = classifyWithSVM(theData,classes,kFold);
 fprintf(' correct: %2.2f%%\n', usePercentCorrect*100);
 fprintf('SVM classification took %2.2f minutes\n', toc/60);
 
 %% Plotting here
 
-% Choose two principal components to serve as the axis of the figure
-PC1 = 1;
-PC2 = 100;
-
 % Plot the data points along these two components
 figure('Position',[0 0 750 750]);
 hold on;
-plot(theData(1:500,PC1),theData(1:500,PC2),'*','MarkerSize',7);
-plot(theData(501:end,PC1),theData(501:end,PC2),'o','MarkerSize',7);
+plot(theData(1:500,PCAAxis1),theData(1:500,PCAAxis2),'*','MarkerSize',7);
+plot(theData(501:end,PCAAxis1),theData(501:end,PCAAxis2),'o','MarkerSize',7);
 
 % Extract the boundary line. svm.Beta is the line orthogonal to the
 % boundary. We take it's null space (and since we only have 2 dimensions,
 % it is a single vector) which is the boundary. We scale it by an
 % arbitrarily large number so the line comes out nicely.
 orthLineToBoundary = svm.Beta;
-orthLineToBoundary = orthLineToBoundary([PC1 PC2]);
+orthLineToBoundary = orthLineToBoundary([PCAAxis1 PCAAxis2]);
 boundary = null(orthLineToBoundary')*100;
 
 % Plot the decision boundary
 plot([-boundary(1) boundary(1)],[-boundary(2) boundary(2)],'--k','LineWidth',2);
 
 % Reset the axis limits
-ylim([min(theData(:,PC2)) max(theData(:,PC2))]);
-xlim([min(theData(:,PC1)) max(theData(:,PC1))]);
+ylim([min(theData(:,PCAAxis2)) max(theData(:,PCAAxis2))]);
+xlim([min(theData(:,PCAAxis1)) max(theData(:,PCAAxis1))]);
 
 % Make plot look nice + various labels/titles/legend
 set(gca,'FontName','Helvetica','FontSize',18,'LineWidth',2);
 legend({'Null Stimulus','Stimulus'},'Location','Northeast','FontSize',18);
 
 axis square;
-xlabel(sprintf('Principal Component %d',PC1),'FontSize',22);
-ylabel(sprintf('Principal Component %d',PC2),'FontSize',22);
+xlabel(sprintf('Principal Component %d',PCAAxis1),'FontSize',22);
+ylabel(sprintf('Principal Component %d',PCAAxis2),'FontSize',22);
 title('SVM Decision Boundary on Two Principal Components','FontSize',24);
+if (exist('FigureSave','file'))
+    FigureSave(fullfile(figureDir,sprintf('ClassificationBoundaryExample_%0.0f_%0.0f',PCAAxis1,PCAAxis2)),gcf,'pdf');
+end
