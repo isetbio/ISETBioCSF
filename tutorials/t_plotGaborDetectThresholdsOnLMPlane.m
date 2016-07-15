@@ -49,9 +49,9 @@ kFold = 5;
 PCAComponents = 200;
 
 dataDir = colorGaborDetectOutputDir(conditionDir,'output');
-classificationPerformanceFile = fullfile(dataDir, sprintf('ClassificationPerformance_%s_kFold%0.0f_pca%0.0f.mat',signalSource,kFold,PCAComponents));
-pdfBaseFile = sprintf('%s_kFold%0.0f_pca%0.0f',signalSource,kFold,PCAComponents));
-fprintf('\nLoading data from %s ...', classificationPerformanceFile);
+classificationPerformanceFile = sprintf('ClassificationPerformance_%s_kFold%0.0f_pca%0.0f.mat',signalSource,kFold,PCAComponents);
+pdfBaseFile = sprintf('%s_kFold%0.0f_pca%0.0f',signalSource,kFold,PCAComponents);
+fprintf('\nLoading data from %s ...', classificationPerformanceFile)
 figureDir = colorGaborDetectOutputDir(conditionDir,'figures');
 theData = load(fullfile(dataDir,classificationPerformanceFile));
 
