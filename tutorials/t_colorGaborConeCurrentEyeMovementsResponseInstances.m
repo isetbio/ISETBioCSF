@@ -8,7 +8,7 @@
 %   t_colorGaborConeCurrentEyeMovementsMovie.
 %
 % This tutorial saves its output in a .mat file, which is then read in by
-%   t_colorGaborDetectFindThresholds
+%   t_colorGaborDetectFindPerformance
 % which shows how to use the data to find the thresholds.
 %
 % Although this is called a tutorial, we actually use it for real
@@ -35,7 +35,7 @@ AddToMatlabPathDynamically(fullfile(fileparts(which(mfilename)),'../toolbox'));
 
 %% Parameters that control output
 
-% Set to true to save data for use by t_colorGaborDetectFindThresholds
+% Set to true to save data for use by t_colorGaborDetectFindPerformance
 saveData = true;
 
 % These may only work on some computers, depending on what

@@ -3,7 +3,7 @@
 % Plots the data and svm boundary for a specified condition projected onto
 % the first 2 principal components.
 %
-% 7/13/16  xd  wrote it based on code in t_colorGaborDetectFindThresholds
+% 7/13/16  xd  wrote it based on code in t_colorGaborDetectFindPerformance
 
 %% Initialize
 ieInit; clear; close all;

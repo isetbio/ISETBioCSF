@@ -1,7 +1,7 @@
 function [usePercentCorrect,useStdErr] = ClassifyForOneDirection(ii,data,theStimData,classes,nTrials,testContrasts,signalSource,PCAComponents,kFold)
 % [usePercentCorrect,useStdErr] = ClassifyForOneDirection(ii,data,theStimData,classes,nTrials,testContrasts,signalSource,PCAComponents,kFold)
 %
-% Called within a parfor loop in t_colorGaborDetectFindThresholds.  We had
+% Called within a parfor loop in t_colorGaborDetectFindPerformance.  We had
 % to put this into a function to avoid some parfor errors.
 %
 % 7/14/16  dhb, xd  Pulled this out.  Hoping it will work.
