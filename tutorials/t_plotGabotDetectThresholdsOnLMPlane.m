@@ -36,8 +36,22 @@ axisFontSize = 12;
 
 %% Read the output of t_colorGaborDetectFindPerformance
 conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.33_nem0_use50_off35_b1_l1_LMS0.62_0.31_0.07_mfv1.00';
-classificationPerformanceFile = 'ClassificationPerformance_photocurrents_kFold5_pca200';
+
+%% Define parameters of analysis
+%
+% Signal source: select between 'photocurrents' and 'isomerizations'
+signalSource = 'isomerizations';
+
+% Number of SVM cross validations to use
+kFold = 5;
+
+% PCA components.  Set to zero for no PCA
+PCAComponents = 200;
+
 dataDir = colorGaborDetectOutputDir(conditionDir,'output');
+classificationPerformanceFile = fullfile(dataDir, sprintf('ClassificationPerformance_%s_kFold%0.0f_pca%0.0f.mat',signalSource,kFold,PCAComponents));
+pdfBaseFile = sprintf('%s_kFold%0.0f_pca%0.0f',signalSource,kFold,PCAComponents));
+fprintf('\nLoading data from %s ...', classificationPerformanceFile);
 figureDir = colorGaborDetectOutputDir(conditionDir,'figures');
 theData = load(fullfile(dataDir,classificationPerformanceFile));
 
@@ -91,7 +105,7 @@ for ii = 1:size(theData.testConeContrasts,2)
     thresholdConeContrasts(:,ii) = testConeContrasts(:,ii)*thresholdContrasts(ii);
 end
 if (exist('FigureSave','file'))
-    FigureSave(fullfile(figureDir,'LMPsychoFunctions'),hFig,'pdf');
+    FigureSave(fullfile(figureDir,sprintf('LMPsychoFunctions_%s',pdfBaseFile)),hFig,'pdf');
 end
 
 %% Thresholds are generally symmetric around the contrast origin
@@ -144,7 +158,7 @@ title('M versus L','FontSize',titleFontSize);
 xlim([-contrastLim contrastLim]); ylim([-contrastLim contrastLim]);
 axis('square');
 if (exist('FigureSave','file'))
-    FigureSave(fullfile(figureDir,'LMThresholdContour'),gcf,'pdf');
+    FigureSave(fullfile(figureDir,sprintf('LMThresholdContour_%s',pdfBaseFile)),gcf,'pdf');
 end
     
 
