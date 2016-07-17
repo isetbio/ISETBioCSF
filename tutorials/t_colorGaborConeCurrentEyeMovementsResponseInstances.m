@@ -8,7 +8,7 @@
 %   t_colorGaborConeCurrentEyeMovementsMovie
 % but the actual routine has some tricks to make it go fast.  There is also
 % colorDetectResponseInstanceArrayConstruct that works more like the
-% tutorial.ß
+% tutorial.
 %
 % This tutorial saves its output in a .mat file, which is then read in by
 %   t_colorGaborDetectFindPerformance
