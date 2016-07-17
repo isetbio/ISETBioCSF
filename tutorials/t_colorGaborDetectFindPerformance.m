@@ -35,10 +35,13 @@ AddToMatlabPathDynamically(fullfile(fileparts(which(mfilename)),'../toolbox'));
 %% Define parameters of analysis
 %
 % Condition directory that has the response instances
-conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.00_nem0_use1_off0_b1_l1_LMS0.62_0.31_0.07_mfv0.05';
+conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.05_nem0_use50_off0_b1_l1_LMS0.62_0.31_0.07_mfv1.00';
 
 % Signal source: select between 'photocurrents' and 'isomerizations'
 signalSource = 'isomerizations';
+
+% Number of intervals (1 or 2)
+nIntervals = 1;
 
 % Number of SVM cross validations to use
 kFold = 5;
@@ -67,21 +70,37 @@ mosaicParams = theBlankData.mosaicParams;
 
 %% Put zero contrast response instances into data that we will pass to the SVM
 responseSize = numel(theBlankData.theNoStimData.responseInstanceArray(1).theMosaicPhotoCurrents(:));
-fprintf('\nInsterting null stimulus data from %d trials into design matrix ...', nTrials);
-for iTrial = 1:nTrials
-    if (iTrial == 1)
-        data = zeros(2*nTrials, responseSize);
-        classes = zeros(2*nTrials, 1);
+fprintf('\nInserting null stimulus data from %d trials into design matrix ...', nTrials);
+if (nIntervals == 1)
+    data = zeros(2*nTrials, responseSize);
+    classes = zeros(2*nTrials, 1);
+    for iTrial = 1:nTrials
+        if (strcmp(signalSource,'photocurrents'))
+            data(iTrial,:) = theBlankData.theNoStimData.responseInstanceArray(iTrial).theMosaicPhotoCurrents(:);
+        else
+            data(iTrial,:) = theBlankData.theNoStimData.responseInstanceArray(iTrial).theMosaicIsomerizations(:);
+        end
+        
+        % Set up classes variable
+        classes(iTrial,1) = 0;
+        classes(nTrials+iTrial,1) = 1;
     end
-    if (strcmp(signalSource,'photocurrents'))
-        data(iTrial,:) = theBlankData.theNoStimData.responseInstanceArray(iTrial).theMosaicPhotoCurrents(:);
-    else
-        data(iTrial,:) = theBlankData.theNoStimData.responseInstanceArray(iTrial).theMosaicIsomerizations(:);
+elseif (nIntervals == 2)
+    data = zeros(nTrials, 2*responseSize);
+    classes = zeros(nTrials, 1);
+    for iTrial = 1:nTrials/2
+        if (strcmp(signalSource,'photocurrents'))
+            data(iTrial,1:responseSize) = theBlankData.theNoStimData.responseInstanceArray(iTrial).theMosaicPhotoCurrents(:);
+            data(nTrials/2+iTrial,responseSize+1:end) = theBlankData.theNoStimData.responseInstanceArray(nTrials/2+iTrial).theMosaicPhotoCurrents(:);
+        else
+            data(iTrial,1:responseSize) = theBlankData.theNoStimData.responseInstanceArray(iTrial).theMosaicIsomerizations(:);
+            data(nTrials/2+iTrial,responseSize+1:end) = theBlankData.theNoStimData.responseInstanceArray(nTrials/2+iTrial).theMosaicIsomerizations(:);
+        end
+        
+        % Set up classes variable
+        classes(iTrial,1) = 0;
+        classes(nTrials/2+iTrial,1) = 1;
     end
-    
-    % Set up classes variable
-    classes(iTrial,1) = 0;
-    classes(nTrials+iTrial,1) = 1;
 end
 fprintf('done\n');
 
@@ -100,7 +119,7 @@ for ii = 1:size(testConeContrasts,2)
     thisResponseFullFile = fullfile(dataDir, sprintf('%s.mat',thisResponseFile));
     theData = load(thisResponseFullFile);
     [usePercentCorrect{ii},useStdErr{ii}] = ...
-        ClassifyForOneDirection(ii,data,theData.theStimData,classes,nTrials,testContrasts,signalSource,PCAComponents,kFold);  
+        ClassifyForOneDirection(ii,data,theData.theStimData,classes,nTrials,testContrasts,signalSource,nIntervals,PCAComponents,kFold);  
 end
 fprintf('SVM classification took %2.2f minutes\n', toc/60);
 clearvars('theData','useData','data');
