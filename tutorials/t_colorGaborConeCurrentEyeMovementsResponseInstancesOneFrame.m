@@ -72,10 +72,10 @@ contrastScale = 'log';    % choose between 'linear' and 'log'
 %% Define parameters of simulation
 %
 % The time step at which to compute eyeMovements and osResponses
-simulationTimeStepSeconds = 50/1000;
+simulationTimeStepSeconds = 200/1000;
 
 % Stimulus (gabor) params
-gaborParams.fieldOfViewDegs = 1.0;
+gaborParams.fieldOfViewDegs = 2.0;
 gaborParams.gaussianFWHMDegs = 0.35;
 gaborParams.cyclesPerDegree = 2;
 gaborParams.row = 128;
@@ -145,6 +145,7 @@ if (strcmp(contrastScale, 'linear'))
 else
     testContrasts = logspace(log10(lowContrast), log10(highContrast), nContrastsPerDirection);
 end
+
 %% Generate data for the no stimulus condition
 tic
 gaborParams.coneContrasts = [0 0 0]';

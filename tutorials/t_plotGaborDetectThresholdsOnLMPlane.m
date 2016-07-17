@@ -35,7 +35,7 @@ titleFontSize = 16;
 axisFontSize = 12;
 
 %% Read the output of t_colorGaborDetectFindPerformance
-conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.33_nem0_use50_off35_b1_l1_LMS0.62_0.31_0.07_mfv1.00';
+conditionDir = 'cpd2_sfv2.00_fw0.350_tau0.165_dur0.20_nem0_use200_off0_b1_l1_LMS0.62_0.31_0.07_mfv2.00';
 
 %% Define parameters of analysis
 %
@@ -46,7 +46,7 @@ signalSource = 'isomerizations';
 kFold = 5;
 
 % PCA components.  Set to zero for no PCA
-PCAComponents = 200;
+PCAComponents = 60;
 
 dataDir = colorGaborDetectOutputDir(conditionDir,'output');
 classificationPerformanceFile = sprintf('ClassificationPerformance_%s_kFold%0.0f_pca%0.0f.mat',signalSource,kFold,PCAComponents);
