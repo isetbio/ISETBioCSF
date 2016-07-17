@@ -66,9 +66,7 @@ for iTrial = 1: nTrials
     % Generate eye movements for the entire stimulus duration of this trial
     eyeMovementsPerStimFrame = temporalParams.stimulusSamplingIntervalInSeconds/simulationTimeStep;
     eyeMovementsTotalNum = round(eyeMovementsPerStimFrame*stimulusFramesNum);
-    %eyeMovementSequence = theMosaic.emGenSequence(eyeMovementsTotalNum);
-    eyeMovementSequence = zeros(eyeMovementsTotalNum,2);
-    
+    eyeMovementSequence = theMosaic.emGenSequence(eyeMovementsTotalNum);    
     if (isfield(temporalParams,'eyesDoNotMove') && (temporalParams.eyesDoNotMove))
         eyeMovementSequence = eyeMovementSequence * 0;
     end
