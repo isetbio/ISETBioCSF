@@ -35,10 +35,10 @@ AddToMatlabPathDynamically(fullfile(fileparts(which(mfilename)),'../toolbox'));
 %% Define parameters of analysis
 %
 % Condition directory that has the response instances
-conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.33_em0_use50_off35_b0_l1_LMS1.00_0.00_0.00_mfv1.00';
+conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.10_nem0_use100_off5_b0_l1_LMS0.62_0.31_0.07_mfv1.00';
 
 % Signal source: select between 'photocurrents' and 'isomerizations'
-signalSource = 'photocurrents';
+signalSource = 'isomerizations';
 
 % Number of SVM cross validations to use
 kFold = 5;
@@ -95,7 +95,7 @@ fprintf('done\n');
 tic
 usePercentCorrect = cell(size(testConeContrasts,2),1);
 useStdErr = cell(size(testConeContrasts,2),1);
-parfor ii = 1:size(testConeContrasts,2)
+for ii = 1:size(testConeContrasts,2)
     thisResponseFile = sprintf('responseInstances_%d',ii);
     thisResponseFullFile = fullfile(dataDir, sprintf('%s.mat',thisResponseFile));
     theData = load(thisResponseFullFile);
