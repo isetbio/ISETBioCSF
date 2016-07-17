@@ -53,7 +53,7 @@ renderVideo = false;
 % nContrastsPerDirection = 2) to run through something more quickly.
 
 % Define how many noisy data instances to generate
-trialsNum = 500; %500;
+trialsNum = 1000; %500;
 
 % Delta angle sampling in LM plane (samples between 0 and 180 degrees)
 %
