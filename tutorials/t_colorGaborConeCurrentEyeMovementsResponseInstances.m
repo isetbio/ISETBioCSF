@@ -60,7 +60,7 @@ trialsNum = 500; %500;
 % Also base stimulus length in cone contrast space.  This variable
 % no long has an effect because we scale each base direction to be 
 % just inside monitor gamut
-deltaAngle = 15; % 15; 
+deltaAngle = 180; % 15; 
 baseStimulusLength = 1;
 
 % Number of contrasts to run in each color direction
@@ -72,7 +72,7 @@ contrastScale = 'log';    % choose between 'linear' and 'log'
 %% Define parameters of simulation
 %
 % The time step at which to compute eyeMovements and osResponses
-simulationTimeStep = 10/1000;
+simulationTimeStep = 100/1000;
 
 % Stimulus (gabor) params
 gaborParams.fieldOfViewDegs = 1.0;
@@ -96,10 +96,10 @@ gaborParams.viewingDistance = 0.75;
 % which the window is taken.
 frameRate = 60;
 temporalParams.windowTauInSeconds = 0.165;
-temporalParams.stimulusDurationInSeconds = 2*temporalParams.windowTauInSeconds;
-temporalParams.stimulusSamplingIntervalInSeconds = 1/frameRate;
-temporalParams.millisecondsToInclude = 50;
-temporalParams.millisecondsToIncludeOffset = 35;
+temporalParams.stimulusDurationInSeconds = 0.1;
+temporalParams.stimulusSamplingIntervalInSeconds = 0.1;
+temporalParams.millisecondsToInclude = 100;
+temporalParams.millisecondsToIncludeOffset = 05;
 
 % Optionally, have zero amplitude eye movements
 temporalParams.eyesDoNotMove = false; 
