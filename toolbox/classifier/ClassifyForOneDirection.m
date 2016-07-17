@@ -6,6 +6,16 @@ function [usePercentCorrect,useStdErr] = ClassifyForOneDirection(ii,data,theStim
 %
 % 7/14/16  dhb, xd  Pulled this out.  Hoping it will work.
 
+% For each contrast, insert stimulus data into the array that already has
+% the blank data in it.
+%
+% We can do this to simulate a one interval or a two interval task.  In the
+% one interval task, the blanks and modulation instances are labelled as the
+% two classes.  In the two inteval task, we concatenate [blank modulation]
+% as one class and [modulation blank] as the other.  The same amount of
+% data is used in each case, but the number of training instances is half
+% for the two interval case, but with effective response vectors that are
+% twice as long.
 responseSize = numel(theStimData{1}.responseInstanceArray(1).theMosaicPhotoCurrents(:));
 for jj = 1:numel(testContrasts)
     fprintf('\nInserting (%d,%d) stimulus data from %d trials into design matrix ...', ii, jj, nTrials);

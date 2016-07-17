@@ -25,4 +25,3 @@ t_plotColorGaborDetectThresholdsOnLMPlane - Fit psychometric function to the out
 t_colorThresholdEllipsoids - This tutorial implements the model developed in Poirson & Wandell (1996) and allows one to visual color threshold ellipsoids for various choices of spatial frequency, according to that model.  These threshold ellipsoids summarize one of the data sets we would like to model with the code in this repository.
 
 t_colorThresholdEllipsoidFit - Illustrates how to fit an ellipsoid to color threshold data for a variety of directions in color space.
-
