@@ -55,7 +55,7 @@ PCAComponents = 60;
 dataDir = colorGaborDetectOutputDir(conditionDir,'output');
 responseFile = 'responseInstances_0';
 responsesFullFile = fullfile(dataDir, sprintf('%s.mat',responseFile));
-classificationPerformanceFile = fullfile(dataDir, sprintf('ClassificationPerformance_%s_kFold%0.0f_pca%0.0f.mat',signalSource,kFold,PCAComponents));
+classificationPerformanceFile = fullfile(dataDir, sprintf('ClassificationPerformance_%s_%d_kFold%0.0f_pca%0.0f.mat',signalSource,nIntervals,kFold,PCAComponents));
 fprintf('\nLoading data from %s ...', responsesFullFile); 
 theBlankData = load(responsesFullFile);
 fprintf('done\n');
@@ -69,6 +69,14 @@ oiParams = theBlankData.oiParams;
 mosaicParams = theBlankData.mosaicParams;
 
 %% Put zero contrast response instances into data that we will pass to the SVM
+%
+% We can do this to simulate a one interval or a two interval task.  In the
+% one interval task, the blanks and modulation instances are labelled as the
+% two classes.  In the two inteval task, we concatenate [blank modulation]
+% as one class and [modulation blank] as the other.  The same amount of
+% data is used in each case, but the number of training instances is half
+% for the two interval case, but with effective response vectors that are
+% twice as long.
 responseSize = numel(theBlankData.theNoStimData.responseInstanceArray(1).theMosaicPhotoCurrents(:));
 fprintf('\nInserting null stimulus data from %d trials into design matrix ...', nTrials);
 if (nIntervals == 1)

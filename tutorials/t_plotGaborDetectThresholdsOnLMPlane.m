@@ -45,11 +45,14 @@ signalSource = 'isomerizations';
 % Number of SVM cross validations to use
 kFold = 5;
 
+% Number of intervals (1 or 2)
+nIntervals = 2;
+
 % PCA components.  Set to zero for no PCA
 PCAComponents = 60;
 
 dataDir = colorGaborDetectOutputDir(conditionDir,'output');
-classificationPerformanceFile = sprintf('ClassificationPerformance_%s_kFold%0.0f_pca%0.0f.mat',signalSource,kFold,PCAComponents);
+classificationPerformanceFile = sprintf('ClassificationPerformance_%s_%d_kFold%0.0f_pca%0.0f.mat',signalSource,nIntervals,kFold,PCAComponents);
 pdfBaseFile = sprintf('%s_kFold%0.0f_pca%0.0f',signalSource,kFold,PCAComponents);
 fprintf('\nLoading data from %s ...', classificationPerformanceFile)
 figureDir = colorGaborDetectOutputDir(conditionDir,'figures');
