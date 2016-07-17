@@ -107,7 +107,7 @@ for iTrial = 1: nTrials
         timeAxis = (0:size(photocurrentSequence,3)-1)*theMosaic.sampleTime;
         timeAxis = timeAxis - timeAxis(end)/2;
         timeIndicesToKeep = find(abs(timeAxis*1000-temporalParams.millisecondsToIncludeOffset) <= temporalParams.millisecondsToInclude/2);
-    
+
         theFirstInstance = struct(...
             'theMosaicIsomerizations', single(coneIsomerizationSequence(:,:,timeIndicesToKeep)), ...
             'theMosaicPhotoCurrents', single(photocurrentSequence(:,:,timeIndicesToKeep)), ...
@@ -125,20 +125,6 @@ for iTrial = 1: nTrials
             );
     end
     
-%     if (iTrial == 1)
-%     timeAxis = (0:size(photocurrentSequence,3)-1)*theMosaic.sampleTime;
-%         timeAxis = timeAxis - timeAxis(end)/2;
-%         timeIndicesToKeep = find(abs(timeAxis*1000-temporalParams.millisecondsToIncludeOffset) <= temporalParams.millisecondsToInclude/2);
-%     end
-%         
-%     responseInstanceArray(iTrial) = struct(...
-%             'theMosaicIsomerizations', single(coneIsomerizationSequence(:,:,timeIndicesToKeep)), ...
-%             'theMosaicPhotoCurrents', single(photocurrentSequence(:,:,timeIndicesToKeep)), ...
-%             'theMosaicEyeMovements', eyeMovementSequence(timeIndicesToKeep,:), ...
-%             'timeAxis', timeAxis(timeIndicesToKeep) ...
-%             );
-        
-
 end % iTrial
 
 fprintf('Response instance array generation (%d instances) took %2.3f minutes to compute.\n', nTrials, toc/60);
