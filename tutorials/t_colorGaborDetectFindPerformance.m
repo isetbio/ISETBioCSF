@@ -47,7 +47,7 @@ nIntervals = 1;
 kFold = 5;
 
 % PCA components.  Set to zero for no PCA
-PCAComponents = 10;
+PCAComponents = 60;
 
 %% Get data saved by t_colorGaborConeCurrentEyeMovementsResponseInstances
 %
