@@ -14,25 +14,25 @@ AddToMatlabPathDynamically(fullfile(fileparts(which(mfilename)),'../toolbox'));
 %% Define parameters of analysis
 %
 % Condition directory that has the response instances
-conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.33_nem0_use50_off35_b0_l1_LMS1.00_0.00_0.00_mfv1.00';
+conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.00_nem0_use1_off0_b1_l1_LMS0.62_0.31_0.07_mfv0.05';
 
 % Signal source: select between 'photocurrents' and 'isomerizations'
-signalSource = 'photocurrents';
+signalSource = 'isomerizations';
 
 % Number of SVM cross validations to use
 kFold = 5;
 
 % PCA components.  Set to zero for no PCA
-PCAComponents = 200;
+PCAComponents = 60;
 
 % Specify the conditions we would like to plot. 
-colorDirection = 6;
-contrastLevel = 5;
+colorDirection = 1;
+contrastLevel = 10;
 
 % PCA axes to plot
 % Choose two principal components to serve as the axis of the figure
 PCAAxis1 = 1;
-PCAAxis2 = 100;
+PCAAxis2 = 2;
 
 %% Get data saved by t_colorGaborConeCurrentEyeMovementsResponseInstances
 %

@@ -35,7 +35,7 @@ AddToMatlabPathDynamically(fullfile(fileparts(which(mfilename)),'../toolbox'));
 %% Define parameters of analysis
 %
 % Condition directory that has the response instances
-conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.10_nem0_use100_off5_b0_l1_LMS0.62_0.31_0.07_mfv1.00';
+conditionDir = 'cpd2_sfv1.00_fw0.350_tau0.165_dur0.00_nem0_use1_off0_b1_l1_LMS0.62_0.31_0.07_mfv0.05';
 
 % Signal source: select between 'photocurrents' and 'isomerizations'
 signalSource = 'isomerizations';
@@ -44,7 +44,7 @@ signalSource = 'isomerizations';
 kFold = 5;
 
 % PCA components.  Set to zero for no PCA
-PCAComponents = 200;
+PCAComponents = 10;
 
 %% Get data saved by t_colorGaborConeCurrentEyeMovementsResponseInstances
 %
@@ -67,7 +67,7 @@ mosaicParams = theBlankData.mosaicParams;
 
 %% Put zero contrast response instances into data that we will pass to the SVM
 responseSize = numel(theBlankData.theNoStimData.responseInstanceArray(1).theMosaicPhotoCurrents(:));
-fprintf('\nInsterting null stimulus data from %d trials into design matrix ...\n', nTrials);
+fprintf('\nInsterting null stimulus data from %d trials into design matrix ...', nTrials);
 for iTrial = 1:nTrials
     if (iTrial == 1)
         data = zeros(2*nTrials, responseSize);
@@ -99,7 +99,8 @@ for ii = 1:size(testConeContrasts,2)
     thisResponseFile = sprintf('responseInstances_%d',ii);
     thisResponseFullFile = fullfile(dataDir, sprintf('%s.mat',thisResponseFile));
     theData = load(thisResponseFullFile);
-    [usePercentCorrect{ii},useStdErr{ii}] = ClassifyForOneDirection(ii,data,theData.theStimData,classes,nTrials,testContrasts,signalSource,PCAComponents,kFold);  
+    [usePercentCorrect{ii},useStdErr{ii}] = ...
+        ClassifyForOneDirection(ii,data,theData.theStimData,classes,nTrials,testContrasts,signalSource,PCAComponents,kFold);  
 end
 fprintf('SVM classification took %2.2f minutes\n', toc/60);
 clearvars('theData','useData','data');

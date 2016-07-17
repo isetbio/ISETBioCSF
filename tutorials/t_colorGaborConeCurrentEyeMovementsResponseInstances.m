@@ -65,14 +65,14 @@ baseStimulusLength = 1;
 
 % Number of contrasts to run in each color direction
 nContrastsPerDirection = 10; % 10;
-lowContrast = 0.01;
-highContrast = 0.4;
+lowContrast = 0.001;
+highContrast = 0.015;
 contrastScale = 'log';    % choose between 'linear' and 'log'
 
 %% Define parameters of simulation
 %
 % The time step at which to compute eyeMovements and osResponses
-simulationTimeStep = 100/1000;
+simulationTimeStep = 1/1000;
 
 % Stimulus (gabor) params
 gaborParams.fieldOfViewDegs = 1.0;
@@ -96,10 +96,10 @@ gaborParams.viewingDistance = 0.75;
 % which the window is taken.
 frameRate = 60;
 temporalParams.windowTauInSeconds = 0.165;
-temporalParams.stimulusDurationInSeconds = 0.1;
-temporalParams.stimulusSamplingIntervalInSeconds = 0.1;
-temporalParams.millisecondsToInclude = 100;
-temporalParams.millisecondsToIncludeOffset = 05;
+temporalParams.stimulusDurationInSeconds = 0.001;
+temporalParams.stimulusSamplingIntervalInSeconds = 0.001;
+temporalParams.millisecondsToInclude = 1;
+temporalParams.millisecondsToIncludeOffset = 0;
 
 % Optionally, have zero amplitude eye movements
 temporalParams.eyesDoNotMove = false; 
@@ -123,11 +123,11 @@ end
 % Optical image parameters
 oiParams.fieldOfViewDegs = gaborParams.fieldOfViewDegs;
 oiParams.offAxis = false;
-oiParams.blur = false;
+oiParams.blur = true;
 oiParams.lens = true;
 
 % Cone mosaic parameters
-mosaicParams.fieldOfViewDegs = gaborParams.fieldOfViewDegs;
+mosaicParams.fieldOfViewDegs = gaborParams.fieldOfViewDegs/20;
 mosaicParams.macular = true;
 mosaicParams.LMSRatio = [0.62 0.31 0.07];
 mosaicParams.timeStepInSeconds = simulationTimeStep;

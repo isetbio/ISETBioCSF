@@ -31,7 +31,6 @@ for jj = 1:numel(testContrasts)
     else
         theData = data;
     end
-    clearvars('data');
     
     % Perform SVM classification for this stimulus vs the zero contrast stimulus
     fprintf('\tRunning SVM for chromatic direction %d, contrast %2.2f ...', ii , testContrasts(jj));
