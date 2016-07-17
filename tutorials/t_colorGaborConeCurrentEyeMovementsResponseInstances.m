@@ -96,7 +96,7 @@ gaborParams.viewingDistance = 0.75;
 % which the window is taken.
 frameRate = 60;
 temporalParams.windowTauInSeconds = 0.165;
-temporalParams.stimulusDurationInSeconds = 0.001;
+temporalParams.stimulusDurationInSeconds = 0.0;
 temporalParams.stimulusSamplingIntervalInSeconds = 0.001;
 temporalParams.millisecondsToInclude = 1;
 temporalParams.millisecondsToIncludeOffset = 0;
