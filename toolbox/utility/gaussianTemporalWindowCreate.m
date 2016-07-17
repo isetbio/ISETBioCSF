@@ -15,6 +15,13 @@ function [sampleTimes, gaussianTemporalWindow, rasterModulation] = gaussianTempo
 %  7/7/16  dhb Wrote it.
 %  7/9/16  npd Added CRT raster effect.
 
+if (temporalParams.stimulusDurationInSeconds == 0)
+    sampleTimes = [0];
+    gaussianTemporalWindow = 1;
+    rasterModulation = 1;
+    return;
+end
+
 nPositiveTimeSamples = ceil(0.5*temporalParams.stimulusDurationInSeconds/temporalParams.stimulusSamplingIntervalInSeconds);
 sampleTimes = linspace(-nPositiveTimeSamples*temporalParams.stimulusSamplingIntervalInSeconds, ...
     nPositiveTimeSamples*temporalParams.stimulusSamplingIntervalInSeconds, ...

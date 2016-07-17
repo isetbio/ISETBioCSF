@@ -59,7 +59,9 @@ clearvars('theLargerMosaic');
 
 % For each trial compute new eye movement path and obtain new response
 for iTrial = 1: nTrials
-    waitbar(0.5+0.5*iTrial/nTrials, progressHandle, sprintf('stimulus label: %s\ncomputing responses for trial %d/%d', stimulusLabel, iTrial, nTrials));
+    if (mod(iTrial-1,50) == 0)
+        waitbar(0.5+0.5*iTrial/nTrials, progressHandle, sprintf('stimulus label: %s\ncomputing responses for trial %d/%d', stimulusLabel, iTrial, nTrials));
+    end
     
     % Generate eye movements for the entire stimulus duration of this trial
     eyeMovementsPerStimFrame = temporalParams.stimulusSamplingIntervalInSeconds/simulationTimeStep;
@@ -98,21 +100,48 @@ for iTrial = 1: nTrials
     % Compute photocurrent sequence
     coneIsomerizationRate = coneIsomerizationSequence/theMosaic.integrationTime;
     photocurrentSequence = theMosaic.os.compute(coneIsomerizationRate,theMosaic.pattern);
-    timeAxis = (0:size(photocurrentSequence,3)-1)*theMosaic.sampleTime;
-    timeAxis = timeAxis - timeAxis(end)/2;
-    
-    % Only include the central response
-    timeIndicesToKeep = find(abs(timeAxis*1000-temporalParams.millisecondsToIncludeOffset) <= temporalParams.millisecondsToInclude/2);
-    
+   
     % Accumulate data in cell array of structs.
-    responseInstanceArray(iTrial) = struct(...
-        'theMosaicIsomerizations', single(coneIsomerizationSequence(:,:,timeIndicesToKeep)), ...
-        'theMosaicPhotoCurrents', single(photocurrentSequence(:,:,timeIndicesToKeep)), ...
-        'theMosaicEyeMovements', eyeMovementSequence(timeIndicesToKeep,:), ...
-        'timeAxis', timeAxis(timeIndicesToKeep) ...
+    if (iTrial == 1)
+        % Only include the central response
+        timeAxis = (0:size(photocurrentSequence,3)-1)*theMosaic.sampleTime;
+        timeAxis = timeAxis - timeAxis(end)/2;
+        timeIndicesToKeep = find(abs(timeAxis*1000-temporalParams.millisecondsToIncludeOffset) <= temporalParams.millisecondsToInclude/2);
+    
+        theFirstInstance = struct(...
+            'theMosaicIsomerizations', single(coneIsomerizationSequence(:,:,timeIndicesToKeep)), ...
+            'theMosaicPhotoCurrents', single(photocurrentSequence(:,:,timeIndicesToKeep)), ...
+            'theMosaicEyeMovements', eyeMovementSequence(timeIndicesToKeep,:), ...
+            'timeAxis', timeAxis(timeIndicesToKeep) ...
         );
+        responseInstanceArray = repmat(theFirstInstance, nTrials, 1);
+        responseInstanceArray(1) = theFirstInstance;
+    else
+        responseInstanceArray(iTrial) = struct(...
+            'theMosaicIsomerizations', single(coneIsomerizationSequence(:,:,timeIndicesToKeep)), ...
+            'theMosaicPhotoCurrents', single(photocurrentSequence(:,:,timeIndicesToKeep)), ...
+            'theMosaicEyeMovements', eyeMovementSequence(timeIndicesToKeep,:), ...
+            'timeAxis', timeAxis(timeIndicesToKeep) ...
+            );
+    end
+    
+%     if (iTrial == 1)
+%     timeAxis = (0:size(photocurrentSequence,3)-1)*theMosaic.sampleTime;
+%         timeAxis = timeAxis - timeAxis(end)/2;
+%         timeIndicesToKeep = find(abs(timeAxis*1000-temporalParams.millisecondsToIncludeOffset) <= temporalParams.millisecondsToInclude/2);
+%     end
+%         
+%     responseInstanceArray(iTrial) = struct(...
+%             'theMosaicIsomerizations', single(coneIsomerizationSequence(:,:,timeIndicesToKeep)), ...
+%             'theMosaicPhotoCurrents', single(photocurrentSequence(:,:,timeIndicesToKeep)), ...
+%             'theMosaicEyeMovements', eyeMovementSequence(timeIndicesToKeep,:), ...
+%             'timeAxis', timeAxis(timeIndicesToKeep) ...
+%             );
+        
+
 end % iTrial
-fprintf('Response instance array generation (%d instances) took %2.1f minutes to compute.\n', nTrials, toc/60);
+
+fprintf('Response instance array generation (%d instances) took %2.3f minutes to compute.\n', nTrials, toc/60);
 
 % Close progress bar
 close(progressHandle);

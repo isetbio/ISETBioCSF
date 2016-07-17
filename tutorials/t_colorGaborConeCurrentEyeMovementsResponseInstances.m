@@ -65,14 +65,14 @@ baseStimulusLength = 1;
 
 % Number of contrasts to run in each color direction
 nContrastsPerDirection = 10; % 10;
-lowContrast = 0.02;
-highContrast = 0.2;
+lowContrast = 0.001;
+highContrast = 0.015;
 contrastScale = 'log';    % choose between 'linear' and 'log'
 
 %% Define parameters of simulation
 %
 % The time step at which to compute eyeMovements and osResponses
-simulationTimeStepSeconds = 50/1000;
+simulationTimeStep = 1/1000;
 
 % Stimulus (gabor) params
 gaborParams.fieldOfViewDegs = 1.0;
@@ -96,16 +96,29 @@ gaborParams.viewingDistance = 0.75;
 % which the window is taken.
 frameRate = 60;
 temporalParams.windowTauInSeconds = 0.165;
-temporalParams.stimulusDurationInSeconds = simulationTimeStepSeconds;
-temporalParams.stimulusSamplingIntervalInSeconds = simulationTimeStepSeconds;
-temporalParams.millisecondsToInclude = 1000*simulationTimeStepSeconds;
+temporalParams.stimulusDurationInSeconds = 0.0;
+temporalParams.stimulusSamplingIntervalInSeconds = 0.001;
+temporalParams.millisecondsToInclude = 1;
 temporalParams.millisecondsToIncludeOffset = 0;
 
 % Optionally, have zero amplitude eye movements
 temporalParams.eyesDoNotMove = false; 
 
 % Optional CRT raster effects.
+% 
+% The underlying routine that generates temporal samples 
+% can simulate the fact that CRTs produce an impulse during
+% each frame, although this simulation works on a frame basis
+% not on a pixel-by-pixel basis.  
+% 
+% The parameer rasterSamples is the number
+% of raster samples generated per CRT refresh
+% interval.
 temporalParams.addCRTrasterEffect = false;
+temporalParams.rasterSamples = 5; 
+if (temporalParams.addCRTrasterEffect)
+    simulationTimeStep = simulationTimeStep/temporalParams.rasterSamples;
+end
 
 % Optical image parameters
 oiParams.fieldOfViewDegs = gaborParams.fieldOfViewDegs;
@@ -114,10 +127,10 @@ oiParams.blur = true;
 oiParams.lens = true;
 
 % Cone mosaic parameters
-mosaicParams.fieldOfViewDegs = gaborParams.fieldOfViewDegs;
+mosaicParams.fieldOfViewDegs = gaborParams.fieldOfViewDegs/20;
 mosaicParams.macular = true;
 mosaicParams.LMSRatio = [0.62 0.31 0.07];
-mosaicParams.timeStepInSeconds = simulationTimeStepSeconds;
+mosaicParams.timeStepInSeconds = simulationTimeStep;
 mosaicParams.integrationTimeInSeconds = mosaicParams.timeStepInSeconds;
 mosaicParams.photonNoise = true;
 mosaicParams.osNoise = true;
@@ -154,7 +167,7 @@ theNoStimData = struct(...
                  'testContrast', gaborParams.contrast, ...
             'testConeContrasts', gaborParams.coneContrasts, ...
                 'stimulusLabel', stimulusLabel, ...
-        'responseInstanceArray', colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, trialsNum, simulationTimeStepSeconds, ...
+        'responseInstanceArray', colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, trialsNum, simulationTimeStep, ...
                                          gaborParams, temporalParams, theOI, theMosaic));
  
 %% Set up output dir
@@ -191,7 +204,7 @@ parfor ii = 1:size(testConeContrastsDirs,2)
                  'testContrast', gaborParamsLoop.contrast, ...
             'testConeContrasts', gaborParamsLoop.coneContrasts, ...
                 'stimulusLabel', stimulusLabel, ...
-        'responseInstanceArray', colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, trialsNum, simulationTimeStepSeconds, ...
+        'responseInstanceArray', colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, trialsNum, simulationTimeStep, ...
                                           gaborParamsLoop, temporalParams, theOI, theMosaic));
     end
     
