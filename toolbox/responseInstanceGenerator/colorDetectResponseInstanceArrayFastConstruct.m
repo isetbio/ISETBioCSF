@@ -104,7 +104,7 @@ for iTrial = 1: nTrials
     % Accumulate data in cell array of structs.
     if (iTrial == 1)
         % Only include the central response
-        timeAxis = (0:size(photocurrentSequence,3))*theMosaic.sampleTime;
+        timeAxis = (0:size(photocurrentSequence,3)-1)*theMosaic.sampleTime;
         timeAxis = timeAxis - timeAxis(end)/2;
         timeIndicesToKeep = find(abs(timeAxis*1000-temporalParams.millisecondsToIncludeOffset) <= temporalParams.millisecondsToInclude/2);
 
