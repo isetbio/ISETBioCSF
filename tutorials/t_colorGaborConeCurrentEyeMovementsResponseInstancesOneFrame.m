@@ -96,13 +96,13 @@ gaborParams.viewingDistance = 0.75;
 % which the window is taken.
 frameRate = 60;
 temporalParams.windowTauInSeconds = 0.165;
-temporalParams.stimulusDurationInSeconds = simulationTimeStepSeconds;
+temporalParams.stimulusDurationInSeconds = 0;
 temporalParams.stimulusSamplingIntervalInSeconds = simulationTimeStepSeconds;
 temporalParams.millisecondsToInclude = 1000*simulationTimeStepSeconds;
 temporalParams.millisecondsToIncludeOffset = 0;
 
 % Optionally, have zero amplitude eye movements
-temporalParams.eyesDoNotMove = false; 
+temporalParams.eyesDoNotMove = true; 
 
 % Optional CRT raster effects.
 temporalParams.addCRTrasterEffect = false;
