@@ -1,0 +1,229 @@
+function showRuns
+
+    targetDir = '/Users/Shared/Matlab/Analysis/IBIOColorDetect';
+    
+    dataFormat.level1 = {...
+        {'cpd',  'numeric'} ...
+        {'_sfv', 'numeric'} ...
+        {'_fw',  'numeric'} ...
+        {'_tau', 'numeric'} ...
+        {'_dur', 'numeric'} ...
+        {'_nem', 'numeric'} ...
+        {'_use', 'numeric'} ...
+        {'_off', 'numeric'} ...
+        {'_b',   'numeric'} ...
+        {'_l',   'numeric'} ...
+        {'_LMS', 'char'} ...
+        {'_mfv', 'numeric'} ...
+    };
+   
+    dataFormat.level2 = {...
+        {'source',  'char'} ...
+        {'intervals', 'char'} ...
+        {'svm x-val', 'char'} ...
+        {'pca comps', 'char'} ...
+    };
+    startGUI(targetDir, dataFormat);
+    
+end
+
+function startGUI(targetDir, dataFormat)
+
+    targetDir = uigetdir(targetDir);
+    
+    [varNamesLevel1, varValuesLevel1, varFormatsLevel1, varEditablesLevel1, varWidthsLevel1] = ...
+        scanDirToRetrieveVarValues(targetDir, dataFormat);  
+    
+    varValuesLevel1
+    
+    hFig = figure(1); clf;
+    set(hFig, 'Position', [10 10 1540 500], 'MenuBar', 'none', 'Color', [1 1 1]);
+    
+    level1TableWidth = 0.64;
+    handles.tableLevel1ExistingExps = uitable(...
+        'parent', hFig, ...
+        'Data', varValuesLevel1, ...
+        'ColumnName', varNamesLevel1, ...
+        'ColumnFormat', varFormatsLevel1, ...
+        'ColumnEditable', varEditablesLevel1, ...
+        'ColumnWidth', varWidthsLevel1, ...
+        'FontSize', 12, ..., ...
+        'FontName', 'Menlo', ...
+        'Units', 'normalized', ...
+        'Position', [0.01 0.40 level1TableWidth 0.5], ...
+        'CellEditCallback',@(h,e) disp([e.Indices e.NewData]));
+    
+    varEditablesNewExpsLevel1 = repmat(true, [1 numel(varNamesLevel1)]);
+    varEditablesNewExpsLevel1(end-1) = false;
+    varValuesLevel1NewExpsLevel1 = varValuesLevel1(1,:);
+    varValuesLevel1NewExpsLevel1{end-1} = false;
+    varValuesLevel1NewExpsLevel1{end} = true;
+    
+    handles.tableLevel1NewExps = uitable(...
+        'parent', hFig, ...
+        'Data', varValuesLevel1NewExpsLevel1, ...
+        'ColumnName', varNamesLevel1, ...
+        'ColumnFormat', varFormatsLevel1, ...
+        'ColumnEditable', varEditablesNewExpsLevel1, ...
+        'ColumnWidth', varWidthsLevel1, ...
+        'FontSize', 12, ..., ...
+        'FontName', 'Menlo', ...
+        'Units', 'normalized', ...
+        'Position', [0.01 0.02 level1TableWidth 0.28], ...
+        'CellEditCallback',@(h,e) disp([e.Indices e.NewData]));
+    
+    handles.addExperimentButton = uicontrol(...
+        'Style','Pushbutton',... 
+        'Units','normalized', ...
+        'Position',[0.01 0.30 0.1 0.07],... 
+        'FontSize', 12, ..., ...
+        'FontName', 'Menlo', ...
+        'String','Add new experiment', ...
+        'Callback', {@addExperimentLevel1, handles.tableLevel1NewExps, handles.tableLevel1ExistingExps});
+    
+    handles.computeNewExperimentsButton = uicontrol(...
+        'Style','Pushbutton',... 
+        'Units','normalized', ...
+        'Position',[0.50 0.30 0.15 0.07],... 
+        'FontSize', 12, ..., ...
+        'FontName', 'Menlo', ...
+        'String','Compute new experiments', ...
+        'Callback', {@computeNewExperiments, handles.tableLevel1NewExps, handles.tableLevel1ExistingExps});
+    
+end
+
+function varValues = scanTargetDirectory(h,e, table, targetDir)
+
+end
+
+function computeNewExperiments(h, e, newExpsTable, existingExpsTable)
+    fprintf('Compute new exps, and update new and existing tables');
+end
+
+function [varNames, varValues, varFormats, varEditables, varWidths] = scanDirToRetrieveVarValues(targetDir, dataFormat)
+
+    
+
+    targetDirInfo = dir(targetDir);
+    filesNum = numel(targetDirInfo);
+    
+    varNames = {};
+    varFormats = {};
+    for k = 1:numel(dataFormat.level1)
+        d = dataFormat.level1{k};
+        varNames{numel(varNames)+1} = d{1};
+        varFormats{numel(varFormats)+1} = d{2};
+    end
+    originalVarNamesNum = numel(varNames);
+    
+    varWidths = {};
+    for k = 1:numel(varNames)
+        varWidths = cat(2, varWidths, 50);
+    end
+    
+    varWidths{1} = 50;
+    varWidths{2} = 50;
+    varWidths{end-1} = 120;
+    
+    dataFormat.level2
+    
+    varNames2 = {};
+    varFormats2 = {};
+    for k = 1:numel(dataFormat.level2)
+        d = dataFormat.level2{k};
+        varNames{originalVarNamesNum+2+k} = d{1};
+    end
+    originalVarNames2Num = numel(dataFormat.level2)
+    
+    
+    tableRow = 0;
+    for k = 1:filesNum
+        if (targetDirInfo(k).isdir) && (~strcmp(targetDirInfo(k).name, '.')) && (~strcmp(targetDirInfo(k).name, '..'))
+            fprintf('name: %s, date: %s \n', targetDirInfo(k).name, targetDirInfo(k).date);
+            tableRow = tableRow+1;
+            
+            for varIndex = 1:originalVarNamesNum
+                i1 = strfind(targetDirInfo(k).name, varNames{varIndex});
+                if (varIndex < originalVarNamesNum)
+                    i2 = strfind(targetDirInfo(k).name, varNames{varIndex+1});
+                else
+                    i2 = numel(targetDirInfo(k).name);
+                end
+                varValues{tableRow, varIndex} = targetDirInfo(k).name(i1+numel(varNames{varIndex}):i2-1);
+                if (tableRow == 1)
+                     varEditables(varIndex) = false;
+                end
+            end
+            % Add the file exists/needed fields
+            if (tableRow == 1)
+                varNames{originalVarNamesNum+1} = 'data exists';
+                varNames{originalVarNamesNum+2} = 'data compute';
+                varFormats{originalVarNamesNum+1} = 'logical';
+                varFormats{originalVarNamesNum+2} = 'logical';
+                varWidths{originalVarNamesNum+1} = 130
+                varWidths{originalVarNamesNum+2} = 130
+                varEditables(originalVarNamesNum+1) = false;
+                varEditables(originalVarNamesNum+2) = true;
+            end
+            varValues{tableRow, originalVarNamesNum+1} = true;
+            varValues{tableRow, originalVarNamesNum+2} = false; 
+       
+        
+            targetFileLevel2Index = 0;
+            level2FilesNum = 3;
+            
+            for kk = 0:level2FilesNum-1
+
+                targetFileLevel2Index = targetFileLevel2Index + 1;
+
+                for varIndex = 1:originalVarNames2Num
+                    varValues{tableRow+kk, originalVarNamesNum+2+varIndex} = 'level2 var';
+                    
+                    if (tableRow == 1)
+                         varEditables(originalVarNamesNum+2+varIndex) = false;
+                         varFormats{originalVarNamesNum+2+varIndex} = 'char';
+                         varWidths{originalVarNamesNum+2+varIndex} = 150;
+                         varNames{originalVarNamesNum+2+originalVarNames2Num+1} = 'data exists';
+                         varNames{originalVarNamesNum+2+originalVarNames2Num+2} = 'data compute';
+                         varFormats{originalVarNamesNum+2+originalVarNames2Num+1} = 'logical';
+                         varFormats{originalVarNamesNum+2+originalVarNames2Num+2} = 'logical';
+                         varWidths{originalVarNamesNum+2+originalVarNames2Num+1} = 130;
+                         varWidths{originalVarNamesNum+2+originalVarNames2Num+2} = 130;
+                         varEditables(originalVarNamesNum+2+originalVarNames2Num+1) = false;
+                         varEditables(originalVarNamesNum+2+originalVarNames2Num+1) = true;
+                    end
+                    
+                    varValues{tableRow, originalVarNamesNum+2+originalVarNames2Num+1} = true;
+                    varValues{tableRow, originalVarNamesNum+2} = false; 
+            
+                end
+
+            end
+            tableRow = tableRow + level2FilesNum;
+            
+        end
+        
+    end
+    
+    for k = 1:numel(varNames)
+        varNames{k} = sprintf('<html><center /><font size=+0>%s<br />&nbsp;</font></html>', varNames{k});
+    end
+    
+    
+end
+
+
+function addExperimentLevel1(h, e, table, existingExpsTable)
+    % get existing table data
+    theData = get(table,'Data'); 
+    % replicate last row
+    nRows = size(theData,1);
+    theLastData = theData(nRows,:);
+    % Make the 'data file: | exists' field false
+    theLastData{numel(theLastData)-1} = false;
+    theLastData{numel(theLastData)} = true;
+    theData = cat(1, theData,  theLastData);
+    theEditables = repmat(true, [1 nRows+1]);
+    % update table
+    set(table,'Data', theData, 'RowEditable', theEditables);
+end
