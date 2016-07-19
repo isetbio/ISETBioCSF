@@ -101,7 +101,7 @@ function [varNames, varValues, varFormats, varEditables, varWidths] = scanDirToR
     varFormats2 = {};
     for k = 1:numel(dataFormat.level2)
         d = dataFormat.level2{k};
-        varNames{originalVarNamesNum+2+k} = d{1};
+        varNames{originalVarNamesNum+3+k} = d{1};
     end
     originalVarNames2Num = numel(dataFormat.level2)
     
