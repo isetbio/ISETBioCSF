@@ -215,7 +215,7 @@ function addExperimentLevel1(h, e, table, existingExpsTable)
     theLastData{numel(theLastData)-1} = false;
     theLastData{numel(theLastData)} = true;
     theData = cat(1, theData,  theLastData);
-    theEditables = repmat(true, [1 nRows+1]);
+    theEditables = repmat(true, [1 numel(theLastData)]);
     % update table
-    set(table,'Data', theData, 'RowEditable', theEditables);
+    set(table,'Data', theData, 'ColumnEditable', theEditables);
 end

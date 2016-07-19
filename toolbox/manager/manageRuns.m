@@ -24,8 +24,8 @@ function manageRuns
         {'svmvalidation', 'char'} ...
         {'pcacomp', 'char'} ...
     };
+
     startGUI(targetDir, dataFormat);
-    
 end
 
 
