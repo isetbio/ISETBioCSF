@@ -14,9 +14,6 @@
 %% Clear
 ieInit; clear; close all;
 
-% Add project toolbox to Matlab path
-AddToMatlabPathDynamically(fullfile(fileparts(which(mfilename)),'../toolbox'));
-
 % Some font sizes for plots
 labelFontSize = 12;
 titleFontSize = 14;
