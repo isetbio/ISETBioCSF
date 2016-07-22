@@ -63,8 +63,8 @@ temporalParams.eyesDoNotMove = false;
 
 % These are not used in this tutorial, but we need them to set the output
 % filename.
-temporalParams.millisecondsToInclude = 50;
-temporalParams.millisecondsToIncludeOffset = 35;
+temporalParams.secondsToInclude = 0.050;
+temporalParams.secondsToIncludeOffset = 0;
 
 % Optional CRT raster effects.
 % 
@@ -94,7 +94,7 @@ mosaicParams.macular = true;
 mosaicParams.LMSRatio = [0.6 0.3 0.1];
 mosaicParams.timeStepInSeconds = simulationTimeStep;
 mosaicParams.integrationTimeInSeconds = mosaicParams.timeStepInSeconds;
-mosaicParams.photonNoise = true;
+mosaicParams.isomerizationNoise = true;
 mosaicParams.osNoise = true;
 mosaicParams.osModel = 'Linear';
 

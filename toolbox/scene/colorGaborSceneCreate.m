@@ -4,30 +4,17 @@ function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(gaborParams,gamu
 % Creates a colored Gabor IBIO scene. The scene will produce a specified
 % set of L, M, and S contrasts on a specific monitor.
 %
-% If gamutCheckFlag is set, it returns the scale factor required to bring
-% the cone contrasts into the gamut of the monitor.  This
-% can be useful for setting up simulated experimental conditions.  In this
-% case, the returned scene is empty.  When gamutCheckFlag is false
-% (default), the returned scale factor is 1.
+
 %
 % Inputs:
-%   gaborParams    -   A struct that specifies the parameters
-%                      for the Gabor to generate, with the following
-%                      fields:
-%                           fieldOfViewDegs - horizontal field of view in degrees.
-%                           cyclesPerDegree - Gabor cpd.
-%                           gaussianFWHMDegs - Full width at half max of Gaussian.
-%                           row - row size in pixels.
-%                           col - col size in pixels.
-%                           ang - angle of sinusoid in radians.
-%                           ph - phase of sinusoid in radians.
-%                           coneContrast - Desired cone contrasts for [L M S] cones.
-%                           backgroundxyY - Column vector xyY (Y in cd/m2) coordinates of background.
-%                           monitorFile - A string that specifies the name of the monitor file
-%                                         to load. This will be passed into the displayCreate
-%                                         function in IBIO.
-%                           viewingDistance - The viewing distance in meters.
-%                                          All fields are required.
+%   gaborParams     -  A struct that specifies the parameters for the Gabor to generate.
+%                      See t_colorGaborResponseGenerationParams
+%
+%   gamutCheckFlag  -  If set, the routine returns the scale factor required to bring
+%                      the cone contrasts into the gamut of the monitor.  This
+%                      can be useful for setting up simulated experimental conditions.  In this
+%                      case, the returned scene is empty.  When gamutCheckFlag is false
+%                      (default), the returned scale factor is 1.
 %
 % Example:
 %   p.fieldOfViewDegs = 4; p.cyclesPerDegree = 2; p.gaussianFWHMDegs = 1.5;
@@ -39,9 +26,9 @@ function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(gaborParams,gamu
 %   gaborScene = colorGaborSceneCreate(p);
 %   vcAddAndSelectObject(gaborScene);sceneWindow;
 %
-% See also imageHarmonic, t_colorGaborScene.
+% See also t_colorGaborResponseGenerationParams, t_colorGaborScene, imageHarmonic
 %
-% 7/7/16  xd  adapted from t_colorGaborScene
+% 7/7/16 xd   adapted from t_colorGaborScene
 % 7/7/16 npc  added viewing distance param
 
 %% Optional arg for when we are maximizing contrast
@@ -59,19 +46,10 @@ backgroundxyY = gaborParams.backgroundxyY(:);
 % Extract this field since it's used throughout the function.
 fieldOfViewDegs = gaborParams.fieldOfViewDegs;
 
-% Convert to image based parameterss for call into pattern generating routine.
-cyclesPerImage = fieldOfViewDegs*gaborParams.cyclesPerDegree;
-gaussianStdDegs = FWHMToStd(gaborParams.gaussianFWHMDegs);
-gaussianStdImageFraction = gaussianStdDegs/fieldOfViewDegs;
-
-% Parameters for a full contrast vertical gabor centered on the image
-gaborParams.freq = cyclesPerImage;
-gaborParams.GaborFlag = gaussianStdImageFraction;
-
 %% Make the gabor pattern and have a look
 %
 % We can see it as a grayscale image
-gaborPattern = imageHarmonic(gaborParams);
+gaborPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(gaborParams));
 
 %% Convert the Gabor pattern to a modulation around the mean
 %

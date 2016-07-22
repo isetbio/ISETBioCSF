@@ -89,7 +89,7 @@ gaborParams.viewingDistance = 0.75;
 
 % Temporal modulation and stimulus sampling parameters.
 %
-% The millisecondsToInclude field tells how many milliseconds of the
+% The secondsToInclude field tells how many milliseconds of the
 % stimulus around the stimulus peak to include in data saved to pass to the
 % classification routines.  Since the response might be delayed, we also
 % allow specification of an offset (positive numbers mean later) around
@@ -98,8 +98,8 @@ frameRate = 60;
 temporalParams.windowTauInSeconds = 0.165;
 temporalParams.stimulusDurationInSeconds = 0;
 temporalParams.stimulusSamplingIntervalInSeconds = simulationTimeStepSeconds;
-temporalParams.millisecondsToInclude = 1000*simulationTimeStepSeconds;
-temporalParams.millisecondsToIncludeOffset = 0;
+temporalParams.secondsToInclude = simulationTimeStepSeconds;
+temporalParams.secondsToIncludeOffset = 0;
 
 % Optionally, have zero amplitude eye movements
 temporalParams.eyesDoNotMove = true; 
@@ -119,7 +119,7 @@ mosaicParams.macular = true;
 mosaicParams.LMSRatio = [0.62 0.31 0.07];
 mosaicParams.timeStepInSeconds = simulationTimeStepSeconds;
 mosaicParams.integrationTimeInSeconds = mosaicParams.timeStepInSeconds;
-mosaicParams.photonNoise = true;
+mosaicParams.isomerizationNoise = true;
 mosaicParams.osNoise = true;
 mosaicParams.osModel = 'Linear';
 

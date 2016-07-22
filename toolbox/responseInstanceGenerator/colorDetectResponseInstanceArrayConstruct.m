@@ -78,7 +78,7 @@ for iTrial = 1: nTrials
     timeAxis = timeAxis - timeAxis(end)/2;
     
     % Only include the central response
-    timeIndicesToKeep = find(abs(timeAxis)*1000 <= temporalParams.millisecondsToInclude/2);
+    timeIndicesToKeep = find(abs(timeAxis) <= temporalParams.secondsToInclude/2);
     
     % Accumulate data in cell array of structs.
     responseInstanceArray(iTrial) = struct(...

@@ -44,8 +44,8 @@ if (isfield(mosaicParams, 'fieldOfViewDegs'))
     theMosaic.setSizeToFOV(mosaicParams.fieldOfViewDegs);
 end
 
-if (isfield(mosaicParams, 'photonNoise'))
-    theMosaic.noiseFlag = mosaicParams.photonNoise;
+if (isfield(mosaicParams, 'isomerizationNoise'))
+    theMosaic.noiseFlag = mosaicParams.isomerizationNoise;
 end
 
 if (isfield(mosaicParams, 'osNoise'))
