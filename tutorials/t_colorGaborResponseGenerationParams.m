@@ -5,6 +5,9 @@ function params = t_colorGaborRespnseGenerationParams(varargin)
 % responses in the form expected by other programs in this project.  It
 % provides reasonable illustrative defaults, although in real calculations
 % it would be natural to vary many of these parameters.
+
+%% Type field for parameters
+params.type = 'ResponseGeneration';
  
 %% Define parameters of a color gabor pattern
 %
@@ -14,9 +17,11 @@ function params = t_colorGaborRespnseGenerationParams(varargin)
 %   row - Row dimension of scene on monitor
 %   col - Col dimension of scene on monitor
 %   contrast - Contrast specfied relative to coneContrasts.
+%              Can be a vector of contrasts.
 %   ang - Angle of grating, in radians
 %   ph  - Phase of grating, in radians relative to image center
 %   coneContrasts - Color direction of grating in cone contrast space
+%                 - Can be a 3 by N matrix of contrast directions.
 %   backgroundxYY - Colorimetric specification of background, in CIE xyY (cd/m2)
 %   monitorFile - Isetbio display description of monitor on which grating is shown.
 %   viewingDistance - Viewing distance of observer from monitor in meters.

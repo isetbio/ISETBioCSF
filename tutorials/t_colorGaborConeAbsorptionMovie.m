@@ -27,6 +27,13 @@ ieInit; clear; close all;
 %% Get the parameters we need
 rParams = t_colorGaborResponseGenerationParams;
 
+%% Set up the rw object for this program
+extraParams.beta = true;
+rwObject = OLColorDetectReadWriteBasic;
+rwObject.parentParams = [];
+rwObject.theParams = rParams;
+rwObject.extraParams = extraParams;
+
 %% Plot the Gaussian temporal window, just to make sure it looks right
 gaussianFigure = figure; clf;
 plot(rParams.temporalParams.sampleTimes,rParams.temporalParams.gaussianTemporalWindow,'r');
@@ -68,17 +75,16 @@ for ii = 1:rParams.temporalParams.nSampleTimes
 end
 
 %% Make a movie of the stimulus sequence
-conditionDir = paramsToDirName(rParams.gaborParams,rParams.temporalParams,rParams.oiParams,rParams.mosaicParams,[]);
 showLuminanceMap = false;
-visualizeSceneOrOpticalImageSequence(conditionDir, 'scene', gaborScene, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborStimulusMovie');
+visualizeSceneOrOpticalImageSequence(rwObject, 'scene', gaborScene, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborStimulusMovie');
 
 %% Make a movie of the stimulus sequence
 showLuminanceMap = false;
-visualizeSceneOrOpticalImageSequence(conditionDir,'optical image', theOI, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborOpticalImageMovie');
+visualizeSceneOrOpticalImageSequence(rwObject,'optical image', theOI, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborOpticalImageMovie');
 
 %% Make a movie of the isomerizations
 eyeMovementSequence = [];
-visualizeMosaicResponseSequence(conditionDir, 'isomerizations (R*/cone)', gaborConeAbsorptions, eyeMovementSequence, theMosaic.pattern, rParams.temporalParams.sampleTimes, [theMosaic.width theMosaic.height], theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, 'gaborIsomerizations');
+visualizeMosaicResponseSequence(rwObject, 'isomerizations (R*/cone)', gaborConeAbsorptions, eyeMovementSequence, theMosaic.pattern, rParams.temporalParams.sampleTimes, [theMosaic.width theMosaic.height], theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, 'gaborIsomerizations');
 
 %% Plot cone contrasts as a function of time, as a check
 %
