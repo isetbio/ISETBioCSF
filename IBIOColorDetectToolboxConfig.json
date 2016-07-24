@@ -1,0 +1,38 @@
+[
+	{
+		"flavor": "",
+		"hook": "",
+		"name": "UnitTestToolbox",
+		"subfolder": "",
+		"type": "git",
+		"update": "",
+		"url": "https://github.com:isetbio/UnitTestToolbox.git"
+	},
+	{
+		"flavor": "",
+		"hook": "",
+		"name": "RemoteDataToolbox",
+		"subfolder": "",
+		"type": "git",
+		"update": "",
+		"url": "https://github.com:isetbio/RemoteDataToolbox.git"
+	},
+	{
+		"flavor": "",
+		"hook": "run /Users/dhb/Desktop/ProjectPrefs/isetbio/ieSetPreferencesDB",
+		"name": "isetbio",
+		"subfolder": "",
+		"type": "git",
+		"update": "",
+		"url": "https://github.com:isetbio/isetbio.git"
+	},
+	{
+		"flavor": "",
+		"hook": "",
+		"name": "IBIOColorDetectProjectToolbox",
+		"subfolder": "",
+		"type": "local",
+		"update": "",
+		"url": "/Users/Shared/Matlab/Analysis/IBIOColorDetect/toolbox"
+	}
+]

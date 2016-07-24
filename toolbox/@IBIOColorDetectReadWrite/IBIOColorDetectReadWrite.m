@@ -6,10 +6,10 @@ classdef IBIOColorDetectReadWrite < handle
 
     % Public read/write properties
     properties
-        % Parameters of parent output.  The current data should
-        % be associated with this parent.  Can be empty, in which
-        % case the current data is taken to be at the top level
-        parentParams = [];
+        % Cell array list of parameters of parent output tree.  The current data should
+        % be associated with this parent tree.  Can be empty, in which
+        % case the current data is taken to be at the top level.
+        parentParamsList = {};
         
         % Parameters of the current input or output.
         currentParams = [];
@@ -58,10 +58,10 @@ classdef IBIOColorDetectReadWrite < handle
         fileid = getid(obj,name,varagin);
         
         % Get unique identifier for data
-        data = getid(obj,fileid,varargin);
+        data = read(obj,fileid,varargin);
         
         % Get me a scratch directory
-        tempDir = tempdir(obj);
+        tempDir = tempdir(obj,varargin);
     end
     
     % Methods may be called by the subclasses, but are otherwise private 

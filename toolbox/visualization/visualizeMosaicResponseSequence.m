@@ -1,12 +1,10 @@
-function visualizeMosaicResponseSequence(conditionDir, signalName, mosaicResponseSequence, eyeMovementSequence, coneTypes, timeAxis, mosaicSize, mosaicFOV, integrationTimeInSeconds, movieFileName)
-% visualizeMosaicResponseSequence(conditionDir, signalName, mosaicResponseSequence, eyeMovementSequence, coneTypes, timeAxis, mosaicSize, mosaicFOV, movieFileName)
+function visualizeMosaicResponseSequence(rwObject, signalName, mosaicResponseSequence, eyeMovementSequence, coneTypes, timeAxis, mosaicSize, mosaicFOV, integrationTimeInSeconds, movieName)
+% visualizeMosaicResponseSequence(rwObject, signalName, mosaicResponseSequence, eyeMovementSequence, coneTypes, timeAxis, mosaicSize, mosaicFOV, movieName)
 %
 % Visualize the time cource of a mosaic response (and possibly the eye movement path)
 % and generate a video of it.
 %
-%
 %  7/12/16  npc Wrote it.
-%
     
     % Determine ranges for plotting
     mosaicRows = size(mosaicResponseSequence,1);
@@ -15,18 +13,18 @@ function visualizeMosaicResponseSequence(conditionDir, signalName, mosaicRespons
     mosaicYaxis = linspace(-mosaicRows/2, mosaicRows/2, mosaicRows);
     
     % Open video stream
-    videoDir = colorGaborDetectOutputDir(conditionDir,'videos');
-    videoFilename = fullfile(videoDir, sprintf('%s.m4v', movieFileName));
-    writerObj = VideoWriter(videoFilename, 'MPEG-4'); % H264 format
+    %
+    % Write the video into a temporary file.  We will then use the rwObject
+    % to store it nicely once we have it.
+    tempOutputFileName = fullfile(rwObject.tempdir,'tempMovie.m4v');
+    writerObj = VideoWriter(tempOutputFileName, 'MPEG-4'); % H264 format
     writerObj.FrameRate = 15; 
     writerObj.Quality = 100;
     writerObj.open();
     
-    
     hFig = figure(11); clf;
     set(hFig, 'Position', [10 10 1240 445], 'Color', [1 1 1]);
-    
-    
+      
     % Make cone mask to separate submosaic responses
     coneMask = zeros(mosaicRows, mosaicCols, 3);
     for coneType = 1 : 3 % L, M, S
@@ -121,8 +119,10 @@ function visualizeMosaicResponseSequence(conditionDir, signalName, mosaicRespons
         writerObj.writeVideo(getframe(hFig));
     end
     writerObj.close();
+    
+    %% Put the movie where it belongs
+    rwObject.write(movieName,tempOutputFileName,'Type','movieFile');
 end
-
 
 function clut = bipolarLUT(entriesNum, flag)
     if (mod(entriesNum,2) == 0)

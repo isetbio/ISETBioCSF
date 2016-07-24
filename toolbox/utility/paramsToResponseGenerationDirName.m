@@ -1,4 +1,8 @@
-function responseGenerationDirName = paramsToResponseGenerationDirName(rparams)
+function paramsToResponseGenerationDirName = paramsToResponseGenerationDirName(rparams)
+% paramsToResponseGenerationDirName = paramsToResponseGenerationDirName(rparams)
+% 
+% Generate a directory names that captures the basic non-color stimulus
+% parameters, as well as the oi and mosaic parameters used to generate the responses
 
 theGaborName = sprintf('cpd%0.0f_sfv%0.2f_fw%0.3f',...
     rparams.gaborParams.cyclesPerDegree,...

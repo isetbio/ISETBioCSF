@@ -28,11 +28,10 @@ ieInit; clear; close all;
 rParams = t_colorGaborResponseGenerationParams;
 
 %% Set up the rw object for this program
-extraParams.beta = true;
-rwObject = OLColorDetectReadWriteBasic;
-rwObject.parentParams = [];
-rwObject.theParams = rParams;
-rwObject.extraParams = extraParams;
+rwObject = IBIOColorDetectReadWriteBasic;
+rwObject.parentParamsList = {};
+rwObject.currentParams = rParams;
+rwObject.extraParams = [];
 
 %% Plot the Gaussian temporal window, just to make sure it looks right
 gaussianFigure = figure; clf;
