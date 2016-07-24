@@ -42,13 +42,13 @@ gaborParams.gaussianFWHMDegs = 0.7;
 gaborParams.cyclesPerDegree = 2;
 gaborParams.row = 128;
 gaborParams.col = 128;
-gaborParams.contrast = 1;
+colorModulationParams.contrast = 1;
 gaborParams.ang = 0;
 gaborParams.ph = 0;
-gaborParams.coneContrasts = [0.06 -0.06 0]';
-gaborParams.backgroundxyY = [0.27 0.30 49.8]';
+colorModulationParams.coneContrasts = [0.06 -0.06 0]';
+colorModulationParams.backgroundxyY = [0.27 0.30 49.8]';
 gaborParams.leakageLum = 1.0;
-gaborParams.monitorFile = 'CRT-MODEL';
+colorModulationParams.monitorFile = 'CRT-MODEL';
 gaborParams.viewingDistance = 0.75;
 theBaseGaborParams = gaborParams;
 
@@ -124,12 +124,12 @@ for stimFrameIndex = 1:stimulusFramesNum
     fprintf('Computing isomerizations for frame %d of %d\n', stimFrameIndex, stimulusFramesNum);
     
     % Modulate stimulus contrast
-    gaborParams.contrast = theBaseGaborParams.contrast * gaussianTemporalWindow(stimFrameIndex);
+    colorModulationParams.contrast = theBasecolorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex);
     
     % Apply CRT raster modulation
     if (~isempty(rasterModulation))
-        gaborParams.contrast = theBaseGaborParams.contrast * gaussianTemporalWindow(stimFrameIndex) * rasterModulation(stimFrameIndex);
-        gaborParams.backgroundxyY(3) = gaborParams.leakageLum + theBaseGaborParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
+        colorModulationParams.contrast = theBasecolorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex) * rasterModulation(stimFrameIndex);
+        colorModulationParams.backgroundxyY(3) = gaborParams.leakageLum + theBasecolorModulationParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
     end
     
     % Create a scene for the current frame

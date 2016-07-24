@@ -2,6 +2,15 @@
 	{
 		"flavor": "",
 		"hook": "",
+		"name": "BrainardLabToolbox",
+		"subfolder": "",
+		"type": "git",
+		"update": "",
+		"url": "https://github.com:DavidBrainard/BrainardLabToolbox.git"
+	},
+	{
+		"flavor": "",
+		"hook": "",
 		"name": "UnitTestToolbox",
 		"subfolder": "",
 		"type": "git",

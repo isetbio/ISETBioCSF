@@ -1,8 +1,12 @@
-function paramsToResponseGenerationDirName = paramsToResponseGenerationDirName(rparams)
-% paramsToResponseGenerationDirName = paramsToResponseGenerationDirName(rparams)
+function dirname = paramsToResponseGenerationDirName(obj,rparams)
+% pdirname = paramsToResponseGenerationDirName(obj,rparams)
 % 
 % Generate a directory names that captures the basic non-color stimulus
 % parameters, as well as the oi and mosaic parameters used to generate the responses
+
+if (~strcmp(rparams.type,'ResponseGeneration'))
+    error('Incorrect parameter type passed');
+end
 
 theGaborName = sprintf('cpd%0.0f_sfv%0.2f_fw%0.3f',...
     rparams.gaborParams.cyclesPerDegree,...
@@ -27,4 +31,4 @@ theMosaicName = sprintf('LMS%0.2f_%0.2f_%0.2f_mfv%0.2f',...
     rparams.mosaicParams.LMSRatio(1),rparams.mosaicParams.LMSRatio(2),rparams.mosaicParams.LMSRatio(3), ...
     rparams.mosaicParams.fieldOfViewDegs);
 
-responseGenerationDirName = [theGaborName '_' theTemporalName '_' theOIName '_' theMosaicName];
+dirname = [theGaborName '_' theTemporalName '_' theOIName '_' theMosaicName];

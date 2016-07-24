@@ -30,8 +30,7 @@ rParams = t_colorGaborResponseGenerationParams;
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 rwObject.parentParamsList = {};
-rwObject.currentParams = rParams;
-rwObject.extraParams = [];
+rwObject.currentParamsList = {rParams, rParams.colorModulationParams};
 
 %% Plot the Gaussian temporal window, just to make sure it looks right
 gaussianFigure = figure; clf;
@@ -43,11 +42,17 @@ title('Stimulus Temporal Window');
 %% Loop over time and build a cell array of scenes
 gaborScene = cell(rParams.temporalParams.nSampleTimes,1);
 for ii = 1:rParams.temporalParams.nSampleTimes
-    % Make the sence for this time
-    rParams.gaborParams.contrast = rParams.temporalParams.gaussianTemporalWindow(ii);
-    fprintf('Computing scene %d of %d, time %0.3f, windowVal %0.3f\n',ii,rParams.temporalParams.nSampleTimes,rParams.temporalParams.sampleTimes(ii),rParams.temporalParams.gaussianTemporalWindow(ii));
-    gaborScene{ii} = colorGaborSceneCreate(rParams.gaborParams);
+    % Make the scene for this time
+    rParamsTemp = rParams;
+    rParamsTemp.colorModulationParams.contrast = rParams.colorModulationParams.contrast*rParams.temporalParams.gaussianTemporalWindow(ii);
+    fprintf('Computing scene %d of %d, time %0.3f, windowVal %0.3f\n',ii,rParamsTemp.temporalParams.nSampleTimes,rParamsTemp.temporalParams.sampleTimes(ii),rParamsTemp.temporalParams.gaussianTemporalWindow(ii));
+    gaborScene{ii} = colorGaborSceneCreate(rParamsTemp.gaborParams,rParamsTemp.colorModulationParams);
 end
+clearvars('rParamsTemp');
+
+% Make a movie of the stimulus sequence
+showLuminanceMap = false;
+visualizeSceneOrOpticalImageSequence(rwObject, 'scene', gaborScene, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborStimulusMovie');
 
 %% Create the OI object we'll use to compute the retinal images from the scenes
 %
@@ -60,9 +65,12 @@ for ii = 1:rParams.temporalParams.nSampleTimes
     theOI{ii} = oiCompute(theBaseOI,gaborScene{ii});
 end
 
+% Make a movie of the optical image sequence
+showLuminanceMap = false;
+visualizeSceneOrOpticalImageSequence(rwObject,'optical image', theOI, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborOpticalImageMovie');
+
 %% Create the coneMosaic object we'll use to compute cone respones
 theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
-
 for ii = 1:rParams.temporalParams.nSampleTimes      
     % Compute mosaic response for each stimulus frame
     % For a real calculation, we would save these so that we could use them
@@ -73,15 +81,7 @@ for ii = 1:rParams.temporalParams.nSampleTimes
     gaborConeAbsorptions(:,:,ii) = theMosaic.compute(theOI{ii},'currentFlag',false);
 end
 
-%% Make a movie of the stimulus sequence
-showLuminanceMap = false;
-visualizeSceneOrOpticalImageSequence(rwObject, 'scene', gaborScene, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborStimulusMovie');
-
-%% Make a movie of the stimulus sequence
-showLuminanceMap = false;
-visualizeSceneOrOpticalImageSequence(rwObject,'optical image', theOI, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborOpticalImageMovie');
-
-%% Make a movie of the isomerizations
+% Make a movie of the isomerizations
 eyeMovementSequence = [];
 visualizeMosaicResponseSequence(rwObject, 'isomerizations (R*/cone)', gaborConeAbsorptions, eyeMovementSequence, theMosaic.pattern, rParams.temporalParams.sampleTimes, [theMosaic.width theMosaic.height], theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, 'gaborIsomerizations');
 

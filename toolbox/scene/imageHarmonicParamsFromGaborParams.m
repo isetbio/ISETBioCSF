@@ -1,13 +1,17 @@
-function imageHarmonicParams = imageHarmonicParamsFromGaborParams(gaborParams)
-% imageHarmonicParams = imageHarmonicParamsFromGaborParams(gaborParams)
+function imageHarmonicParams = imageHarmonicParamsFromGaborParams(gaborParams,colorModulationParams)
+% imageHarmonicParams = imageHarmonicParamsFromGaborParams(gaborParams,colorModulationParams)
 %
 % The imageHarmonic function in isetbio takes a parameters structure that
 % is a little different from how we'd like to specify scene parameters for
 % this project. This function produces a structure to be passed to
-% imageHarmonic based on the gaborParams structure we are using here.
+% imageHarmonic based on the gaborParams and colorModulationParams structures
+% we are using here.
 
 % Set up base parameters
 imageHarmonicParams = gaborParams;
+
+% Pull contrast into the structure
+imageHarmonicParams.contrast = colorModulationParams.contrast;
 
 % Computed parameters.  These convert numbers to a form used by underlying
 % routines.

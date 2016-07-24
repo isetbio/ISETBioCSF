@@ -82,9 +82,9 @@ gaborParams.row = 128;
 gaborParams.col = 128;
 gaborParams.ang = 0;
 gaborParams.ph = 0;
-gaborParams.backgroundxyY = [0.27 0.30 49.8]';
+colorModulationParams.backgroundxyY = [0.27 0.30 49.8]';
 gaborParams.leakageLum = 2.0;
-gaborParams.monitorFile = 'CRT-MODEL';
+colorModulationParams.monitorFile = 'CRT-MODEL';
 gaborParams.viewingDistance = 0.75;
 
 % Temporal modulation and stimulus sampling parameters.
@@ -160,12 +160,12 @@ else
 end
 %% Generate data for the no stimulus condition
 tic
-gaborParams.coneContrasts = [0 0 0]';
-gaborParams.contrast = 0;
-stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', gaborParams.coneContrasts(1), gaborParams.coneContrasts(2), gaborParams.coneContrasts(3), gaborParams.contrast);
+colorModulationParams.coneContrasts = [0 0 0]';
+colorModulationParams.contrast = 0;
+stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', colorModulationParams.coneContrasts(1), colorModulationParams.coneContrasts(2), colorModulationParams.coneContrasts(3), colorModulationParams.contrast);
 theNoStimData = struct(...
-                 'testContrast', gaborParams.contrast, ...
-            'testConeContrasts', gaborParams.coneContrasts, ...
+                 'testContrast', colorModulationParams.contrast, ...
+            'testConeContrasts', colorModulationParams.coneContrasts, ...
                 'stimulusLabel', stimulusLabel, ...
         'responseInstanceArray', colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, trialsNum, simulationTimeStep, ...
                                          gaborParams, temporalParams, theOI, theMosaic));

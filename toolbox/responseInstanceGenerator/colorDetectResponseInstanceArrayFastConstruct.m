@@ -36,12 +36,12 @@ for stimFrameIndex = 1:stimulusFramesNum
     waitbar(0.5*stimFrameIndex/stimulusFramesNum, progressHandle, sprintf('stimulus label: %s\ncomputing optical image for frame #%d/%d', stimulusLabel, stimFrameIndex, stimulusFramesNum));
     
     % Modulate stimulus contrast
-    gaborParams.contrast = theBaseGaborParams.contrast * gaussianTemporalWindow(stimFrameIndex);
+    colorModulationParams.contrast = theBasecolorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex);
     
     % Apply CRT raster modulation
     if (~isempty(rasterModulation))
-        gaborParams.contrast = theBaseGaborParams.contrast * gaussianTemporalWindow(stimFrameIndex) * rasterModulation(stimFrameIndex);
-        gaborParams.backgroundxyY(3) = gaborParams.leakageLum + theBaseGaborParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
+        colorModulationParams.contrast = theBasecolorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex) * rasterModulation(stimFrameIndex);
+        colorModulationParams.backgroundxyY(3) = gaborParams.leakageLum + theBasecolorModulationParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
     end
     
     % Create a scene for the current frame

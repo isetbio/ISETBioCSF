@@ -1,30 +1,19 @@
-function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(gaborParams,gamutCheckFlag)
-% [gaborScene,gamutScaleFactor] = colorGaborSceneCreate(gaborParams,[gamutCheckFlag])
+function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(gaborParams,colorModulationParams,gamutCheckFlag)
+% [gaborScene,gamutScaleFactor] = colorGaborSceneCreate(gaborParams,colorModulationParams,[gamutCheckFlag])
 % 
 % Creates a colored Gabor IBIO scene. The scene will produce a specified
 % set of L, M, and S contrasts on a specific monitor.
 %
-
-%
 % Inputs:
 %   gaborParams     -  A struct that specifies the parameters for the Gabor to generate.
 %                      See t_colorGaborResponseGenerationParams
-%
+%   colorModulationParams -  A struct that specifies the parameters for the color modulation.
+%                      See t_colorGaborResponseGenerationParams
 %   gamutCheckFlag  -  If set, the routine returns the scale factor required to bring
 %                      the cone contrasts into the gamut of the monitor.  This
 %                      can be useful for setting up simulated experimental conditions.  In this
 %                      case, the returned scene is empty.  When gamutCheckFlag is false
 %                      (default), the returned scale factor is 1.
-%
-% Example:
-%   p.fieldOfViewDegs = 4; p.cyclesPerDegree = 2; p.gaussianFWHMDegs = 1.5;
-%   p.row = 128; p.col = 128; p.contrast = 1; p.ang = 0; p.ph = 0;
-%   p.coneContrasts = [0.05 -0.05 0]';
-%   p.backgroundxyY = [0.27 0.30 49.8]';
-%   p.monitorFile = 'CRT-HP';
-%   p.viewingDistance = 1.82;
-%   gaborScene = colorGaborSceneCreate(p);
-%   vcAddAndSelectObject(gaborScene);sceneWindow;
 %
 % See also t_colorGaborResponseGenerationParams, t_colorGaborScene, imageHarmonic
 %
@@ -32,14 +21,14 @@ function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(gaborParams,gamu
 % 7/7/16 npc  added viewing distance param
 
 %% Optional arg for when we are maximizing contrast
-if (nargin < 2 || isempty(gamutCheckFlag))
+if (nargin < 3 || isempty(gamutCheckFlag))
     gamutCheckFlag = false;
 end
 
 % We also want to make sure that the contrast and background vectors are
 % both column vectors.
-coneContrast = gaborParams.coneContrasts(:);
-backgroundxyY = gaborParams.backgroundxyY(:);
+coneContrast = colorModulationParams.coneContrasts(:);
+backgroundxyY = colorModulationParams.backgroundxyY(:);
 
 %% Define parameters of a gabor pattern
 %
@@ -49,7 +38,7 @@ fieldOfViewDegs = gaborParams.fieldOfViewDegs;
 %% Make the gabor pattern and have a look
 %
 % We can see it as a grayscale image
-gaborPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(gaborParams));
+gaborPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(gaborParams,colorModulationParams));
 
 %% Convert the Gabor pattern to a modulation around the mean
 %
@@ -118,7 +107,7 @@ end
 % chromatic aberration, but given the general similarity of monitor channel
 % spectra we expect these differences to be small.  We could check this by
 % doing the calculations with different monitor descriptions.
-display = displayCreate(gaborParams.monitorFile);
+display = displayCreate(colorModulationParams.monitorFile);
 
 % Set the viewing distance
 display = displaySet(display,'viewingdistance', gaborParams.viewingDistance);

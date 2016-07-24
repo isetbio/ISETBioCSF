@@ -43,7 +43,7 @@ classdef IBIOColorDetectReadWriteBasic < IBIOColorDetectReadWrite
     
     % Methods may be called by the subclasses, but are otherwise private 
     methods (Access = protected)
-
+        dirname = paramsToResponseGenerationDirName(obj,rparams);        
     end
     
     % Methods that are totally private (subclasses cannot call these)

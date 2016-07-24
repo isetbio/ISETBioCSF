@@ -3,7 +3,6 @@ function IBIOColorDetectProjectConfig
 %
 % Configure things for working on the IBIOColorDetect project.
 
-
 %% Set up ToolboxToolbox prefs
 setpref('ToolboxToolbox', 'toolboxRoot','/Users/Shared/Matlab/Toolboxes');
 

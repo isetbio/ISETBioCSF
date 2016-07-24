@@ -9,34 +9,38 @@ function params = t_colorGaborRespnseGenerationParams(varargin)
 %% Type field for parameters
 params.type = 'ResponseGeneration';
  
-%% Define parameters of a color gabor pattern
+%% Define parameters of a spatial gabor pattern
 %
 %   fieldOfViewDegs - Field of view in degrees, horizontal direction.
 %   cyclesPerDegree - Grating cycles per degree.
 %   gaussianFWHMDegs - Full width at half max of spatial Gaussian window.
 %   row - Row dimension of scene on monitor
 %   col - Col dimension of scene on monitor
-%   contrast - Contrast specfied relative to coneContrasts.
-%              Can be a vector of contrasts.
 %   ang - Angle of grating, in radians
 %   ph  - Phase of grating, in radians relative to image center
-%   coneContrasts - Color direction of grating in cone contrast space
-%                 - Can be a 3 by N matrix of contrast directions.
-%   backgroundxYY - Colorimetric specification of background, in CIE xyY (cd/m2)
-%   monitorFile - Isetbio display description of monitor on which grating is shown.
 %   viewingDistance - Viewing distance of observer from monitor in meters.
+params.gaborParams.type = 'Gabor';
 params.gaborParams.fieldOfViewDegs = 4;
 params.gaborParams.cyclesPerDegree = 2;
 params.gaborParams.gaussianFWHMDegs = 1.5;
 params.gaborParams.row = 128;
 params.gaborParams.col = 128;
-params.gaborParams.contrast = 1;
 params.gaborParams.ang = 0;
 params.gaborParams.ph = 0;
-params.gaborParams.coneContrasts = [0.05 -0.05 0]';
-params.gaborParams.backgroundxyY = [0.27 0.30 49.8]';
-params.gaborParams.monitorFile = 'CRT-MODEL';
 params.gaborParams.viewingDistance = 0.75;
+
+%% Define color modulation parameters
+%   contrast - Contrast specfied relative to coneContrasts.
+%              Can be a vector of contrasts.
+%   coneContrasts - Color direction of grating in cone contrast space
+%                 - Can be a 3 by N matrix of contrast directions.
+%   backgroundxYY - Colorimetric specification of background, in CIE xyY (cd/m2)
+%   monitorFile - Isetbio display description of monitor on which grating is shown.
+params.colorModulationParams.type = 'ColorModulation';
+params.colorModulationParams.contrast = 1;
+params.colorModulationParams.coneContrasts = [0.05 -0.05 0]';
+params.colorModulationParams.backgroundxyY = [0.27 0.30 49.8]';
+params.colorModulationParams.monitorFile = 'CRT-MODEL';
 
 %% Parameters related to temporal properties of stimulus and response
 %
@@ -47,6 +51,7 @@ params.gaborParams.viewingDistance = 0.75;
 %   secondsToInclude - Portion of response movie to include for classification.
 %   secondsToIncludeOffset - Temporal offset of included window.
 %   eyeDoNotMove - Boolean, set to true for perfect fixation.
+params.temporalParams.type = 'TemporalParams';
 params.temporalParams.frameRate = 60;
 params.temporalParams.windowTauInSeconds = 0.165;
 params.temporalParams.stimulusDurationInSeconds = 5*params.temporalParams.windowTauInSeconds;
@@ -65,6 +70,7 @@ params.temporalParams.nSampleTimes = length(params.temporalParams.sampleTimes);
 %  offAxis - Boolean, compute falloff of intensity with position
 %  blur - Boolean, incorporate optical blurring
 %  lens - Boolean, incorporate filtering by lens
+params.oiParams.type = 'OpticsParams';
 params.oiParams.fieldOfViewDegs = params.gaborParams.fieldOfViewDegs;
 params.oiParams.offAxis = false;
 params.oiParams.blur = true;
@@ -79,6 +85,7 @@ params.oiParams.lens = true;
 %  integrationTimeInSeconds - Cone integration time.  Generally the same as time step
 %  isomerizationNoise - Boolean, add isomerization Poisson noise?
 %  osModel - What model to use to compute photocurrent
+params.mosaicParams.type = 'MosaicParams';
 params.mosaicParams.fieldOfViewDegs = params.gaborParams.fieldOfViewDegs;
 params.mosaicParams.macular = true;
 params.mosaicParams.LMSRatio = [0.6 0.3 0.1];
@@ -88,6 +95,7 @@ params.mosaicParams.isomerizationNoise = false;
 params.mosaicParams.osModel = 'Linear';
 
 %% Parameters for plots
+params.plotParams.type = 'PlotParams';
 params.plotParams.labelFontSize = 12;
 params.plotParams.titleFontSize = 14;
 params.plotParams.axisFontSize = 8;

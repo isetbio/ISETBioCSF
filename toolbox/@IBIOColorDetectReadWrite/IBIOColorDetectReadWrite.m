@@ -11,8 +11,8 @@ classdef IBIOColorDetectReadWrite < handle
         % case the current data is taken to be at the top level.
         parentParamsList = {};
         
-        % Parameters of the current input or output.
-        currentParams = [];
+        % Cell array list of parameters of the current input or output.
+        currentParamsList = [];
         
         % Extra information that we want to store, expressed as a struct.
         extraParams = [];
@@ -66,12 +66,10 @@ classdef IBIOColorDetectReadWrite < handle
     
     % Methods may be called by the subclasses, but are otherwise private 
     methods (Access = protected)
-
     end
     
     % Methods that are totally private (subclasses cannot call these)
     methods (Access = private)
-
     end
     
 end
