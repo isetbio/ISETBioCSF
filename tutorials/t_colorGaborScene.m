@@ -219,7 +219,9 @@ rwObject.write('colorGaborScene',h,'Type','figure');
 gaborOI = oiCreate('human');
 gaborOI = oiSet(gaborOI,'h fov',rParams.gaborParams.fieldOfViewDegs);
 
-% Turn of default off axis intensity falloff calculation
+%% Compute blurred optical image
+%
+% Turn of default off axis intensity falloff calculation first.
 optics = oiGet(gaborOI,'optics');
 optics = opticsSet(optics,'off axis method','skip');
 gaborOI = oiSet(gaborOI,'optics',optics);
@@ -271,7 +273,7 @@ isomerizations = gaborConeMosaic.compute(gaborOI,'currentFlag',false);
 gaborConeMosaic.window;
 
 % And must make a plot in a figure
-vcNewGraphWin; h = gaborConeMosaic.plot('cone mosaic');
+vcNewGraphWin; [~,h] = gaborConeMosaic.plot('cone mosaic');
 rwObject.write('colorGaborMosaic',h,'Type','figure');
 vcNewGraphWin; h = gaborConeMosaic.plot('mean absorptions');
 rwObject.write('colorGaborIsomerizations',h,'Type','figure');

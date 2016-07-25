@@ -1,4 +1,5 @@
-% t_colorGaborConeAbsorptionsMovie
+function t_colorGaborConeAbsorptionsMovie(rParams)
+% t_colorGaborConeAbsorptionsMovie(rParams)
 %
 % Create scene sequence for a Gaussian windowed color gabor and then from
 % it generate an optical image sequence and finally a cone reponse
@@ -25,7 +26,9 @@
 ieInit; clear; close all;
 
 %% Get the parameters we need
-rParams = t_colorGaborResponseGenerationParams;
+if (nargin < 1 | isempty(rParams))
+    rParams = t_colorGaborResponseGenerationParams;
+end
 
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
