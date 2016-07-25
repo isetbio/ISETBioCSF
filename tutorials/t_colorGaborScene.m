@@ -2,7 +2,7 @@ function validationData = t_colorGaborScene(rParams)
 % validationData = t_colorGaborScene(rParams)
 %
 % Illustrates the basic steps required to calculate cone isomerizations
-% from a static color Gabor modulation.
+% for a static color Gabor modulation.
 %
 % Create a scene with a color gabor patch with color directions
 % specified as L, M, and S cone contrasts.  The scene will produce
@@ -13,13 +13,16 @@ function validationData = t_colorGaborScene(rParams)
 % If parameters structure is passed, the routine will use the defaults
 % provided by
 %   t_colorGaborRespnseGenerationParams
-% That tutorial also documents what the relavant parameters are
+% That tutorial also documents what the relavant parameters are.
 %
 % The code illustrated here is encapsulated into function
 %   colorGaborSceneCreate.
 %
 % The returned validation structure allows this routine to be called from a
 % validation script driven by the UnitTest toolbox.
+%
+% The tutorial produces output according to a scheme controlled by the
+% specified IBIOColorDetect rwObject.
 %
 % See also:
 %   t_colorGaborRespnseGenerationParams

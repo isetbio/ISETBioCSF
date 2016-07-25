@@ -20,3 +20,5 @@ gaussianStdDegs = FWHMToStd(gaborParams.gaussianFWHMDegs);
 gaussianStdImageFraction = gaussianStdDegs/gaborParams.fieldOfViewDegs;
 imageHarmonicParams.freq = cyclesPerImage;
 imageHarmonicParams.GaborFlag = gaussianStdImageFraction;
+
+end

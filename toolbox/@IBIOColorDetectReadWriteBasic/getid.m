@@ -77,14 +77,10 @@ end
 switch (p.Results.Type)
     case 'mat'
         theTypeDir = fullfile(theCurrentDir,'matfiles');
-        fileid = fullfile(theTypeDir,[name '.mat']);
     case 'figure'
         theTypeDir = fullfile(theCurrentDir,'figures');
-        fileid = fullfile(theTypeDir,[name '.' p.Results.FigureType]);
-
     case {'movie','movieFile'}
         theTypeDir = fullfile(theCurrentDir,'movies');
-        fileid = fullfile(theTypeDir,[name '.' p.Results.MovieType]);
 end
 if (~exist(theTypeDir,'dir'))
     mkdir(theTypeDir);
@@ -96,7 +92,14 @@ if (~exist(theDir,'dir'))
     mkdir(theDir);
 end
 
-%% Return id
-fileid = theDir;
+%% Add in the filename
+switch (p.Results.Type)
+    case 'mat'
+        fileid = fullfile(theDir,[name '.mat']);
+    case 'figure'
+        fileid = fullfile(theDir,[name '.' p.Results.FigureType]);
+    case {'movie','movieFile'}
+        fileid = fullfile(theDir,[name '.' p.Results.MovieType]);
+end
 
 end
