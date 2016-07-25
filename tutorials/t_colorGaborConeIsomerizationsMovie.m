@@ -20,7 +20,7 @@ function validationData = t_colorGaborConeIsomerizationsMovie(rParams)
 %
 % See also:
 %   t_colorGaborRespnseGenerationParams
-%	t_colorGaborConeIsomerizationsMovie
+%	t_coneGaborConeCurrentEyeMovementsMovie
 %   colorGaborSceneCreate
 %   colorGaborSceneSequenceCreate
 %

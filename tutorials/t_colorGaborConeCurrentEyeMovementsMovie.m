@@ -1,4 +1,5 @@
-%% t_coneGaborConeCurrentEyeMovementsMovie
+function validationData = t_coneGaborConeCurrentEyeMovementsMovie(rParams)
+% validationData = t_coneGaborConeCurrentEyeMovementsMovie(rParams)
 %
 % Show how to generate a movie with the cone absoprtions and photocurrent
 % to a stimulus, with eye movements and optional CRT raster effects.
@@ -9,131 +10,88 @@
 % whose use is demonstrated in the tutorial
 %   t_colorGaborConeCurrentEyeMovementsResponseInstances.
 %
-% The output goes into a place determined by
-%   colorGaborDetectOutputDir
-% which itself checks for a preference set by
-%   ISETColorDetectPreferencesTemplate
-% which you may want to edit before running this and other scripts that
-% produce substantial output.  The output within the main output directory
-% is sorted by directories whose names are computed from parameters.  This
-% naming is done in routine
-%   paramsToDirName.
+% The returned validation structure allows this routine to be called from a
+% validation script driven by the UnitTest toolbox.
+%
+% The tutorial produces output according to a scheme controlled by the
+% specified IBIOColorDetect rwObject.
+%
+% See also:
+%   t_colorGaborRespnseGenerationParams
+%   t_colorGaborScene
+%	t_colorGaborConeIsomerizationsMovie
+%   t_colorGaborConeCurrentEyeMovementsResponseInstances
+%   colorGaborSceneCreate 
+%   colorDetectOpticalImageConstruct
+%   colorDetectConeMosaicConstruct
+%   colorDetectResponseInstanceArrayConstruct
+%   colorDetectResponseInstanceArrayFastConstruct
 %
 %  7/9/16  npc Wrote it.
 
 %% Initialize
 ieInit; clear; close all;
 
-% Add project toolbox to Matlab path
-AddToMatlabPathDynamically(fullfile(fileparts(which(mfilename)),'../toolbox')); 
+%% Fix random number generator so we can validate output exactly
+rng(1);
 
-%% Define parameters of simulation  
+%% Get the parameters we need
 %
-% The time step at which to compute eyeMovements and osResponses
-simulationTimeStep = 5/1000;
-
-% Stimulus (gabor) params
-% 
-% See t_colorGaborScene for what these means.  One additional
-% parameter here is leakageLum, which is the luminance of the 
-% display device when there is zero input.
-gaborParams.fieldOfViewDegs = 1.5;
-gaborParams.gaussianFWHMDegs = 0.7;
-gaborParams.cyclesPerDegree = 2;
-gaborParams.row = 128;
-gaborParams.col = 128;
-colorModulationParams.contrast = 1;
-gaborParams.ang = 0;
-gaborParams.ph = 0;
-colorModulationParams.coneContrasts = [0.06 -0.06 0]';
-colorModulationParams.backgroundxyY = [0.27 0.30 49.8]';
-gaborParams.leakageLum = 1.0;
-colorModulationParams.monitorFile = 'CRT-MODEL';
-gaborParams.viewingDistance = 0.75;
-theBaseGaborParams = gaborParams;
-
-% Temporal modulation and stimulus sampling parameters
-frameRate = 60;
-temporalParams.windowTauInSeconds = 0.165;
-temporalParams.stimulusDurationInSeconds = 5*temporalParams.windowTauInSeconds;
-temporalParams.stimulusSamplingIntervalInSeconds = 1/frameRate;
-
-% Optionally, have zero amplitude eye movements
-temporalParams.eyesDoNotMove = false; 
-
-% These are not used in this tutorial, but we need them to set the output
-% filename.
-temporalParams.secondsToInclude = 0.050;
-temporalParams.secondsToIncludeOffset = 0;
-
-% Optional CRT raster effects.
-% 
-% The underlying routine that generates temporal samples 
-% can simulate the fact that CRTs produce an impulse during
-% each frame, although this simulation works on a frame basis
-% not on a pixel-by-pixel basis.  
-% 
-% The parameer rasterSamples is the number
-% of raster samples generated per CRT refresh
-% interval.
-temporalParams.addCRTrasterEffect = false;
-temporalParams.rasterSamples = 5; 
-if (temporalParams.addCRTrasterEffect)
-    simulationTimeStep = simulationTimeStep/temporalParams.rasterSamples;
+% t_colorGaborResponseGenerationParams returns a hierarchical struct of
+% parameters used by a number of tutorials and functions in this project.
+if (nargin < 1 | isempty(rParams))
+    rParams = t_colorGaborResponseGenerationParams;
 end
 
-% Optical image parameters
-oiParams.fieldOfViewDegs = gaborParams.fieldOfViewDegs;
-oiParams.offAxis = false;
-oiParams.blur = false;
-oiParams.lens = true;
+% Override some of the defaults
+rParams.mosaicParams.isomerizationNoise = true;
+rParams.mosaicParams.osNoise = true;
+rParams.mosaicParams.osModel = 'Linear';
 
-% Cone mosaic parameters
-mosaicParams.fieldOfViewDegs = gaborParams.fieldOfViewDegs;
-mosaicParams.macular = true;
-mosaicParams.LMSRatio = [0.6 0.3 0.1];
-mosaicParams.timeStepInSeconds = simulationTimeStep;
-mosaicParams.integrationTimeInSeconds = mosaicParams.timeStepInSeconds;
-mosaicParams.isomerizationNoise = true;
-mosaicParams.osNoise = true;
-mosaicParams.osModel = 'Linear';
+%% Set up the rw object for this program
+rwObject = IBIOColorDetectReadWriteBasic;
+rwObject.writingProgram = mfilename;
+rwObject.parentParamsList = {};
+rwObject.currentParamsList = {rParams,rParams.colorModulationParams};
 
 %% Create the optics
-theOI = colorDetectOpticalImageConstruct(oiParams);
+theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
 
 %% Create the cone mosaic
-theMosaic = colorDetectConeMosaicConstruct(mosaicParams);
+theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
 
 %% Create stimulus temporal window
-[stimulusSampleTimes, gaussianTemporalWindow, rasterModulation] = gaussianTemporalWindowCreate(temporalParams);
-if (temporalParams.addCRTrasterEffect)
-    temporalParams.stimulusSamplingIntervalInSeconds = stimulusSampleTimes(2)-stimulusSampleTimes(1);
+[stimulusSampleTimes, gaussianTemporalWindow, rasterModulation] = gaussianTemporalWindowCreate(rParams.temporalParams);
+if (rParams.temporalParams.addCRTrasterEffect)
+    rParams.temporalParams.stimulusSamplingIntervalInSeconds = stimulusSampleTimes(2)-stimulusSampleTimes(1);
 end
 stimulusFramesNum = length(stimulusSampleTimes);
 
 %% Generate eye movements for the entire stimulus duration
-eyeMovementsPerStimFrame = temporalParams.stimulusSamplingIntervalInSeconds/simulationTimeStep;
+eyeMovementsPerStimFrame = rParams.temporalParams.stimulusSamplingIntervalInSeconds/rParams.temporalParams.simulationTimeStepSecs;
 eyeMovementsTotalNum = round(eyeMovementsPerStimFrame*stimulusFramesNum);
 eyeMovementSequence = theMosaic.emGenSequence(eyeMovementsTotalNum);
-if (isfield(temporalParams,'eyesDoNotMove') && (temporalParams.eyesDoNotMove))
+if (isfield(rParams.temporalParams,'eyesDoNotMove') && (rParams.temporalParams.eyesDoNotMove))
     eyeMovementSequence = eyeMovementSequence * 0;
 end
         
 %% Loop over our stimulus frames
+baseColorModulationParams = rParams.colorModulationParams;
 for stimFrameIndex = 1:stimulusFramesNum
     fprintf('Computing isomerizations for frame %d of %d\n', stimFrameIndex, stimulusFramesNum);
     
     % Modulate stimulus contrast
-    colorModulationParams.contrast = theBasecolorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex);
+    colorModulationParamsTemp = baseColorModulationParams;
+    colorModulationParamsTemp.contrast = baseColorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex);
     
     % Apply CRT raster modulation
     if (~isempty(rasterModulation))
-        colorModulationParams.contrast = theBasecolorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex) * rasterModulation(stimFrameIndex);
-        colorModulationParams.backgroundxyY(3) = gaborParams.leakageLum + theBasecolorModulationParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
+        colorModulationParamsTemp.contrast = theBasecolorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex) * rasterModulation(stimFrameIndex);
+        colorModulationParamsTemp.backgroundxyY(3) = gaborParams.leakageLum + theBasecolorModulationParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
     end
     
     % Create a scene for the current frame
-    theScene = colorGaborSceneCreate(gaborParams);
+    theScene = colorGaborSceneCreate(rParams.gaborParams,colorModulationParamsTemp);
     
     % Compute the optical image
     theOI = oiCompute(theOI, theScene);
@@ -143,8 +101,7 @@ for stimFrameIndex = 1:stimulusFramesNum
     theMosaic.emPositions = eyeMovementSequence(eyeMovementIndices,:);
     
     % Compute isomerizations for the current frame
-    frameIsomerizationSequence = theMosaic.compute(theOI,'currentFlag',false);
-    
+    frameIsomerizationSequence = theMosaic.compute(theOI,'currentFlag',false);  
     if (stimFrameIndex==1)
         coneIsomerizationSequence = frameIsomerizationSequence;
     else
@@ -156,18 +113,22 @@ end
 fprintf('Computing photocurrent sequence ...\n');
 coneIsomerizationRate = coneIsomerizationSequence/theMosaic.integrationTime;
 photocurrentSequence = theMosaic.os.compute(coneIsomerizationRate,theMosaic.pattern);
-timeAxis = (1:size(photocurrentSequence,3))*mosaicParams.timeStepInSeconds;
+timeAxis = (1:size(photocurrentSequence,3))*rParams.mosaicParams.timeStepInSeconds;
 timeAxis = timeAxis - (timeAxis(end)-timeAxis(1))/2;
 
-% Visualize and render video of the isomerizations
-conditionDir = paramsToDirName(gaborParams,temporalParams,oiParams,mosaicParams,[]);
-visualizeMosaicResponseSequence(conditionDir, 'isomerizations (R*/cone)', coneIsomerizationSequence, eyeMovementSequence, ...
+%% Visualize and render video of the isomerizations
+visualizeMosaicResponseSequence(rwObject, 'isomerizations (R*/cone)', coneIsomerizationSequence, eyeMovementSequence, ...
                                 theMosaic.pattern, timeAxis, [theMosaic.width theMosaic.height], ...
-                                theMosaic.fov, mosaicParams.integrationTimeInSeconds, ...
+                                theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, ...
                                 'gaborIsomerizationsWithEyeMovements');
 
-% Visualize and render video of the photocurrents
-visualizeMosaicResponseSequence(conditionDir, 'photocurrent (pAmps)', photocurrentSequence, eyeMovementSequence, ...
+%% Visualize and render video of the photocurrents
+visualizeMosaicResponseSequence(rwObject, 'photocurrent (pAmps)', photocurrentSequence, eyeMovementSequence, ...
                                 theMosaic.pattern, timeAxis, [theMosaic.width theMosaic.height], ...
-                                theMosaic.fov, mosaicParams.integrationTimeInSeconds, ...
+                                theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, ...
                                 'gaborPhotocurrentsWithEyeMovements');
+
+%% Return validation if desired                           
+if (nargout > 0)
+    validationData = [];
+end

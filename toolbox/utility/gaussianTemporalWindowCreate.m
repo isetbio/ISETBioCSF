@@ -43,9 +43,6 @@ if (isfield(temporalParams, 'addCRTrasterEffect')) && (temporalParams.addCRTrast
     end
     gaussianTemporalWindow = tmp;
     sampleTimes = linspace(sampleTimes(1), sampleTimes(end), numel(gaussianTemporalWindow));
-%     figure(2);
-%     plot(sampleTimes, gaussianTemporalWindow);
-%     title('raster modulation');
 else
     rasterModulation = [];
 end

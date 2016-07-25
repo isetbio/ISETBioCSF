@@ -33,7 +33,7 @@ params.gaborParams.viewingDistance = 0.75;
 %   contrast - Contrast specfied relative to coneContrasts.
 %              Can be a vector of contrasts.
 %   coneContrasts - Color direction of grating in cone contrast space
-%                 - Can be a 3 by N matrix of contrast directions.
+%                   Can be a 3 by N matrix of contrast directions.
 %   backgroundxYY - Colorimetric specification of background, in CIE xyY (cd/m2)
 %   monitorFile - Isetbio display description of monitor on which grating is shown.
 params.colorModulationParams.type = 'ColorModulation';
@@ -51,6 +51,7 @@ params.colorModulationParams.monitorFile = 'CRT-MODEL';
 %   secondsToInclude - Portion of response movie to include for classification.
 %   secondsToIncludeOffset - Temporal offset of included window.
 %   eyeDoNotMove - Boolean, set to true for perfect fixation.
+%   simulationTimeStepSecs - Time step used in temporal simulation
 params.temporalParams.type = 'TemporalParams';
 params.temporalParams.frameRate = 60;
 params.temporalParams.windowTauInSeconds = 0.165;
@@ -59,10 +60,23 @@ params.temporalParams.stimulusSamplingIntervalInSeconds = 1/params.temporalParam
 params.temporalParams.secondsToInclude = 0.050;
 params.temporalParams.secondsToIncludeOffset = 0;
 params.temporalParams.eyesDoNotMove = false; 
+params.temporalParams.simulationTimeStepSecs = 5/1000; 
+
+% Optional CRT raster effects.
+% 
+% Some of our routines understand these.
+%    addCRTrasterEffect  - Incorporate a simple model of CRT raster timing.
+%    rasterSamples - Temporal samples per simulation time step.
+%                    This is used to speed up the simulation.
+params.temporalParams.addCRTrasterEffect = false;
+params.temporalParams.rasterSamples = 5; 
 
 % Some computed temporal parameters
 [params.temporalParams.sampleTimes,params.temporalParams.gaussianTemporalWindow] = gaussianTemporalWindowCreate(params.temporalParams);
 params.temporalParams.nSampleTimes = length(params.temporalParams.sampleTimes);
+if (params.temporalParams.addCRTrasterEffect)
+   params.simulationTimeStepSecs = params.simulationTimeStepSecs/params.temporalParams.rasterSamples;
+end
 
 %% Properties related to computing the retinal image
 %
@@ -88,7 +102,7 @@ params.oiParams.lens = true;
 params.mosaicParams.type = 'MosaicParams';
 params.mosaicParams.fieldOfViewDegs = params.gaborParams.fieldOfViewDegs;
 params.mosaicParams.macular = true;
-params.mosaicParams.LMSRatio = [0.6 0.3 0.1];
+params.mosaicParams.LMSRatio = [0.62 0.31 0.07];
 params.mosaicParams.timeStepInSeconds = params.temporalParams.stimulusSamplingIntervalInSeconds;
 params.mosaicParams.integrationTimeInSeconds = params.mosaicParams.timeStepInSeconds;
 params.mosaicParams.isomerizationNoise = false;
