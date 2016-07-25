@@ -18,20 +18,30 @@ function write(obj,name,data,varargin)
 %      Extension for movie filename
 %      'm4v' - MPEG-4 (default)
 
+%% Parse input
+p = inputParser;
+p.addRequired('name',@ischar);
+p.addRequired('data');
+p.addParameter('Type','mat',@ischar);
+p.addParameter('ArtifactParams',[],@isstruct);
+p.addParameter('FigureType','pdf',@ischar);
+p.addParameter('MovieType','m4v',@ischar);
+p.parse(name,data,varargin{:});
+
 %% Get fileid
-fileid = obj.getid(name,varargin{:});
+fileid = obj.getid(p.Results.name,varargin{:});
 
 %% Write the data
 switch (p.Results.Type)
     case 'mat'
-        save(fileid),data,'-v7.3');
+        save(fileid,p.Results.data,'-v7.3');
     case 'figure'
         if (exist('FigureSave','file'))
-            FigureSave(fullfile(fileid,data,p.Results.FigureType);
+            FigureSave(fileid,p.Results.data,p.Results.FigureType);
         else
             saveas(h,fileid,p.Results.FigureType);
         end
     case 'movieFile'
-        unix(['mv ' data ' ' fileid]);
+        unix(['mv ' p.Results.data ' ' fileid]);
 end
 

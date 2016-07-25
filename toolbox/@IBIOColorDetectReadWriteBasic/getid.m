@@ -1,5 +1,5 @@
-function fileid = getid(obj,name,varagin)
-% fileid = getid(obj,name,varagin)
+function fileid = getid(obj,name,varargin)
+% fileid = getid(obj,name,varargin)
 %
 % Get a unique id required for reading and writing a piece of data.
 % Here that is the full path to the file, but in a database world it could
@@ -23,12 +23,11 @@ function fileid = getid(obj,name,varagin)
 %% Parse input.
 p = inputParser;
 p.addRequired('name',@ischar);
-p.addRequired('data');
 p.addParameter('Type','mat',@ischar);
-p.addParameter('ArtifactParams','mat',@isstruct);
+p.addParameter('ArtifactParams',[],@isstruct);
 p.addParameter('FigureType','pdf',@ischar);
 p.addParameter('MovieType','m4v',@ischar);
-p.parse(name,data,varargin{:});
+p.parse(name,varargin{:});
 
 %% Get parent directory list and make sure the output tree is in place
 theParentDir = '';
@@ -74,23 +73,30 @@ for ii = 1:length(obj.currentParamsList)
     end
 end
 
-%% Compose directory where data should go
+%% Filetype specific subdirectory
 switch (p.Results.Type)
     case 'mat'
-        theDir = fullfile(theCurrentDir,'matfiles');
-        fileid = fullfile(theDir,[name '.mat']);
+        theTypeDir = fullfile(theCurrentDir,'matfiles');
+        fileid = fullfile(theTypeDir,[name '.mat']);
     case 'figure'
-        theDir = fullfile(theCurrentDir,'figures');
-        fileid = fullfile(theDir,[name '.' p.Results.FigureType]);
+        theTypeDir = fullfile(theCurrentDir,'figures');
+        fileid = fullfile(theTypeDir,[name '.' p.Results.FigureType]);
 
     case {'movie','movieFile'}
-        theDir = fullfile(theCurrentDir,'movies');
-        fileid = fullfile(theDir,[name '.' p.Results.MovieType]);
+        theTypeDir = fullfile(theCurrentDir,'movies');
+        fileid = fullfile(theTypeDir,[name '.' p.Results.MovieType]);
+end
+if (~exist(theTypeDir,'dir'))
+    mkdir(theTypeDir);
 end
 
-%% Make directory if it doesn't exist
+%% Add in the name of calling program
+theDir = fullfile(theTypeDir,obj.writingProgram);
 if (~exist(theDir,'dir'))
     mkdir(theDir);
 end
+
+%% Return id
+fileid = theDir;
 
 end

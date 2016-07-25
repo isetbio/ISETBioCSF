@@ -1,19 +1,38 @@
-function t_colorGaborScene(rParams)
-% t_colorGaborScene(rParams)
+function validationData = t_colorGaborScene(rParams)
+% validationData = t_colorGaborScene(rParams)
+%
+% Illustrates the basic steps required to calculate cone isomerizations
+% from a static color Gabor modulation.
 %
 % Create a scene with a color gabor patch with color directions
 % specified as L, M, and S cone contrasts.  The scene will produce
-% a Gabor with these contrasts on a specified monitor.
+% a Gabor with these contrasts on a specified monitor.  Then passes the
+% scene through the optics and a cone mosaic and gets the isomerizations at
+% each cone.  
+%
+% If parameters structure is passed, the routine will use the defaults
+% provided by
+%   t_colorGaborRespnseGenerationParams
+% That tutorial also documents what the relavant parameters are
 %
 % The code illustrated here is encapsulated into function
 %   colorGaborSceneCreate.
 %
-% See also colorGaborSceneCreate, t_colorGaborConeAbsorptionMovie
+% The returned validation structure allows this routine to be called from a
+% validation script driven by the UnitTest toolbox.
+%
+% See also:
+%   t_colorGaborRespnseGenerationParams
+%	t_colorGaborConeIsomerizationsMovie
+%   colorGaborSceneCreate 
 %
 % 7/6/16  dhb  Wrote it.
 
 %% Clear
 ieInit; clear; close all;
+
+%% Fix random number generator so we can validate output exactly
+rng(1);
 
 %% Get the parameters we need
 %
@@ -25,6 +44,7 @@ end
 
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
+rwObject.writingProgram = mfilename;
 rwObject.parentParamsList = {};
 rwObject.currentParamsList = {rParams, rParams.colorModulationParams};
 
@@ -275,10 +295,10 @@ gaborConeMosaic.window;
 % And must make a plot in a figure
 vcNewGraphWin; [~,h] = gaborConeMosaic.plot('cone mosaic');
 rwObject.write('colorGaborMosaic',h,'Type','figure');
-vcNewGraphWin; h = gaborConeMosaic.plot('mean absorptions');
+vcNewGraphWin; [~,h] = gaborConeMosaic.plot('mean absorptions');
 rwObject.write('colorGaborIsomerizations',h,'Type','figure');
 
-%% Get min max for LMS cone absorptions
+%% Get min max for LMS cone isomerizations
 % Extract the min and max absorptions in a loop. Since we are
 % extracting only L, M, or S absorptions at each iteration, we get a vector
 % so one call to max/min will suffice.
@@ -290,9 +310,19 @@ rwObject.write('colorGaborIsomerizations',h,'Type','figure');
 % deviatoins.  Someone energetic could track this down.
 conePattern = gaborConeMosaic.pattern;
 for ii = 2:4
-    maxAbsorption = max(isomerizations(conePattern==ii));
-    minAbsorption = min(isomerizations(conePattern==ii));
+    maxIsomerizations(ii) = max(isomerizations(conePattern==ii));
+    minIsomerizations(ii) = min(isomerizations(conePattern==ii));
+    contrasts(ii) = ...
+        (maxIsomerizations(ii)-minIsomerizations(ii))/(maxIsomerizations(ii)+minIsomerizations(ii));
     
-    fprintf('%s cone absorptions\n\tMax: %d \n\tMin: %d\n',coneTypes{ii-1},maxAbsorption,minAbsorption);
-    fprintf('\tAbsolute contrast: %04.3f\n',(maxAbsorption-minAbsorption)/(maxAbsorption+minAbsorption));
+    fprintf('%s cone isomerzations\n\tMax: %d \n\tMin: %d\n',coneTypes{ii-1},maxIsomerizations(ii),minIsomerizations(ii));
+    fprintf('\tAbsolute contrast: %04.3f\n',contrasts(ii));
 end
+
+%% Send back some validation data if requested
+if (nargout > 0)
+    validationData.maxIsomerizations = maxIsomerizations;
+    validationData.minIsomerizations = minIsomerizations;
+    validationData.contrasts = contrasts;
+end
+
