@@ -239,8 +239,8 @@ vcNewGraphWin; [~,h] = scenePlot(gaborScene,'radiance image no grid');
 rwObject.write('colorGaborScene',h,'Type','figure');
 
 %% Create oi
-% Create an optical image.  
-gaborOI = oiCreate('human');
+% 
+gaborOI = oiCreate('wvf human');
 gaborOI = oiSet(gaborOI,'h fov',rParams.gaborParams.fieldOfViewDegs);
 
 %% Compute blurred optical image

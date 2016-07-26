@@ -168,6 +168,7 @@ gaborRGB = round(ieLUTLinear(gaborPrimary,displayGet(display,'inverse gamma')));
 % This combines the image we build and the display properties.
 gaborScene = sceneFromFile(gaborRGB,'rgb',[],display);
 gaborScene = sceneSet(gaborScene, 'h fov', fieldOfViewDegs);
+gaborScene = sceneSet(gaborScene,'distance',gaborParams.viewingDistance);
 
 end
 
