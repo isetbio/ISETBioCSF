@@ -50,9 +50,10 @@ rParams.mosaicParams.osModel = 'Linear';
 
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
-rwObject.writingProgram = mfilename;
+rwObject.readProgram = '';
+rwObject.writeProgram = mfilename;
 rwObject.parentParamsList = {};
-rwObject.currentParamsList = {rParams,rParams.colorModulationParams};
+rwObject.currentParamsList = {rParams, rParams.colorModulationParams};
 
 %% Create the optics
 theOI = colorDetectOpticalImageConstruct(rParams.oiParams);

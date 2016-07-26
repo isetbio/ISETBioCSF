@@ -39,7 +39,8 @@ end
 
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
-rwObject.writingProgram = mfilename;
+rwObject.readProgram = '';
+rwObject.writeProgram = mfilename;
 rwObject.parentParamsList = {};
 rwObject.currentParamsList = {rParams, rParams.colorModulationParams};
 

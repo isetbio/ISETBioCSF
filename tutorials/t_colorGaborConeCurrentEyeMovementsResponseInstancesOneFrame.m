@@ -1,22 +1,21 @@
-%% t_colorGaborConeCurrentEyeMovementsResponseInstances
+function validationData = t_colorGaborConeCurrentEyeMovementsResponseInstancesOneFrame(rParams)
+% validationData = t_colorGaborConeCurrentEyeMovementsResponseInstancesOneFrame(rParams)
 %
-% Show how to generate a number of response instances for a given stimulus condition.
+% Show how to generate a number of response instances for a given stimulus
+% condition, for a single stimulus frame without eye movements.
 % This tutorial relies on routine
 %   colorDetectResponseInstanceFastArrayConstruct
 % which does most of the hard work.  The basic principles underlying colorDetectResponseInstanceFastArrayConstruct
 % itself is demonstrated in tutorial 
 %   t_colorGaborConeCurrentEyeMovementsMovie
 % but the actual routine has some tricks to make it go fast.  There is also
-% colorDetectResponseInstanceArrayConstruct that works more like the
-% tutorial.ß
+% are routine
+%   colorDetectResponseInstanceArrayConstruct
+% that works more like the tutorial but is slower.
 %
-% This tutorial saves its output in a .mat file, which is then read in by
+% This tutorial saves its output in a .mat file, which cah then read in by
 %   t_colorGaborDetectFindPerformance
 % which shows how to use the data to find the thresholds.
-%
-% Although this is called a tutorial, we actually use it for real
-% calculations. With the parameters as set, it will generate a lot of data
-% and take a long time to run.
 %
 % The output goes into a place determined by
 %   colorGaborDetectOutputDir
@@ -28,18 +27,39 @@
 % naming is done in routine
 %   paramsToDirName.
 %
-% 7/9/16  npc Wrote it.
+% The returned validation structure allows this routine to be called from a
+% validation script driven by the UnitTest toolbox.
+%
+% The tutorial produces output according to a scheme controlled by the
+% specified IBIOColorDetect rwObject.
+%
+% See also:
+%   t_colorGaborRespnseGenerationParams
+%   t_colorGaborConeCurrentEyeMovementsMovie
+%	t_colorGaborDetectFindPerformance
+%   colorDetectResponseInstanceArrayConstruct
+%   colorDetectResponseInstanceFastArrayConstruct
 
-%% Initialize
+%% Clear
 ieInit; clear; close all;
 
-% Add project toolbox to Matlab path
-AddToMatlabPathDynamically(fullfile(fileparts(which(mfilename)),'../toolbox')); 
+%% Fix random number generator so we can validate output exactly
+rng(1);
 
-%% Parameters that control output
+%% Get the parameters we need
+%
+% t_colorGaborResponseGenerationParams returns a hierarchical struct of
+% parameters used by a number of tutorials and functions in this project.
+if (nargin < 1 | isempty(rParams))
+    rParams = t_colorGaborResponseGenerationParams;
+end
 
-% Set to true to save data for use by t_colorGaborDetectFindPerformance
-saveData = true;
+%% Set up the rw object for this program
+rwObject = IBIOColorDetectReadWriteBasic;
+rwObject.readProgram = '';
+rwObject.writeProgram = mfilename;
+rwObject.parentParamsList = {};
+rwObject.currentParamsList = {rParams, rParams.colorModulationParams};
 
 % These may only work on some computers, depending on what
 % infrastructure is installed.

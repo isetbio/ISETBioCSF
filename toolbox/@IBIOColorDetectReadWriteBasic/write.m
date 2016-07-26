@@ -29,7 +29,7 @@ p.addParameter('MovieType','m4v',@ischar);
 p.parse(name,data,varargin{:});
 
 %% Get fileid
-fileid = obj.getid(p.Results.name,varargin{:});
+fileid = obj.getid(p.Results.name,'ReadWrite','write',varargin{:});
 
 %% Write the data
 switch (p.Results.Type)

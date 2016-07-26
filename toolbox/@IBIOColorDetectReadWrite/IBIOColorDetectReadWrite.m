@@ -6,8 +6,9 @@ classdef IBIOColorDetectReadWrite < handle
 
     % Public read/write properties
     properties
-        % Name of program that is in charge of generating the data
-        writingProgram = [];
+        % Name of programs that is are charge of writing/reading data
+        writeProgram = '';
+        readProgram = '';
         
         % Cell array list of parameters of parent output tree.  The current data should
         % be associated with this parent tree.  Can be empty, in which
@@ -15,7 +16,7 @@ classdef IBIOColorDetectReadWrite < handle
         parentParamsList = {};
         
         % Cell array list of parameters of the current input or output.
-        currentParamsList = [];
+        currentParamsList = {};
         
         % Extra information that we want to store, expressed as a struct.
         extraParams = [];

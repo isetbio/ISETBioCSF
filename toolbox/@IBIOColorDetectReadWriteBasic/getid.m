@@ -6,6 +6,9 @@ function fileid = getid(obj,name,varargin)
 % be something else.
 %
 % Key/value pairs
+%   'ReadWrite' - Reading or writing? 
+%     'write' - Writing (default).  Use writeProgram property to determine subdir
+%     'read'  - Reading.  Use readProgram property to determin subdir
 %   'Type'
 %     'mat' - Matlab .mat file
 %     'figure' - A figure
@@ -23,6 +26,7 @@ function fileid = getid(obj,name,varargin)
 %% Parse input.
 p = inputParser;
 p.addRequired('name',@ischar);
+p.addParameter('ReadWrite','write',@ischar);
 p.addParameter('Type','mat',@ischar);
 p.addParameter('ArtifactParams',[],@isstruct);
 p.addParameter('FigureType','pdf',@ischar);
@@ -86,8 +90,13 @@ if (~exist(theTypeDir,'dir'))
     mkdir(theTypeDir);
 end
 
-%% Add in the name of calling program
-theDir = fullfile(theTypeDir,obj.writingProgram);
+%% Add in the name of reading or writing program
+switch (p.Results.ReadWrite)
+    case ('write')
+        theDir = fullfile(theTypeDir,obj.writeProgram);
+    case ('read')
+        theDir = fullfile(theTypeDir,obj.readProgram);
+end
 if (~exist(theDir,'dir'))
     mkdir(theDir);
 end

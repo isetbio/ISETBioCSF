@@ -47,7 +47,8 @@ end
 
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
-rwObject.writingProgram = mfilename;
+rwObject.readProgram = '';
+rwObject.writeProgram = mfilename;
 rwObject.parentParamsList = {};
 rwObject.currentParamsList = {rParams, rParams.colorModulationParams};
 
@@ -239,7 +240,6 @@ vcNewGraphWin; [~,h] = scenePlot(gaborScene,'radiance image no grid');
 rwObject.write('colorGaborScene',h,'Type','figure');
 
 %% Create oi
-% 
 gaborOI = oiCreate('wvf human');
 gaborOI = oiSet(gaborOI,'h fov',rParams.gaborParams.fieldOfViewDegs);
 
@@ -258,7 +258,7 @@ vcNewGraphWin; [~,h] = oiPlot(gaborOIBlur,'irradiance image no grid');
 rwObject.write('colorGaborOpticalImageBlur',h,'Type','figure');
 clearvars('gaborOIBlur');
 
-% Turn off optics for current purpose of checking LMS contrast 
+%% Turn off optics for current purpose of checking LMS contrast 
 % This involves replacing the OTF with a unity OTF, and recompute
 optics = opticsSet(optics,'OTF',ones(size(opticsGet(optics,'OTF'))));
 gaborOI = oiSet(gaborOI,'optics',optics);
