@@ -160,6 +160,7 @@ vcNewGraphWin; imagesc(gaborConeExcitations/max(gaborConeExcitations(:))); axis 
 % spectra we expect these differences to be small.  We could check this by
 % doing the calculations with different monitor descriptions.
 display = displayCreate(rParams.colorModulationParams.monitorFile);
+display = displaySet(display,'viewingdistance', rParams.gaborParams.viewingDistance);
 
 % Get display channel spectra.  The S vector displayChannelS is PTB format
 % for specifying wavelength sampling: [startWl deltaWl nWlSamples],
