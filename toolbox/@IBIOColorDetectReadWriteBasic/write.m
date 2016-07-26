@@ -34,7 +34,8 @@ fileid = obj.getid(p.Results.name,'ReadWrite','write',varargin{:});
 %% Write the data
 switch (p.Results.Type)
     case 'mat'
-        save(fileid,p.Results.data,'-v7.3');
+        theData = p.Results.data;
+        save(fileid,'theData','-v7.3');
     case 'figure'
         if (exist('FigureSave','file'))
             FigureSave(fileid,p.Results.data,p.Results.FigureType);

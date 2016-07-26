@@ -36,11 +36,13 @@ params.gaborParams.viewingDistance = 0.75;
 %                   Can be a 3 by N matrix of contrast directions.
 %   backgroundxYY - Colorimetric specification of background, in CIE xyY (cd/m2)
 %   monitorFile - Isetbio display description of monitor on which grating is shown.
+%   leakageLum - Luminance when monitor input is zero.
 params.colorModulationParams.type = 'ColorModulation';
 params.colorModulationParams.contrast = 1;
 params.colorModulationParams.coneContrasts = [0.05 -0.05 0]';
 params.colorModulationParams.backgroundxyY = [0.27 0.30 49.8]';
 params.colorModulationParams.monitorFile = 'CRT-MODEL';
+gaborParams.leakageLum = 1.0;
 
 %% Parameters related to temporal properties of stimulus and response
 %

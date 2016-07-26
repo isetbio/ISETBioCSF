@@ -1,5 +1,5 @@
-function responseInstanceArray = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, temporalParams, theOI, theMosaic)
-% responseInstanceArray = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, temporalParams, theOI, theMosaic)
+function responseInstanceArray = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, colorModulationParams, temporalParams, theOI, theMosaic)
+% responseInstanceArray = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, colorModulationParams, temporalParams, theOI, theMosaic)
 % 
 % Construct an array of nTrials response instances given the
 % simulationTimeStep, gaborParams, temporalParams, theOI, theMosaic.
@@ -14,8 +14,8 @@ progressHandle = generateProgressBar('Starting computation ...');
 % Start computation time measurement
 tic
 
-% Save base gabor params
-theBaseGaborParams = gaborParams;
+% Save base color modulation params
+theBaseColorModulationParams = colorModulationParams;
 
 % Create stimulus temporal window
 [stimulusSampleTimes, gaussianTemporalWindow, rasterModulation] = gaussianTemporalWindowCreate(temporalParams);
@@ -24,7 +24,7 @@ if (temporalParams.addCRTrasterEffect)
 end
 stimulusFramesNum = length(stimulusSampleTimes);
 
-% Generate new, larger mosaic todeal with eye movements
+% Generate new, larger mosaic to deal with eye movements
 padRows = 64;
 padCols = 64;
 theLargerMosaic = theMosaic.copy();
@@ -36,23 +36,23 @@ for stimFrameIndex = 1:stimulusFramesNum
     waitbar(0.5*stimFrameIndex/stimulusFramesNum, progressHandle, sprintf('stimulus label: %s\ncomputing optical image for frame #%d/%d', stimulusLabel, stimFrameIndex, stimulusFramesNum));
     
     % Modulate stimulus contrast
-    colorModulationParams.contrast = theBasecolorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex);
+    colorModulationParams.contrast = theBaseColorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex);
     
-    % Apply CRT raster modulation
-    if (~isempty(rasterModulation))
-        colorModulationParams.contrast = theBasecolorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex) * rasterModulation(stimFrameIndex);
-        colorModulationParams.backgroundxyY(3) = gaborParams.leakageLum + theBasecolorModulationParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
-    end
+    % % Apply CRT raster modulation
+    % if (~isempty(rasterModulation))
+    %     colorModulationParams.contrast = theBaseColorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex) * rasterModulation(stimFrameIndex);
+    %     colorModulationParams.backgroundxyY(3) = colorModulationParams.leakageLum + theBaseColorModulationParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
+    % end
     
     % Create a scene for the current frame
-    theScene = colorGaborSceneCreate(gaborParams);
+    theScene = colorGaborSceneCreate(gaborParams,colorModulationParams);
     
     % Compute the optical image for the current frame
     theOI = oiCompute(theOI, theScene);
     
     % Compute noise-free isomerizations at each cone location for the current frame
     theFrameFullMosaicIsomerizatios{stimFrameIndex} = theLargerMosaic.computeSingleFrame(theOI,'FullLMS',true);
-end % stimFrameIndex
+end
 
 % Larger mosaic not needed anymore
 clearvars('theLargerMosaic');
@@ -93,7 +93,7 @@ for iTrial = 1: nTrials
         else
             coneIsomerizationSequence = cat(3, coneIsomerizationSequence, theFrameEyeMovementPathIsomerizations);
         end
-    end % stimFrameIndex
+    end
     
     % Compute photocurrent sequence
     coneIsomerizationRate = coneIsomerizationSequence/theMosaic.integrationTime;
@@ -123,7 +123,7 @@ for iTrial = 1: nTrials
             );
     end
     
-end % iTrial
+end 
 
 fprintf('Response instance array generation (%d instances) took %2.3f minutes to compute.\n', nTrials, toc/60);
 

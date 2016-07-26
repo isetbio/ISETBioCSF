@@ -43,6 +43,8 @@ if (~isempty(obj.parentParamsList))
                 thisParentDir = obj.paramsToResponseGenerationDirName(thisParentParams);
             case 'ColorModulation'
                 thisParentDir = obj.paramsToColorModulationDirName(thisParentParams);
+            case 'LMPlaneInstance'
+                thisParentDir = obj.paramsToLMPlaneInstanceDirName(thisParentParams);
             otherwise
                 error('Unkown parent parameters type');
         end
@@ -68,6 +70,8 @@ for ii = 1:length(obj.currentParamsList)
             thisCurrentDir = obj.paramsToResponseGenerationDirName(thisCurrentParams);
         case 'ColorModulation'
             thisCurrentDir = obj.paramsToColorModulationDirName(thisCurrentParams);
+        case 'LMPlaneInstance'
+            thisCurrentDir = obj.paramsToLMPlaneInstanceDirName(thisCurrentParams);
         otherwise
             error('Unkown current parameters type');
     end
