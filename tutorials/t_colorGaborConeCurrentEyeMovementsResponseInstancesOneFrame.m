@@ -155,7 +155,7 @@ for ii = 1:size(testConeContrasts,2)
         thisConditionStruct.ii = ii;
         thisConditionStruct.jj = jj;
         thisConditionStruct.testConeContrasts = testConeContrasts(:,ii);
-        thisConditionStruct.contrast = testContrasts(ii);
+        thisConditionStruct.contrast = testContrasts(jj);
         theParforConditionStructs{conditionIndex} = thisConditionStruct;
         conditionIndex = conditionIndex + 1;
     end
@@ -165,8 +165,8 @@ end
 tic;
 for kk = 1:nParforConditions
     thisConditionStruct = theParforConditionStructs{kk};
-    ii = thisConditionStruct.ii;
-    jj = thisConditionStruct.jj;
+    %ii = thisConditionStruct.ii;
+    %jj = thisConditionStruct.jj;
     
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
