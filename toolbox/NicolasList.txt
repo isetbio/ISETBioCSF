@@ -1,0 +1,24 @@
+A) Why does viewingDistance in a scene affect mosaic image in no blur no noise case?  Who wins, viewing distance or visual angle?
+
+B) Validations, isetbio
+
+C) PTB <-> IBIO display
+
+D) Movie formats for isomerizations/photocurrents
+
+E) Validations, IBIOColorDetect
+
+F) Cleaner CRT interface.  And, I don’t think leakageLum should be added to background, we always calibrate that out.
+
+G) Compare the two versions of colorGaborResponseInstanceGenerate
+
+H) Update IBIOColorDetect visualization routines to use rwObject
+
+I) Stimulus duration set to 0 (in t_…OneFrame)?
+
+J) In fast instance generation, is padding with a fixed number of pixels secure?
+
+K) For writer, how to get unique temp file name (for writing within parfor loops)
+
+L) Visualization code protected so it doesn’t crash but simply doesn’t output when what you need isn’t there, and this should include type of computer things are being run on.
+
