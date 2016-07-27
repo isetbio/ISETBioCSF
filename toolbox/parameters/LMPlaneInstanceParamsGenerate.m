@@ -19,7 +19,7 @@ function params = LMPlaneInstanceParamsGenerate(varargin)
 params.type = 'LMPlaneInstance';
 
 % Define how many noisy data instances to generate
-params.trialsNum = 1000;
+params.trialsNum = 100;
 
 % Delta angle sampling in LM plane (samples between 0 and 180 degrees)
 params.deltaAngle = 180;
@@ -27,7 +27,7 @@ params.baseStimulusLength = 1;
 params.scaleIntoMonitorGamut = true;
 
 % Number of contrasts to run in each color direction
-params.nContrastsPerDirection = 10; 
+params.nContrastsPerDirection = 2; 
 params.lowContrast = 0.02;
 params.highContrast = 0.2;
 params.contrastScale = 'log';    % choose between 'linear' and 'log'

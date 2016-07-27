@@ -6,20 +6,20 @@ classdef IBIOColorDetectReadWrite < handle
 
     % Public read/write properties
     properties
-        % Name of programs that is are charge of writing/reading data
-        writeProgram = '';
-        readProgram = '';
-        
-        % Cell array list of parameters of parent output tree.  The current data should
-        % be associated with this parent tree.  Can be empty, in which
-        % case the current data is taken to be at the top level.
-        parentParamsList = {};
-        
-        % Cell array list of parameters of the current input or output.
-        currentParamsList = {};
-        
-        % Extra information that we want to store, expressed as a struct.
-        extraParams = [];
+%         % Name of programs that is are charge of writing/reading data
+%         writeProgram = '';
+%         readProgram = '';
+%         
+%         % Cell array list of parameters of parent output tree.  The current data should
+%         % be associated with this parent tree.  Can be empty, in which
+%         % case the current data is taken to be at the top level.
+%         parentParamsList = {};
+%         
+%         % Cell array list of parameters of the current input or output.
+%         currentParamsList = {};
+%         
+%         % Extra information that we want to store, expressed as a struct.
+%         extraParams = [];
     end
     
     % Dependent properties, computed from other parameters

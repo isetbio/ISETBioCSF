@@ -12,8 +12,8 @@ function validationData = t_colorGaborScene(rParams)
 %
 % If parameters structure is passed, the routine will use the defaults
 % provided by
-%   t_colorGaborRespnseGenerationParams
-% That tutorial also documents what the relavant parameters are.
+%   colorGaborResponseParamsGenerate
+% That function and its subfunctions also documents what the relavant parameters are.
 %
 % The code illustrated here is encapsulated into function
 %   colorGaborSceneCreate.
@@ -25,8 +25,8 @@ function validationData = t_colorGaborScene(rParams)
 % specified IBIOColorDetect rwObject.
 %
 % See also:
-%   t_colorGaborRespnseGenerationParams
 %	t_colorGaborConeIsomerizationsMovie
+%   colorGaborResponseParamsGenerate
 %   colorGaborSceneCreate 
 %
 % 7/6/16  dhb  Wrote it.
@@ -42,15 +42,14 @@ rng(1);
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
 % parameters used by a number of tutorials and functions in this project.
 if (nargin < 1 | isempty(rParams))
-    rParams = t_colorGaborResponseGenerationParams;
+    rParams = colorGaborResponseParamsGenerate;
 end
 
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
-rwObject.readProgram = '';
-rwObject.writeProgram = mfilename;
-rwObject.parentParamsList = {};
-rwObject.currentParamsList = {rParams, rParams.colorModulationParams};
+theProgram = mfilename;
+parentParamsList = {};
+currentParamsList = {rParams, rParams.colorModulationParams};
 
 %% Make the grayscale gabor pattern and have a look
 %
@@ -237,7 +236,7 @@ gaborScene = sceneSet(gaborScene, 'h fov', rParams.gaborParams.fieldOfViewDegs);
 % that we loaded, and thus the RGB values will not produce exactly the
 % desired appearance.
 vcNewGraphWin; [~,h] = scenePlot(gaborScene,'radiance image no grid');
-rwObject.write('colorGaborScene',h,'Type','figure');
+rwObject.write('colorGaborScene',h,parentParamsList,currentParamsList,theProgram,'Type','figure');
 
 %% Create oi
 gaborOI = oiCreate('wvf human');
@@ -255,7 +254,7 @@ gaborOIBlur = oiCompute(gaborOI,gaborScene);
 % because the OI incorprates the transmittance of the lens.  Down below we
 % will turn that off as a check.
 vcNewGraphWin; [~,h] = oiPlot(gaborOIBlur,'irradiance image no grid');
-rwObject.write('colorGaborOpticalImageBlur',h,'Type','figure');
+rwObject.write('colorGaborOpticalImageBlur',h,parentParamsList,currentParamsList,theProgram,'Type','figure');
 clearvars('gaborOIBlur');
 
 %% Turn off optics for current purpose of checking LMS contrast 
@@ -266,7 +265,7 @@ gaborOI = oiCompute(gaborOI,gaborScene);
 
 % Look at the OI
 vcNewGraphWin; [~,h] = oiPlot(gaborOI,'irradiance image no grid');
-rwObject.write('colorGaborOpticalImageNoBlur',h,'Type','figure');
+rwObject.write('colorGaborOpticalImageNoBlur',h,parentParamsList,currentParamsList,theProgram,'Type','figure');
 
 % Just for fun, put OI into isetbio's interactive window
 vcAddAndSelectObject(gaborOI); oiWindow;
@@ -298,9 +297,9 @@ gaborConeMosaic.window;
 
 % And must make a plot in a figure
 vcNewGraphWin; [~,h] = gaborConeMosaic.plot('cone mosaic');
-rwObject.write('colorGaborMosaic',h,'Type','figure');
+rwObject.write('colorGaborMosaic',h,parentParamsList,currentParamsList,theProgram,'Type','figure');
 vcNewGraphWin; [~,h] = gaborConeMosaic.plot('mean absorptions');
-rwObject.write('colorGaborIsomerizations',h,'Type','figure');
+rwObject.write('colorGaborIsomerizations',h,parentParamsList,currentParamsList,theProgram,'Type','figure');
 
 %% Get min max for LMS cone isomerizations
 % Extract the min and max absorptions in a loop. Since we are

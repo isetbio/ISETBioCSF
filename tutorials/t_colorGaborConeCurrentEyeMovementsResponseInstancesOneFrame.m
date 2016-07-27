@@ -1,5 +1,5 @@
-function validationData = t_colorGaborConeCurrentEyeMovementsResponseInstancesOneFrame(rParams)
-% validationData = t_colorGaborConeCurrentEyeMovementsResponseInstancesOneFrame(rParams)
+function validationData = t_colorGaborConeCurrentEyeMovementsResponseInstancesOneFrame(rParams,LMPlaneInstanceParams)
+% validationData = t_colorGaborConeCurrentEyeMovementsResponseInstancesOneFrame([rParams],[LMPlaneInstanceParams])
 %
 % Show how to generate a number of response instances for a given stimulus
 % condition, for a single stimulus frame without eye movements.
@@ -16,16 +16,6 @@ function validationData = t_colorGaborConeCurrentEyeMovementsResponseInstancesOn
 % This tutorial saves its output in a .mat file, which cah then read in by
 %   t_colorGaborDetectFindPerformance
 % which shows how to use the data to find the thresholds.
-%
-% The output goes into a place determined by
-%   colorGaborDetectOutputDir
-% which itself checks for a preference set by
-%   ISETColorDetectPreferencesTemplate
-% which you may want to edit before running this and other scripts that
-% produce substantial output.  The output within the main output directory
-% is sorted by directories whose names are computed from parameters.  This
-% naming is done in routine
-%   paramsToDirName.
 %
 % The returned validation structure allows this routine to be called from a
 % validation script driven by the UnitTest toolbox.
@@ -51,39 +41,43 @@ rng(1);
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
 % parameters used by a number of tutorials and functions in this project.
 if (nargin < 1 | isempty(rParams))
-    rParams = t_colorGaborResponseGenerationParams;
+    rParams = colorGaborResponseParamsGenerate;
+    
+    % Override some defult parameters
+    %
+    % A stimulus duration of 0 denotes a single frame static output
+    rParams.temporalParams.simulationTimeStepSecs = 200/1000;
+    rParams.temporalParams.stimulusDurationInSeconds = 0;
+    rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
+    rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
+    rParams.temporalParams.eyesDoNotMove = true;
+    
+    rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
+    rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
+    rParams.mosaicParams.isomerizationNoise = true;
+    rParams.mosaicParams.osNoise = true;
+    rParams.mosaicParams.osModel = 'Linear';
 end
-
-% Override some parameters
-rParams.temporalParams.simulationTimeStepSecs = 200/1000;
-rParams.temporalParams.stimulusDurationInSeconds = 0;
-rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
-rParams.temporalParams.eyesDoNotMove = true; 
-
-rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
-rParams.mosaicParams.isomerizationNoise = true;
-rParams.mosaicParams.osNoise = true;
-rParams.mosaicParams.osModel = 'Linear';
-
-%% Set up the rw object for this program
-rwObject = IBIOColorDetectReadWriteBasic;
-rwObject.readProgram = '';
-rwObject.writeProgram = mfilename;
-rwObject.parentParamsList = {};
-
-% These may only work on some computers, depending on what
-% infrastructure is installed.
-visualizeResponses = false;
-exportToPDF = false;
-renderVideo = false;
 
 %% Parameters that define the LM instances we'll generate here
 %
 % Make these numbers small (trialNum = 2, deltaAngle = 180,
 % nContrastsPerDirection = 2) to run through a test quickly.
-LMPlaneInstanceParams = LMPlaneInstanceParamsGenerate;
+if (nargin < 2 | isempty(LMPlaneInstanceParams))
+    LMPlaneInstanceParams = LMPlaneInstanceParamsGenerate;
+end
+
+%% Set up the rw object for this program
+rwObject = IBIOColorDetectReadWriteBasic;
+theProgram = mfilename;
+parentParamsList = {};
+currentParamsList = {rParams, rParams.colorModulationParams};
+
+%% Control what types of output are written
+% These may only work on some computers, depending on what infrastructure is installed.
+visualizeResponses = false;
+exportToPDF = false;
+renderVideo = false;
 
 %% Create the optics
 theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
@@ -94,11 +88,21 @@ theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
 %% Define stimulus set
 %
 % Chromatic directions in L/M plane.  It's a little easier to think in
-% terms of angles.
+% terms of angles.  
+%
+% Then find highest within gamut vector for each direction
 LMangles = (0:LMPlaneInstanceParams.deltaAngle:180-LMPlaneInstanceParams.deltaAngle)/180*pi;
 for angleIndex = 1:numel(LMangles)
     theta = LMangles(angleIndex);
     baseTestConeContrastDirs(:,angleIndex) = LMPlaneInstanceParams.baseStimulusLength*[cos(theta) sin(theta) 0.0]';
+    
+    % Find the highest in gamut cone contrast and define cone contrast
+    % vector to be just under this length.
+    colorModulationParamsTemp = rParams.colorModulationParams;
+    colorModulationParamsTemp.coneContrasts = baseTestConeContrastDirs(:,angleIndex);
+    colorModulationParamsTemp.contrast = 1;
+    [~,contrastScaleFactor(angleIndex)] = colorGaborSceneCreate(rParams.gaborParams,colorModulationParamsTemp,true);
+    testConeContrasts(:,angleIndex) = 0.98*contrastScaleFactor(angleIndex)*baseTestConeContrastDirs(:,angleIndex);
 end
 
 % Contrasts
@@ -109,22 +113,34 @@ else
 end
 
 %% Generate data for the no stimulus condition
-tic
 colorModulationParamsTemp = rParams.colorModulationParams;
 colorModulationParamsTemp.coneContrasts = [0 0 0]';
 colorModulationParamsTemp.contrast = 0;
 stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
     colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
 theNoStimData = struct(...
-                 'testContrast', colorModulationParamsTemp.contrast, ...
-            'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
-                'stimulusLabel', stimulusLabel, ...
-        'responseInstanceArray', colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, LMPlaneInstanceParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-                                         rParams.gaborParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic));
- 
-% Write the no cone contrast data
-rwObject.currentParamsList = {rParams, colorModulationParamsTemp, LMPlaneInstanceParams};
-rwObject.write('responseInstances_0',theNoStimData);
+    'testContrast', colorModulationParamsTemp.contrast, ...
+    'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
+    'stimulusLabel', stimulusLabel, ...
+    'responseInstanceArray', colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, LMPlaneInstanceParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
+    rParams.gaborParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic));
+
+% Write the no cone contrast data and some extra facts we need
+currentParamsList = {rParams, colorModulationParamsTemp, LMPlaneInstanceParams};
+rwObject.write('responseInstances',theNoStimData,parentParamsList,currentParamsList,theProgram);
+
+%% Save the other data we need for use by the classifier preprocessing subroutine
+ancillaryData = struct(...
+    'testConeContrasts', testConeContrasts, ...
+    'testContrasts', testContrasts, ...
+    'theMosaic', theMosaic, ...
+    'gaborParams', gaborParams, ...
+    'temporalParams', temporalParams, ...
+    'oiParams', oiParams, ...
+    'mosaicParams', mosaicParams);
+rwObject.write('ancillaryData',ancillaryData,parentParamsList,currentParamsList,theProgram);
+
+%% Visualize responses
 
 %% Generate data for all the examined stimuli
 %
@@ -135,47 +151,53 @@ rwObject.write('responseInstances_0',theNoStimData);
 % It is also possible that the parfor loop will not work for you, depending
 % on your Matlab configuration.  In this case, change it to a for loop.
 
+% Create crossed list of contrast directions and contrasts to run.
+nParforConditions = size(testConeContrasts,2)*numel(testContrasts);
+theParforConditionStructs = cell(nParforConditions,1);
+conditionIndex = 1;
+for ii = 1:size(testConeContrasts,2) 
+    for jj = 1:numel(testContrasts)
+        thisConditionStruct.ii = ii;
+        thisConditionStruct.jj = jj;
+        thisConditionStruct.testConeContrasts = testConeContrasts(:,ii);
+        thisConditionStruct.contrast = testContrasts(:,ii);
+        theParforConditionStructs{conditionIndex} = thisConditionStruct;
+        conditionIndex = conditionIndex + 1;
+    end
+end
+
 % Loop over color directions
-parfor ii = 1:size(baseTestConeContrastDirs,2)
-    % Find the highest in gamut cone contrast and define cone contrast
-    % vector to be just under this length.
-    gaborParamsLoop = rParams.gaborParams;
-    gaborParamsLoop.coneContrasts = baseTestConeContrastDirs(:,ii);
-    gaborParamsLoop.contrast = 1;
-    [~,contrastScaleFactor(ii)] = colorGaborSceneCreate(gaborParamsLoop,true);
-    testConeContrasts(:,ii) = 0.98*contrastScaleFactor(ii)*baseTestConeContrastDirs(:,ii);
-    gaborParamsLoop.coneContrasts = testConeContrasts(:,ii);
+tic;
+parfor kk = 1:nParforConditions
+    thisConditionStruct = theParforConditionStructs{kk};
+    ii = thisConditionStruct.ii;
+    jj = thisConditionStruct.jj;
     
+    colorModulationParamsTemp = rParams.colorModulationParams;
+    colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
+    colorModulationParamsTemp.contrast = testContrasts;
+
     % Make noisy instances for each contrast
     stimDataJJ = cell(1,numel(testContrasts));
-    for jj = 1:numel(testContrasts)
-        gaborParamsLoop.contrast = testContrasts(jj);
         stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f',...
-            gaborParamsLoop.coneContrasts(1), gaborParamsLoop.coneContrasts(2), gaborParamsLoop.coneContrasts(3), gaborParamsLoop.contrast);
-        stimDataJJ{jj} = struct(...
-                 'testContrast', gaborParamsLoop.contrast, ...
-            'testConeContrasts', gaborParamsLoop.coneContrasts, ...
-                'stimulusLabel', stimulusLabel, ...
-        'responseInstanceArray', colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, LMPlaneInstanceParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-                                          gaborParamsLoop, FOO, rParams.temporalParams, theOI, theMosaic));
-    end
-    
-    % Save data for this color direction
-    parforResponseInstancesSave(stimDataJJ,fullfile(outputDir,sprintf('responseInstances_%d',ii)));
-end 
+            colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
+        stimData = struct(...
+            'testContrast', colorModulationParamsTemp.contrast, ...
+            'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
+            'stimulusLabel', stimulusLabel, ...
+            'responseInstanceArray', colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, LMPlaneInstanceParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
+            rParams.gaborParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic)); 
+        
+    % Save data for this color direction/contrast pair
+    currentParamsList = {rParams, colorModulationParamsTemp, LMPlaneInstanceParams};
+    rwObject.write('responseInstances',theNoStimData,parentParamsList,currentParamsList,theProgram);
+    %parforResponseInstancesSave(stimData,fullfile(outputDir,sprintf('responseInstances_%d_%d',thisConditionStruct.ii,thisConditionStruct.jj)));
+end
 fprintf('Finished generating responses in %2.2f minutes\n', toc/60);
 
-%% Save the other data we need for use by the classifier preprocessing subroutine
-%
-% And also a copy of this script
-save(fullfile(outputDir,'responseInstances_0'), 'theNoStimData', 'testConeContrasts', 'testContrasts', 'theMosaic', 'gaborParams', 'temporalParams', 'oiParams', 'mosaicParams', '-v7.3');
-scriptDir = colorGaborDetectOutputDir(conditionDir,'scripts');
-unix(['cp ' mfilename('fullpath') '.m ' scriptDir]);
 
-%% Visualize responses
-%
-% PROBABLY BROKEN: This will probably not work now that we have mucked with
-% the way the data get saved.
+% THIS IS BROKEN AND NEES TO BE UPDATED TO NEW DATA FORMAT AND rwObject
+% land.
 %
 % Also, the time numbers on the videos do not seem to correspond to the
 % stimulus peak at time 0, and the videos look screwy in the no noise

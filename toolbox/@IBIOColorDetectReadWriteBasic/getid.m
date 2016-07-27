@@ -1,14 +1,11 @@
-function fileid = getid(obj,name,varargin)
-% fileid = getid(obj,name,varargin)
+function fileid = getid(obj,name,parentParamsList,currentParamsList,theProgram,varargin)
+% fileid = getid(obj,name,parentParamsList,currentParamsList,theProgram,varargin)
 %
 % Get a unique id required for reading and writing a piece of data.
 % Here that is the full path to the file, but in a database world it could
 % be something else.
 %
 % Key/value pairs
-%   'ReadWrite' - Reading or writing? 
-%     'write' - Writing (default).  Use writeProgram property to determine subdir
-%     'read'  - Reading.  Use readProgram property to determin subdir
 %   'Type'
 %     'mat' - Matlab .mat file
 %     'figure' - A figure
@@ -26,18 +23,20 @@ function fileid = getid(obj,name,varargin)
 %% Parse input.
 p = inputParser;
 p.addRequired('name',@ischar);
-p.addParameter('ReadWrite','write',@ischar);
+p.addRequired('parentParamsList',@iscell);
+p.addRequired('currentParamsList',@iscell);
+p.addRequired('theProgram',@ischar);
 p.addParameter('Type','mat',@ischar);
 p.addParameter('ArtifactParams',[],@isstruct);
 p.addParameter('FigureType','pdf',@ischar);
 p.addParameter('MovieType','m4v',@ischar);
-p.parse(name,varargin{:});
+p.parse(name,parentParamsList,currentParamsList,theProgram,varargin{:});
 
 %% Get parent directory list and make sure the output tree is in place
 theParentDir = '';
-if (~isempty(obj.parentParamsList))
-    for ii = 1:length(obj.parentParamsList)
-        thisParentParams = obj.parentParamsList{ii};
+if (~isempty(p.Results.parentParamsList))
+    for ii = 1:length(p.Results.parentParamsList)
+        thisParentParams = p.Results.parentParamsList{ii};
         switch(obj.parentParams.type)
             case 'ResponseGeneration'
                 thisParentDir = obj.paramsToResponseGenerationDirName(thisParentParams);
@@ -63,8 +62,8 @@ end
 
 %% Get current dir name and make it if necessary
 theCurrentDir = theParentDir;
-for ii = 1:length(obj.currentParamsList)
-    thisCurrentParams = obj.currentParamsList{ii};
+for ii = 1:length(p.Results.currentParamsList)
+    thisCurrentParams = p.Results.currentParamsList{ii};
     switch(thisCurrentParams.type)
         case 'ResponseGeneration'
             thisCurrentDir = obj.paramsToResponseGenerationDirName(thisCurrentParams);
@@ -95,12 +94,7 @@ if (~exist(theTypeDir,'dir'))
 end
 
 %% Add in the name of reading or writing program
-switch (p.Results.ReadWrite)
-    case ('write')
-        theDir = fullfile(theTypeDir,obj.writeProgram);
-    case ('read')
-        theDir = fullfile(theTypeDir,obj.readProgram);
-end
+theDir = fullfile(theTypeDir,theProgram);
 if (~exist(theDir,'dir'))
     mkdir(theDir);
 end

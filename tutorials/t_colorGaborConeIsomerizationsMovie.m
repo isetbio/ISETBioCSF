@@ -6,8 +6,8 @@ function validationData = t_colorGaborConeIsomerizationsMovie(rParams)
 %
 % If parameters structure is passed, the routine will use the defaults
 % provided by
-%   t_colorGaborRespnseGenerationParams
-% That tutorial also documents what the relavant parameters are.
+%   colorGaborResponseParamsGenerate
+% That functions subfunctions also documents what the relavant parameters are.
 
 % The scene sequence generation logic illustrated here is encapsulated in a
 % fancier manner in colorGaborSceneSequenceCreate.
@@ -18,9 +18,9 @@ function validationData = t_colorGaborConeIsomerizationsMovie(rParams)
 % The tutorial produces output according to a scheme controlled by the
 % specified IBIOColorDetect rwObject.
 %
-% See also:
-%   t_colorGaborRespnseGenerationParams
+% See also:  
 %	t_coneGaborConeCurrentEyeMovementsMovie
+%   colorGaborResponseParamsGenerate
 %   colorGaborSceneCreate
 %   colorGaborSceneSequenceCreate
 %
@@ -34,15 +34,14 @@ rng(1);
 
 %% Get the parameters we need
 if (nargin < 1 | isempty(rParams))
-    rParams = t_colorGaborResponseGenerationParams;
+    rParams = colorGaborResponseParamsGenerate;
 end
 
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
-rwObject.readProgram = '';
-rwObject.writeProgram = mfilename;
-rwObject.parentParamsList = {};
-rwObject.currentParamsList = {rParams, rParams.colorModulationParams};
+theProgram = mfilename;
+parentParamsList = {};
+currentParamsList = {rParams, rParams.colorModulationParams};
 
 %% Plot the Gaussian temporal window, just to make sure it looks right
 gaussianFigure = figure; clf;
@@ -66,7 +65,8 @@ clearvars('rParamsTemp');
 
 % Make a movie of the stimulus sequence
 showLuminanceMap = false;
-visualizeSceneOrOpticalImageSequence(rwObject, 'scene', gaborScene, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborStimulusMovie');
+visualizeSceneOrOpticalImageSequence(rwObject,parentParamsList,currentParamsList,theProgram, ...
+    'scene', gaborScene, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborStimulusMovie');
 
 %% Create the OI object we'll use to compute the retinal images from the scenes
 %
@@ -81,7 +81,8 @@ end
 
 % Make a movie of the optical image sequence
 showLuminanceMap = false;
-visualizeSceneOrOpticalImageSequence(rwObject,'optical image', theOI, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborOpticalImageMovie');
+visualizeSceneOrOpticalImageSequence(rwObject,parentParamsList,currentParamsList,theProgram, ...
+    'optical image', theOI, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborOpticalImageMovie');
 
 %% Create the coneMosaic object we'll use to compute cone respones
 theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
@@ -97,7 +98,8 @@ end
 
 % Make a movie of the isomerizations
 eyeMovementSequence = [];
-visualizeMosaicResponseSequence(rwObject, 'isomerizations (R*/cone)', gaborConeAbsorptions, eyeMovementSequence, theMosaic.pattern, rParams.temporalParams.sampleTimes, [theMosaic.width theMosaic.height], theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, 'gaborIsomerizations');
+visualizeMosaicResponseSequence(rwObject,parentParamsList,currentParamsList,theProgram, ...
+    'isomerizations (R*/cone)', gaborConeAbsorptions, eyeMovementSequence, theMosaic.pattern, rParams.temporalParams.sampleTimes, [theMosaic.width theMosaic.height], theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, 'gaborIsomerizations');
 
 %% Plot cone contrasts as a function of time, as a check
 %

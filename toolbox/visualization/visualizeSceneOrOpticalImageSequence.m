@@ -1,5 +1,7 @@
-function visualizeSceneOrOpticalImageSequence(rwObject, sceneOrOpticalImage, sceneOrOpticalImageSequence, timeAxis, showLuminanceMap, movieName)
-% visualizeSceneOrOpticalImageSequence(rwObject, sceneOrOpticalImage, sceneOrOpticalImageSequence, movieName)
+function visualizeSceneOrOpticalImageSequence(rwObject,parentParamsList,currentParamsList,theProgram, ...
+    sceneOrOpticalImage, sceneOrOpticalImageSequence, timeAxis, showLuminanceMap, movieName)
+% visualizeSceneOrOpticalImageSequence(rwObject,parentParamsList,currentParamsList,theProgram, ...
+%    sceneOrOpticalImage, sceneOrOpticalImageSequence, timeAxis, showLuminanceMap, movieName)
 %
 % Visualize a sequence of scenes or optical images and render a video of it.
 %
@@ -132,7 +134,7 @@ end % iFrame
 writerObj.close();
 
 %% Put the movie where it belongs
-rwObject.write(movieName,tempOutputFileName,'Type','movieFile');
+rwObject.write(movieName,tempOutputFileName,parentParamsList,currentParamsList,theProgram,'Type','movieFile');
 
 end
 

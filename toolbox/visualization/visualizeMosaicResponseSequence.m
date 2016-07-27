@@ -1,5 +1,7 @@
-function visualizeMosaicResponseSequence(rwObject, signalName, mosaicResponseSequence, eyeMovementSequence, coneTypes, timeAxis, mosaicSize, mosaicFOV, integrationTimeInSeconds, movieName)
-% visualizeMosaicResponseSequence(rwObject, signalName, mosaicResponseSequence, eyeMovementSequence, coneTypes, timeAxis, mosaicSize, mosaicFOV, movieName)
+function visualizeMosaicResponseSequence(rwObject,parentParamsList,currentParamsList,theProgram, ...
+    signalName, mosaicResponseSequence, eyeMovementSequence, coneTypes, timeAxis, mosaicSize, mosaicFOV, integrationTimeInSeconds, movieName)
+% visualizeMosaicResponseSequence(rwObject,parentParamsList,currentParamsList,theProgram, ...
+%    signalName, mosaicResponseSequence, eyeMovementSequence, coneTypes, timeAxis, mosaicSize, mosaicFOV, integrationTimeInSeconds, movieName)
 %
 % Visualize the time cource of a mosaic response (and possibly the eye movement path)
 % and generate a video of it.
@@ -121,7 +123,7 @@ function visualizeMosaicResponseSequence(rwObject, signalName, mosaicResponseSeq
     writerObj.close();
     
     %% Put the movie where it belongs
-    rwObject.write(movieName,tempOutputFileName,'Type','movieFile');
+    rwObject.write(movieName,tempOutputFileName,parentParamsList,currentParamsList,theProgram,'Type','movieFile');
 end
 
 function clut = bipolarLUT(entriesNum, flag)

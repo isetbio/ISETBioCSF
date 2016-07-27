@@ -17,10 +17,10 @@ function validationData = t_coneGaborConeCurrentEyeMovementsMovie(rParams)
 % specified IBIOColorDetect rwObject.
 %
 % See also:
-%   t_colorGaborRespnseGenerationParams
 %   t_colorGaborScene
 %	t_colorGaborConeIsomerizationsMovie
 %   t_colorGaborConeCurrentEyeMovementsResponseInstances
+%   colorGaborResponseParamsGenerate
 %   colorGaborSceneCreate 
 %   colorDetectOpticalImageConstruct
 %   colorDetectConeMosaicConstruct
@@ -40,20 +40,19 @@ rng(1);
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
 % parameters used by a number of tutorials and functions in this project.
 if (nargin < 1 | isempty(rParams))
-    rParams = t_colorGaborResponseGenerationParams;
+    rParams = colorGaborResponseParamsGenerate;
+    
+    % Override some of the defaults
+    rParams.mosaicParams.isomerizationNoise = true;
+    rParams.mosaicParams.osNoise = true;
+    rParams.mosaicParams.osModel = 'Linear';
 end
-
-% Override some of the defaults
-rParams.mosaicParams.isomerizationNoise = true;
-rParams.mosaicParams.osNoise = true;
-rParams.mosaicParams.osModel = 'Linear';
 
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
-rwObject.readProgram = '';
-rwObject.writeProgram = mfilename;
-rwObject.parentParamsList = {};
-rwObject.currentParamsList = {rParams, rParams.colorModulationParams};
+theProgram = mfilename;
+parentParamsList = {};
+currentParamsList = {rParams, rParams.colorModulationParams};
 
 %% Create the optics
 theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
@@ -118,16 +117,18 @@ timeAxis = (1:size(photocurrentSequence,3))*rParams.mosaicParams.timeStepInSecon
 timeAxis = timeAxis - (timeAxis(end)-timeAxis(1))/2;
 
 %% Visualize and render video of the isomerizations
-visualizeMosaicResponseSequence(rwObject, 'isomerizations (R*/cone)', coneIsomerizationSequence, eyeMovementSequence, ...
-                                theMosaic.pattern, timeAxis, [theMosaic.width theMosaic.height], ...
-                                theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, ...
-                                'gaborIsomerizationsWithEyeMovements');
+visualizeMosaicResponseSequence(rwObject,parentParamsList,currentParamsList,theProgram, ...
+    'isomerizations (R*/cone)', coneIsomerizationSequence, eyeMovementSequence, ...
+    theMosaic.pattern, timeAxis, [theMosaic.width theMosaic.height], ...
+    theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, ...
+    'gaborIsomerizationsWithEyeMovements');
 
 %% Visualize and render video of the photocurrents
-visualizeMosaicResponseSequence(rwObject, 'photocurrent (pAmps)', photocurrentSequence, eyeMovementSequence, ...
-                                theMosaic.pattern, timeAxis, [theMosaic.width theMosaic.height], ...
-                                theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, ...
-                                'gaborPhotocurrentsWithEyeMovements');
+visualizeMosaicResponseSequence(rwObject,parentParamsList,currentParamsList,theProgram, ...
+    'photocurrent (pAmps)', photocurrentSequence, eyeMovementSequence, ...
+    theMosaic.pattern, timeAxis, [theMosaic.width theMosaic.height], ...
+    theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, ...
+    'gaborPhotocurrentsWithEyeMovements');
 
 %% Return validation if desired                           
 if (nargout > 0)
