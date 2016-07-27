@@ -35,6 +35,7 @@ temporalParams.rasterSamples = 5;
 % Some computed temporal parameters
 [temporalParams.sampleTimes,temporalParams.gaussianTemporalWindow] = gaussianTemporalWindowCreate(temporalParams);
 temporalParams.nSampleTimes = length(temporalParams.sampleTimes);
+
 % if (temporalParams.addCRTrasterEffect)
 %    simulationTimeStepSecs = simulationTimeStepSecs/temporalParams.rasterSamples;
 % end

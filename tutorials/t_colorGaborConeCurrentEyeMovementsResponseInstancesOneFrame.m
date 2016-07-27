@@ -45,9 +45,9 @@ if (nargin < 1 | isempty(rParams))
     
     % Override some defult parameters
     %
-    % A stimulus duration of 0 denotes a single frame static output
+    % Set duration equal to sampling interval to do just one frame.
     rParams.temporalParams.simulationTimeStepSecs = 200/1000;
-    rParams.temporalParams.stimulusDurationInSeconds = 0;
+    rParams.temporalParams.stimulusDurationInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
     rParams.temporalParams.eyesDoNotMove = true;
@@ -71,7 +71,6 @@ end
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
 parentParamsList = {};
-currentParamsList = {rParams, rParams.colorModulationParams};
 
 %% Control what types of output are written
 % These may only work on some computers, depending on what infrastructure is installed.
@@ -118,7 +117,7 @@ colorModulationParamsTemp.coneContrasts = [0 0 0]';
 colorModulationParamsTemp.contrast = 0;
 stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
     colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
-theNoStimData = struct(...
+noStimData = struct(...
     'testContrast', colorModulationParamsTemp.contrast, ...
     'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
     'stimulusLabel', stimulusLabel, ...
@@ -126,21 +125,17 @@ theNoStimData = struct(...
     rParams.gaborParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic));
 
 % Write the no cone contrast data and some extra facts we need
-currentParamsList = {rParams, colorModulationParamsTemp, LMPlaneInstanceParams};
-rwObject.write('responseInstances',theNoStimData,parentParamsList,currentParamsList,theProgram);
+currentParamsList = {rParams, LMPlaneInstanceParams, colorModulationParamsTemp};
+rwObject.write('responseInstances',noStimData,parentParamsList,currentParamsList,theProgram);
 
 %% Save the other data we need for use by the classifier preprocessing subroutine
 ancillaryData = struct(...
     'testConeContrasts', testConeContrasts, ...
     'testContrasts', testContrasts, ...
     'theMosaic', theMosaic, ...
-    'gaborParams', gaborParams, ...
-    'temporalParams', temporalParams, ...
-    'oiParams', oiParams, ...
-    'mosaicParams', mosaicParams);
+    'rParams', rParams, ...
+    'LMPlaneInstanceParams', LMPlaneInstanceParams);
 rwObject.write('ancillaryData',ancillaryData,parentParamsList,currentParamsList,theProgram);
-
-%% Visualize responses
 
 %% Generate data for all the examined stimuli
 %
@@ -160,7 +155,7 @@ for ii = 1:size(testConeContrasts,2)
         thisConditionStruct.ii = ii;
         thisConditionStruct.jj = jj;
         thisConditionStruct.testConeContrasts = testConeContrasts(:,ii);
-        thisConditionStruct.contrast = testContrasts(:,ii);
+        thisConditionStruct.contrast = testContrasts(ii);
         theParforConditionStructs{conditionIndex} = thisConditionStruct;
         conditionIndex = conditionIndex + 1;
     end
@@ -168,30 +163,28 @@ end
 
 % Loop over color directions
 tic;
-parfor kk = 1:nParforConditions
+for kk = 1:nParforConditions
     thisConditionStruct = theParforConditionStructs{kk};
     ii = thisConditionStruct.ii;
     jj = thisConditionStruct.jj;
     
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
-    colorModulationParamsTemp.contrast = testContrasts;
-
+    colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
+    
     % Make noisy instances for each contrast
-    stimDataJJ = cell(1,numel(testContrasts));
-        stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f',...
-            colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
-        stimData = struct(...
-            'testContrast', colorModulationParamsTemp.contrast, ...
-            'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
-            'stimulusLabel', stimulusLabel, ...
-            'responseInstanceArray', colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, LMPlaneInstanceParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-            rParams.gaborParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic)); 
-        
+    stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f',...
+        colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
+    stimData = struct(...
+        'testContrast', colorModulationParamsTemp.contrast, ...
+        'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
+        'stimulusLabel', stimulusLabel, ...
+        'responseInstanceArray', colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, LMPlaneInstanceParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
+        rParams.gaborParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic));
+    
     % Save data for this color direction/contrast pair
-    currentParamsList = {rParams, colorModulationParamsTemp, LMPlaneInstanceParams};
-    rwObject.write('responseInstances',theNoStimData,parentParamsList,currentParamsList,theProgram);
-    %parforResponseInstancesSave(stimData,fullfile(outputDir,sprintf('responseInstances_%d_%d',thisConditionStruct.ii,thisConditionStruct.jj)));
+    currentParamsList = {rParams, LMPlaneInstanceParams, colorModulationParamsTemp};
+    rwObject.write('responseInstances',stimData,parentParamsList,currentParamsList,theProgram);
 end
 fprintf('Finished generating responses in %2.2f minutes\n', toc/60);
 
