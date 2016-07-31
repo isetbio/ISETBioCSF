@@ -33,7 +33,10 @@ p.addParameter('MovieType','m4v',@ischar);
 p.parse(name,parentParamsList,currentParamsList,theProgram,varargin{:});
 
 %% Get parent directory list and make sure the output tree is in place
-theParentDir = '';
+theParentDir = fullfile(getpref('IBIOColorDetect','outputBaseDir'));
+if (~exist(theParentDir,'dir'))
+    mkdir(theParentDir);
+end
 if (~isempty(p.Results.parentParamsList))
     for ii = 1:length(p.Results.parentParamsList)
         thisParentParams = p.Results.parentParamsList{ii};
@@ -53,13 +56,7 @@ if (~isempty(p.Results.parentParamsList))
         if (~exist(theParentDir,'dir'))
             mkdir(theParentDir);
         end
-    end
-    theParentDir = fullfile(getpref('IBIOColorDetect','outputBaseDir'),theParentDir);
-else
-    theParentDir = getpref('IBIOColorDetect','outputBaseDir');
-    if (~exist(theParentDir,'dir'))
-        mkdir(theParentDir);
-    end
+    end    
 end
 
 %% Get current dir name and make it if necessary
