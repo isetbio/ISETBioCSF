@@ -11,16 +11,6 @@ function validationData = t_colorGaborDetectFindPerformance(rParams,LMPlaneInsta
 %   t_colorGaborDetectThresholdsOnLMPlane
 % to find and plot thresholds.
 %
-% The intput comes from and the output goes into a place determined by
-%   colorGaborDetectOutputDir
-% which itself checks for a preference set by
-%   ISETColorDetectPreferencesTemplate
-% which you may want to edit before running this and other scripts that
-% produce substantial output.  The output within the main output directory
-% is sorted by directories whose names are computed from parameters.  This
-% naming is done in routine
-%   paramsToDirName.
-%
 % See also
 %   t_colorGaborConeCurrentEyeMovementsResponseInstances,
 %   t_colorGaborDetectIllustrateClassificationBoundary,
@@ -155,6 +145,11 @@ parentParamsList = {rParams, LMPlaneInstanceParams};
 currentParamsList = {thresholdParams};
 rwObject.write('performanceData',performanceData,parentParamsList,currentParamsList,writeProgram);
 fprintf('done\n');
+
+%% Validation data
+if (nargin > 0)
+    validationData = [];
+end
 
 %% Plot performances obtained.
 hFig = figure(1); clf;

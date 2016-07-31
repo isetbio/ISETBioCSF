@@ -168,6 +168,10 @@ for kk = 1:nParforConditions
 end
 fprintf('Finished generating responses in %2.2f minutes\n', toc/60);
 
+%% Validation data
+if (nargin > 0)
+    validationData = [];
+end
 
 % THIS IS BROKEN AND NEES TO BE UPDATED TO NEW DATA FORMAT AND rwObject
 % LAND.
