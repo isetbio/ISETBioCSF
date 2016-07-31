@@ -37,13 +37,15 @@ theParentDir = '';
 if (~isempty(p.Results.parentParamsList))
     for ii = 1:length(p.Results.parentParamsList)
         thisParentParams = p.Results.parentParamsList{ii};
-        switch(obj.parentParams.type)
+        switch(thisParentParams.type)
             case 'ResponseGeneration'
                 thisParentDir = obj.paramsToResponseGenerationDirName(thisParentParams);
             case 'ColorModulation'
                 thisParentDir = obj.paramsToColorModulationDirName(thisParentParams);
             case 'LMPlaneInstance'
                 thisParentDir = obj.paramsToLMPlaneInstanceDirName(thisParentParams);
+            case 'threshold'
+                thisParentDir = obj.paramsToThresholdDirName(thisParentParams);
             otherwise
                 error('Unkown parent parameters type');
         end
@@ -71,6 +73,8 @@ for ii = 1:length(p.Results.currentParamsList)
             thisCurrentDir = obj.paramsToColorModulationDirName(thisCurrentParams);
         case 'LMPlaneInstance'
             thisCurrentDir = obj.paramsToLMPlaneInstanceDirName(thisCurrentParams);
+        case 'threshold'
+            thisCurrentDir = obj.paramsToThresholdDirName(thisCurrentParams);
         otherwise
             error('Unkown current parameters type');
     end

@@ -1,21 +1,30 @@
-function data = read(obj,fileid,varagin)
-% data = read(obj,fileid,varagin)
+function [data,artifactParams] = read(obj,name,parentParamsList,currentParamsList,theProgram,varargin)
+% [data,artifactParams] = read(obj,name,parentParamsList,currentParamsList,theProgram,varargin)
 %
-% Read data objects, given unique identifier
+% Read data objects from the right place.
 %
 % Key/value pairs
 %   'Type'
-%     'mat' - Matlab .mat file (default)
-%     'figure' - A figure
-%     'movie' - A movie
-%     'movieFile' - String with full path to temp movie file
+%     'mat' - Matlab .mat file
 
-% Parse input.
+%% Parse input
 p = inputParser;
 p.addRequired('name',@ischar);
+p.addRequired('parentParamsList',@iscell);
+p.addRequired('currentParamsList',@iscell);
+p.addRequired('theProgram',@ischar);
 p.addParameter('Type','mat',@ischar);
+p.parse(name,parentParamsList,currentParamsList,theProgram,varargin{:});
 
-p.parse(params,fileid,varargin{:});
-fileid = p.Results.name;
+%% Get fileid
+fileid = obj.getid(p.Results.name,p.Results.parentParamsList,p.Results.currentParamsList,p.Results.theProgram,varargin{:});
+
+%% Read the data
+switch (p.Results.Type)
+    case 'mat'
+        dataStruct = load(fileid,'theData');
+        data = dataStruct.theData;
+        artifactParams = [];
+end
 
 end

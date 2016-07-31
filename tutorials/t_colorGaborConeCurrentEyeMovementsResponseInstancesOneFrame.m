@@ -139,35 +139,14 @@ rwObject.write('ancillaryData',ancillaryData,parentParamsList,currentParamsList,
 
 %% Generate data for all the examined stimuli
 %
-% This code is written in a slightly convoluted manner so that it will run
-% inside a parfor loop -- we had to define some single indexed temp
-% variables to get this to work.
-%
-% It is also possible that the parfor loop will not work for you, depending
+% It is possible that the parfor loop will not work for you, depending
 % on your Matlab configuration.  In this case, change it to a for loop.
-
-% Create crossed list of contrast directions and contrasts to run.
-nParforConditions = size(testConeContrasts,2)*numel(testContrasts);
-theParforConditionStructs = cell(nParforConditions,1);
-conditionIndex = 1;
-for ii = 1:size(testConeContrasts,2) 
-    for jj = 1:numel(testContrasts)
-        thisConditionStruct.ii = ii;
-        thisConditionStruct.jj = jj;
-        thisConditionStruct.testConeContrasts = testConeContrasts(:,ii);
-        thisConditionStruct.contrast = testContrasts(jj);
-        theParforConditionStructs{conditionIndex} = thisConditionStruct;
-        conditionIndex = conditionIndex + 1;
-    end
-end
-
+ 
 % Loop over color directions
 tic;
+parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
 for kk = 1:nParforConditions
-    thisConditionStruct = theParforConditionStructs{kk};
-    %ii = thisConditionStruct.ii;
-    %jj = thisConditionStruct.jj;
-    
+    thisConditionStruct = parforConditionStructs{kk};
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
     colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
@@ -190,7 +169,7 @@ fprintf('Finished generating responses in %2.2f minutes\n', toc/60);
 
 
 % THIS IS BROKEN AND NEES TO BE UPDATED TO NEW DATA FORMAT AND rwObject
-% land.
+% LAND.
 %
 % Also, the time numbers on the videos do not seem to correspond to the
 % stimulus peak at time 0, and the videos look screwy in the no noise
