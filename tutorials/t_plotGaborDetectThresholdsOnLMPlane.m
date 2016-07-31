@@ -8,6 +8,9 @@ function validationData = t_plotGaborDetectThresholdsOnLMPlane(rParams,LMPlaneIn
 % B) Plot the thresholds in the LM contrast plane.
 % C) Fit an ellipse to the thresholds.
 %
+% This routine is specialized on the assumption that the test directions
+% lie in the LM plane.
+%
 % The fit ellipse may be compared with actual psychophysical data.
 % 
 % 7/11/16  npc Wrote it.
