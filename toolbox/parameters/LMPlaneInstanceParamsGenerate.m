@@ -2,7 +2,8 @@ function params = LMPlaneInstanceParamsGenerate(varargin)
 % params = LMPlaneInstanceParamsGenerate(varargin)
 %
 % Generate parameters to describe color directions, contrasts, etc for
-% studying performance in the LM plane.
+% studying performance in the LM plane.  This is an instance of something
+% we pass around as testDirectionParams in the more general case.
 %
 %   trialsNum - Number of noisy response instances of each type to generate
 %   deltaAngle - Sampling angle in LM contrast plane
@@ -14,6 +15,9 @@ function params = LMPlaneInstanceParamsGenerate(varargin)
 %   lowContrast - Low constrast for contrast sampling
 %   highContrast - High contrast for contrast sampling
 %   contrastScale - 'log' or 'linear', how contrasts are sampled
+%
+% See also 
+%   testConeContastsFromTestDirectionParams
 
 % Parameter struct type
 params.type = 'LMPlaneInstance';
