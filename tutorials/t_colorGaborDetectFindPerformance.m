@@ -98,61 +98,20 @@ LMPlaneInstanceParamsCheck = ancillaryData.LMPlaneInstanceParams;
 fprintf('done\n');
 
 %% Put zero contrast response instances into data that we will pass to the SVM
-%
-% We can do this to simulate a one interval or a two interval task.  In the
-% one interval task, the blanks and modulation instances are labelled as the
-% two classes.  In the two inteval task, we concatenate [blank modulation]
-% as one class and [modulation blank] as the other.  The same amount of
-% data is used in each case, but the number of training instances is half
-% for the two interval case, but with effective response vectors that are
-% twice as long.
-responseSize = numel(noStimData.responseInstanceArray(1).theMosaicPhotoCurrents(:));
-fprintf('\nInserting null stimulus data from %d trials into design matrix ... ', nTrials);
-if (thresholdParams.nIntervals == 1)
-    data = zeros(2*nTrials, responseSize);
-    classes = zeros(2*nTrials, 1);
-    for iTrial = 1:nTrials
-        if (strcmp(thresholdParams.signalSource,'photocurrents'))
-            data(iTrial,:) = noStimData.responseInstanceArray(iTrial).theMosaicPhotoCurrents(:);
-        else
-            data(iTrial,:) = noStimData.responseInstanceArray(iTrial).theMosaicIsomerizations(:);
-        end
-        
-        % Set up classes variable
-        classes(iTrial,1) = 0;
-        classes(nTrials+iTrial,1) = 1;
-    end
-elseif (thresholdParams.nIntervals == 2)
-    data = zeros(nTrials, 2*responseSize);
-    classes = zeros(nTrials, 1);
-    for iTrial = 1:nTrials/2
-        if (strcmp(thresholdParams.signalSource,'photocurrents'))
-            data(iTrial,1:responseSize) = noStimData.responseInstanceArray(iTrial).theMosaicPhotoCurrents(:);
-            data(nTrials/2+iTrial,responseSize+1:end) = noStimData.responseInstanceArray(nTrials/2+iTrial).theMosaicPhotoCurrents(:);
-        else
-            data(iTrial,1:responseSize) = noStimData.responseInstanceArray(iTrial).theMosaicIsomerizations(:);
-            data(nTrials/2+iTrial,responseSize+1:end) = noStimData.responseInstanceArray(nTrials/2+iTrial).theMosaicIsomerizations(:);
-        end
-        
-        % Set up classes variable
-        classes(iTrial,1) = 0;
-        classes(nTrials/2+iTrial,1) = 1;
-    end
-end
-fprintf('done\n');
+[classificationData,classes] = classificationDataNoStimDataInitialize(noStimData,thresholdParams);
 
 %% Do SVM for each test contrast and color direction.
 %
-% The work is done inside routine ClassifyForOneDirection.  We needed to
+% The work is done inside routine classifyForOneDirectionAndContrast.  We needed to
 % encapsulate it there to make parfor happy.
 %
 % If you don't have a computer configured to work with parfor, you may need
-% to change the parfor just to plain for.
+% to change the parfor here to a plain for loop.
 tic
 parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
 nParforConditions = length(parforConditionStructs);
-usePercentCorrect = cell(size(testConeContrasts,2),1);
-useStdErr = cell(size(testConeContrasts,2),1);
+usePercentCorrect = zeros(size(testConeContrasts,2),1);
+useStdErr = zeros(size(testConeContrasts,2),1);
 parfor kk = 1:nParforConditions
     thisConditionStruct = parforConditionStructs{kk};
     colorModulationParamsTemp = rParams.colorModulationParams;
@@ -166,18 +125,23 @@ parfor kk = 1:nParforConditions
 
     % Get performance for this instance
     [usePercentCorrect(kk),useStdErr(kk)] = ...
-        ClassifyForOneDirection(stimData,data,classes,thresholdParams);  
+        classifyForOneDirectionAndContrast(stimData,classificationData,classes,thresholdParams);  
 end
 fprintf('SVM classification took %2.2f minutes\n', toc/60);
 clearvars('theData','useData','data');
 
-% Take the returned vector form of the performance data and put it back into the
+%% Take the returned vector form of the performance data and put it back into the
 % matrix form we expect below and elsewhere.
+%
+% See function responseGenerationParforConditionStructsGenerate for how we
+% pack the conditions into the order that this unpacks.
 for kk = 1:nParforConditions
     thisConditionStruct = parforConditionStructs{kk};
-    performanceData.percentCorrect(thisConditionStruct.ii,thisConditionStruct.jj) = usePercent(kk);
+    performanceData.percentCorrect(thisConditionStruct.ii,thisConditionStruct.jj) = usePercentCorrect(kk);
     performanceData.stdErr(thisConditionStruct.ii,thisConditionStruct.jj) = useStdErr(kk);
 end
+
+%% Tuck away other information that we want to store
 performanceData.testConeContrasts = testConeContrasts;
 performanceData.testContrasts = testContrasts;
 performanceData.rParams = rParams;
@@ -189,7 +153,7 @@ clearvars('usePercentCorrect','useStdErr');
 fprintf('Writing performance data ... ');
 parentParamsList = {rParams, LMPlaneInstanceParams};
 currentParamsList = {thresholdParams};
-rwObject.read('performanceData',performanceData,parentParamsList,currentParamsList,writeProgram);
+rwObject.write('performanceData',performanceData,parentParamsList,currentParamsList,writeProgram);
 fprintf('done\n');
 
 %% Plot performances obtained.
@@ -197,7 +161,7 @@ hFig = figure(1); clf;
 set(hFig, 'Position', [10 10 680 590], 'Color', [1 1 1]);
 for ii = 1:size(testConeContrasts,2)
     subplot(size(testConeContrasts,2), 1, ii)
-    errorbar(testContrasts, squeeze(percentCorrect(ii,:)), squeeze(stdErr(ii, :)), ...
+    errorbar(testContrasts, squeeze(performanceData.percentCorrect(ii,:)), squeeze(performanceData.stdErr(ii, :)), ...
         'ro-', 'LineWidth', 2.0, 'MarkerSize', 12, 'MarkerFaceColor', [1.0 0.5 0.50]);
     axis 'square'
     set(gca, 'YLim', [0 1.0],'XLim', [testContrasts(1) testContrasts(end)], 'FontSize', 14);
@@ -206,4 +170,6 @@ for ii = 1:size(testConeContrasts,2)
     box off; grid on
     title(sprintf('LMS = [%2.2f %2.2f %2.2f]', testConeContrasts(1,ii), testConeContrasts(2,ii), testConeContrasts(3,ii)));
 end
+rwObject.write('performanceData',hFig,parentParamsList,currentParamsList,writeProgram,'Type','figure');
+
 
