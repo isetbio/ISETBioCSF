@@ -1,8 +1,11 @@
-function validationData = t_colorGaborConeCurrentEyeMovementsResponseInstancesOneFrame(rParams,testDirectionParams)
-% validationData = t_colorGaborConeCurrentEyeMovementsResponseInstancesOneFrame([rParams],[testDirectionParams])
+function validationData = t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams)
+% validationData = t_colorGaborConeCurrentEyeMovementsResponseInstances([rParams],[testDirectionParams])
 %
 % Show how to generate a number of response instances for a given stimulus
-% condition, for a single stimulus frame without eye movements.
+% condition.  The default parameters are set up to generate just a single frame
+% of the response, but the same tutorial can do temporal sequences with other 
+% parameter choices.
+%
 % This tutorial relies on routine
 %   colorDetectResponseInstanceFastArrayConstruct
 % which does most of the hard work.  The basic principles underlying colorDetectResponseInstanceFastArrayConstruct
