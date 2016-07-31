@@ -145,6 +145,7 @@ rwObject.write('ancillaryData',ancillaryData,parentParamsList,currentParamsList,
 % Loop over color directions
 tic;
 parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
+nParforConditions = length(parforConditionStructs);
 for kk = 1:nParforConditions
     thisConditionStruct = parforConditionStructs{kk};
     colorModulationParamsTemp = rParams.colorModulationParams;

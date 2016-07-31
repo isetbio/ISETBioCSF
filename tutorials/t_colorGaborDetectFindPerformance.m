@@ -162,13 +162,14 @@ set(hFig, 'Position', [10 10 680 590], 'Color', [1 1 1]);
 for ii = 1:size(testConeContrasts,2)
     subplot(size(testConeContrasts,2), 1, ii)
     errorbar(testContrasts, squeeze(performanceData.percentCorrect(ii,:)), squeeze(performanceData.stdErr(ii, :)), ...
-        'ro-', 'LineWidth', 2.0, 'MarkerSize', 12, 'MarkerFaceColor', [1.0 0.5 0.50]);
+        'ro-', 'LineWidth', rParams.plotParams.lineWidth, 'MarkerSize', rParams.plotParams.markerSize, 'MarkerFaceColor', [1.0 0.5 0.50]);
     axis 'square'
-    set(gca, 'YLim', [0 1.0],'XLim', [testContrasts(1) testContrasts(end)], 'FontSize', 14);
-    xlabel('contrast', 'FontSize' ,16, 'FontWeight', 'bold');
-    ylabel('percent correct', 'FontSize' ,16, 'FontWeight', 'bold');
+    set(gca, 'YLim', [0 1.0],'XLim', [testContrasts(1) testContrasts(end)], 'FontSize', rParams.plotParams.axisFontSize);
+    xlabel('contrast', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
+    ylabel('percent correct', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
     box off; grid on
-    title(sprintf('LMS = [%2.2f %2.2f %2.2f]', testConeContrasts(1,ii), testConeContrasts(2,ii), testConeContrasts(3,ii)));
+    title(sprintf('LMS = [%2.2f %2.2f %2.2f]', testConeContrasts(1,ii), testConeContrasts(2,ii), testConeContrasts(3,ii)), ...
+        'FontSize',rParams.plotParams.titleFontSize);
 end
 rwObject.write('performanceData',hFig,parentParamsList,currentParamsList,writeProgram,'Type','figure');
 

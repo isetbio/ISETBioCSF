@@ -22,12 +22,12 @@ params.type = 'LMPlaneInstance';
 params.trialsNum = 100;
 
 % Delta angle sampling in LM plane (samples between 0 and 180 degrees)
-params.deltaAngle = 180;
+params.deltaAngle = 45;
 params.baseStimulusLength = 1;
 params.scaleIntoMonitorGamut = true;
 
 % Number of contrasts to run in each color direction
-params.nContrastsPerDirection = 2; 
-params.lowContrast = 0.02;
+params.nContrastsPerDirection = 5; 
+params.lowContrast = 0.001;
 params.highContrast = 0.2;
 params.contrastScale = 'log';    % choose between 'linear' and 'log'
