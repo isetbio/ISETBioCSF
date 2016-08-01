@@ -1,4 +1,5 @@
-%% t_colorGaborIllustrateClassificationBoundary
+
+% t_colorGaborIllustrateClassificationBoundary
 %
 % Plots the data and svm boundary for a specified condition projected onto
 % the first 2 principal components.
@@ -29,10 +30,7 @@ PCAComponents = 60;
 colorDirection = 1;
 contrastLevel = 10;
 
-% PCA axes to plot
-% Choose two principal components to serve as the axis of the figure
-PCAAxis1 = 1;
-PCAAxis2 = 2;
+
 
 %% Get data saved by t_colorGaborConeCurrentEyeMovementsResponseInstances
 %

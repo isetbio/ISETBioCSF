@@ -60,9 +60,19 @@ if (nargin < 3 | isempty(thresholdParams))
     thresholdParams = thresholdParamsGenerate;
 end
 
+%% SVM plotting.
+%
+% If plotSvm is true, then a 2D plot showing the classifier
+% boundary is made and saved.  This can be useful for an explanatory
+% figure, or for checking that the classification is working sensibly.
+% This should probably be set to false for everyday use.
+plotSvm = true;
+plotSvmPCAAxis1 = 1;
+plotSvmPCAAxis2 = 2;
+
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
-readProgram = 't_colorGaborConeCurrentEyeMovementsResponseInstancesOneFrame';
+readProgram = 't_colorGaborConeCurrentEyeMovementsResponseInstances';
 writeProgram = mfilename;
 
 %% Read data for the no stimulus condition
@@ -113,12 +123,24 @@ parfor kk = 1:nParforConditions
         error('Inconsisent number of trials');
     end
 
-    % Get performance for this instance
-    [usePercentCorrect(kk),useStdErr(kk)] = ...
-        classifyForOneDirectionAndContrast(stimData,classificationData,classes,thresholdParams);  
+    % Get performance for this instance.  Optional parameters control
+    % whether or not the routine returns a handle to a plot that
+    % illustrates the classifier.
+    [usePercentCorrect(kk),useStdErr(kk),h] = ...
+        classifyForOneDirectionAndContrast(stimData,classificationData,classes,thresholdParams, ...
+        'Plot',plotSvm,'PlotAxis1',plotSvmPCAAxis1,'PlotAxis2',plotSvmPCAAxis2);
+    
+    % Save classifier plot if we made one and then close the figure.
+    if (plotSvm)
+        parentParamsList = {rParams, testDirectionParams};
+        currentParamsList = {thresholdParams};
+        rwObject.write(sprintf('svmBoundary_PCA%d_PCA%d_%d',plotSvmPCAAxis1,plotSvmPCAAxis2,kk), ...
+            h,parentParamsList,currentParamsList,writeProgram,'Type','figure');
+        close(h);
+    end
 end
 fprintf('SVM classification took %2.2f minutes\n', toc/60);
-clearvars('theData','useData','data');
+clearvars('theData','useData','classificationData','classes');
 
 %% Take the returned vector form of the performance data and put it back into the
 % matrix form we expect below and elsewhere.
@@ -151,11 +173,9 @@ if (nargin > 0)
     validationData = [];
 end
 
-%% Plot performances obtained.
-hFig = figure(1); clf;
-set(hFig, 'Position', [10 10 680 590], 'Color', [1 1 1]);
+%% Plot performances obtained in each color direction as raw psychometric functions
 for ii = 1:size(testConeContrasts,2)
-    subplot(size(testConeContrasts,2), 1, ii)
+    hFig = figure(1); clf;
     errorbar(testContrasts, squeeze(performanceData.percentCorrect(ii,:)), squeeze(performanceData.stdErr(ii, :)), ...
         'ro-', 'LineWidth', rParams.plotParams.lineWidth, 'MarkerSize', rParams.plotParams.markerSize, 'MarkerFaceColor', [1.0 0.5 0.50]);
     axis 'square'
@@ -165,7 +185,7 @@ for ii = 1:size(testConeContrasts,2)
     box off; grid on
     title(sprintf('LMS = [%2.2f %2.2f %2.2f]', testConeContrasts(1,ii), testConeContrasts(2,ii), testConeContrasts(3,ii)), ...
         'FontSize',rParams.plotParams.titleFontSize);
+    
+    rwObject.write(sprintf('performanceData_%d',ii),hFig,parentParamsList,currentParamsList,writeProgram,'Type','figure');
 end
-rwObject.write('performanceData',hFig,parentParamsList,currentParamsList,writeProgram,'Type','figure');
-
 
