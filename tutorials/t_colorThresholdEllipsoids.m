@@ -313,16 +313,18 @@ labelFontSize = 16;
 titleFontSize = 16;
 axisFontSize = 12;
 
-conditionStr = 'HT,cs';
-theSf = 2;
-[A,Ainv,Q,theBgLMS] = PoirsonWandellEllipsoidParameters(conditionStr,theSf);
+psychoEllipsoidParams.type = 'psychoEllipsoid';
+psychoEllipsoidParams.subject = 'HT';
+psychoEllipsoidParams.condition = 'cs';
+psychoEllipsoidParams.theSf = 2;
+[A,Ainv,Q,theBgLMS] = PoirsonWandellEllipsoidParameters([psychoEllipsoidParams.subject ',' psychoEllipsoidParams.condition],psychoEllipsoidParams.theSf);
 nThetaEllipse = 200;
 xCircle = UnitCircleGenerate(nThetaEllipse);
 xCirclePlane = [xCircle(1,:) ; xCircle(2,:) ; zeros(size(xCircle(1,:)))];
 xEllipsoidPlane = PointsOnEllipsoidFind(Q,xCirclePlane);
 xEllipsoidPlane = bsxfun(@times,xEllipsoidPlane,1./theBgLMS);
-contrastLim = 0.06;
-figure; clf; hold on; set(gca,'FontSize',axisFontSize);
+contrastLim = 0.02;
+hFig = figure; clf; hold on; set(gca,'FontSize',axisFontSize);
 plot(xEllipsoidPlane(1,:),xEllipsoidPlane(2,:),'r','LineWidth',3);
 plot([-contrastLim contrastLim],[0 0],'k:','LineWidth',2);
 plot([0 0],[-contrastLim contrastLim],'k:','LineWidth',2);
@@ -330,12 +332,12 @@ xlabel('L contrast','FontSize',labelFontSize); ylabel('M contrast','FontSize',la
 title('M versus L','FontSize',titleFontSize);
 xlim([-contrastLim contrastLim]); ylim([-contrastLim contrastLim]);
 axis('square');
-if (exist('FigureSave','file'))
-    if (~exist('figures','dir'))
-        mkdir('figures');
-    end
-    FigureSave(fullfile('figures','PWLMThresholdContour'),gcf,'pdf');
-end
+
+rwObject = IBIOColorDetectReadWriteBasic;
+writeProgram = mfilename;
+parentParamsList = {};
+currentParamsList = {psychoEllipsoidParams};
+rwObject.write('PWLMThresholdEllipse',hFig,parentParamsList,currentParamsList,writeProgram,'Type','figure');
 
 %% Put warning back
 warning(s.state,s.identifier);

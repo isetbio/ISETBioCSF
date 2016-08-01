@@ -49,6 +49,8 @@ if (~isempty(p.Results.parentParamsList))
                 thisParentDir = obj.paramsToLMPlaneInstanceDirName(thisParentParams);
             case 'threshold'
                 thisParentDir = obj.paramsToThresholdDirName(thisParentParams);
+            case 'psychoEllipsoid'
+                thisParentDir = obj.paramsToPsychoEllipsoidDirName(thisParentParams);
             otherwise
                 error('Unkown parent parameters type');
         end
@@ -72,6 +74,8 @@ for ii = 1:length(p.Results.currentParamsList)
             thisCurrentDir = obj.paramsToLMPlaneInstanceDirName(thisCurrentParams);
         case 'threshold'
             thisCurrentDir = obj.paramsToThresholdDirName(thisCurrentParams);
+        case 'psychoEllipsoid'
+            thisCurrentDir = obj.paramsToPsychoEllipsoidDirName(thisCurrentParams);
         otherwise
             error('Unkown current parameters type');
     end

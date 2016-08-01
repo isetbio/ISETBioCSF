@@ -185,7 +185,6 @@ for ii = 1:size(testConeContrasts,2)
     box off; grid on
     title(sprintf('LMS = [%2.2f %2.2f %2.2f]', testConeContrasts(1,ii), testConeContrasts(2,ii), testConeContrasts(3,ii)), ...
         'FontSize',rParams.plotParams.titleFontSize);
-    
     rwObject.write(sprintf('performanceData_%d',ii),hFig,parentParamsList,currentParamsList,writeProgram,'Type','figure');
 end
 

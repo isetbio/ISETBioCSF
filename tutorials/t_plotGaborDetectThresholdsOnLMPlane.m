@@ -91,8 +91,6 @@ end
 %% Fit psychometric functions
 %
 % And make a plot of each along with its fit
-hFig = figure(1); clf;
-set(hFig, 'Position', [10 10 1600 1000], 'Color', [1 1 1]);
 for ii = 1:size(performanceData.testConeContrasts,2)
     % Get the performance data for this test direction, as a function of
     % contrast.
@@ -109,22 +107,23 @@ for ii = 1:size(performanceData.testConeContrasts,2)
     thresholdContrasts(ii) = tempThreshold;
     
     % Make the plot for this test direction
-    subplot(2, ceil(size(testConeContrasts,2)/2), ii); hold on; set(gca,'FontSize',rParams.plotParams.axisFontSize);
+    hFig = figure; hold on
+    set(gca,'FontSize',rParams.plotParams.axisFontSize);
     errorbar(testContrasts, thePerformance, theStandardError, 'ro', 'MarkerSize', rParams.plotParams.markerSize, 'MarkerFaceColor', [1.0 0.5 0.50]);
     plot(fitContrasts,fitFractionCorrect(:,ii),'r','LineWidth', 2.0);
     plot(thresholdContrasts(ii)*[1 1],[0 thresholdCriterionFraction],'b', 'LineWidth', 2.0);
-    hold off;
     axis 'square'
     set(gca, 'YLim', [0 1.0],'XLim', [testContrasts(1) testContrasts(end)], 'FontSize', 14);
     xlabel('contrast', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
     ylabel('percent correct', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
     box off; grid on
     title(sprintf('LMangle = %2.1f deg', atan2(testConeContrasts(2,ii), testConeContrasts(1,ii))/pi*180),'FontSize',rParams.plotParams.titleFontSize);
+    rwObject.write(sprintf('LMPsychoFunctions_%d',ii),hFig,parentParamsList,{},writeProgram,'Type','figure');
+    close(hFig);
     
     % Convert threshold contrast to threshold cone contrasts
     thresholdConeContrasts(:,ii) = testConeContrasts(:,ii)*thresholdContrasts(ii);
 end
-rwObject.write('LMPsychoFunctions',hFig,parentParamsList,{},writeProgram,'Type','figure');
 
 %% Thresholds are generally symmetric around the contrast origin
 %
@@ -165,7 +164,7 @@ circleInLMPlane = [circleIn2D(1,:) ; circleIn2D(2,:) ; zeros(size(circleIn2D(1,:
 ellipsoidInLMPlane = PointsOnEllipsoidFind(fitQ,circleInLMPlane);
 
 %% Plot the thresholds in the LM contrast plane
-contrastLim = 0.06;
+contrastLim = 0.02;
 hFig = figure; clf; hold on; set(gca,'FontSize',rParams.plotParams.axisFontSize);
 plot(thresholdConeContrasts(1,:),thresholdConeContrasts(2,:),'ro','MarkerFaceColor','r','MarkerSize',rParams.plotParams.markerSize);
 plot(ellipsoidInLMPlane(1,:),ellipsoidInLMPlane(2,:),'r','LineWidth',2);
