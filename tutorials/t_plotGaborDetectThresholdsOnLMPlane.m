@@ -64,8 +64,8 @@ readProgram = 't_colorGaborDetectFindPerformance';
 writeProgram = mfilename;
 
 %% Read performance data
-parentParamsList = {rParams, LMPlaneInstanceParams, thresholdParams};
-performanceData = rwObject.read('performanceData',parentParamsList,{},readProgram);
+paramsList = {rParams, LMPlaneInstanceParams, thresholdParams};
+performanceData = rwObject.read('performanceData',paramsList,readProgram);
 
 % If everything is working right, these check parameter structures will
 % match what we used to specify the file we read in.
@@ -118,7 +118,7 @@ for ii = 1:size(performanceData.testConeContrasts,2)
     ylabel('percent correct', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
     box off; grid on
     title(sprintf('LMangle = %2.1f deg', atan2(testConeContrasts(2,ii), testConeContrasts(1,ii))/pi*180),'FontSize',rParams.plotParams.titleFontSize);
-    rwObject.write(sprintf('LMPsychoFunctions_%d',ii),hFig,parentParamsList,{},writeProgram,'Type','figure');
+    rwObject.write(sprintf('LMPsychoFunctions_%d',ii),hFig,paramsList,writeProgram,'Type','figure');
     close(hFig);
     
     % Convert threshold contrast to threshold cone contrasts
@@ -174,7 +174,7 @@ xlabel('L contrast','FontSize',rParams.plotParams.labelFontSize); ylabel('M cont
 title('M versus L','FontSize',rParams.plotParams.titleFontSize);
 xlim([-contrastLim contrastLim]); ylim([-contrastLim contrastLim]);
 axis('square');
-rwObject.write('LMThresholdContour',hFig,parentParamsList,{},writeProgram,'Type','figure');
+rwObject.write('LMThresholdContour',hFig,paramsList,writeProgram,'Type','figure');
 
 %% Validation data
 if (nargin > 0)

@@ -48,8 +48,7 @@ end
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-parentParamsList = {};
-currentParamsList = {rParams, rParams.colorModulationParams};
+paramsList = {rParams, rParams.colorModulationParams};
 
 %% Make the grayscale gabor pattern and have a look
 %
@@ -236,7 +235,7 @@ gaborScene = sceneSet(gaborScene, 'h fov', rParams.gaborParams.fieldOfViewDegs);
 % that we loaded, and thus the RGB values will not produce exactly the
 % desired appearance.
 vcNewGraphWin; [~,h] = scenePlot(gaborScene,'radiance image no grid');
-rwObject.write('colorGaborScene',h,parentParamsList,currentParamsList,theProgram,'Type','figure');
+rwObject.write('colorGaborScene',h,paramsList,theProgram,'Type','figure');
 
 %% Create oi
 gaborOI = oiCreate('wvf human');
@@ -254,7 +253,7 @@ gaborOIBlur = oiCompute(gaborOI,gaborScene);
 % because the OI incorprates the transmittance of the lens.  Down below we
 % will turn that off as a check.
 vcNewGraphWin; [~,h] = oiPlot(gaborOIBlur,'irradiance image no grid');
-rwObject.write('colorGaborOpticalImageBlur',h,parentParamsList,currentParamsList,theProgram,'Type','figure');
+rwObject.write('colorGaborOpticalImageBlur',h,paramsList,theProgram,'Type','figure');
 clearvars('gaborOIBlur');
 
 %% Turn off optics for current purpose of checking LMS contrast 
@@ -265,7 +264,7 @@ gaborOI = oiCompute(gaborOI,gaborScene);
 
 % Look at the OI
 vcNewGraphWin; [~,h] = oiPlot(gaborOI,'irradiance image no grid');
-rwObject.write('colorGaborOpticalImageNoBlur',h,parentParamsList,currentParamsList,theProgram,'Type','figure');
+rwObject.write('colorGaborOpticalImageNoBlur',h,paramsList,theProgram,'Type','figure');
 
 % Just for fun, put OI into isetbio's interactive window
 vcAddAndSelectObject(gaborOI); oiWindow;
@@ -297,9 +296,9 @@ gaborConeMosaic.window;
 
 % And must make a plot in a figure
 vcNewGraphWin; [~,h] = gaborConeMosaic.plot('cone mosaic');
-rwObject.write('colorGaborMosaic',h,parentParamsList,currentParamsList,theProgram,'Type','figure');
+rwObject.write('colorGaborMosaic',h,paramsList,theProgram,'Type','figure');
 vcNewGraphWin; [~,h] = gaborConeMosaic.plot('mean absorptions');
-rwObject.write('colorGaborIsomerizations',h,parentParamsList,currentParamsList,theProgram,'Type','figure');
+rwObject.write('colorGaborIsomerizations',h,paramsList,theProgram,'Type','figure');
 
 %% Get min max for LMS cone isomerizations
 % Extract the min and max absorptions in a loop. Since we are

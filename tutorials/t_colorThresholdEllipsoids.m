@@ -335,9 +335,8 @@ axis('square');
 
 rwObject = IBIOColorDetectReadWriteBasic;
 writeProgram = mfilename;
-parentParamsList = {};
-currentParamsList = {psychoEllipsoidParams};
-rwObject.write('PWLMThresholdEllipse',hFig,parentParamsList,currentParamsList,writeProgram,'Type','figure');
+paramsList = {psychoEllipsoidParams};
+rwObject.write('PWLMThresholdEllipse',hFig,paramsList,writeProgram,'Type','figure');
 
 %% Put warning back
 warning(s.state,s.identifier);

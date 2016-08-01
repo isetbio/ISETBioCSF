@@ -80,9 +80,9 @@ fprintf('Reading no stimulus data ... ');
 colorModulationParamsTemp = rParams.colorModulationParams;
 colorModulationParamsTemp.coneContrasts = [0 0 0]';
 colorModulationParamsTemp.contrast = 0;
-parentParamsList = {rParams, testDirectionParams, colorModulationParamsTemp};
-noStimData = rwObject.read('responseInstances',parentParamsList,{},readProgram);
-ancillaryData = rwObject.read('ancillaryData',parentParamsList,{},readProgram);
+paramsList = {rParams, testDirectionParams, colorModulationParamsTemp};
+noStimData = rwObject.read('responseInstances',paramsList,readProgram);
+ancillaryData = rwObject.read('ancillaryData',paramsList,readProgram);
 
 % Get out some data we'll want
 nTrials = numel(noStimData.responseInstanceArray);
@@ -118,7 +118,7 @@ parfor kk = 1:nParforConditions
     colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
     colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
     parentParamsList = {rParams, testDirectionParams, colorModulationParamsTemp};
-    stimData = rwObject.read('responseInstances',parentParamsList,{},readProgram);
+    stimData = rwObject.read('responseInstances',paramsList,readProgram);
     if (numel(stimData.responseInstanceArray) ~= nTrials)
         error('Inconsisent number of trials');
     end
@@ -132,10 +132,9 @@ parfor kk = 1:nParforConditions
     
     % Save classifier plot if we made one and then close the figure.
     if (plotSvm)
-        parentParamsList = {rParams, testDirectionParams};
-        currentParamsList = {thresholdParams};
+        paramsList = {rParams, testDirectionParams, thresholdParams};
         rwObject.write(sprintf('svmBoundary_PCA%d_PCA%d_%d',plotSvmPCAAxis1,plotSvmPCAAxis2,kk), ...
-            h,parentParamsList,currentParamsList,writeProgram,'Type','figure');
+            h,paramsList,writeProgram,'Type','figure');
         close(h);
     end
 end
@@ -163,9 +162,8 @@ clearvars('usePercentCorrect','useStdErr');
 
 %% Save classification performance data and a copy of this script
 fprintf('Writing performance data ... ');
-parentParamsList = {rParams, testDirectionParams};
-currentParamsList = {thresholdParams};
-rwObject.write('performanceData',performanceData,parentParamsList,currentParamsList,writeProgram);
+paramsList = {rParams, testDirectionParams, thresholdParams};
+rwObject.write('performanceData',performanceData,paramsList,writeProgram);
 fprintf('done\n');
 
 %% Validation data
@@ -185,6 +183,6 @@ for ii = 1:size(testConeContrasts,2)
     box off; grid on
     title(sprintf('LMS = [%2.2f %2.2f %2.2f]', testConeContrasts(1,ii), testConeContrasts(2,ii), testConeContrasts(3,ii)), ...
         'FontSize',rParams.plotParams.titleFontSize);
-    rwObject.write(sprintf('performanceData_%d',ii),hFig,parentParamsList,currentParamsList,writeProgram,'Type','figure');
+    rwObject.write(sprintf('performanceData_%d',ii),hFig,paramsList,writeProgram,'Type','figure');
 end
 

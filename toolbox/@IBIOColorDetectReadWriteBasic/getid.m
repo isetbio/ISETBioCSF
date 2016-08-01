@@ -1,5 +1,5 @@
-function fileid = getid(obj,name,parentParamsList,currentParamsList,theProgram,varargin)
-% fileid = getid(obj,name,parentParamsList,currentParamsList,theProgram,varargin)
+function fileid = getid(obj,name,paramsList,theProgram,varargin)
+% fileid = getid(obj,name,paramsList,theProgram,varargin)
 %
 % Get a unique id required for reading and writing a piece of data.
 % Here that is the full path to the file, but in a database world it could
@@ -23,34 +23,33 @@ function fileid = getid(obj,name,parentParamsList,currentParamsList,theProgram,v
 %% Parse input.
 p = inputParser;
 p.addRequired('name',@ischar);
-p.addRequired('parentParamsList',@iscell);
-p.addRequired('currentParamsList',@iscell);
+p.addRequired('paramsList',@iscell);
 p.addRequired('theProgram',@ischar);
 p.addParameter('Type','mat',@ischar);
 p.addParameter('ArtifactParams',[],@isstruct);
 p.addParameter('FigureType','pdf',@ischar);
 p.addParameter('MovieType','m4v',@ischar);
-p.parse(name,parentParamsList,currentParamsList,theProgram,varargin{:});
+p.parse(name,paramsList,theProgram,varargin{:});
 
 %% Get parent directory list and make sure the output tree is in place
 theParentDir = fullfile(getpref('IBIOColorDetect','outputBaseDir'));
 if (~exist(theParentDir,'dir'))
     mkdir(theParentDir);
 end
-if (~isempty(p.Results.parentParamsList))
-    for ii = 1:length(p.Results.parentParamsList)
-        thisParentParams = p.Results.parentParamsList{ii};
-        switch(thisParentParams.type)
+if (~isempty(p.Results.paramsList))
+    for ii = 1:length(p.Results.paramsList)
+        thisParams = p.Results.paramsList{ii};
+        switch(thisParams.type)
             case 'ResponseGeneration'
-                thisParentDir = obj.paramsToResponseGenerationDirName(thisParentParams);
+                thisParentDir = obj.paramsToResponseGenerationDirName(thisParams);
             case 'ColorModulation'
-                thisParentDir = obj.paramsToColorModulationDirName(thisParentParams);
+                thisParentDir = obj.paramsToColorModulationDirName(thisParams);
             case 'LMPlaneInstance'
-                thisParentDir = obj.paramsToLMPlaneInstanceDirName(thisParentParams);
+                thisParentDir = obj.paramsToLMPlaneInstanceDirName(thisParams);
             case 'threshold'
-                thisParentDir = obj.paramsToThresholdDirName(thisParentParams);
+                thisParentDir = obj.paramsToThresholdDirName(thisParams);
             case 'psychoEllipsoid'
-                thisParentDir = obj.paramsToPsychoEllipsoidDirName(thisParentParams);
+                thisParentDir = obj.paramsToPsychoEllipsoidDirName(thisParams);
             otherwise
                 error('Unkown parent parameters type');
         end
@@ -61,38 +60,14 @@ if (~isempty(p.Results.parentParamsList))
     end    
 end
 
-%% Get current dir name and make it if necessary
-theCurrentDir = theParentDir;
-for ii = 1:length(p.Results.currentParamsList)
-    thisCurrentParams = p.Results.currentParamsList{ii};
-    switch(thisCurrentParams.type)
-        case 'ResponseGeneration'
-            thisCurrentDir = obj.paramsToResponseGenerationDirName(thisCurrentParams);
-        case 'ColorModulation'
-            thisCurrentDir = obj.paramsToColorModulationDirName(thisCurrentParams);
-        case 'LMPlaneInstance'
-            thisCurrentDir = obj.paramsToLMPlaneInstanceDirName(thisCurrentParams);
-        case 'threshold'
-            thisCurrentDir = obj.paramsToThresholdDirName(thisCurrentParams);
-        case 'psychoEllipsoid'
-            thisCurrentDir = obj.paramsToPsychoEllipsoidDirName(thisCurrentParams);
-        otherwise
-            error('Unkown current parameters type');
-    end
-    theCurrentDir = fullfile(theCurrentDir,thisCurrentDir);
-    if (~exist(theCurrentDir,'dir'))
-        mkdir(theCurrentDir);
-    end
-end
-
 %% Filetype specific subdirectory
 switch (p.Results.Type)
     case 'mat'
-        theTypeDir = fullfile(theCurrentDir,'matfiles');
+        theTypeDir = fullfile(theParentDir,'matfiles');
     case 'figure'
-        theTypeDir = fullfile(theCurrentDir,'figures');
+        theTypeDir = fullfile(theParentDir,'figures');
     case {'movie','movieFile'}
-        theTypeDir = fullfile(theCurrentDir,'movies');
+        theTypeDir = fullfile(theParentDir,'movies');
 end
 if (~exist(theTypeDir,'dir'))
     mkdir(theTypeDir);

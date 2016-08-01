@@ -1,5 +1,5 @@
-function [data,artifactParams] = read(obj,name,parentParamsList,currentParamsList,theProgram,varargin)
-% [data,artifactParams] = read(obj,name,parentParamsList,currentParamsList,theProgram,varargin)
+function [data,artifactParams] = read(obj,name,paramsList,theProgram,varargin)
+% [data,artifactParams] = read(obj,name,paramsList,theProgram,varargin)
 %
 % Read data objects from the right place.
 %
@@ -10,14 +10,13 @@ function [data,artifactParams] = read(obj,name,parentParamsList,currentParamsLis
 %% Parse input
 p = inputParser;
 p.addRequired('name',@ischar);
-p.addRequired('parentParamsList',@iscell);
-p.addRequired('currentParamsList',@iscell);
+p.addRequired('paramsList',@iscell);
 p.addRequired('theProgram',@ischar);
 p.addParameter('Type','mat',@ischar);
-p.parse(name,parentParamsList,currentParamsList,theProgram,varargin{:});
+p.parse(name,paramsList,currentParamsList,theProgram,varargin{:});
 
 %% Get fileid
-fileid = obj.getid(p.Results.name,p.Results.parentParamsList,p.Results.currentParamsList,p.Results.theProgram,varargin{:});
+fileid = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:});
 
 %% Read the data
 switch (p.Results.Type)

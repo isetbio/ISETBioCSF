@@ -1,5 +1,5 @@
-function write(obj,name,data,parentParamsList,currentParamsList,theProgram,varargin)
-% write(obj,name,data,parentParamsList,currentParamsList,theProgram,varargin)
+function write(obj,name,data,paramsList,theProgram,varargin)
+% write(obj,name,data,paramsList,theProgram,varargin)
 %
 % Write data objects in a good place, with metadata.
 %
@@ -22,17 +22,16 @@ function write(obj,name,data,parentParamsList,currentParamsList,theProgram,varar
 p = inputParser;
 p.addRequired('name',@ischar);
 p.addRequired('data');
-p.addRequired('parentParamsList',@iscell);
-p.addRequired('currentParamsList',@iscell);
+p.addRequired('paramsList',@iscell);
 p.addRequired('theProgram',@ischar);
 p.addParameter('Type','mat',@ischar);
 p.addParameter('ArtifactParams',[],@isstruct);
 p.addParameter('FigureType','pdf',@ischar);
 p.addParameter('MovieType','m4v',@ischar);
-p.parse(name,data,parentParamsList,currentParamsList,theProgram,varargin{:});
+p.parse(name,data,paramsList,theProgram,varargin{:});
 
 %% Get fileid
-fileid = obj.getid(p.Results.name,p.Results.parentParamsList,p.Results.currentParamsList,p.Results.theProgram,varargin{:});
+fileid = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:});
 
 %% Write the data
 switch (p.Results.Type)

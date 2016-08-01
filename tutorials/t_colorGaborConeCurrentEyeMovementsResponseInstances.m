@@ -73,7 +73,6 @@ end
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-parentParamsList = {};
 
 %% Control what types of output are written
 % These may only work on some computers, depending on what infrastructure is installed.
@@ -113,8 +112,8 @@ noStimData = struct(...
     rParams.gaborParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic));
 
 % Write the no cone contrast data and some extra facts we need
-currentParamsList = {rParams, testDirectionParams, colorModulationParamsTemp};
-rwObject.write('responseInstances',noStimData,parentParamsList,currentParamsList,theProgram);
+paramsList = {rParams, testDirectionParams, colorModulationParamsTemp};
+rwObject.write('responseInstances',noStimData,paramsList,theProgram);
 
 %% Save the other data we need for use by the classifier preprocessing subroutine
 ancillaryData = struct(...
@@ -123,7 +122,7 @@ ancillaryData = struct(...
     'theMosaic', theMosaic, ...
     'rParams', rParams, ...
     'LMPlaneInstanceParams', testDirectionParams);
-rwObject.write('ancillaryData',ancillaryData,parentParamsList,currentParamsList,theProgram);
+rwObject.write('ancillaryData',ancillaryData,paramsList,theProgram);
 
 %% Generate data for all the examined stimuli
 %
@@ -152,7 +151,7 @@ parfor kk = 1:nParforConditions
     
     % Save data for this color direction/contrast pair
     currentParamsList = {rParams, testDirectionParams, colorModulationParamsTemp};
-    rwObject.write('responseInstances',stimData,parentParamsList,currentParamsList,theProgram);
+    rwObject.write('responseInstances',stimData,paramsList,theProgram);
 end
 fprintf('Finished generating responses in %2.2f minutes\n', toc/60);
 
