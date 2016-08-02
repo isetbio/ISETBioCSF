@@ -44,6 +44,8 @@ if (~isempty(p.Results.paramsList))
                 thisParentDir = obj.paramsToResponseGenerationDirName(thisParams);
             case 'ColorModulation'
                 thisParentDir = obj.paramsToColorModulationDirName(thisParams);
+            case 'ColorModulationRoot'
+                thisParentDir = obj.paramsToColorModulationRootDirName(thisParams);
             case 'LMPlaneInstance'
                 thisParentDir = obj.paramsToLMPlaneInstanceDirName(thisParams);
             case 'threshold'

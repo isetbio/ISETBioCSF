@@ -162,7 +162,9 @@ clearvars('usePercentCorrect','useStdErr');
 
 %% Save classification performance data and a copy of this script
 fprintf('Writing performance data ... ');
-paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.colorModulationParams, testDirectionParams, thresholdParams};
+colorParamsRoot = rParams.colorModulationParams;
+colorParamsRoot.type = 'ColorModulationRoot';
+paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, colorParamsRoot, testDirectionParams, thresholdParams};
 rwObject.write('performanceData',performanceData,paramsList,writeProgram);
 fprintf('done\n');
 
