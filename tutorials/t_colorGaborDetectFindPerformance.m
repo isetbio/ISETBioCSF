@@ -80,7 +80,7 @@ fprintf('Reading no stimulus data ... ');
 colorModulationParamsTemp = rParams.colorModulationParams;
 colorModulationParamsTemp.coneContrasts = [0 0 0]';
 colorModulationParamsTemp.contrast = 0;
-paramsList = {rParams, testDirectionParams, colorModulationParamsTemp};
+paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, testDirectionParams, colorModulationParamsTemp};
 noStimData = rwObject.read('responseInstances',paramsList,readProgram);
 ancillaryData = rwObject.read('ancillaryData',paramsList,readProgram);
 
@@ -117,7 +117,7 @@ parfor kk = 1:nParforConditions
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
     colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
-    parentParamsList = {rParams, testDirectionParams, colorModulationParamsTemp};
+    parentParamsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, testDirectionParams, colorModulationParamsTemp};
     stimData = rwObject.read('responseInstances',paramsList,readProgram);
     if (numel(stimData.responseInstanceArray) ~= nTrials)
         error('Inconsisent number of trials');
@@ -132,7 +132,7 @@ parfor kk = 1:nParforConditions
     
     % Save classifier plot if we made one and then close the figure.
     if (plotSvm)
-        paramsList = {rParams, testDirectionParams, thresholdParams};
+        paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.colorModulationParams, testDirectionParams, thresholdParams};
         rwObject.write(sprintf('svmBoundary_PCA%d_PCA%d_%d',plotSvmPCAAxis1,plotSvmPCAAxis2,kk), ...
             h,paramsList,writeProgram,'Type','figure');
         close(h);
@@ -162,7 +162,7 @@ clearvars('usePercentCorrect','useStdErr');
 
 %% Save classification performance data and a copy of this script
 fprintf('Writing performance data ... ');
-paramsList = {rParams, testDirectionParams, thresholdParams};
+paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.colorModulationParams, testDirectionParams, thresholdParams};
 rwObject.write('performanceData',performanceData,paramsList,writeProgram);
 fprintf('done\n');
 

@@ -112,7 +112,7 @@ noStimData = struct(...
     rParams.gaborParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic));
 
 % Write the no cone contrast data and some extra facts we need
-paramsList = {rParams, testDirectionParams, colorModulationParamsTemp};
+paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, testDirectionParams, colorModulationParamsTemp};
 rwObject.write('responseInstances',noStimData,paramsList,theProgram);
 
 %% Save the other data we need for use by the classifier preprocessing subroutine
@@ -150,7 +150,7 @@ parfor kk = 1:nParforConditions
         rParams.gaborParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic));
     
     % Save data for this color direction/contrast pair
-    currentParamsList = {rParams, testDirectionParams, colorModulationParamsTemp};
+    currentParamsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.colorModulationParams, testDirectionParams, colorModulationParamsTemp};
     rwObject.write('responseInstances',stimData,paramsList,theProgram);
 end
 fprintf('Finished generating responses in %2.2f minutes\n', toc/60);
