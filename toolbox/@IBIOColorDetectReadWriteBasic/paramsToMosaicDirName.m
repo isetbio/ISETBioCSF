@@ -1,8 +1,7 @@
 function dirname = paramsToMosaicDirName(obj,mosaicParams)
 % pdirname = paramsToMosaicDirName(obj,mosaicParams)
 % 
-% Generate a directory names that captures the basic non-color stimulus
-% parameters, as well as the oi and mosaic parameters used to generate the responses
+% Generate a directory names that captures the mosaic parameters.
 
 if (~strcmp(mosaicParams.type,'Mosaic'))
     error('Incorrect parameter type passed');

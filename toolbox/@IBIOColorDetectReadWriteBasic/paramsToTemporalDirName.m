@@ -1,8 +1,8 @@
 function dirname = paramsToResponseGenerationDirName(obj,temporalParams)
 % dirname = paramsToResponseGenerationDirName(obj,temporalParams)
 % 
-% Generate a directory names that captures the basic non-color stimulus
-% parameters, as well as the oi and mosaic parameters used to generate the responses
+% Generate a directory names that captures the temporal parameters used to
+% generate the responses.
 
 if (~strcmp(temporalParams.type,'Temporal'))
     error('Incorrect parameter type passed');

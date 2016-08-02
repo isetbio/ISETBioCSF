@@ -1,8 +1,8 @@
 function dirname = paramsToGaborDirName(obj,gaborParams)
 % dirname = paramsToGaborDirName(obj,gaborParams)
 % 
-% Generate a directory names that captures the basic non-color stimulus
-% parameters, as well as the oi and mosaic parameters used to generate the responses
+% Generate a directory names that captures the basic non-color Gabor stimulus
+% parameters.
 
 if (~strcmp(gaborParams.type,'Gabor'))
     error('Incorrect parameter type passed');

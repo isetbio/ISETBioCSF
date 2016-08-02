@@ -1,8 +1,8 @@
 function dirname = paramsToResponseGenerationDirName(obj,params)
 % dirname = paramsToResponseGenerationDirName(obj,params)
 % 
-% Generate a directory names that captures the basic LMPlane instance generation
-% parameters.
+% Generate a directory names that captures the basic parameters used to
+% find threshold.
 
 if (~strcmp(params.type,'threshold'))
     error('Incorrect parameter type passed');
