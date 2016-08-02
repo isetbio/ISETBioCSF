@@ -48,7 +48,7 @@ end
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-paramsList = {rParams, rParams.colorModulationParams};
+paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.colorModulationParams};
 
 %% Make the grayscale gabor pattern and have a look
 %

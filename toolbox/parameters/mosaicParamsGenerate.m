@@ -17,7 +17,7 @@ function mosaicParams = mosaicParamsGenerate(varargin)
 % See also
 %   colorGaborResponseParametersGenerate
 
-mosaicParams.type = 'MosaicParams';
+mosaicParams.type = 'Mosaic';
 
 mosaicParams.macular = true;
 mosaicParams.LMSRatio = [0.62 0.31 0.07];

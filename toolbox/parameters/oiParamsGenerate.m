@@ -18,7 +18,7 @@ function oiParams = oiParamsGenerate(varargin)
 % See also
 %   responseParametersGenerate
 
-oiParams.type = 'OpticsParams';
+oiParams.type = 'Optics';
 
 oiParams.offAxis = false;
 oiParams.blur = true;

@@ -18,3 +18,4 @@ colorModulationParams.coneContrasts = [0.05 -0.05 0]';
 colorModulationParams.backgroundxyY = [0.27 0.30 49.8]';
 colorModulationParams.monitorFile = 'CRT-MODEL';
 colorModulationParams.leakageLum = 1.0;
+colorModulationParams.lumFactor = 1;

@@ -12,7 +12,7 @@ function temporalParams = temporalParamsGenerate(varargin)
 %   eyeDoNotMove - Boolean, set to true for perfect fixation.
 %   simulationTimeStepSecs - Time step used in temporal simulation
 
-temporalParams.type = 'TemporalParams';
+temporalParams.type = 'Temporal';
 
 temporalParams.frameRate = 60;
 temporalParams.windowTauInSeconds = 0.165;
