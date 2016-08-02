@@ -51,7 +51,7 @@ end
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-parentParamsList = {rParams, rParams.colorModulationParams};
+parentParamsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.colorModulationParams};
 
 %% Create the optics
 theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
