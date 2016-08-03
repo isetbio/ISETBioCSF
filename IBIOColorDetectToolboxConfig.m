@@ -40,6 +40,6 @@ config = [ ...
     ];
 
 %% Write the config to a JSON file.
-configPath = 'IBIOColorDetectToolboxConfig.json';
+configPath = 'IBIOColorDetectToolbox.json';
 tbWriteConfig(config, 'configPath', configPath);
 
