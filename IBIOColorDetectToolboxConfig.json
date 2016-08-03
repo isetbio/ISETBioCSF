@@ -2,46 +2,49 @@
 	{
 		"flavor": "",
 		"hook": "",
+		"localHookTemplate": "",
 		"name": "BrainardLabToolbox",
+		"pathPlacement": "append",
 		"subfolder": "",
-		"type": "git",
+		"toolboxRoot": "",
+		"type": "",
 		"update": "",
-		"url": "https://github.com:DavidBrainard/BrainardLabToolbox.git"
+		"url": "https:\/\/github.com:DavidBrainard\/BrainardLabToolbox.git"
 	},
 	{
 		"flavor": "",
 		"hook": "",
+		"localHookTemplate": "",
 		"name": "UnitTestToolbox",
+		"pathPlacement": "append",
 		"subfolder": "",
-		"type": "git",
+		"toolboxRoot": "",
+		"type": "",
 		"update": "",
-		"url": "https://github.com:isetbio/UnitTestToolbox.git"
+		"url": "https:\/\/github.com:isetbio\/UnitTestToolbox.git"
 	},
 	{
 		"flavor": "",
 		"hook": "",
+		"localHookTemplate": "",
 		"name": "RemoteDataToolbox",
+		"pathPlacement": "append",
 		"subfolder": "",
-		"type": "git",
+		"toolboxRoot": "",
+		"type": "",
 		"update": "",
-		"url": "https://github.com:isetbio/RemoteDataToolbox.git"
+		"url": "https:\/\/github.com:isetbio\/RemoteDataToolbox.git"
 	},
 	{
 		"flavor": "",
-		"hook": "run /Users/dhb/Desktop/ProjectPrefs/isetbio/ieSetPreferencesDB",
+		"hook": "run \/Users\/dhb\/Desktop\/ProjectPrefs\/isetbio\/ieSetPreferencesDB",
+		"localHookTemplate": "",
 		"name": "isetbio",
+		"pathPlacement": "append",
 		"subfolder": "",
-		"type": "git",
+		"toolboxRoot": "",
+		"type": "",
 		"update": "",
-		"url": "https://github.com:isetbio/isetbio.git"
-	},
-	{
-		"flavor": "",
-		"hook": "",
-		"name": "IBIOColorDetectProjectToolbox",
-		"subfolder": "",
-		"type": "local",
-		"update": "",
-		"url": "/Users/Shared/Matlab/Analysis/IBIOColorDetect/toolbox"
+		"url": "https:\/\/github.com:isetbio\/isetbio.git"
 	}
 ]
