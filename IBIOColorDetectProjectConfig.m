@@ -7,7 +7,7 @@ function IBIOColorDetectProjectConfig
 setpref('ToolboxToolbox', 'toolboxRoot','/Users/Shared/Matlab/Toolboxes');
 
 %% Setup Matlab environment using the ToolboxToolbox
-tbDeployToolboxes('configPath','IBIOColorDetectToolboxConfig.json','restorePath',true);
+tbDeployToolboxes('configPath','IBIOColorDetectToolboxConfig.json','resetPath',true);
 
 %% Set preferences for project output
 %
