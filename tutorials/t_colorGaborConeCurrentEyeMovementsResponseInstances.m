@@ -109,10 +109,10 @@ noStimData = struct(...
     'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
     'stimulusLabel', stimulusLabel, ...
     'responseInstanceArray', colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-    rParams.gaborParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic));
+    rParams.gaborParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic));
 
 % Write the no cone contrast data and some extra facts we need
-paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, testDirectionParams, colorModulationParamsTemp};
+paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
 rwObject.write('responseInstances',noStimData,paramsList,theProgram);
 
 %% Save the other data we need for use by the classifier preprocessing subroutine
@@ -133,7 +133,7 @@ rwObject.write('ancillaryData',ancillaryData,paramsList,theProgram);
 tic;
 parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
 nParforConditions = length(parforConditionStructs);
-parfor kk = 1:nParforConditions
+for kk = 1:nParforConditions
     thisConditionStruct = parforConditionStructs{kk};
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
@@ -147,10 +147,10 @@ parfor kk = 1:nParforConditions
         'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
         'stimulusLabel', stimulusLabel, ...
         'responseInstanceArray', colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-        rParams.gaborParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic));
+        rParams.gaborParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic));
     
     % Save data for this color direction/contrast pair
-    currentParamsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.colorModulationParams, testDirectionParams, colorModulationParamsTemp};
+    paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
     rwObject.write('responseInstances',stimData,paramsList,theProgram);
 end
 fprintf('Finished generating responses in %2.2f minutes\n', toc/60);

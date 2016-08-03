@@ -31,7 +31,7 @@ p.addParameter('MovieType','m4v',@ischar);
 p.parse(name,data,paramsList,theProgram,varargin{:});
 
 %% Get fileid
-fileid = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:});
+[fileid,filedir,filename] = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:});
 
 %% Write the data
 switch (p.Results.Type)
@@ -39,11 +39,16 @@ switch (p.Results.Type)
         theData = p.Results.data;
         save(fileid,'theData','-v7.3');
     case 'figure'
+        % The cd method seems to prevent an error when fileid gets very
+        % long.
+        curdir = pwd;
+        cd(filedir);
         if (exist('FigureSave','file'))
-            FigureSave(fileid,p.Results.data,p.Results.FigureType);
+            FigureSave(filename,p.Results.data,p.Results.FigureType);
         else
-            saveas(h,fileid,p.Results.FigureType);
+            saveas(h,filename,p.Results.FigureType);
         end
+        cd(curdir);
     case 'movieFile'
         unix(['mv ' p.Results.data ' ' fileid]);
 end

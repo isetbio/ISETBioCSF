@@ -51,7 +51,7 @@ end
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-theParamsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.colorModulationParams};
+theParamsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
 
 %% Create the optics
 theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
@@ -86,11 +86,11 @@ for stimFrameIndex = 1:stimulusFramesNum
     % Apply CRT raster modulation
     if (~isempty(rasterModulation))
         colorModulationParamsTemp.contrast = theBasecolorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex) * rasterModulation(stimFrameIndex);
-        colorModulationParamsTemp.backgroundxyY(3) = gaborParams.leakageLum + theBasecolorModulationParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
+        rParams.backgroundParams.backgroundxyY(3) = backgroundParams.leakageLum + rParams.backgroundParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
     end
     
     % Create a scene for the current frame
-    theScene = colorGaborSceneCreate(rParams.gaborParams,colorModulationParamsTemp);
+    theScene = colorGaborSceneCreate(rParams.gaborParams,rParams.backgroundParams,colorModulationParamsTemp);
     
     % Compute the optical image
     theOI = oiCompute(theOI, theScene);

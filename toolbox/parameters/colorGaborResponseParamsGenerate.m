@@ -24,6 +24,9 @@ params.type = 'ResponseGeneration';
 %% Define Gabor spatial parameters
 params.gaborParams = gaborParamsGenerate(varargin{:});
 
+%% Define background/CRT params
+params.backgroundParams = backgroundParamsGenerate(varargin{:});
+
 %% Define color modulation parameters
 params.colorModulationParams = colorModulationParamsGenerate(varargin{:});
 

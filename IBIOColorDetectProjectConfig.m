@@ -12,7 +12,8 @@ tbDeployToolboxes('configPath','IBIOColorDetectToolboxConfig.json','resetPath',t
 %% Set preferences for project output
 %
 % Root dir
-baseDir = '/Users/dhb/DropboxLab/IBIO_analysis';
+%baseDir = '/Users/dhb/DropboxLab/IBIO_analysis';
+baseDir = '/Volumes/Users1/DropboxLab/IBIO_analysis';
 if (~exist(baseDir))
     mkdir(baseDir);
 end

@@ -1,5 +1,5 @@
-function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(gaborParams,colorModulationParams,gamutCheckFlag)
-% [gaborScene,gamutScaleFactor] = colorGaborSceneCreate(gaborParams,colorModulationParams,[gamutCheckFlag])
+function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(gaborParams,backgroundParams,colorModulationParams,gamutCheckFlag)
+% [gaborScene,gamutScaleFactor] = colorGaborSceneCreate(gaborParams,backgroundParams,colorModulationParams,[gamutCheckFlag])
 % 
 % Creates a colored Gabor IBIO scene. The scene will produce a specified
 % set of L, M, and S contrasts on a specific monitor.
@@ -7,6 +7,7 @@ function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(gaborParams,colo
 % Inputs:
 %   gaborParams     -  A struct that specifies the parameters for the Gabor to generate.
 %                      See t_colorGaborResponseGenerationParams
+%   backgroundParams - A struct that specifies background and display parameters 
 %   colorModulationParams -  A struct that specifies the parameters for the color modulation.
 %                      See t_colorGaborResponseGenerationParams
 %   gamutCheckFlag  -  If set, the routine returns the scale factor required to bring
@@ -21,14 +22,14 @@ function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(gaborParams,colo
 % 7/7/16 npc  added viewing distance param
 
 %% Optional arg for when we are maximizing contrast
-if (nargin < 3 || isempty(gamutCheckFlag))
+if (nargin < 4 || isempty(gamutCheckFlag))
     gamutCheckFlag = false;
 end
 
 % We also want to make sure that the contrast and background vectors are
 % both column vectors.
 coneContrast = colorModulationParams.coneContrasts(:);
-backgroundxyY = colorModulationParams.backgroundxyY(:);
+backgroundxyY = backgroundParams.backgroundxyY(:);
 
 %% Define parameters of a gabor pattern
 %
@@ -107,7 +108,7 @@ end
 % chromatic aberration, but given the general similarity of monitor channel
 % spectra we expect these differences to be small.  We could check this by
 % doing the calculations with different monitor descriptions.
-display = displayCreate(colorModulationParams.monitorFile);
+display = displayCreate(backgroundParams.monitorFile);
 
 % Set the viewing distance
 display = displaySet(display,'viewingdistance', gaborParams.viewingDistance);

@@ -1,5 +1,5 @@
-function responseInstanceArray = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, colorModulationParams, temporalParams, theOI, theMosaic)
-% responseInstanceArray = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, colorModulationParams, temporalParams, theOI, theMosaic)
+function responseInstanceArray = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
+% responseInstanceArray = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
 % 
 % Construct an array of nTrials response instances given the
 % simulationTimeStep, gaborParams, temporalParams, theOI, theMosaic.
@@ -41,11 +41,11 @@ for stimFrameIndex = 1:stimulusFramesNum
     % % Apply CRT raster modulation
     % if (~isempty(rasterModulation))
     %     colorModulationParams.contrast = theBaseColorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex) * rasterModulation(stimFrameIndex);
-    %     colorModulationParams.backgroundxyY(3) = colorModulationParams.leakageLum + theBaseColorModulationParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
+    %     backgroundParams.backgroundxyY(3) = backgroundParams.leakageLum + backgroundParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
     % end
     
     % Create a scene for the current frame
-    theScene = colorGaborSceneCreate(gaborParams,colorModulationParams);
+    theScene = colorGaborSceneCreate(gaborParams,backgroundParams,colorModulationParams);
     
     % Compute the optical image for the current frame
     theOI = oiCompute(theOI, theScene);

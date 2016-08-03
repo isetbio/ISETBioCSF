@@ -1,9 +1,10 @@
-function fileid = getid(obj,name,paramsList,theProgram,varargin)
-% fileid = getid(obj,name,paramsList,theProgram,varargin)
+function [fileid,filedir,filename] = getid(obj,name,paramsList,theProgram,varargin)
+% [fileid,filedir,filename] = getid(obj,name,paramsList,theProgram,varargin)
 %
 % Get a unique id required for reading and writing a piece of data.
 % Here that is the full path to the file, but in a database world it could
-% be something else.
+% be something else.  This also returns the directory and filename that
+% make up the fileid.
 %
 % Key/value pairs
 %   'Type'
@@ -44,8 +45,8 @@ if (~isempty(p.Results.paramsList))
                 thisParentDir = obj.paramsToResponseGenerationDirName(thisParams);
             case 'ColorModulation'
                 thisParentDir = obj.paramsToColorModulationDirName(thisParams);
-            case 'ColorModulationRoot'
-                thisParentDir = obj.paramsToColorModulationRootDirName(thisParams);
+            case 'Background'
+                thisParentDir = obj.paramsToBackgroundDirName(thisParams);
             case 'LMPlaneInstance'
                 thisParentDir = obj.paramsToLMPlaneInstanceDirName(thisParams);
             case 'threshold'
@@ -84,19 +85,20 @@ if (~exist(theTypeDir,'dir'))
 end
 
 %% Add in the name of reading or writing program
-theDir = fullfile(theTypeDir,theProgram);
-if (~exist(theDir,'dir'))
-    mkdir(theDir);
+filedir = fullfile(theTypeDir,theProgram);
+if (~exist(filedir,'dir'))
+    mkdir(filedir);
 end
 
 %% Add in the filename
 switch (p.Results.Type)
     case 'mat'
-        fileid = fullfile(theDir,[name '.mat']);
+        filename = [name '.mat'];
     case 'figure'
-        fileid = fullfile(theDir,[name '.' p.Results.FigureType]);
+        filename = [name '.' p.Results.FigureType];
     case {'movie','movieFile'}
-        fileid = fullfile(theDir,[name '.' p.Results.MovieType]);
+        filename = [name '.' p.Results.MovieType];
 end
+fileid = fullfile(filedir,filename);
 
 end

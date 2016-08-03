@@ -13,7 +13,7 @@ p.addRequired('name',@ischar);
 p.addRequired('paramsList',@iscell);
 p.addRequired('theProgram',@ischar);
 p.addParameter('Type','mat',@ischar);
-p.parse(name,paramsList,currentParamsList,theProgram,varargin{:});
+p.parse(name,paramsList,theProgram,varargin{:});
 
 %% Get fileid
 fileid = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:});

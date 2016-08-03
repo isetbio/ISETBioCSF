@@ -1,7 +1,7 @@
 function validationData = t_colorGaborConeIsomerizationsMovie(rParams)
 % validationData = t_colorGaborConeIsomerizationsMovie(rParams)
 %
-% % Illustrates the basic steps required to calculate cone isomerizations
+% Illustrates the basic steps required to calculate cone isomerizations
 % for a Gaussian windowed temporal color Gabor modulation.
 %
 % If parameters structure is passed, the routine will use the defaults
@@ -40,7 +40,7 @@ end
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.colorModulationParams};
+paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
 
 %% Plot the Gaussian temporal window, just to make sure it looks right
 gaussianFigure = figure; clf;
@@ -58,7 +58,7 @@ for ii = 1:rParams.temporalParams.nSampleTimes
     rParamsTemp = rParams;
     rParamsTemp.colorModulationParams.contrast = rParams.colorModulationParams.contrast*rParams.temporalParams.gaussianTemporalWindow(ii);
     fprintf('Computing scene %d of %d, time %0.3f, windowVal %0.3f\n',ii,rParamsTemp.temporalParams.nSampleTimes,rParamsTemp.temporalParams.sampleTimes(ii),rParamsTemp.temporalParams.gaussianTemporalWindow(ii));
-    gaborScene{ii} = colorGaborSceneCreate(rParamsTemp.gaborParams,rParamsTemp.colorModulationParams);
+    gaborScene{ii} = colorGaborSceneCreate(rParamsTemp.gaborParams,rParams.backgroundParams,rParamsTemp.colorModulationParams);
 end
 clearvars('rParamsTemp');
 

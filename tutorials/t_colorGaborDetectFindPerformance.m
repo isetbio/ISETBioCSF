@@ -80,7 +80,7 @@ fprintf('Reading no stimulus data ... ');
 colorModulationParamsTemp = rParams.colorModulationParams;
 colorModulationParamsTemp.coneContrasts = [0 0 0]';
 colorModulationParamsTemp.contrast = 0;
-paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, testDirectionParams, colorModulationParamsTemp};
+paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
 noStimData = rwObject.read('responseInstances',paramsList,readProgram);
 ancillaryData = rwObject.read('ancillaryData',paramsList,readProgram);
 
@@ -117,7 +117,7 @@ parfor kk = 1:nParforConditions
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
     colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
-    parentParamsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, testDirectionParams, colorModulationParamsTemp};
+    paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
     stimData = rwObject.read('responseInstances',paramsList,readProgram);
     if (numel(stimData.responseInstanceArray) ~= nTrials)
         error('Inconsisent number of trials');
@@ -132,8 +132,8 @@ parfor kk = 1:nParforConditions
     
     % Save classifier plot if we made one and then close the figure.
     if (plotSvm)
-        paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.colorModulationParams, testDirectionParams, thresholdParams};
-        rwObject.write(sprintf('svmBoundary_PCA%d_PCA%d_%d',plotSvmPCAAxis1,plotSvmPCAAxis2,kk), ...
+        paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp, thresholdParams};
+        rwObject.write(sprintf('svmBoundary_PCA%d_PCA%d',plotSvmPCAAxis1,plotSvmPCAAxis2), ...
             h,paramsList,writeProgram,'Type','figure');
         close(h);
     end
@@ -162,9 +162,7 @@ clearvars('usePercentCorrect','useStdErr');
 
 %% Save classification performance data and a copy of this script
 fprintf('Writing performance data ... ');
-colorParamsRoot = rParams.colorModulationParams;
-colorParamsRoot.type = 'ColorModulationRoot';
-paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, colorParamsRoot, testDirectionParams, thresholdParams};
+paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, thresholdParams};
 rwObject.write('performanceData',performanceData,paramsList,writeProgram);
 fprintf('done\n');
 

@@ -48,7 +48,7 @@ end
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.colorModulationParams};
+paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
 
 %% Make the grayscale gabor pattern and have a look
 %
@@ -116,7 +116,7 @@ if (max(abs(T_conesCheck(:)-T_cones(:))) > 1e-3)
 end
 
 % Convert background to cone excitations
-backgroundConeExcitations = M_XYZToCones*xyYToXYZ(rParams.colorModulationParams.backgroundxyY);
+backgroundConeExcitations = M_XYZToCones*xyYToXYZ(rParams.backgroundParams.backgroundxyY);
 
 % Convert test cone contrasts to cone excitations
 testConeExcitations = (rParams.colorModulationParams.coneContrasts .* backgroundConeExcitations);
@@ -158,7 +158,7 @@ vcNewGraphWin; imagesc(gaborConeExcitations/max(gaborConeExcitations(:))); axis 
 % chromatic aberration, but given the general similarity of monitor channel
 % spectra we expect these differences to be small.  We could check this by
 % doing the calculations with different monitor descriptions.
-display = displayCreate(rParams.colorModulationParams.monitorFile);
+display = displayCreate(rParams.backgroundParams.monitorFile);
 display = displaySet(display,'viewingdistance', rParams.gaborParams.viewingDistance);
 
 % Get display channel spectra.  The S vector displayChannelS is PTB format

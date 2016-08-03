@@ -64,9 +64,7 @@ readProgram = 't_colorGaborDetectFindPerformance';
 writeProgram = mfilename;
 
 %% Read performance data
-colorParamsRoot = rParams.colorModulationParams;
-colorParamsRoot.type = 'ColorModulationRoot';
-paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, colorParamsRoot, LMPlaneInstanceParams, thresholdParams};
+paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, LMPlaneInstanceParams, thresholdParams};
 performanceData = rwObject.read('performanceData',paramsList,readProgram);
 
 % If everything is working right, these check parameter structures will
