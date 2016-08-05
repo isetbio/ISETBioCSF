@@ -1,10 +1,17 @@
-function IBIOColorDetectProjectConfig
-% IBIOColorDetectConfig
+function IBIOColorDetect
+% IBIOColorDetect
 %
 % Configure things for working on the IBIOColorDetect project.
 
-%% Setup Matlab environment using the ToolboxToolbox
-tbDeployToolboxes('configPath','IBIOColorDetectToolboxConfig.json','resetPath',true);
+%% Say hello
+fprintf('Running IBIOColorDetect local hook\n');
+
+%% Put project toolbox onto path
+tbDeployToolboxes('config',tbToolboxRecord( ...
+    'name', 'IBIOColorDetectProjectToolbox', ...
+    'type', 'local', ...
+    'url', fullfile(pwd,'toolbox')) ...
+    );
 
 %% Set preferences for project output
 %
@@ -21,3 +28,6 @@ theDir = fullfile(baseDir,projectDir);
 
 % Set the preference
 setpref('IBIOColorDetect','outputBaseDir',theDir);
+
+%% Run isetbio prefs
+run('/Users/dhb/Desktop/ProjectPrefs/isetbio/ieSetPreferencesDB');
