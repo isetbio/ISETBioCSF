@@ -19,7 +19,9 @@ function validationData = t_colorGaborDetectFindPerformance(rParams,testDirectio
 % 7/11/16  npc Wrote it.
 
 %% Clear
-ieInit; clear; close all;
+if (nargin == 0)
+    ieInit; close all;
+end
 
 %% Fix random number generator so we can validate output exactly
 rng(1);

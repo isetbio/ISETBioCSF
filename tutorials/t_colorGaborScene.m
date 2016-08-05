@@ -32,7 +32,9 @@ function validationData = t_colorGaborScene(rParams)
 % 7/6/16  dhb  Wrote it.
 
 %% Clear
-ieInit; clear; close all;
+if (nargin == 0)
+    ieInit; close all;
+end
 
 %% Fix random number generator so we can validate output exactly
 rng(1);

@@ -34,7 +34,9 @@ function validationData = t_colorGaborConeCurrentEyeMovementsResponseInstances(r
 %   colorDetectResponseInstanceFastArrayConstruct
 
 %% Clear
-ieInit; clear; close all;
+if (nargin == 0)
+    ieInit; close all;
+end
 
 %% Fix random number generator so we can validate output exactly
 rng(1);
@@ -63,9 +65,6 @@ if (nargin < 1 | isempty(rParams))
 end
 
 %% Parameters that define the LM instances we'll generate here
-%
-% Make these numbers small (trialNum = 2, deltaAngle = 180,
-% nContrastsPerDirection = 2) to run through a test quickly.
 if (nargin < 2 | isempty(testDirectionParams))
     testDirectionParams = LMPlaneInstanceParamsGenerate;
 end

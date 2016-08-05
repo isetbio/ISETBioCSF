@@ -26,8 +26,11 @@ function validationData = t_colorGaborConeIsomerizationsMovie(rParams)
 %
 % 7/8/16  dhb  Wrote it.
 
-%% Initialize
-ieInit; clear; close all;
+%% Clear
+if (nargin == 0)
+    ieInit; close all;
+end
+
 
 %% Fix random number generator so we can validate output exactly
 rng(1);

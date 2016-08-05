@@ -17,7 +17,9 @@ function validationData = t_plotGaborDetectThresholdsOnLMPlane(rParams,LMPlaneIn
 % 7/13/16  dhb More.
 
 %% Clear
-ieInit; clear; close all;
+if (nargin == 0)
+    ieInit; close all;
+end
 
 %% Fix random number generator so we can validate output exactly
 rng(1);

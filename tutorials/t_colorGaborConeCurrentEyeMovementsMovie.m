@@ -29,8 +29,11 @@ function validationData = t_coneGaborConeCurrentEyeMovementsMovie(rParams)
 %
 %  7/9/16  npc Wrote it.
 
-%% Initialize
-ieInit; clear; close all;
+%% Clear
+if (nargin == 0)
+    ieInit; close all;
+end
+
 
 %% Fix random number generator so we can validate output exactly
 rng(1);

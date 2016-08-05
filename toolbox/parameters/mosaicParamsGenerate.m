@@ -6,6 +6,9 @@ function mosaicParams = mosaicParamsGenerate(varargin)
 %  LMSRatio - Vector giving L, M, S cone ratio
 %  isomerizationNoise - Boolean, add isomerization Poisson noise?
 %  osModel - What model to use to compute photocurrent
+%  type - Type of cone mosaic
+%    'rect' - rectangular
+%    'hex' - hexagonal-like
 %
 % Other parameters that are needed for the mosaic are
 %  fieldOfViewDegs - Field of view computed
@@ -24,3 +27,4 @@ mosaicParams.LMSRatio = [0.62 0.31 0.07];
 mosaicParams.eccentricityDegs = 0;
 mosaicParams.isomerizationNoise = false;
 mosaicParams.osModel = 'Linear';
+mosaicParams.type = 'rect';
