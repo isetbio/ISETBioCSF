@@ -1,67 +1,65 @@
-% t_colorGaborScene
+function validationData = t_colorGaborScene(rParams)
+% validationData = t_colorGaborScene(rParams)
+%
+% Illustrates the basic steps required to calculate cone isomerizations
+% for a static color Gabor modulation.
 %
 % Create a scene with a color gabor patch with color directions
 % specified as L, M, and S cone contrasts.  The scene will produce
-% a Gabor with these contrasts on a specified monitor.
+% a Gabor with these contrasts on a specified monitor.  Then passes the
+% scene through the optics and a cone mosaic and gets the isomerizations at
+% each cone.  
+%
+% If parameters structure is passed, the routine will use the defaults
+% provided by
+%   colorGaborResponseParamsGenerate
+% That function and its subfunctions also documents what the relavant parameters are.
 %
 % The code illustrated here is encapsulated into function
 %   colorGaborSceneCreate.
 %
-% See also colorGaborSceneCreate, t_colorGaborConeAbsorptionMovie
+% The returned validation structure allows this routine to be called from a
+% validation script driven by the UnitTest toolbox.
+%
+% The tutorial produces output according to a scheme controlled by the
+% specified IBIOColorDetect rwObject.
+%
+% See also:
+%	t_colorGaborConeIsomerizationsMovie
+%   colorGaborResponseParamsGenerate
+%   colorGaborSceneCreate 
 %
 % 7/6/16  dhb  Wrote it.
 
 %% Clear
-ieInit; clear; close all;
+if (nargin == 0)
+    ieInit; close all;
+end
 
-% Add project toolbox to Matlab path
-AddToMatlabPathDynamically(fullfile(fileparts(which(mfilename)),'../toolbox'));
+%% Fix random number generator so we can validate output exactly
+rng(1);
 
-% Some font sizes for plots
-labelFontSize = 12;
-titleFontSize = 14;
-axisFontSize = 8;
-
-%% Define parameters of a gabor pattern
+%% Get the parameters we need
 %
-% This is for a full contrast vertical gabor centered on the image.
-%   fieldOfViewDegs - Field of view in degrees, horizontal direction.
-%   cyclesPerDegree - Grating cycles per degree.
-%   gaussianFWHMDegs - Full width at half max of spatial Gaussian window.
-%   row - Row dimension of scene on monitor
-%   col - Col dimension of scene on monitor
-%   contrast - Contrast specfied relative to coneContrasts.
-%   ang - Angle of grating, in radians
-%   ph  - Phase of grating, in radians relative to image center
-%   coneContrasts - Color direction of grating in cone contrast space
-%   backgroundxYY - Colorimetric specification of background, in CIE xyY (cd/m2)
-%   monitorFile - Isetbio display description of monitor on which grating is shown.
-%   viewingDistance - Viewing distance of observer from monitor in meters.
-gaborParams.fieldOfViewDegs = 4;
-gaborParams.cyclesPerDegree = 2;
-gaborParams.gaussianFWHMDegs = 1.5;
-gaborParams.row = 128;
-gaborParams.col = 128;
-gaborParams.contrast = 1;
-gaborParams.ang = 0;
-gaborParams.ph = 0;
-gaborParams.coneContrasts = [0.05 -0.05 0]';
-gaborParams.backgroundxyY = [0.27 0.30 49.8]';
-gaborParams.monitorFile = 'CRT-MODEL';
-gaborParams.viewingDistance = 0.75;
+% t_colorGaborResponseGenerationParams returns a hierarchical struct of
+% parameters used by a number of tutorials and functions in this project.
+if (nargin < 1 | isempty(rParams))
+    rParams = colorGaborResponseParamsGenerate;
+end
 
-% Computed parameters.  These convert numbers to a form used by underlying
-% routines.
-cyclesPerImage = gaborParams.fieldOfViewDegs*gaborParams.cyclesPerDegree;
-gaussianStdDegs = FWHMToStd(gaborParams.gaussianFWHMDegs);
-gaussianStdImageFraction = gaussianStdDegs/gaborParams.fieldOfViewDegs;
-gaborParams.freq = cyclesPerImage;
-gaborParams.GaborFlag = gaussianStdImageFraction;
+%% Set up the rw object for this program
+rwObject = IBIOColorDetectReadWriteBasic;
+theProgram = mfilename;
+paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
 
-%% Make the gabor pattern and have a look
+%% Make the grayscale gabor pattern and have a look
 %
+% The routine imageHarmonicParamsFromGaborParams massages the
+% gaborParams/colorModulationParams information into the form needed by
+% isetbio's imageHarmonic function.
+gaborPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(rParams.gaborParams,rParams.colorModulationParams));
+
 % We can see it as a grayscale image
-gaborPattern = imageHarmonic(gaborParams);
 vcNewGraphWin; imagesc(gaborPattern); colormap(gray); axis square
 
 % And plot a slice through the center.
@@ -72,11 +70,11 @@ vcNewGraphWin; imagesc(gaborPattern); colormap(gray); axis square
 % degrees, and if you make the Gaussian window wide you can count cycles
 % and make sure they come out right as well.
 figure; hold on;
-set(gca,'FontSize',axisFontSize);
-xDegs = linspace(-gaborParams.fieldOfViewDegs/2,gaborParams.fieldOfViewDegs/2,gaborParams.col);
-plot(xDegs,gaborPattern(gaborParams.row/2,:));
-xlabel('Position (degrees)','FontSize',labelFontSize);
-ylabel('Image Intensity','FontSize',labelFontSize);
+set(gca,'FontSize',rParams.plotParams.axisFontSize);
+xDegs = linspace(-rParams.gaborParams.fieldOfViewDegs/2,rParams.gaborParams.fieldOfViewDegs/2,rParams.gaborParams.col);
+plot(xDegs,gaborPattern(rParams.gaborParams.row/2,:));
+xlabel('Position (degrees)','FontSize',rParams.plotParams.labelFontSize);
+ylabel('Image Intensity','FontSize',rParams.plotParams.labelFontSize);
 
 %% Convert Gabor to a color modulation specified in cone space
 %
@@ -120,14 +118,14 @@ if (max(abs(T_conesCheck(:)-T_cones(:))) > 1e-3)
 end
 
 % Convert background to cone excitations
-backgroundConeExcitations = M_XYZToCones*xyYToXYZ(gaborParams.backgroundxyY);
+backgroundConeExcitations = M_XYZToCones*xyYToXYZ(rParams.backgroundParams.backgroundxyY);
 
 % Convert test cone contrasts to cone excitations
-testConeExcitations = (gaborParams.coneContrasts .* backgroundConeExcitations);
+testConeExcitations = (rParams.colorModulationParams.coneContrasts .* backgroundConeExcitations);
 
 % Make the color gabor in LMS excitations
-gaborConeExcitationsBg = ones(gaborParams.row,gaborParams.col);
-gaborConeExcitations = zeros(gaborParams.row,gaborParams.col,3);
+gaborConeExcitationsBg = ones(rParams.gaborParams.row,rParams.gaborParams.col);
+gaborConeExcitations = zeros(rParams.gaborParams.row,rParams.gaborParams.col,3);
 for ii = 1:3
     gaborConeExcitations(:,:,ii) = gaborConeExcitationsBg*backgroundConeExcitations(ii) + ...
         gaborModulation*testConeExcitations(ii);
@@ -141,7 +139,7 @@ for ii = 1:3
     theMax = max(gaborPlane(:)); theMin = min(gaborPlane(:));
     actualConeContrasts(ii) = (theMax-theMin)/(theMax+theMin);
     fprintf('Actual absolute %s cone contrast: %0.3f, nominal: % 0.3f\n', coneTypes{ii}, ...
-        actualConeContrasts(ii),abs(gaborParams.coneContrasts(ii)));
+        actualConeContrasts(ii),abs(rParams.colorModulationParams.coneContrasts(ii)));
 end
 
 %% And take a look at the LMS image.  This is just a straight rendering of
@@ -162,7 +160,8 @@ vcNewGraphWin; imagesc(gaborConeExcitations/max(gaborConeExcitations(:))); axis 
 % chromatic aberration, but given the general similarity of monitor channel
 % spectra we expect these differences to be small.  We could check this by
 % doing the calculations with different monitor descriptions.
-display = displayCreate(gaborParams.monitorFile);
+display = displayCreate(rParams.backgroundParams.monitorFile);
+display = displaySet(display,'viewingdistance', rParams.gaborParams.viewingDistance);
 
 % Get display channel spectra.  The S vector displayChannelS is PTB format
 % for specifying wavelength sampling: [startWl deltaWl nWlSamples],
@@ -224,42 +223,52 @@ end
 xlim([0 1]);
 ylim([0 nLevels]);
 axis('square');
-xlabel('Linear channel value','FontSize',labelFontSize);
-ylabel('Gamma corrected DAC settings','FontSize',labelFontSize);
-title('Gamma correction','FontSize',titleFontSize);
+xlabel('Linear channel value','FontSize',rParams.plotParams.labelFontSize);
+ylabel('Gamma corrected DAC settings','FontSize',rParams.plotParams.labelFontSize);
+title('Gamma correction','FontSize',rParams.plotParams.titleFontSize);
 
 % Finally, make the actual isetbio scene
 % This combines the image we build and the display properties.
 gaborScene = sceneFromFile(gaborRGB,'rgb',[],display);
-gaborScene = sceneSet(gaborScene, 'h fov', gaborParams.fieldOfViewDegs);
+gaborScene = sceneSet(gaborScene, 'h fov', rParams.gaborParams.fieldOfViewDegs);
 
 % Look at the scene image.  It is plausible for an L-M grating.  Remember that we
 % are looking at the stimuli on a monitor different from the display file
 % that we loaded, and thus the RGB values will not produce exactly the
 % desired appearance.
-vcNewGraphWin; scenePlot(gaborScene,'radiance image no grid');
+vcNewGraphWin; [~,h] = scenePlot(gaborScene,'radiance image no grid');
+rwObject.write('colorGaborScene',h,paramsList,theProgram,'Type','figure');
 
-%% Create no optics oi
-% Create an optical image with no optics.  Here our goal is to verify that
-% the cone contrast we compute from actual absorptions matches what we
-% specified at the start, so that we are confident we've produced the right
-% stimulus scene.  So we don't want to get confused by the optics.
-gaborOI = oiCreate('human');
-gaborOI = oiSet(gaborOI,'h fov',gaborParams.fieldOfViewDegs);
+%% Create oi
+gaborOI = oiCreate('wvf human');
+gaborOI = oiSet(gaborOI,'h fov',rParams.gaborParams.fieldOfViewDegs);
 
-% Turn off optics for current purpose of checking LMS contrast 
-% This involves turning off the off-axis falloff in intensity and
-% replacing the OTF with a unity OTF.
+%% Compute blurred optical image
+%
+% Turn of default off axis intensity falloff calculation first.
 optics = oiGet(gaborOI,'optics');
 optics = opticsSet(optics,'off axis method','skip');
-optics = opticsSet(optics,'OTF',ones(size(opticsGet(optics,'OTF'))));
-gaborOI= oiSet(gaborOI,'optics',optics);
+gaborOI = oiSet(gaborOI,'optics',optics);
+gaborOIBlur = oiCompute(gaborOI,gaborScene);
 
-% Look at the OI
 % Note how different the color appearance is than the scene.  This is
 % because the OI incorprates the transmittance of the lens.  Down below we
 % will turn that off as a check.
+vcNewGraphWin; [~,h] = oiPlot(gaborOIBlur,'irradiance image no grid');
+rwObject.write('colorGaborOpticalImageBlur',h,paramsList,theProgram,'Type','figure');
+clearvars('gaborOIBlur');
+
+%% Turn off optics for current purpose of checking LMS contrast 
+% This involves replacing the OTF with a unity OTF, and recompute
+optics = opticsSet(optics,'OTF',ones(size(opticsGet(optics,'OTF'))));
+gaborOI = oiSet(gaborOI,'optics',optics);
 gaborOI = oiCompute(gaborOI,gaborScene);
+
+% Look at the OI
+vcNewGraphWin; [~,h] = oiPlot(gaborOI,'irradiance image no grid');
+rwObject.write('colorGaborOpticalImageNoBlur',h,paramsList,theProgram,'Type','figure');
+
+% Just for fun, put OI into isetbio's interactive window
 vcAddAndSelectObject(gaborOI); oiWindow;
 
 %% Verify that removing lens transmittance has expected effect
@@ -276,7 +285,7 @@ vcAddAndSelectObject(gaborOINoLens); oiWindow;
 % determined near the center of the Gabor, and making it smaller speeds
 % things up.
 gaborConeMosaic = coneMosaic;
-gaborConeMosaic.setSizeToFOV(gaborParams.fieldOfViewDegs/2);
+gaborConeMosaic.setSizeToFOV(rParams.gaborParams.fieldOfViewDegs/2);
 
 % There is also an option of whether the cone current should be calculated
 % in the compute function. If set to true, it uses an os object inside the
@@ -284,10 +293,16 @@ gaborConeMosaic.setSizeToFOV(gaborParams.fieldOfViewDegs/2);
 gaborConeMosaic.noiseFlag = false;
 isomerizations = gaborConeMosaic.compute(gaborOI,'currentFlag',false);
 
-%% Take a look at the mosaic responses
+%% Take a look at the mosaic responses in the window
 gaborConeMosaic.window;
 
-%% Get min max for LMS cone absorptions
+% And must make a plot in a figure
+vcNewGraphWin; [~,h] = gaborConeMosaic.plot('cone mosaic');
+rwObject.write('colorGaborMosaic',h,paramsList,theProgram,'Type','figure');
+vcNewGraphWin; [~,h] = gaborConeMosaic.plot('mean absorptions');
+rwObject.write('colorGaborIsomerizations',h,paramsList,theProgram,'Type','figure');
+
+%% Get min max for LMS cone isomerizations
 % Extract the min and max absorptions in a loop. Since we are
 % extracting only L, M, or S absorptions at each iteration, we get a vector
 % so one call to max/min will suffice.
@@ -299,9 +314,19 @@ gaborConeMosaic.window;
 % deviatoins.  Someone energetic could track this down.
 conePattern = gaborConeMosaic.pattern;
 for ii = 2:4
-    maxAbsorption = max(isomerizations(conePattern==ii));
-    minAbsorption = min(isomerizations(conePattern==ii));
+    maxIsomerizations(ii) = max(isomerizations(conePattern==ii));
+    minIsomerizations(ii) = min(isomerizations(conePattern==ii));
+    contrasts(ii) = ...
+        (maxIsomerizations(ii)-minIsomerizations(ii))/(maxIsomerizations(ii)+minIsomerizations(ii));
     
-    fprintf('%s cone absorptions\n\tMax: %d \n\tMin: %d\n',coneTypes{ii-1},maxAbsorption,minAbsorption);
-    fprintf('\tAbsolute contrast: %04.3f\n',(maxAbsorption-minAbsorption)/(maxAbsorption+minAbsorption));
+    fprintf('%s cone isomerzations\n\tMax: %d \n\tMin: %d\n',coneTypes{ii-1},maxIsomerizations(ii),minIsomerizations(ii));
+    fprintf('\tAbsolute contrast: %04.3f\n',contrasts(ii));
 end
+
+%% Send back some validation data if requested
+if (nargout > 0)
+    validationData.maxIsomerizations = maxIsomerizations;
+    validationData.minIsomerizations = minIsomerizations;
+    validationData.contrasts = contrasts;
+end
+

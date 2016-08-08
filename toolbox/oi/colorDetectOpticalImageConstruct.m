@@ -13,7 +13,7 @@ function theOI = colorDetectOpticalImageConstruct(oiParams)
 %
 % 7/8/16  dhb  Wrote it.
 
-theOI = oiCreate('human');
+theOI = oiCreate('wvf human');
 theOI = oiSet(theOI,'h fov',oiParams.fieldOfViewDegs);
 
 % Take out off axis vignetting if requested

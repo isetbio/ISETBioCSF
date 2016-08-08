@@ -1,12 +1,13 @@
-function visualizeSceneOrOpticalImageSequence(conditionDir, sceneOrOpticalImage, sceneOrOpticalImageSequence, timeAxis, showLuminanceMap, movieFileName)
-% visualizeSceneOrOpticalImageSequence(conditionDir, sceneOrOpticalImage, sceneOrOpticalImageSequence, movieFileName)
+function visualizeSceneOrOpticalImageSequence(rwObject,parentParamsList,theProgram, ...
+    sceneOrOpticalImage, sceneOrOpticalImageSequence, timeAxis, showLuminanceMap, movieName)
+% visualizeSceneOrOpticalImageSequence(rwObject,parentParamsList,theProgram, ...
+%    sceneOrOpticalImage, sceneOrOpticalImageSequence, timeAxis, showLuminanceMap, movieName)
 %
 % Visualize a sequence of scenes or optical images and render a video of it.
 %
-%
-%  7/12/16  npc Wrote it.
+% 7/12/16  npc Wrote it.
 
-% Loop over the sequence frames and extract the needed info
+%% Loop over the sequence frames and extract the needed info
 for iFrame = 1:numel(sceneOrOpticalImageSequence)
     % Get an RGB rendition of the scene or the optical image
     if (strcmp(sceneOrOpticalImage, 'scene'))
@@ -45,9 +46,9 @@ for iFrame = 1:numel(sceneOrOpticalImageSequence)
     if (showLuminanceMap)
         luminanceImageSequence(:,:,iFrame) = luminanceFrame;
     end
-end % iFrame
+end
 
-% Determine ranges
+%% Determine ranges
 rgbRange = [0 1];
 if (showLuminanceMap)
     luminanceRange = mean(luminanceImageSequence(:)) * [0.9 1.1];
@@ -65,14 +66,15 @@ if (showLuminanceMap)
     colormap(hot(1024));
 end
 
-% Open video stream
-videoDir = colorGaborDetectOutputDir(conditionDir,'videos');
-videoFilename = fullfile(videoDir, sprintf('%s.m4v', movieFileName));
-writerObj = VideoWriter(videoFilename, 'MPEG-4'); % H264 format
+%% Open video stream
+%
+% Write the video into a temporary file.  We will then use the rwObject
+% to store it nicely once we have it.
+tempOutputFileName = fullfile(rwObject.tempdir,'tempMovie.m4v');
+writerObj = VideoWriter(tempOutputFileName, 'MPEG-4'); % H264 format
 writerObj.FrameRate = 15;
 writerObj.Quality = 100;
 writerObj.open();
-
 
 for iFrame = 1:numel(sceneOrOpticalImageSequence)
     % The RGB rendition of the scene/optical image
@@ -117,6 +119,7 @@ for iFrame = 1:numel(sceneOrOpticalImageSequence)
         hCbar.FontSize = 14;
         hCbar.FontName = 'Menlo';
         hCbar.Color = [0.2 0.2 0.2];
+        
         % The addition changes the figure size, so undo this change
         newPosition = get(gca, 'position');
         set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
@@ -127,8 +130,11 @@ for iFrame = 1:numel(sceneOrOpticalImageSequence)
     writerObj.writeVideo(getframe(hFig));
 end % iFrame
 
+% Close movie
 writerObj.close();
-fprintf('Movie saved in %s\n', videoFilename);
+
+%% Put the movie where it belongs
+rwObject.write(movieName,tempOutputFileName,parentParamsList,theProgram,'Type','movieFile');
 
 end
 
