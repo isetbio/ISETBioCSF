@@ -14,10 +14,10 @@ ieInit; close all;
 rParams = colorGaborResponseParamsGenerate;
 
 % Override some defult parameters
-rParams.temporalParams.simulationTimeStepSecs = 10/1000;
-rParams.temporalParams.stimulusDurationInSeconds = 1;
+rParams.temporalParams.simulationTimeStepSecs = 1/60;
+rParams.temporalParams.stimulusDurationInSeconds = 0.6;
 rParams.temporalParams.stimulusSamplingIntervalInSeconds = 1/60;
-rParams.temporalParams.secondsToInclude = rParams.temporalParams.stimulusDurationInSeconds;
+rParams.temporalParams.secondsToInclude = rParams.temporalParams.stimulusDurationInSeconds/2s;
 rParams.temporalParams.eyesDoNotMove = true;
 
 rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
