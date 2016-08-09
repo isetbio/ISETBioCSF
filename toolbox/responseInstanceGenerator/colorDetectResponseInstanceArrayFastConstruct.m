@@ -33,7 +33,7 @@ theLargerMosaic.noiseFlag = false;
 
 % Loop over our stimulus frames
 for stimFrameIndex = 1:stimulusFramesNum
-    waitbar(0.5*stimFrameIndex/stimulusFramesNum, progressHandle, sprintf('stimulus label: %s\ncomputing optical image for frame #%d/%d', stimulusLabel, stimFrameIndex, stimulusFramesNum));
+    % waitbar(0.5*stimFrameIndex/stimulusFramesNum, progressHandle, sprintf('stimulus label: %s\ncomputing optical image for frame #%d/%d', stimulusLabel, stimFrameIndex, stimulusFramesNum));
     
     % Modulate stimulus contrast
     colorModulationParams.contrast = theBaseColorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex);
@@ -60,7 +60,7 @@ clearvars('theLargerMosaic');
 % For each trial compute new eye movement path and obtain new response
 for iTrial = 1: nTrials
     if (mod(iTrial-1,50) == 0)
-        waitbar(0.5+0.5*iTrial/nTrials, progressHandle, sprintf('stimulus label: %s\ncomputing responses for trial %d/%d', stimulusLabel, iTrial, nTrials));
+        % waitbar(0.5+0.5*iTrial/nTrials, progressHandle, sprintf('stimulus label: %s\ncomputing responses for trial %d/%d', stimulusLabel, iTrial, nTrials));
     end
     
     % Generate eye movements for the entire stimulus duration of this trial
@@ -134,10 +134,10 @@ end
 
 function progressHandle = generateProgressBar(initialMessage)
 
-progressHandle = waitbar(0, '');
-titleHandle = get(findobj(progressHandle,'Type','axes'),'Title');
-set(titleHandle,'FontSize',12, 'FontName', 'Menlo');
-waitbar(0, progressHandle, initialMessage);
-pause(0.2);
+% progressHandle = waitbar(0, '');
+% titleHandle = get(findobj(progressHandle,'Type','axes'),'Title');
+% set(titleHandle,'FontSize',12, 'FontName', 'Menlo');
+% waitbar(0, progressHandle, initialMessage);
+% pause(0.2);
     
 end
