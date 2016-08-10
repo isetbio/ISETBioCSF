@@ -9,7 +9,7 @@ function responseInstanceArray = colorDetectResponseInstanceArrayFastConstruct(s
 %  7/10/16  npc Wrote it.
 
 % Inform user regarding the computation progress
-progressHandle = generateProgressBar('Starting computation ...');
+% progressHandle = generateProgressBar('Starting computation ...');
 
 % Start computation time measurement
 tic
@@ -128,7 +128,7 @@ end
 fprintf('Response instance array generation (%d instances) took %2.3f minutes to compute.\n', nTrials, toc/60);
 
 % Close progress bar
-close(progressHandle);
+% close(progressHandle);
 
 end
 

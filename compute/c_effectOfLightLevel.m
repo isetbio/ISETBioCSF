@@ -17,7 +17,7 @@ rParams = colorGaborResponseParamsGenerate;
 rParams.temporalParams.simulationTimeStepSecs = 1/60;
 rParams.temporalParams.stimulusDurationInSeconds = 0.6;
 rParams.temporalParams.stimulusSamplingIntervalInSeconds = 1/60;
-rParams.temporalParams.secondsToInclude = rParams.temporalParams.stimulusDurationInSeconds/2s;
+rParams.temporalParams.secondsToInclude = rParams.temporalParams.stimulusDurationInSeconds/2;
 rParams.temporalParams.eyesDoNotMove = true;
 
 rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
