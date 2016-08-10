@@ -1,6 +1,6 @@
 function oiParams = oiParamsGenerate(varargin)
 % oiParams = oiParamsGenerate(varargin)
-%
+%oi
 % Properties related to computing the retinal image
 %
 %  fieldOfViewDegs - Field of view computed
@@ -23,3 +23,4 @@ oiParams.type = 'Optics';
 oiParams.offAxis = false;
 oiParams.blur = true;
 oiParams.lens = true;
+oiParams.pupilDiamMm = 3;
