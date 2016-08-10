@@ -243,6 +243,15 @@ rwObject.write('colorGaborScene',h,paramsList,theProgram,'Type','figure');
 gaborOI = oiCreate('wvf human');
 gaborOI = oiSet(gaborOI,'h fov',rParams.gaborParams.fieldOfViewDegs);
 
+% Set pupil diameter
+focalLength = oiGet(gaborOI,'distance');
+desiredFNumber = focalLength/(rParams.oiParams.pupilDiamMm/1000);
+gaborOI  = oiSet(gaborOI ,'optics fnumber',desiredFNumber);
+pupilDiamMmCheck = 1000*oiGet(gaborOI,'optics aperture diameter');
+if (max(abs(pupilDiamMmCheck - rParams.oiParams.pupilDiamMm)) > 1e-8)
+    error('Failed to set pupil diameter as expected');
+end
+
 %% Compute blurred optical image
 %
 % Turn of default off axis intensity falloff calculation first.

@@ -13,8 +13,18 @@ function theOI = colorDetectOpticalImageConstruct(oiParams)
 %
 % 7/8/16  dhb  Wrote it.
 
+% Basic create and set field of view.
 theOI = oiCreate('wvf human');
 theOI = oiSet(theOI,'h fov',oiParams.fieldOfViewDegs);
+
+% Set the pupil diamter
+focalLength = oiGet(theOI,'distance');
+desiredFNumber = focalLength/(oiParams.pupilDiamMm/1000);
+theOI  = oiSet(theOI ,'optics fnumber',desiredFNumber);
+pupilDiamMmCheck = 1000*oiGet(theOI,'optics aperture diameter');
+if (max(abs(pupilDiamMmCheck - oiParams.pupilDiamMm)) > 1e-8)
+    error('Failed to set pupil diameter as expected');
+end
 
 % Take out off axis vignetting if requested
 optics = oiGet(theOI,'optics');
