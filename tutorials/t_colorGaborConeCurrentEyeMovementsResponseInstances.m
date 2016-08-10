@@ -132,7 +132,7 @@ rwObject.write('ancillaryData',ancillaryData,paramsList,theProgram);
 tic;
 parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
 nParforConditions = length(parforConditionStructs);
-for kk = 1:nParforConditions
+parfor kk = 1:nParforConditions
     thisConditionStruct = parforConditionStructs{kk};
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
