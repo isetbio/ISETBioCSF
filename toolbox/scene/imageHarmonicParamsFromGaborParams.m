@@ -19,6 +19,17 @@ cyclesPerImage = gaborParams.fieldOfViewDegs*gaborParams.cyclesPerDegree;
 gaussianStdDegs = FWHMToStd(gaborParams.gaussianFWHMDegs);
 gaussianStdImageFraction = gaussianStdDegs/gaborParams.fieldOfViewDegs;
 imageHarmonicParams.freq = cyclesPerImage;
+
+% Set GaborFlag.  Make it negative for half-cosine instead of Gaussian
+% window.
+
 imageHarmonicParams.GaborFlag = gaussianStdImageFraction;
+switch gaborParams.windowType
+    case 'halfcos'
+        imageHarmonicParams.GaborFlag = -imageHarmonicParams.GaborFlag;
+    case 'Gaussian'
+    otherwise
+        error('Unknown windowType passed');
+end
 
 end
