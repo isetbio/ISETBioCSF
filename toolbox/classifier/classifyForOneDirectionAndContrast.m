@@ -24,14 +24,12 @@ p.parse(stimData,classificationData,classes,thresholdParams,varargin{:});
 % Insert stimulus responses into data for classifier
 [classificationData,classes] = classificationDataStimDataInsert(classificationData,classes,stimData,thresholdParams);
 
-% Do PCA?
-if (thresholdParams.PCAComponents > 0)
-    fprintf('\tDoing PCA ... ');
-    theData = transformDataWithPCA(classificationData,thresholdParams.PCAComponents);
-    fprintf('done\n');
-else
-    theData = classificationData;
-end
+% Do PCA?  This also standardizes the data if desired, and gets rid of any
+% features with no variance.
+STANDARDIZE = true;
+fprintf('\tDoing PCA etc ... ');
+theData = transformDataWithPCA(classificationData,thresholdParams.PCAComponents,STANDARDIZE);
+fprintf('done\n');
 
 % Perform SVM classification for this stimulus vs the zero contrast stimulus
 fprintf('\tRunning SVM ...');

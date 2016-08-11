@@ -71,7 +71,7 @@ params.contrastScale = 'log';    % choose between 'linear' and 'log'
 thresholdParams = thresholdParamsGenerate;
 
 %% Compute response instances
-t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
+%t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
 
 %% Find thresholds
 t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);

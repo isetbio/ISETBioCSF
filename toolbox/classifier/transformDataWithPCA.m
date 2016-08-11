@@ -24,16 +24,23 @@ if (nargin < 3 || isempty(STANDARDIZE))
     STANDARDIZE = true;
 end
 
+%% Get rid of features with no variance
+s = std(data,1);
+index = find(s ~= 0);
+data = data(:,index);
+s = s(index);
+
 %% Standardize the data
 if (STANDARDIZE)
     m = mean(data,1);
-    s = std(data,1);
     data = (data - repmat(m,size(data,1),1)) ./ repmat(s,size(data,1),1);
 end
 
 %% Do PCA and project data into new vector space
-coeff = pca(data,'NumComponents',numPCAComponents);
-data = data*coeff;
+if (numPCAComponents > 0)   
+    coeff = pca(data,'NumComponents',numPCAComponents);
+    data = data*coeff;
+end
 
 end
 
