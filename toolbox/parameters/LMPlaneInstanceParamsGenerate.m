@@ -26,7 +26,9 @@ params.type = 'LMPlaneInstance';
 params.trialsNum = 100;
 
 % Delta angle sampling in LM plane (samples between 0 and 180 degrees)
+params.startAngle = 0;
 params.deltaAngle = 90;
+params.nAngles = 2;
 params.baseStimulusLength = 1;
 params.scaleIntoMonitorGamut = true;
 

@@ -16,9 +16,8 @@ function testConeContrasts = testConeContrastsFromTestDirectionParams(rParams,te
 % Then find highest within gamut vector for each direction
 switch (testDirectionParams.type)
     case 'LMPlaneInstance'
-        LMangles = (0:testDirectionParams.deltaAngle:180-testDirectionParams.deltaAngle)/180*pi;
-        for angleIndex = 1:numel(LMangles)
-            theta = LMangles(angleIndex);
+        for angleIndex = 1:testDirectionParams.nAngles
+            theta = (pi/180)*(testDirectionParams.startAngle + (angleIndex-1)*testDirectionParams.deltaAngle);
             baseTestConeContrastDirs(:,angleIndex) = testDirectionParams.baseStimulusLength*[cos(theta) sin(theta) 0.0]';
             
             % Find the highest in gamut cone contrast and define cone contrast
