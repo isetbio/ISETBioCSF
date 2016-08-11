@@ -20,6 +20,7 @@ function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(gaborParams,back
 %
 % 7/7/16 xd   adapted from t_colorGaborScene
 % 7/7/16 npc  added viewing distance param
+% 8/11/16 dhb add display factor adjustment
 
 %% Optional arg for when we are maximizing contrast
 if (nargin < 4 || isempty(gamutCheckFlag))
@@ -30,6 +31,7 @@ end
 % both column vectors.
 coneContrast = colorModulationParams.coneContrasts(:);
 backgroundxyY = backgroundParams.backgroundxyY(:);
+backgroundxyY(3) = backgroundxyY(3)*backgroundParams.lumFactor;
 
 %% Define parameters of a gabor pattern
 %
@@ -109,6 +111,7 @@ end
 % spectra we expect these differences to be small.  We could check this by
 % doing the calculations with different monitor descriptions.
 display = displayCreate(backgroundParams.monitorFile);
+display = displaySet(display,'spd',backgroundParams.lumFactor*displayGet(display,'spd'));
 
 % Set the viewing distance
 display = displaySet(display,'viewingdistance', gaborParams.viewingDistance);

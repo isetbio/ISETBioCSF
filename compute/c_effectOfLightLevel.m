@@ -43,4 +43,4 @@ t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams
 t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
 
 %% LMPlane summary
-t_plotGaborDetectThresholdsOnLMPlane(rParams,LMPlaneInstanceParams,thresholdParams);
+t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);

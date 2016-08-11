@@ -25,11 +25,17 @@ rParams.gaborParams.gaussianFWHMDegs = 3.25*(1/rParams.gaborParams.cyclesPerDegr
 rParams.gaborParams.fieldOfViewDegs = 2.1*rParams.gaborParams.gaussianFWHMDegs;
 
 % Set background luminance
+%
+% We start with a base luminance that we know is about mid-gray on the
+% monitor we specify.  To change luminance, we specify a scale factor.
+% This is eventually applied both to the background luminance and to the
+% monitor channel spectra, so that we don't get unintersting out of gamut errors.
 baseLum = 50;
-backgroundParams.backgroundxyY = [0.33 0.33 baseLum]';
-backgroundParams.monitorFile = 'CRT-MODEL';
-backgroundParams.leakageLum = 1.0;
-backgroundParams.lumFactor = 304/baseLum;
+theLum = 304;
+rParams.backgroundParams.backgroundxyY = [0.33 0.33 baseLum]';
+rParams.backgroundParams.monitorFile = 'CRT-MODEL';
+rParams.backgroundParams.leakageLum = 1.0;
+rParams.backgroundParams.lumFactor = theLum/baseLum;
 
 % Pupil size.  They used a 2mm artificial pupil
 oiParams.pupilDiamMm = 2;
@@ -41,10 +47,9 @@ rParams.temporalParams.simulationTimeStepSecs = 100/1000;
 rParams.temporalParams.stimulusDurationInSeconds = rParams.temporalParams.simulationTimeStepSecs;
 rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
 rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
-rParams.temporalParams.eyesDoNotMove = true;
 
 % Their main calculation was without eye movements
-temporalParams.eyesDoNotMove = true; 
+rParams.temporalParams.eyesDoNotMove = true;
 
 % Set up mosaic parameters for just one stimulus time step
 rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
@@ -60,10 +65,10 @@ testDirectionParams = LMPlaneInstanceParamsGenerate;
 testDirectionParams.deltaAngle = 45;
 
 % Number of contrasts to run in each color direction
-params.nContrastsPerDirection = 10; 
-params.lowContrast = 0.001;
-params.highContrast = 0.15;
-params.contrastScale = 'log';    % choose between 'linear' and 'log'
+testDirectionParams.nContrastsPerDirection = 10; 
+testDirectionParams.lowContrast = 0.001;
+testDirectionParams.highContrast = 0.15;
+testDirectionParams.contrastScale = 'log';    % choose between 'linear' and 'log'
 
 %% Parameters related to how we find thresholds from responses
 %
@@ -71,10 +76,10 @@ params.contrastScale = 'log';    % choose between 'linear' and 'log'
 thresholdParams = thresholdParamsGenerate;
 
 %% Compute response instances
-%t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
+t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
 
 %% Find thresholds
 t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
 
 %% LMPlane summary
-t_plotGaborDetectThresholdsOnLMPlane(rParams,LMPlaneInstanceParams,thresholdParams);
+t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);
