@@ -30,6 +30,12 @@ p.addParameter('FigureType','pdf',@ischar);
 p.addParameter('MovieType','m4v',@ischar);
 p.parse(name,data,paramsList,theProgram,varargin{:});
 
+% Sometimes, for compatibility, we don't actually have anything
+% to write.  Handle that case.
+if (isempty(data))
+    return;
+end
+
 %% Get fileid
 [fileid,filedir,filename] = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:});
 

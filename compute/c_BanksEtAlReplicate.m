@@ -1,5 +1,5 @@
-function c_effectOfLightLevel
-% c_effectOfLightLevel
+function c_BanksEtAlReplicate
+% c_BanksEtAlReplicate
 %
 % Compute threshold ellipses to replicate Banks et al, 1987,
 % more or less.
@@ -65,11 +65,11 @@ testDirectionParams = LMPlaneInstanceParamsGenerate;
 testDirectionParams.startAngle = 45;
 testDirectionParams.deltaAngle = 90;
 testDirectionParams.nAngles = 1;
-testDirectionParams.trialsNum = 100;
+testDirectionParams.trialsNum = 5000;
 
 % Number of contrasts to run in each color direction
-testDirectionParams.nContrastsPerDirection = 10; 
-testDirectionParams.lowContrast = 0.001;
+testDirectionParams.nContrastsPerDirection = 20; 
+testDirectionParams.lowContrast = 0.0001;
 testDirectionParams.highContrast = 0.15;
 testDirectionParams.contrastScale = 'log';    % choose between 'linear' and 'log'
 
@@ -77,13 +77,17 @@ testDirectionParams.contrastScale = 'log';    % choose between 'linear' and 'log
 %
 % Use default
 thresholdParams = thresholdParamsGenerate;
-thresholdParams.PCAComponents = 500;
 
 %% Compute response instances
 t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
 
-%% Find thresholds
+%% Find thresholds and summarize, empirical max likeli
+thresholdParams.method = 'mlp';
 t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
+t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);
 
-%% LMPlane summary
+%% Find thresholds and summarize, svm
+thresholdParams.method = 'svm';
+thresholdParams.PCAComponents = 500;
+t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
 t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);

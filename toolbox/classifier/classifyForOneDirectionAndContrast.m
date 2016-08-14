@@ -25,7 +25,7 @@ p.parse(stimData,classificationData,classes,thresholdParams,varargin{:});
 [classificationData,classes] = classificationDataStimDataInsert(classificationData,classes,stimData,thresholdParams);
 
 % Decide what type of classifier we are running
-switch (thresholdParams.method
+switch (thresholdParams.method)
     case 'svm'
         % Friendly neighborhood SVM, with optional standardization and PCA
         % first
@@ -85,37 +85,57 @@ switch (thresholdParams.method
     case 'mlp'
         % Poisson maximum likelihood classifier, based on mean respnoses to
         % each class and assuming that the noise is Poisson.
-        %
-        % Not yet cross validated
-        fprintf('\tRunning LogLikelihood classifier ...');
-
-        % Get mean response of each class
-        class0Index = classes == 0;
-        class1Index = classes == 1;
-        meanClass0 = mean(data(class0Index),2);
-        meanClass1 = mean(data(class1Index),2);
+        fprintf('\tRunning LogLikelihood classifier ...\n');
         
-        % Compute likelihood of each class, given empirical means and use
-        % this to predict class
-        nObservations = size(data,2);
-        predict = zeros(size(classes));
-        for ii = 1:nObservations
-            loglGiven0 = sum(log10(poisspdf(data(:,ii),meanClass0)));
-            loglGiven1 = sum(log10(poisspdf(data(:,ii),meanClass1)));
-            if (loglGiven1 > loglGiven0)
-                predict(ii) = 1;
-            else
-                predict(ii) = 0;
+        % Create cross-validation partition
+        nObservations = size(classificationData,1);
+        crossVal = cvpartition(nObservations,'KFold',thresholdParams.kFold);
+        
+        % Loop through cross validations
+        nCrossVals = crossVal.NumTestSets;
+        for cc = 1:nCrossVals
+            fprintf('\t\tCross validation %d of %d\n',cc,nCrossVals);
+            trIdx = crossVal.training(cc);
+            teIdx = crossVal.test(cc);
+            
+            % Get mean response of each class from training set
+            trClasses = classes(trIdx);
+            trData = classificationData(trIdx,:);
+            
+            class0Index = trClasses == 0;
+            class1Index = trClasses == 1;
+            meanTrClass0 = mean(trData(class0Index,:),1);
+            meanTrClass1 = mean(trData(class1Index,:),1);
+            
+            % Classify test set
+            %
+            % % Compute likelihood of each class, given empirical means and use
+            % this to predict class
+            teClasses = classes(teIdx);
+            teData = classificationData(teIdx,:);
+            tePredict = -1*ones(size(teClasses));
+            nTeObservations = size(teData,1);
+            for ii = 1:nTeObservations
+                loglGiven0(ii) = sum(log10(poisspdf(teData(ii,:),meanTrClass0)));
+                loglGiven1(ii) = sum(log10(poisspdf(teData(ii,:),meanTrClass1)));
+                if (loglGiven1(ii) > loglGiven0(ii))
+                    tePredict(ii) = 1;
+                else
+                    tePredict(ii) = 0;
+                end
             end
+        
+            nCorrect = length(find(tePredict == teClasses));
+            percentCorrect(cc) = nCorrect/length(teClasses);
+            fprintf('\t\tPercent correct = %2.2f%%\n',100*percentCorrect(cc));
         end
         
         % Aggregate percent correct
-        nCorrect = find(predict == classes);
-        usePerecentCorrect = nCorrect/length(classes);
-        useStdErr = 0;
+        usePercentCorrect = mean(percentCorrect);
+        useStdErr = std(percentCorrect)/sqrt(length(percentCorrect));;
 
         % Report percent correct
-        fprintf(' correct: %2.2f%%\n', usePercentCorrect*100);
+        fprintf('\tPercent correct: %2.2f%%\n\n', usePercentCorrect*100);
         
         % No figure with this method
         h = [];  
