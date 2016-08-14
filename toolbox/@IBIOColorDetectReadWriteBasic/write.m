@@ -46,7 +46,7 @@ switch (p.Results.Type)
         if (exist('FigureSave','file'))
             FigureSave(filename,p.Results.data,p.Results.FigureType);
         else
-            saveas(h,filename,p.Results.FigureType);
+            saveas(data,filename,p.Results.FigureType);
         end
         cd(curdir);
     case 'movieFile'

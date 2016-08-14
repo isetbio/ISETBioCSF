@@ -20,10 +20,21 @@ function IBIOColorDetect
 fprintf('Running IBIOColorDetect local hook\n');
 
 %% Put project toolbox onto path
+%
+% Specify project name and location
+projectName = 'IBIOColorDetect';
+projectBaseDir = '/Users/Shared/Matlab/Analysis';
+
+% Put the subdirs of the project we need on the path
 tbDeployToolboxes('config',tbToolboxRecord( ...
     'name', 'IBIOColorDetectProjectToolbox', ...
     'type', 'local', ...
-    'url', fullfile(pwd,'toolbox')) ...
+    'url', fullfile(projectBaseDir,projectName,'toolbox')) ...
+    );
+tbDeployToolboxes('config',tbToolboxRecord( ...
+    'name', 'IBIOColorDetectProjectTutorials', ...
+    'type', 'local', ...
+    'url', fullfile(projectBaseDir,projectName,'tutorials')) ...
     );
 
 %% Set preferences for project output
@@ -37,8 +48,7 @@ if (~exist(outputBaseDir))
 end
 
 % This project's dir under the base dir
-projectDir = 'IBIOColorDetect';
-theDir = fullfile(outputBaseDir,projectDir);
+theDir = fullfile(outputBaseDir,projectName);
 
 % Set the preference
 setpref('IBIOColorDetect','outputBaseDir',theDir);
