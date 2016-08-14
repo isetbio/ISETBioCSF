@@ -2,18 +2,72 @@
 	{
 		"flavor": "",
 		"hook": "",
+		"importance": "",
 		"localHookTemplate": "",
-		"name": "BrainardLabToolbox",
+		"name": "signal",
+		"pathPlacement": "append",
+		"subfolder": "",
+		"toolboxRoot": "",
+		"type": "installed",
+		"update": "",
+		"url": ""
+	},
+	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "stats",
+		"pathPlacement": "append",
+		"subfolder": "",
+		"toolboxRoot": "",
+		"type": "installed",
+		"update": "",
+		"url": ""
+	},
+	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "images",
+		"pathPlacement": "append",
+		"subfolder": "",
+		"toolboxRoot": "",
+		"type": "installed",
+		"update": "",
+		"url": ""
+	},
+	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "optim",
+		"pathPlacement": "append",
+		"subfolder": "",
+		"toolboxRoot": "",
+		"type": "installed",
+		"update": "",
+		"url": ""
+	},
+	{
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "isetbio",
 		"pathPlacement": "append",
 		"subfolder": "",
 		"toolboxRoot": "",
 		"type": "git",
 		"update": "",
-		"url": "https:\/\/github.com:DavidBrainard\/BrainardLabToolbox.git"
+		"url": "https:\/\/github.com:isetbio\/isetbio.git"
 	},
 	{
 		"flavor": "",
 		"hook": "",
+		"importance": "",
 		"localHookTemplate": "",
 		"name": "UnitTestToolbox",
 		"pathPlacement": "append",
@@ -26,6 +80,7 @@
 	{
 		"flavor": "",
 		"hook": "",
+		"importance": "",
 		"localHookTemplate": "",
 		"name": "RemoteDataToolbox",
 		"pathPlacement": "append",
@@ -34,17 +89,5 @@
 		"type": "git",
 		"update": "",
 		"url": "https:\/\/github.com:isetbio\/RemoteDataToolbox.git"
-	},
-	{
-		"flavor": "",
-		"hook": "",
-		"localHookTemplate": "",
-		"name": "isetbio",
-		"pathPlacement": "append",
-		"subfolder": "",
-		"toolboxRoot": "",
-		"type": "git",
-		"update": "",
-		"url": "https:\/\/github.com:isetbio\/isetbio.git"
 	}
 ]

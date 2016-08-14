@@ -65,7 +65,7 @@ testDirectionParams = LMPlaneInstanceParamsGenerate;
 testDirectionParams.startAngle = 45;
 testDirectionParams.deltaAngle = 90;
 testDirectionParams.nAngles = 1;
-testDirectionParams.trialsNum = 1000;
+testDirectionParams.trialsNum = 5000;
 
 % Number of contrasts to run in each color direction
 testDirectionParams.nContrastsPerDirection = 10; 
@@ -77,10 +77,10 @@ testDirectionParams.contrastScale = 'log';    % choose between 'linear' and 'log
 %
 % Use default
 thresholdParams = thresholdParamsGenerate;
-thresholdParams.PCAComponents = 200;
+thresholdParams.PCAComponents = 500;
 
 %% Compute response instances
-t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
+%t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
 
 %% Find thresholds
 t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
