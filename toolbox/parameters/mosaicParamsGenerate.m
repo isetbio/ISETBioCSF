@@ -27,4 +27,5 @@ mosaicParams.LMSRatio = [0.62 0.31 0.07];
 mosaicParams.eccentricityDegs = 0;
 mosaicParams.isomerizationNoise = false;
 mosaicParams.osModel = 'Linear';
+mosaicParams.osNoise = true;
 mosaicParams.mosaicType = 'rect';

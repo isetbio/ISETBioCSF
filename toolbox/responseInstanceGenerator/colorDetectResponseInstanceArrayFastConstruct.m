@@ -58,7 +58,7 @@ end
 clearvars('theLargerMosaic');
 
 % For each trial compute new eye movement path and obtain new response
-for iTrial = 1: nTrials
+for iTrial = 1:nTrials
     if (mod(iTrial-1,50) == 0)
         % waitbar(0.5+0.5*iTrial/nTrials, progressHandle, sprintf('stimulus label: %s\ncomputing responses for trial %d/%d', stimulusLabel, iTrial, nTrials));
     end
@@ -66,9 +66,17 @@ for iTrial = 1: nTrials
     % Generate eye movements for the entire stimulus duration of this trial
     eyeMovementsPerStimFrame = temporalParams.stimulusSamplingIntervalInSeconds/simulationTimeStep;
     eyeMovementsTotalNum = round(eyeMovementsPerStimFrame*stimulusFramesNum);
-    eyeMovementSequence = theMosaic.emGenSequence(eyeMovementsTotalNum);    
-    if (isfield(temporalParams,'eyesDoNotMove') && (temporalParams.eyesDoNotMove))
-        eyeMovementSequence = eyeMovementSequence * 0;
+    
+    % Temporary fix, don't call emGenSequence for just one eye position
+    % case.  And, worry about why emGenSequence changes integration time
+    % before putting it back.
+    if (eyeMovementsTotalNum == 1)
+        eyeMovementSequence = zeros(1,2);
+    else
+        eyeMovementSequence = theMosaic.emGenSequence(eyeMovementsTotalNum);
+        if (isfield(temporalParams,'eyesDoNotMove') && (temporalParams.eyesDoNotMove))
+            eyeMovementSequence = eyeMovementSequence * 0;
+        end
     end
     
     % Loop over our stimulus frames
@@ -96,13 +104,17 @@ for iTrial = 1: nTrials
     end
     
     % Compute photocurrent sequence
+    % 
+    % Whether noise is produced here is determined by by the
+    % mosaicParams.osNoise flag, which is then used to set the os noise
+    % flag at mosaic initialization time.
     coneIsomerizationRate = coneIsomerizationSequence/theMosaic.integrationTime;
     photocurrentSequence = theMosaic.os.compute(coneIsomerizationRate,theMosaic.pattern);
    
     % Accumulate data in cell array of structs.
     if (iTrial == 1)
         % Only include the central response
-        timeAxis = (0:size(photocurrentSequence,3)-1)*theMosaic.sampleTime;
+        timeAxis = (0:size(photocurrentSequence,3)-1)*theMosaic.integrationTime;
         timeAxis = timeAxis - timeAxis(end)/2;
         timeIndicesToKeep = find(abs(timeAxis-temporalParams.secondsToIncludeOffset) <= temporalParams.secondsToInclude/2);
 

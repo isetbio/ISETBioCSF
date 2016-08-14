@@ -16,26 +16,17 @@ function theMosaic = colorDetectConeMosaicConstruct(mosaicParams)
 %  7/9/16  npc, dhb  Wrote it.
 %
 
-% Create a coneMosaic object here. 
+% Create a coneMosaic object here, after a few sanity checks to eliminate
+% deprecated possibilities.
+if (~isfield(mosaicParams,'integrationTimeInSeconds'))
+    error('Must specify mosaic integration time');
+end
 if (isfield(mosaicParams, 'timeStepInSeconds'))
-    if (isfield(mosaicParams, 'integrationTimeInSeconds'))
-        theMosaic = coneMosaic(...
-            'integrationTime',mosaicParams.integrationTimeInSeconds, ...  
-                 'sampleTime',mosaicParams.timeStepInSeconds ...   % em, osCompute
-                 );
-    else
-        theMosaic = coneMosaic(...
-                 'sampleTime',mosaicParams.timeStepInSeconds ...   % em, osCompute
-                 );
-    end             
-else
-    if (isfield(mosaicParams, 'integrationTimeInSeconds'))
-        theMosaic = coneMosaic('integrationTime',mosaicParams.integrationTimeInSeconds);
-    else
-        % Default foveal parameters for humans.
-        theMosaic = coneMosaic;
+    if (mosaicParams.timeStepInSeconds ~= mosaicParams.integrationTimeInSeconds)
+        error('Cannot have different sample and integration times anymore');
     end
 end
+theMosaic = coneMosaic('integrationTime',mosaicParams.integrationTimeInSeconds);
 
 
 % Set mosaic field of view.  In principle this would be as large as the

@@ -66,7 +66,7 @@ end
 %
 % If plotSvm is true, then a 2D plot showing the classifier
 % boundary is made and saved.  This can be useful for an explanatory
-% figure, or for checking that the classification is working sensibly.
+% figure, or for checking that the svm classification is working sensibly.
 % This should probably be set to false for everyday use.
 plotSvm = true;
 plotSvmPCAAxis1 = 1;
@@ -125,7 +125,7 @@ for kk = 1:nParforConditions
         error('Inconsisent number of trials');
     end
 
-    % Get performance for this instance.  Optional parameters control
+    % Get performance for this condition.  Optional parameters control
     % whether or not the routine returns a handle to a plot that
     % illustrates the classifier.
     [usePercentCorrect(kk),useStdErr(kk),h] = ...

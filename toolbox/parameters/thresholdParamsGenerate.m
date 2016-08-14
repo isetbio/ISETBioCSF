@@ -20,4 +20,5 @@ params.method = 'svm';
 params.signalSource = 'isomerizations';
 params.nIntervals = 2;
 params.kFold = 5;
+params.STANDARDIZE = true;
 params.PCAComponents = 60;
