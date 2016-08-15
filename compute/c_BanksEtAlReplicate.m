@@ -21,7 +21,7 @@ rParams = colorGaborResponseParamsGenerate;
 % just a tad bigger.
 rParams.gaborParams.windowType = 'halfcos';
 rParams.gaborParams.cyclesPerDegree = 3;
-rParams.gaborParams.gaussianFWHMDegs = 3.25*(1/rParams.gaborParams.cyclesPerDegree);
+rParams.gaborParams.gaussianFWHMDegs = 3.75*(1/rParams.gaborParams.cyclesPerDegree);
 rParams.gaborParams.fieldOfViewDegs = 2.1*rParams.gaborParams.gaussianFWHMDegs;
 
 % Set background luminance
@@ -65,7 +65,7 @@ testDirectionParams = LMPlaneInstanceParamsGenerate;
 testDirectionParams.startAngle = 45;
 testDirectionParams.deltaAngle = 90;
 testDirectionParams.nAngles = 1;
-testDirectionParams.trialsNum = 5000;
+testDirectionParams.trialsNum = 100;
 
 % Number of contrasts to run in each color direction
 testDirectionParams.nContrastsPerDirection = 20; 
@@ -78,16 +78,20 @@ testDirectionParams.contrastScale = 'log';    % choose between 'linear' and 'log
 % Use default
 thresholdParams = thresholdParamsGenerate;
 
+%% Take a look at the stimlus and basic cone responses
+rParams.colorModulationParams.coneContrasts = [0.5 0.5 0.5]';
+t_colorGaborScene(rParams);
+
 %% Compute response instances
-t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
+%t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
 
 %% Find thresholds and summarize, empirical max likeli
-thresholdParams.method = 'mlp';
-t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
-t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);
+% thresholdParams.method = 'mlp';
+% t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
+% t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);
 
 %% Find thresholds and summarize, svm
 thresholdParams.method = 'svm';
 thresholdParams.PCAComponents = 500;
-t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
+%t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
 t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);

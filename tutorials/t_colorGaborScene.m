@@ -289,12 +289,9 @@ vcAddAndSelectObject(gaborOINoLens); oiWindow;
 
 %% Create and get noise free sensor using coneMosaic obj
 % Create a coneMosaic object here. When setting the fov, if only one value
-% is specified, it will automatically make a square cone mosaic.  We don't
-% need the whole field of view to check the contrast, which will be
-% determined near the center of the Gabor, and making it smaller speeds
-% things up.
+% is specified, it will automatically make a square cone mosaic.
 gaborConeMosaic = coneMosaic;
-gaborConeMosaic.setSizeToFOV(rParams.gaborParams.fieldOfViewDegs/2);
+gaborConeMosaic.setSizeToFOV(rParams.gaborParams.fieldOfViewDegs);
 
 % There is also an option of whether the cone current should be calculated
 % in the compute function. If set to true, it uses an os object inside the

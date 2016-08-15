@@ -14,20 +14,27 @@ imageHarmonicParams = gaborParams;
 imageHarmonicParams.contrast = colorModulationParams.contrast;
 
 % Computed parameters.  These convert numbers to a form used by underlying
-% routines.
+% routines.  This one is frequency
 cyclesPerImage = gaborParams.fieldOfViewDegs*gaborParams.cyclesPerDegree;
-gaussianStdDegs = FWHMToStd(gaborParams.gaussianFWHMDegs);
-gaussianStdImageFraction = gaussianStdDegs/gaborParams.fieldOfViewDegs;
 imageHarmonicParams.freq = cyclesPerImage;
-
-% Set GaborFlag.  Make it negative for half-cosine instead of Gaussian
-% window.
-
-imageHarmonicParams.GaborFlag = gaussianStdImageFraction;
+% 
+% % Set GaborFlag to specify window.  Different conventions about width for
+% % half-cosine and Gaussian, plus make it negative for half-cosine instead of Gaussian
+% % window.
 switch gaborParams.windowType
     case 'halfcos'
-        imageHarmonicParams.GaborFlag = -imageHarmonicParams.GaborFlag;
+        % Input specifies half the width of the half-cosine, and
+        % imageHarmonic uses this convention for half-cosines.
+        cosHalfWidthDegs = gaborParams.gaussianFWHMDegs;
+        cosHalfWidthImageFraction = cosHalfWidthDegs/gaborParams.fieldOfViewDegs;
+        imageHarmonicParams.GaborFlag = -cosHalfWidthImageFraction;
     case 'Gaussian'
+        % Input specifies FWHM for Gaussian, and convert to standard
+        % deviation which is what imageHarmonic wants.
+        gaussianStdDegs = FWHMToStd(gaborParams.gaussianFWHMDegs);
+        gaussianStdImageFraction = gaussianStdDegs/gaborParams.fieldOfViewDegs;
+        imageHarmonicParams.GaborFlag = gaussianStdImageFraction;
+
     otherwise
         error('Unknown windowType passed');
 end
