@@ -31,7 +31,7 @@ rParams.gaborParams.fieldOfViewDegs = 2.1*rParams.gaborParams.gaussianFWHMDegs;
 % This is eventually applied both to the background luminance and to the
 % monitor channel spectra, so that we don't get unintersting out of gamut errors.
 baseLum = 50;
-theLum = 304;
+theLum = 340;
 rParams.backgroundParams.backgroundxyY = [0.33 0.33 baseLum]';
 rParams.backgroundParams.monitorFile = 'CRT-MODEL';
 rParams.backgroundParams.leakageLum = 1.0;
