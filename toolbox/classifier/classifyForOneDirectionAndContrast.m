@@ -1,5 +1,5 @@
-function [usePercentCorrect,useStdErr,h] = classifyForOneDirectionAndContrast(stimData,classificationData,classes,thresholdParams,varargin)
-% [usePercentCorrect,useStdErr,h] = classifyForOneDirectionAndContrast(stimData,data,classes,thresholdParams,varargin)
+function [usePercentCorrect,useStdErr,h] = classifyForOneDirectionAndContrast(noStimData,stimData,thresholdParams,varargin)
+% [usePercentCorrect,useStdErr,h] = classifyForOneDirectionAndContrast(noStimData,stimData,thresholdParams,varargin)
 %
 % Do classification for one stimulus color direction and contrast.
 %
@@ -12,19 +12,21 @@ function [usePercentCorrect,useStdErr,h] = classifyForOneDirectionAndContrast(st
 
 % Parse args
 p = inputParser;
+p.addRequired('noStimData',@isstruct);
 p.addRequired('stimData',@isstruct);
-p.addRequired('classificationData',@isnumeric);
-p.addRequired('classes',@isnumeric);
 p.addRequired('thresholdParams',@isstruct);
 p.addParameter('Plot',false,@islogical);
 p.addParameter('PlotAxis1',1,@isnumeric)
 p.addParameter('PlotAxis2',2,@isnumeric)
-p.parse(stimData,classificationData,classes,thresholdParams,varargin{:});
+p.parse(noStimData,stimData,thresholdParams,varargin{:});
 
-% Insert stimulus responses into data for classifier
+%% Put zero contrast response instances into data that we will pass to the SVM
+[classificationData,classes] = classificationDataNoStimDataInitialize(noStimData,thresholdParams);
+
+%% Insert stimulus responses into data for classifier
 [classificationData,classes] = classificationDataStimDataInsert(classificationData,classes,stimData,thresholdParams);
 
-% Decide what type of classifier we are running
+%% Decide what type of classifier we are running
 switch (thresholdParams.method)
     case 'svm'
         % Friendly neighborhood SVM, with optional standardization and PCA
@@ -80,12 +82,56 @@ switch (thresholdParams.method)
         else
             h = [];
         end
+           
+    case 'mlpt'
+        % Template maximum likelihood classifier, based on analytic mean responses o
+        % each class and assuming that the noise is Poisson.  
+        fprintf('\tRunning template LogLikelihood classifier ...\n');
         
+        % Check for sanity
+        if (~strcmp(thresholdParams.signalSource,'isomerizations'))
+            error('Template only available at isomerizations');
+        end
+     
+        % Set up template
+        if (thresholdParams.nIntervals == 1)
+            templateClass0 = noStimData.noiseFreeIsomerizations(:)';
+            templateClass1 = stimData.noiseFreeIsomerizations(:)';
+        else
+            templateClass0 = [noStimData.noiseFreeIsomerizations(:)' stimData.noiseFreeIsomerizations(:)'];
+            templateClass1 = [stimData.noiseFreeIsomerizations(:)' noStimData.noiseFreeIsomerizations(:)'];
+        end
         
-    case 'mlp'
-        % Poisson maximum likelihood classifier, based on mean respnoses to
+        % Compute likelihood of each class, given empirical means and use
+        % this to predict class
+        teClasses = classes;
+        teData = classificationData;
+        tePredict = -1*ones(size(teClasses));
+        nTeObservations = size(teData,1);
+        for ii = 1:nTeObservations
+            loglGiven0(ii) = sum(log10(poisspdf(teData(ii,:),templateClass0)));
+            loglGiven1(ii) = sum(log10(poisspdf(teData(ii,:),templateClass1)));
+            if (loglGiven1(ii) > loglGiven0(ii))
+                tePredict(ii) = 1;
+            else
+                tePredict(ii) = 0;
+            end
+        end
+        
+        nCorrect = length(find(tePredict == teClasses));
+        usePercentCorrect = nCorrect/length(teClasses);
+        useStdErr = 0;
+        
+        % Report percent correct
+        fprintf('\tPercent correct: %2.2f%%\n\n', usePercentCorrect*100);
+        
+        % No figure with this method
+        h = [];  
+        
+    case 'mlpe'
+        % Empirical Poisson maximum likelihood classifier, based on mean responses to
         % each class and assuming that the noise is Poisson.
-        fprintf('\tRunning LogLikelihood classifier ...\n');
+        fprintf('\tRunning empirical LogLikelihood classifier ...\n');
         
         % Create cross-validation partition
         nObservations = size(classificationData,1);

@@ -1,8 +1,12 @@
-function responseInstanceArray = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
-% responseInstanceArray = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
+function [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
+% [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
 % 
 % Construct an array of nTrials response instances given the
 % simulationTimeStep, gaborParams, temporalParams, theOI, theMosaic.
+%
+% The noise free isomerizations response is returned for the first frame
+% in the temporal sequence.  It is for debugging and probably not of
+% general interest.
 %
 % This is a sped up version of colorDetectResponseInstanceArrayConstruct.
 %
@@ -89,6 +93,11 @@ for iTrial = 1:nTrials
         theFrameEyeMovementPathIsomerizations = ...
             theMosaic.applyEMPath(theFrameFullMosaicIsomerizatios{stimFrameIndex}, ...
             'padRows',padRows,'padCols',padCols);
+        
+        % Stash noise free frame on first sequence, for debugging return
+        if (stimFrameIndex == 1)
+            noiseFreeIsomerizations = theFrameEyeMovementPathIsomerizations;
+        end
         
         % Add noise
         if (theMosaic.noiseFlag)

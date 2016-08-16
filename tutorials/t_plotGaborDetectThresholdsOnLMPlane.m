@@ -80,8 +80,7 @@ thresholdParamsCheck = performanceData.thresholdParams;
 % Extract data from loaded struct into convenient form
 testContrasts = performanceData.testContrasts;
 testConeContrasts = performanceData.testConeContrasts;
-fitContrasts = linspace(0,1,100)';
-thresholdCriterionFraction = 0.75;
+fitContrasts = linspace(min(testContrasts),max(testContrasts),100)';
 nTrials = LMPlaneInstanceParams.trialsNum;
 
 % Make sure S cone component of test contrasts is 0, because in this
@@ -105,21 +104,21 @@ for ii = 1:size(performanceData.testConeContrasts,2)
     % Palemedes toolbox.  The Palemedes toolbox is included in the external
     % subfolder of the Isetbio distribution.
     [tempThreshold,fitFractionCorrect(:,ii),psychometricParams{ii}] = ...
-       singleThresholdExtraction(testContrasts,thePerformance,thresholdCriterionFraction,nTrials,fitContrasts);
+       singleThresholdExtraction(testContrasts,thePerformance,thresholdParams.criterionFraction,nTrials,fitContrasts);
     thresholdContrasts(ii) = tempThreshold;
     
     % Make the plot for this test direction
     hFig = figure; hold on
     set(gca,'FontSize',rParams.plotParams.axisFontSize);
-    errorbar(testContrasts, thePerformance, theStandardError, 'ro', 'MarkerSize', rParams.plotParams.markerSize, 'MarkerFaceColor', [1.0 0.5 0.50]);
-    plot(fitContrasts,fitFractionCorrect(:,ii),'r','LineWidth', 2.0);
-    plot(thresholdContrasts(ii)*[1 1],[0 thresholdCriterionFraction],'b', 'LineWidth', 2.0);
+    errorbar(log10(testContrasts), thePerformance, theStandardError, 'ro', 'MarkerSize', rParams.plotParams.markerSize, 'MarkerFaceColor', [1.0 0.5 0.50]);
+    plot(log10(fitContrasts),fitFractionCorrect(:,ii),'r','LineWidth', 2.0);
+    plot(log10(thresholdContrasts(ii))*[1 1],[0 thresholdParams.criterionFraction],'b', 'LineWidth', 2.0);
     axis 'square'
     set(gca, 'YLim', [0 1.0],'XLim', [testContrasts(1) testContrasts(end)], 'FontSize', 14);
     xlabel('contrast', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
     ylabel('percent correct', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
     box off; grid on
-    title(sprintf('LMangle = %2.1f deg', atan2(testConeContrasts(2,ii), testConeContrasts(1,ii))/pi*180),'FontSize',rParams.plotParams.titleFontSize);
+    title(sprintf('LMangle = %2.1f deg, threshold %0.4f%%', atan2(testConeContrasts(2,ii), testConeContrasts(1,ii))/pi*180,100*thresholdContrats(ii)),'FontSize',rParams.plotParams.titleFontSize);
     rwObject.write(sprintf('LMPsychoFunctions_%d',ii),hFig,paramsList,writeProgram,'Type','figure');
     close(hFig);
     

@@ -80,18 +80,18 @@ thresholdParams = thresholdParamsGenerate;
 
 %% Take a look at the stimlus and basic cone responses
 rParams.colorModulationParams.coneContrasts = [0.5 0.5 0.5]';
-t_colorGaborScene(rParams);
+%t_colorGaborScene(rParams);
 
 %% Compute response instances
 %t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
 
 %% Find thresholds and summarize, empirical max likeli
-% thresholdParams.method = 'mlp';
-% t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
-% t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);
+thresholdParams.method = 'mlpt';
+t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
+t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);
 
 %% Find thresholds and summarize, svm
 thresholdParams.method = 'svm';
 thresholdParams.PCAComponents = 500;
-%t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
+t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
 t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);

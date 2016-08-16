@@ -99,9 +99,6 @@ rParamsCheck = ancillaryData.rParams;
 LMPlaneInstanceParamsCheck = ancillaryData.LMPlaneInstanceParams;
 fprintf('done\n');
 
-%% Put zero contrast response instances into data that we will pass to the SVM
-[classificationData,classes] = classificationDataNoStimDataInitialize(noStimData,thresholdParams);
-
 %% Do SVM for each test contrast and color direction.
 %
 % The work is done inside routine classifyForOneDirectionAndContrast.  We needed to
@@ -129,7 +126,7 @@ for kk = 1:nParforConditions
     % whether or not the routine returns a handle to a plot that
     % illustrates the classifier.
     [usePercentCorrect(kk),useStdErr(kk),h] = ...
-        classifyForOneDirectionAndContrast(stimData,classificationData,classes,thresholdParams, ...
+        classifyForOneDirectionAndContrast(noStimData,stimData,thresholdParams, ...
         'Plot',plotSvm,'PlotAxis1',plotSvmPCAAxis1,'PlotAxis2',plotSvmPCAAxis2);
     
     % Save classifier plot if we made one and then close the figure.
@@ -140,7 +137,7 @@ for kk = 1:nParforConditions
         close(h);
     end
 end
-fprintf('SVM classification took %2.2f minutes\n', toc/60);
+fprintf('Classification took %2.2f minutes\n', toc/60);
 clearvars('theData','useData','classificationData','classes');
 
 %% Take the returned vector form of the performance data and put it back into the

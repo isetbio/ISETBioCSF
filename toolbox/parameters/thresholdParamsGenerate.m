@@ -11,6 +11,7 @@ function params = thresholdParamsGenerate(varargin)
 %   nIntervals - Simulate 1 or 2 interval task
 %   kFold - Number of cross-validation folds
 %   PCAComponents - Number of PCA components, 0 for no PCA.
+%   criterionFraction - Threshold is at this fraction correct.
 
 % Parameter struct type
 params.type = 'threshold';
@@ -22,3 +23,4 @@ params.nIntervals = 2;
 params.kFold = 5;
 params.STANDARDIZE = true;
 params.PCAComponents = 60;
+params.criterionFraction = 0.75;
