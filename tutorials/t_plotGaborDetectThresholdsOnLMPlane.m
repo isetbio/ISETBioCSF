@@ -80,7 +80,7 @@ thresholdParamsCheck = performanceData.thresholdParams;
 % Extract data from loaded struct into convenient form
 testContrasts = performanceData.testContrasts;
 testConeContrasts = performanceData.testConeContrasts;
-fitContrasts = linspace(min(testContrasts),max(testContrasts),100)';
+fitContrasts = logspace(log10(min(testContrasts)),log10(max(testContrasts)),100)';
 nTrials = LMPlaneInstanceParams.trialsNum;
 
 % Make sure S cone component of test contrasts is 0, because in this
@@ -114,13 +114,14 @@ for ii = 1:size(performanceData.testConeContrasts,2)
     plot(log10(fitContrasts),fitFractionCorrect(:,ii),'r','LineWidth', 2.0);
     plot(log10(thresholdContrasts(ii))*[1 1],[0 thresholdParams.criterionFraction],'b', 'LineWidth', 2.0);
     axis 'square'
-    set(gca, 'YLim', [0 1.0],'XLim', [testContrasts(1) testContrasts(end)], 'FontSize', 14);
+    set(gca, 'YLim', [0 1.0],'XLim', log10([testContrasts(1) testContrasts(end)]), 'FontSize', 14);
     xlabel('contrast', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
     ylabel('percent correct', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
     box off; grid on
-    title(sprintf('LMangle = %2.1f deg, threshold %0.4f%%', atan2(testConeContrasts(2,ii), testConeContrasts(1,ii))/pi*180,100*thresholdContrats(ii)),'FontSize',rParams.plotParams.titleFontSize);
+    title({sprintf('LMangle = %2.1f deg, LMthreshold (%0.4f%%,%0.4f%%)', atan2(testConeContrasts(2,ii), testConeContrasts(1,ii))/pi*180, ...
+        100*thresholdContrasts(ii)*testConeContrasts(1,ii), 100*thresholdContrasts(ii)*testConeContrasts(2,ii)) ; ''}, ...
+        'FontSize',rParams.plotParams.titleFontSize);
     rwObject.write(sprintf('LMPsychoFunctions_%d',ii),hFig,paramsList,writeProgram,'Type','figure');
-    close(hFig);
     
     % Convert threshold contrast to threshold cone contrasts
     thresholdConeContrasts(:,ii) = testConeContrasts(:,ii)*thresholdContrasts(ii);
@@ -179,7 +180,9 @@ rwObject.write('LMThresholdContour',hFig,paramsList,writeProgram,'Type','figure'
 
 %% Validation data
 if (nargin > 0)
-    validationData = [];
+    validationData.testContrasts = testContrasts;
+    validationData.testConeContrasts = testConeContrasts;
+    validationData.thresholdContrasts = thresholdContrasts;
 end
     
 

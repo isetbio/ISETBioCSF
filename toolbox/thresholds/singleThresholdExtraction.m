@@ -19,7 +19,6 @@ function [threshold,fitFractionCorrect,paramsValues] = singleThresholdExtraction
 % xd  6/21/16 wrote it
 
 %% Set some parameters for the curve fitting
-paramsEstimate = [0.5 1 0.5 0];
 paramsFree     = [1 1 0 0];
 numPos = round(numTrials*fractionCorrect);
 outOfNum       = repmat(numTrials,1,length(fractionCorrect));
@@ -33,9 +32,19 @@ options.MaxIter     = 500*100;
 options.Display     = 'off';
 
 %% Fit the data to a curve
-paramsValues = PAL_PFML_Fit(stimLevels(:), numPos(:), outOfNum(:), ...
-    paramsEstimate, paramsFree, PF, 'SearchOptions', options);
-threshold = PF(paramsValues, criterionFraction, 'inverse');
+%
+% Try starting the search at each stimulus level and keep the best.
+for ii = 1:length(stimLevels)
+    paramsEstimate = [stimLevels(ii) 2 0.5 0];
+    [paramsValuesAll{ii},LLAll(ii)] = PAL_PFML_Fit(stimLevels(:), numPos(:), outOfNum(:), ...
+        paramsEstimate, paramsFree, PF, 'SearchOptions', options);
+    thresholdAll(ii) = PF(paramsValuesAll{ii}, criterionFraction, 'inverse');
+end
+[~,bestIndex] = max(LLAll);
+bestII = bestIndex(1);
+paramsValues = paramsValuesAll{bestII};
+threshold = thresholdAll(bestII);
+
 if (threshold > 1 | ~isreal(threshold) | isinf(threshold))
     threshold = NaN;
 end

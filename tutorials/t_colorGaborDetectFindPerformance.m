@@ -68,7 +68,7 @@ end
 % boundary is made and saved.  This can be useful for an explanatory
 % figure, or for checking that the svm classification is working sensibly.
 % This should probably be set to false for everyday use.
-plotSvm = true;
+plotSvm = false;
 plotSvmPCAAxis1 = 1;
 plotSvmPCAAxis2 = 2;
 
@@ -119,7 +119,7 @@ for kk = 1:nParforConditions
     paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
     stimData = rwObject.read('responseInstances',paramsList,readProgram);
     if (numel(stimData.responseInstanceArray) ~= nTrials)
-        error('Inconsisent number of trials');
+        error('Inconsistent number of trials');
     end
 
     % Get performance for this condition.  Optional parameters control
