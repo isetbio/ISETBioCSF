@@ -11,7 +11,8 @@ function c_EffectOfTrainingSize
 ieInit; close all;
 
 %% Loop over triaing samples
-effectOfTrainingSize.nTrainingSamplesList = [50 100 500 1000 5000];
+%effectOfTrainingSize.nTrainingSamplesList = [50 100 500 1000 5000];
+effectOfTrainingSize.nTrainingSamplesList = [5000];
 for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
     
     %% Get the parameters we need
@@ -86,12 +87,19 @@ for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
     thresholdParams = thresholdParamsGenerate;
     
     %% Compute response instances
-    t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
+%     t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
     
     %% Find thresholds and summarize, template max likeli
-    thresholdParams.method = 'mlpt';
+%     thresholdParams.method = 'mlpt';
+%     t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
+%     effectOfTrainingSize.mlptThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);
+%     close all;
+    
+    %% Find thresholds and summarize, svm
+    thresholdParams.method = 'svm';
+    thresholdParams.PCAComponents = 500;
     t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
-    effectOfTrainingSize.mlptThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);
+    effectOfTrainingSize.svmThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);
     close all;
     
     %% Find thresholds and summarize, empirical max likeli
@@ -99,34 +107,27 @@ for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
     t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
     effectOfTrainingSize.mlpeThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);
     close all;
-
-    %% Find thresholds and summarize, svm
-    thresholdParams.method = 'svm';
-    thresholdParams.PCAComponents = 500;
-    t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
-    effectOfTrainingSize.svmThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);
-    close all;
 end
 
-%% Write out the data
-fprintf('Writing performance data ... ');
-rwObject = IBIOColorDetectReadWriteBasic;
-writeProgram = mfilename;
-paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
-rwObject.write('effectOfTrainingSize',effectOfTrainingSize,paramsList,writeProgram);
-fprintf('done\n');
-
-%% Make a plot of estimated threshold versus training set size
-%
-% The way the plot is coded counts on the test contrasts never changing
-% across the conditions, which we could explicitly check for here.
-hFig = figure; clf; hold on
-set(gca,'FontSize', rParams.plotParams.axisFontSize);
-plot(effectOfTrainingSize.nTrainingSamplesList,[effectOfTrainingSize.mlptThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1),'r');
-plot(effectOfTrainingSize.nTrainingSamplesList,[effectOfTrainingSize.mlpeThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1),'g');
-plot(effectOfTrainingSize.nTrainingSamplesList,[effectOfTrainingSize.svmThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1),'b');
-xlabel('Training Set Size', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
-ylabel('Threshold Contrast', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
-box off; grid on
-title('Effect of Training Set Size','FontSize',rParams.plotParams.titleFontSize);
-rwObject.write('effectOfTrainingSize',hFig,paramsList,writeProgram,'Type','figure');
+% %% Write out the data
+% fprintf('Writing performance data ... ');
+% rwObject = IBIOColorDetectReadWriteBasic;
+% writeProgram = mfilename;
+% paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+% rwObject.write('effectOfTrainingSize',effectOfTrainingSize,paramsList,writeProgram);
+% fprintf('done\n');
+% 
+% %% Make a plot of estimated threshold versus training set size
+% %
+% % The way the plot is coded counts on the test contrasts never changing
+% % across the conditions, which we could explicitly check for here.
+% hFig = figure; clf; hold on
+% set(gca,'FontSize', rParams.plotParams.axisFontSize);
+% plot(effectOfTrainingSize.nTrainingSamplesList,[effectOfTrainingSize.mlptThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1),'r');
+% plot(effectOfTrainingSize.nTrainingSamplesList,[effectOfTrainingSize.mlpeThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1),'g');
+% plot(effectOfTrainingSize.nTrainingSamplesList,[effectOfTrainingSize.svmThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1),'b');
+% xlabel('Training Set Size', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
+% ylabel('Threshold Contrast', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
+% box off; grid on
+% title('Effect of Training Set Size','FontSize',rParams.plotParams.titleFontSize);
+% rwObject.write('effectOfTrainingSize',hFig,paramsList,writeProgram,'Type','figure');
