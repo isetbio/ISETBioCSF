@@ -35,7 +35,7 @@ for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
     % the mosaic is created, but we need it here so that filenames are
     % consistent.  It is possible that we should not have a separate mosaic
     % size field, and just alwasy force it to match the scene.
-    rParams.mosaicParams.filedOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
+    rParams.mosaicParams.fielsdOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
     
     % Set background luminance
     %

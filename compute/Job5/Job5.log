@@ -1,0 +1,571 @@
+Starting SMPD on node02  ...
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null node02 "/cm/shared/apps/Matlab/R2016a/bin/mw_smpd" -s -phrase MATLAB -port 22603
+Warning: Permanently added 'node02,192.168.1.2' (ECDSA) to the list of known hosts.
+All SMPDs launched
+"/cm/shared/apps/Matlab/R2016a/bin/mw_mpiexec" -phrase MATLAB -port 22603 -l -n 12 -machinefile /tmp/2603.1.all.q/machines -genvlist MDCE_DECODE_FUNCTION,MDCE_STORAGE_LOCATION,MDCE_STORAGE_CONSTRUCTOR,MDCE_JOB_LOCATION,MDCE_DEBUG,MDCE_LICENSE_NUMBER,MLM_WEB_LICENSE,MLM_WEB_USER_CRED,MLM_WEB_ID "/cm/shared/apps/Matlab/R2016a/bin/worker" -parallel
+[1]                            < M A T L A B (R) >
+[1]                  Copyright 1984-2016 The MathWorks, Inc.
+[1]                   R2016a (9.0.0.341360) 64-bit (glnxa64)
+[1]                             February 11, 2016
+[9]                            < M A T L A B (R) >
+[9]                  Copyright 1984-2016 The MathWorks, Inc.
+[9]                   R2016a (9.0.0.341360) 64-bit (glnxa64)
+[9]                             February 11, 2016
+[2]                            < M A T L A B (R) >
+[2]                  Copyright 1984-2016 The MathWorks, Inc.
+[2]                   R2016a (9.0.0.341360) 64-bit (glnxa64)
+[2]                             February 11, 2016
+[8]                            < M A T L A B (R) >
+[8]                  Copyright 1984-2016 The MathWorks, Inc.
+[8]                   R2016a (9.0.0.341360) 64-bit (glnxa64)
+[8]                             February 11, 2016
+[3]                            < M A T L A B (R) >
+[3]                  Copyright 1984-2016 The MathWorks, Inc.
+[3]                   R2016a (9.0.0.341360) 64-bit (glnxa64)
+[3]                             February 11, 2016
+[6]                            < M A T L A B (R) >
+[6]                  Copyright 1984-2016 The MathWorks, Inc.
+[6]                   R2016a (9.0.0.341360) 64-bit (glnxa64)
+[6]                             February 11, 2016
+[7]                            < M A T L A B (R) >
+[7]                  Copyright 1984-2016 The MathWorks, Inc.
+[7]                   R2016a (9.0.0.341360) 64-bit (glnxa64)
+[7]                             February 11, 2016
+[4]                            < M A T L A B (R) >
+[4]                  Copyright 1984-2016 The MathWorks, Inc.
+[4]                   R2016a (9.0.0.341360) 64-bit (glnxa64)
+[4]                             February 11, 2016
+[11]                            < M A T L A B (R) >
+[11]                  Copyright 1984-2016 The MathWorks, Inc.
+[11]                   R2016a (9.0.0.341360) 64-bit (glnxa64)
+[11]                             February 11, 2016
+[5]                            < M A T L A B (R) >
+[5]                  Copyright 1984-2016 The MathWorks, Inc.
+[5]                   R2016a (9.0.0.341360) 64-bit (glnxa64)
+[5]                             February 11, 2016
+[0]                            < M A T L A B (R) >
+[0]                  Copyright 1984-2016 The MathWorks, Inc.
+[0]                   R2016a (9.0.0.341360) 64-bit (glnxa64)
+[0]                             February 11, 2016
+[10]                            < M A T L A B (R) >
+[10]                  Copyright 1984-2016 The MathWorks, Inc.
+[10]                   R2016a (9.0.0.341360) 64-bit (glnxa64)
+[10]                             February 11, 2016
+[2] 
+[2]To get started, type one of these: helpwin, helpdesk, or demo.
+[2]For product information, visit www.mathworks.com.
+[2] 
+[2][Warning: Error setting Toolbox Toolbox path during startup: 'withInstalled' is
+[2]not a recognized parameter. For a list of valid name-value pair arguments, see
+[2]the documentation for this function.] 
+[2][> In startup (line 22)
+[2]  In matlabrc (line 209)] 
+[11] 
+[11]To get started, type one of these: helpwin, helpdesk, or demo.
+[11]For product information, visit www.mathworks.com.
+[11] 
+[11][Warning: Error setting Toolbox Toolbox path during startup: 'withInstalled' is
+[11]not a recognized parameter. For a list of valid name-value pair arguments, see
+[11]the documentation for this function.] 
+[11][> In startup (line 22)
+[11]  In matlabrc (line 209)] 
+[3] 
+[3]To get started, type one of these: helpwin, helpdesk, or demo.
+[3]For product information, visit www.mathworks.com.
+[3] 
+[3][Warning: Error setting Toolbox Toolbox path during startup: 'withInstalled' is
+[3]not a recognized parameter. For a list of valid name-value pair arguments, see
+[3]the documentation for this function.] 
+[3][> In startup (line 22)
+[3]  In matlabrc (line 209)] 
+[0] 
+[0]To get started, type one of these: helpwin, helpdesk, or demo.
+[0]For product information, visit www.mathworks.com.
+[0] 
+[0][Warning: Error setting Toolbox Toolbox path during startup: 'withInstalled' is
+[0]not a recognized parameter. For a list of valid name-value pair arguments, see
+[0]the documentation for this function.] 
+[0][> In startup (line 22)
+[0]  In matlabrc (line 209)] 
+[0][Warning: Executing startup failed in matlabrc.
+[0]This indicates a potentially serious problem in your MATLAB setup, which should
+[0]be resolved as soon as possible.  Error detected was:
+[0]MATLAB:load:notBinaryFile
+[0]Unable to read MAT-file /home/dhb/.matlab/R2016a/matlabprefs.mat. Not a binary
+[0]MAT-file. Try load -ASCII to read as text.] 
+[0][> In matlabrc (line 212)] 
+[10] 
+[10]To get started, type one of these: helpwin, helpdesk, or demo.
+[10]For product information, visit www.mathworks.com.
+[10] 
+[10][Warning: Error setting Toolbox Toolbox path during startup: 'withInstalled' is
+[10]not a recognized parameter. For a list of valid name-value pair arguments, see
+[10]the documentation for this function.] 
+[10][> In startup (line 22)
+[10]  In matlabrc (line 209)] 
+[1] 
+[1]To get started, type one of these: helpwin, helpdesk, or demo.
+[1]For product information, visit www.mathworks.com.
+[1] 
+[1][Warning: Error setting Toolbox Toolbox path during startup: 'withInstalled' is
+[1]not a recognized parameter. For a list of valid name-value pair arguments, see
+[1]the documentation for this function.] 
+[1][> In startup (line 22)
+[1]  In matlabrc (line 209)] 
+[7] 
+[7]To get started, type one of these: helpwin, helpdesk, or demo.
+[7]For product information, visit www.mathworks.com.
+[7] 
+[7][Warning: Error setting Toolbox Toolbox path during startup: 'withInstalled' is
+[7]not a recognized parameter. For a list of valid name-value pair arguments, see
+[7]the documentation for this function.] 
+[7][> In startup (line 22)
+[7]  In matlabrc (line 209)] 
+[7][Warning: Executing startup failed in matlabrc.
+[7]This indicates a potentially serious problem in your MATLAB setup, which should
+[7]be resolved as soon as possible.  Error detected was:
+[7]MATLAB:load:notBinaryFile
+[7]Unable to read MAT-file /home/dhb/.matlab/R2016a/matlabprefs.mat. Not a binary
+[7]MAT-file. Try load -ASCII to read as text.] 
+[7][> In matlabrc (line 212)] 
+[6] 
+[6]To get started, type one of these: helpwin, helpdesk, or demo.
+[6]For product information, visit www.mathworks.com.
+[6] 
+[6][Warning: Error setting Toolbox Toolbox path during startup: 'withInstalled' is
+[6]not a recognized parameter. For a list of valid name-value pair arguments, see
+[6]the documentation for this function.] 
+[6][> In startup (line 22)
+[6]  In matlabrc (line 209)] 
+[11]    ----------------------------------------------------
+[11]	Your MATLAB license will expire in 43 days.
+[11]	Please contact your system administrator or
+[11]	MathWorks to renew this license.
+[11]    ----------------------------------------------------
+[11]	Academic License
+[0]    ----------------------------------------------------
+[0]	Your MATLAB license will expire in 43 days.
+[0]	Please contact your system administrator or
+[0]	MathWorks to renew this license.
+[0]    ----------------------------------------------------
+[0]	Academic License
+[9] 
+[9]To get started, type one of these: helpwin, helpdesk, or demo.
+[9]For product information, visit www.mathworks.com.
+[9] 
+[9][Warning: Error setting Toolbox Toolbox path during startup: 'withInstalled' is
+[9]not a recognized parameter. For a list of valid name-value pair arguments, see
+[9]the documentation for this function.] 
+[9][> In startup (line 22)
+[9]  In matlabrc (line 209)] 
+[4] 
+[4]To get started, type one of these: helpwin, helpdesk, or demo.
+[4]For product information, visit www.mathworks.com.
+[4] 
+[4][Warning: Error setting Toolbox Toolbox path during startup: 'withInstalled' is
+[4]not a recognized parameter. For a list of valid name-value pair arguments, see
+[4]the documentation for this function.] 
+[4][> In startup (line 22)
+[4]  In matlabrc (line 209)] 
+[2]    ----------------------------------------------------
+[2]	Your MATLAB license will expire in 43 days.
+[2]	Please contact your system administrator or
+[2]	MathWorks to renew this license.
+[2]    ----------------------------------------------------
+[2]	Academic License
+[3]    ----------------------------------------------------
+[3]	Your MATLAB license will expire in 43 days.
+[3]	Please contact your system administrator or
+[3]	MathWorks to renew this license.
+[3]    ----------------------------------------------------
+[3]	Academic License
+[10]    ----------------------------------------------------
+[10]	Your MATLAB license will expire in 43 days.
+[10]	Please contact your system administrator or
+[10]	MathWorks to renew this license.
+[10]    ----------------------------------------------------
+[10]	Academic License
+[1]    ----------------------------------------------------
+[1]	Your MATLAB license will expire in 43 days.
+[1]	Please contact your system administrator or
+[1]	MathWorks to renew this license.
+[1]    ----------------------------------------------------
+[1]	Academic License
+[6]    ----------------------------------------------------
+[6]	Your MATLAB license will expire in 43 days.
+[6]	Please contact your system administrator or
+[6]	MathWorks to renew this license.
+[6]    ----------------------------------------------------
+[6]	Academic License
+[7]    ----------------------------------------------------
+[7]	Your MATLAB license will expire in 43 days.
+[7]	Please contact your system administrator or
+[7]	MathWorks to renew this license.
+[7]    ----------------------------------------------------
+[7]	Academic License
+[0]2016-08-19 11:14:42 | About to evaluate task with DistcompEvaluateFileTask
+[11]2016-08-19 11:14:42 | About to evaluate task with DistcompEvaluateFileTask
+[2]2016-08-19 11:14:42 | About to evaluate task with DistcompEvaluateFileTask
+[9]    ----------------------------------------------------
+[9]	Your MATLAB license will expire in 43 days.
+[9]	Please contact your system administrator or
+[9]	MathWorks to renew this license.
+[9]    ----------------------------------------------------
+[9]	Academic License
+[3]2016-08-19 11:14:42 | About to evaluate task with DistcompEvaluateFileTask
+[4]    ----------------------------------------------------
+[4]	Your MATLAB license will expire in 43 days.
+[4]	Please contact your system administrator or
+[4]	MathWorks to renew this license.
+[4]    ----------------------------------------------------
+[4]	Academic License
+[5] 
+[5]To get started, type one of these: helpwin, helpdesk, or demo.
+[5]For product information, visit www.mathworks.com.
+[5] 
+[5][Warning: Error setting Toolbox Toolbox path during startup: 'withInstalled' is
+[5]not a recognized parameter. For a list of valid name-value pair arguments, see
+[5]the documentation for this function.] 
+[5][> In startup (line 22)
+[5]  In matlabrc (line 209)] 
+[10]2016-08-19 11:14:42 | About to evaluate task with DistcompEvaluateFileTask
+[1]2016-08-19 11:14:42 | About to evaluate task with DistcompEvaluateFileTask
+[6]2016-08-19 11:14:42 | About to evaluate task with DistcompEvaluateFileTask
+[0]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core
+[11]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core
+[0]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core/iSetup
+[11]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core/iSetup
+[0]2016-08-19 11:14:42 | This process will exit on any fault.
+[11]2016-08-19 11:14:42 | This process will exit on any fault.
+[2]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core
+[3]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core
+[2]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core/iSetup
+[7]2016-08-19 11:14:42 | About to evaluate task with DistcompEvaluateFileTask
+[3]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core/iSetup
+[2]2016-08-19 11:14:42 | This process will exit on any fault.
+[10]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core
+[3]2016-08-19 11:14:42 | This process will exit on any fault.
+[0]2016-08-19 11:14:42 | This process will exit when its parent process dies.
+[10]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core/iSetup
+[11]2016-08-19 11:14:42 | This process will exit when its parent process dies.
+[9]2016-08-19 11:14:42 | About to evaluate task with DistcompEvaluateFileTask
+[10]2016-08-19 11:14:42 | This process will exit on any fault.
+[11]2016-08-19 11:14:42 | About to initialize MPI.
+[0]2016-08-19 11:14:42 | About to initialize MPI.
+[1]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core
+[6]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core
+[1]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core/iSetup
+[6]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core/iSetup
+[5]    ----------------------------------------------------
+[5]	Your MATLAB license will expire in 43 days.
+[5]	Please contact your system administrator or
+[5]	MathWorks to renew this license.
+[5]    ----------------------------------------------------
+[5]	Academic License
+[6]2016-08-19 11:14:42 | This process will exit on any fault.
+[1]2016-08-19 11:14:42 | This process will exit on any fault.
+[2]2016-08-19 11:14:42 | This process will exit when its parent process dies.
+[10]2016-08-19 11:14:42 | This process will exit when its parent process dies.
+[3]2016-08-19 11:14:42 | This process will exit when its parent process dies.
+[2]2016-08-19 11:14:42 | About to initialize MPI.
+[4]2016-08-19 11:14:42 | About to evaluate task with DistcompEvaluateFileTask
+[10]2016-08-19 11:14:42 | About to initialize MPI.
+[3]2016-08-19 11:14:42 | About to initialize MPI.
+[6]2016-08-19 11:14:42 | This process will exit when its parent process dies.
+[1]2016-08-19 11:14:42 | This process will exit when its parent process dies.
+[7]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core
+[7]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core/iSetup
+[6]2016-08-19 11:14:42 | About to initialize MPI.
+[1]2016-08-19 11:14:42 | About to initialize MPI.
+[7]2016-08-19 11:14:42 | This process will exit on any fault.
+[9]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core
+[9]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core/iSetup
+[7]2016-08-19 11:14:42 | This process will exit when its parent process dies.
+[9]2016-08-19 11:14:42 | This process will exit on any fault.
+[7]2016-08-19 11:14:42 | About to initialize MPI.
+[4]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core
+[8] 
+[8]To get started, type one of these: helpwin, helpdesk, or demo.
+[8]For product information, visit www.mathworks.com.
+[8] 
+[8][Warning: Error setting Toolbox Toolbox path during startup: 'withInstalled' is
+[8]not a recognized parameter. For a list of valid name-value pair arguments, see
+[8]the documentation for this function.] 
+[8][> In startup (line 22)
+[8]  In matlabrc (line 209)] 
+[9]2016-08-19 11:14:42 | This process will exit when its parent process dies.
+[4]2016-08-19 11:14:42 | Enter distcomp_evaluate_filetask_core/iSetup
+[5]2016-08-19 11:14:42 | About to evaluate task with DistcompEvaluateFileTask
+[4]2016-08-19 11:14:42 | This process will exit on any fault.
+[9]2016-08-19 11:14:42 | About to initialize MPI.
+[4]2016-08-19 11:14:42 | This process will exit when its parent process dies.
+[4]2016-08-19 11:14:43 | About to initialize MPI.
+[8]    ----------------------------------------------------
+[8]	Your MATLAB license will expire in 43 days.
+[8]	Please contact your system administrator or
+[8]	MathWorks to renew this license.
+[8]    ----------------------------------------------------
+[8]	Academic License
+[5]2016-08-19 11:14:43 | Enter distcomp_evaluate_filetask_core
+[5]2016-08-19 11:14:43 | Enter distcomp_evaluate_filetask_core/iSetup
+[5]2016-08-19 11:14:43 | This process will exit on any fault.
+[5]2016-08-19 11:14:43 | This process will exit when its parent process dies.
+[5]2016-08-19 11:14:43 | About to initialize MPI.
+[8]2016-08-19 11:14:43 | About to evaluate task with DistcompEvaluateFileTask
+[8]2016-08-19 11:14:43 | Enter distcomp_evaluate_filetask_core
+[8]2016-08-19 11:14:43 | Enter distcomp_evaluate_filetask_core/iSetup
+[8]2016-08-19 11:14:43 | This process will exit on any fault.
+[8]2016-08-19 11:14:43 | This process will exit when its parent process dies.
+[8]2016-08-19 11:14:43 | About to initialize MPI.
+[8]2016-08-19 11:14:43 | About to call mpiParallelSessionStarting.
+[6]2016-08-19 11:14:43 | About to call mpiParallelSessionStarting.
+[4]2016-08-19 11:14:43 | About to call mpiParallelSessionStarting.
+[7]2016-08-19 11:14:43 | About to call mpiParallelSessionStarting.
+[11]2016-08-19 11:14:43 | About to call mpiParallelSessionStarting.
+[0]2016-08-19 11:14:43 | About to call mpiParallelSessionStarting.
+[10]2016-08-19 11:14:43 | About to call mpiParallelSessionStarting.
+[3]2016-08-19 11:14:43 | About to call mpiParallelSessionStarting.
+[9]2016-08-19 11:14:43 | About to call mpiParallelSessionStarting.
+[5]2016-08-19 11:14:43 | About to call mpiParallelSessionStarting.
+[2]2016-08-19 11:14:43 | About to call mpiParallelSessionStarting.
+[1]2016-08-19 11:14:43 | About to call mpiParallelSessionStarting.
+[8]2016-08-19 11:14:43 | Finished initializing MPI.
+[6]2016-08-19 11:14:43 | Finished initializing MPI.
+[11]2016-08-19 11:14:43 | Finished initializing MPI.
+[0]2016-08-19 11:14:43 | Finished initializing MPI.
+[7]2016-08-19 11:14:43 | Finished initializing MPI.
+[4]2016-08-19 11:14:43 | Finished initializing MPI.
+[10]2016-08-19 11:14:43 | Finished initializing MPI.
+[3]2016-08-19 11:14:43 | Finished initializing MPI.
+[5]2016-08-19 11:14:43 | Finished initializing MPI.
+[2]2016-08-19 11:14:43 | Finished initializing MPI.
+[1]2016-08-19 11:14:43 | Finished initializing MPI.
+[9]2016-08-19 11:14:43 | Finished initializing MPI.
+[6]2016-08-19 11:14:43 | About to call decode function.
+[6]2016-08-19 11:14:43 | In parallel.cluster.generic.communicatingDecodeFcn
+[8]2016-08-19 11:14:43 | About to call decode function.
+[8]2016-08-19 11:14:43 | In parallel.cluster.generic.communicatingDecodeFcn
+[7]2016-08-19 11:14:43 | About to call decode function.
+[7]2016-08-19 11:14:43 | In parallel.cluster.generic.communicatingDecodeFcn
+[5]2016-08-19 11:14:43 | About to call decode function.
+[11]2016-08-19 11:14:43 | About to call decode function.
+[0]2016-08-19 11:14:43 | About to call decode function.
+[2]2016-08-19 11:14:43 | About to call decode function.
+[4]2016-08-19 11:14:43 | About to call decode function.
+[5]2016-08-19 11:14:43 | In parallel.cluster.generic.communicatingDecodeFcn
+[11]2016-08-19 11:14:43 | In parallel.cluster.generic.communicatingDecodeFcn
+[2]2016-08-19 11:14:43 | In parallel.cluster.generic.communicatingDecodeFcn
+[0]2016-08-19 11:14:43 | In parallel.cluster.generic.communicatingDecodeFcn
+[4]2016-08-19 11:14:43 | In parallel.cluster.generic.communicatingDecodeFcn
+[1]2016-08-19 11:14:43 | About to call decode function.
+[3]2016-08-19 11:14:43 | About to call decode function.
+[10]2016-08-19 11:14:43 | About to call decode function.
+[1]2016-08-19 11:14:43 | In parallel.cluster.generic.communicatingDecodeFcn
+[3]2016-08-19 11:14:43 | In parallel.cluster.generic.communicatingDecodeFcn
+[10]2016-08-19 11:14:43 | In parallel.cluster.generic.communicatingDecodeFcn
+[9]2016-08-19 11:14:43 | About to call decode function.
+[9]2016-08-19 11:14:43 | In parallel.cluster.generic.communicatingDecodeFcn
+[8]2016-08-19 11:14:43 | Setting the desktop client to a new client with username 
+[8]2016-08-19 11:14:43 | About to construct the storage object using constructor "makeFileStorageObject" and location "PC{}:UNIX{/data/shared/brainardlab/analysis/IBIOColorDetect/compute}:"
+[2]2016-08-19 11:14:43 | Setting the desktop client to a new client with username 
+[11]2016-08-19 11:14:43 | Setting the desktop client to a new client with username 
+[2]2016-08-19 11:14:43 | About to construct the storage object using constructor "makeFileStorageObject" and location "PC{}:UNIX{/data/shared/brainardlab/analysis/IBIOColorDetect/compute}:"
+[11]2016-08-19 11:14:43 | About to construct the storage object using constructor "makeFileStorageObject" and location "PC{}:UNIX{/data/shared/brainardlab/analysis/IBIOColorDetect/compute}:"
+[6]2016-08-19 11:14:43 | Setting the desktop client to a new client with username 
+[6]2016-08-19 11:14:43 | About to construct the storage object using constructor "makeFileStorageObject" and location "PC{}:UNIX{/data/shared/brainardlab/analysis/IBIOColorDetect/compute}:"
+[5]2016-08-19 11:14:43 | Setting the desktop client to a new client with username 
+[5]2016-08-19 11:14:43 | About to construct the storage object using constructor "makeFileStorageObject" and location "PC{}:UNIX{/data/shared/brainardlab/analysis/IBIOColorDetect/compute}:"
+[10]2016-08-19 11:14:43 | Setting the desktop client to a new client with username 
+[0]2016-08-19 11:14:43 | Setting the desktop client to a new client with username 
+[10]2016-08-19 11:14:43 | About to construct the storage object using constructor "makeFileStorageObject" and location "PC{}:UNIX{/data/shared/brainardlab/analysis/IBIOColorDetect/compute}:"
+[0]2016-08-19 11:14:43 | About to construct the storage object using constructor "makeFileStorageObject" and location "PC{}:UNIX{/data/shared/brainardlab/analysis/IBIOColorDetect/compute}:"
+[7]2016-08-19 11:14:43 | Setting the desktop client to a new client with username 
+[7]2016-08-19 11:14:43 | About to construct the storage object using constructor "makeFileStorageObject" and location "PC{}:UNIX{/data/shared/brainardlab/analysis/IBIOColorDetect/compute}:"
+[4]2016-08-19 11:14:43 | Setting the desktop client to a new client with username 
+[4]2016-08-19 11:14:43 | About to construct the storage object using constructor "makeFileStorageObject" and location "PC{}:UNIX{/data/shared/brainardlab/analysis/IBIOColorDetect/compute}:"
+[9]2016-08-19 11:14:43 | Setting the desktop client to a new client with username 
+[9]2016-08-19 11:14:43 | About to construct the storage object using constructor "makeFileStorageObject" and location "PC{}:UNIX{/data/shared/brainardlab/analysis/IBIOColorDetect/compute}:"
+[1]2016-08-19 11:14:43 | Setting the desktop client to a new client with username 
+[1]2016-08-19 11:14:43 | About to construct the storage object using constructor "makeFileStorageObject" and location "PC{}:UNIX{/data/shared/brainardlab/analysis/IBIOColorDetect/compute}:"
+[3]2016-08-19 11:14:43 | Setting the desktop client to a new client with username 
+[3]2016-08-19 11:14:43 | About to construct the storage object using constructor "makeFileStorageObject" and location "PC{}:UNIX{/data/shared/brainardlab/analysis/IBIOColorDetect/compute}:"
+[8]2016-08-19 11:14:44 | About to find job and task using locations "Job5" and "Job5/Task9"
+[10]2016-08-19 11:14:44 | About to find job and task using locations "Job5" and "Job5/Task11"
+[6]2016-08-19 11:14:44 | About to find job and task using locations "Job5" and "Job5/Task7"
+[11]2016-08-19 11:14:44 | About to find job and task using locations "Job5" and "Job5/Task12"
+[5]2016-08-19 11:14:44 | About to find job and task using locations "Job5" and "Job5/Task6"
+[7]2016-08-19 11:14:44 | About to find job and task using locations "Job5" and "Job5/Task8"
+[3]2016-08-19 11:14:44 | About to find job and task using locations "Job5" and "Job5/Task4"
+[9]2016-08-19 11:14:44 | About to find job and task using locations "Job5" and "Job5/Task10"
+[0]2016-08-19 11:14:44 | About to find job and task using locations "Job5" and "Job5/Task1"
+[2]2016-08-19 11:14:44 | About to find job and task using locations "Job5" and "Job5/Task3"
+[1]2016-08-19 11:14:44 | About to find job and task using locations "Job5" and "Job5/Task2"
+[4]2016-08-19 11:14:44 | About to find job and task using locations "Job5" and "Job5/Task5"
+[8]2016-08-19 11:14:45 | Setting the TaskEvaluator to the CJSStreamingEvaluator
+[6]2016-08-19 11:14:45 | Setting the TaskEvaluator to the CJSStreamingEvaluator
+[6]2016-08-19 11:14:45 | Completed pre-execution phase
+[8]2016-08-19 11:14:45 | Completed pre-execution phase
+[3]2016-08-19 11:14:45 | Setting the TaskEvaluator to the CJSStreamingEvaluator
+[7]2016-08-19 11:14:45 | Setting the TaskEvaluator to the CJSStreamingEvaluator
+[9]2016-08-19 11:14:45 | Setting the TaskEvaluator to the CJSStreamingEvaluator
+[3]2016-08-19 11:14:45 | Completed pre-execution phase
+[6]2016-08-19 11:14:45 | About to pPreJobEvaluate
+[11]2016-08-19 11:14:45 | Setting the TaskEvaluator to the CJSStreamingEvaluator
+[10]2016-08-19 11:14:45 | Setting the TaskEvaluator to the CJSStreamingEvaluator
+[9]2016-08-19 11:14:45 | Completed pre-execution phase
+[7]2016-08-19 11:14:45 | Completed pre-execution phase
+[11]2016-08-19 11:14:45 | Completed pre-execution phase
+[8]2016-08-19 11:14:45 | About to pPreJobEvaluate
+[5]2016-08-19 11:14:45 | Setting the TaskEvaluator to the CJSStreamingEvaluator
+[10]2016-08-19 11:14:45 | Completed pre-execution phase
+[3]2016-08-19 11:14:45 | About to pPreJobEvaluate
+[0]2016-08-19 11:14:45 | Setting the TaskEvaluator to the CJSStreamingEvaluator
+[9]2016-08-19 11:14:45 | About to pPreJobEvaluate
+[5]2016-08-19 11:14:45 | Completed pre-execution phase
+[11]2016-08-19 11:14:45 | About to pPreJobEvaluate
+[0]2016-08-19 11:14:45 | Completed pre-execution phase
+[7]2016-08-19 11:14:45 | About to pPreJobEvaluate
+[10]2016-08-19 11:14:45 | About to pPreJobEvaluate
+[2]2016-08-19 11:14:45 | Setting the TaskEvaluator to the CJSStreamingEvaluator
+[2]2016-08-19 11:14:45 | Completed pre-execution phase
+[5]2016-08-19 11:14:45 | About to pPreJobEvaluate
+[0]2016-08-19 11:14:45 | About to pPreJobEvaluate
+[1]2016-08-19 11:14:45 | Setting the TaskEvaluator to the CJSStreamingEvaluator
+[4]2016-08-19 11:14:45 | Setting the TaskEvaluator to the CJSStreamingEvaluator
+[2]2016-08-19 11:14:45 | About to pPreJobEvaluate
+[1]2016-08-19 11:14:45 | Completed pre-execution phase
+[4]2016-08-19 11:14:45 | Completed pre-execution phase
+[1]2016-08-19 11:14:45 | About to pPreJobEvaluate
+[4]2016-08-19 11:14:45 | About to pPreJobEvaluate
+[9]2016-08-19 11:14:45 | About to pPreTaskEvaluate
+[5]2016-08-19 11:14:45 | About to pPreTaskEvaluate
+[4]2016-08-19 11:14:45 | About to pPreTaskEvaluate
+[7]2016-08-19 11:14:45 | About to pPreTaskEvaluate
+[3]2016-08-19 11:14:45 | About to pPreTaskEvaluate
+[1]2016-08-19 11:14:45 | About to pPreTaskEvaluate
+[10]2016-08-19 11:14:45 | About to pPreTaskEvaluate
+[8]2016-08-19 11:14:45 | About to pPreTaskEvaluate
+[0]2016-08-19 11:14:45 | About to pPreTaskEvaluate
+[11]2016-08-19 11:14:45 | About to pPreTaskEvaluate
+[6]2016-08-19 11:14:45 | About to pPreTaskEvaluate
+[2]2016-08-19 11:14:45 | About to pPreTaskEvaluate
+[0]2016-08-19 11:14:45 | About to add job dependencies
+[9]2016-08-19 11:14:45 | About to add job dependencies
+[4]2016-08-19 11:14:45 | About to add job dependencies
+[5]2016-08-19 11:14:45 | About to add job dependencies
+[7]2016-08-19 11:14:45 | About to add job dependencies
+[8]2016-08-19 11:14:45 | About to add job dependencies
+[10]2016-08-19 11:14:45 | About to add job dependencies
+[1]2016-08-19 11:14:45 | About to add job dependencies
+[3]2016-08-19 11:14:45 | About to add job dependencies
+[6]2016-08-19 11:14:45 | About to add job dependencies
+[2]2016-08-19 11:14:45 | About to add job dependencies
+[11]2016-08-19 11:14:45 | About to add job dependencies
+[4]2016-08-19 11:14:46 | About to call jobStartup
+[9]2016-08-19 11:14:46 | About to call jobStartup
+[2]2016-08-19 11:14:46 | About to call jobStartup
+[4]2016-08-19 11:14:46 | About to push FileWriter on stack
+[9]2016-08-19 11:14:46 | About to push FileWriter on stack
+[2]2016-08-19 11:14:46 | About to push FileWriter on stack
+[0]2016-08-19 11:14:46 | About to call jobStartup
+[3]2016-08-19 11:14:46 | About to call jobStartup
+[4]2016-08-19 11:14:46 | FileWriter popped off stack
+[6]2016-08-19 11:14:46 | About to call jobStartup
+[9]2016-08-19 11:14:46 | FileWriter popped off stack
+[2]2016-08-19 11:14:46 | FileWriter popped off stack
+[4]2016-08-19 11:14:46 | About to call taskStartup
+[9]2016-08-19 11:14:46 | About to call taskStartup
+[2]2016-08-19 11:14:46 | About to call taskStartup
+[0]2016-08-19 11:14:46 | About to push FileWriter on stack
+[3]2016-08-19 11:14:46 | About to push FileWriter on stack
+[6]2016-08-19 11:14:46 | About to push FileWriter on stack
+[11]2016-08-19 11:14:46 | About to call jobStartup
+[3]2016-08-19 11:14:46 | FileWriter popped off stack
+[0]2016-08-19 11:14:46 | FileWriter popped off stack
+[10]2016-08-19 11:14:46 | About to call jobStartup
+[6]2016-08-19 11:14:46 | FileWriter popped off stack
+[3]2016-08-19 11:14:46 | About to call taskStartup
+[0]2016-08-19 11:14:46 | About to call taskStartup
+[6]2016-08-19 11:14:46 | About to call taskStartup
+[4]2016-08-19 11:14:46 | About to push FileWriter on stack
+[11]2016-08-19 11:14:46 | About to push FileWriter on stack
+[2]2016-08-19 11:14:46 | About to push FileWriter on stack
+[9]2016-08-19 11:14:46 | About to push FileWriter on stack
+[4]2016-08-19 11:14:46 | FileWriter popped off stack
+[4]2016-08-19 11:14:46 | About to get evaluation data
+[10]2016-08-19 11:14:46 | About to push FileWriter on stack
+[2]2016-08-19 11:14:46 | FileWriter popped off stack
+[9]2016-08-19 11:14:46 | FileWriter popped off stack
+[2]2016-08-19 11:14:46 | About to get evaluation data
+[9]2016-08-19 11:14:46 | About to get evaluation data
+[11]2016-08-19 11:14:46 | FileWriter popped off stack
+[10]2016-08-19 11:14:46 | FileWriter popped off stack
+[11]2016-08-19 11:14:46 | About to call taskStartup
+[10]2016-08-19 11:14:46 | About to call taskStartup
+[3]2016-08-19 11:14:46 | About to push FileWriter on stack
+[0]2016-08-19 11:14:46 | About to push FileWriter on stack
+[3]2016-08-19 11:14:46 | FileWriter popped off stack
+[0]2016-08-19 11:14:46 | FileWriter popped off stack
+[6]2016-08-19 11:14:46 | About to push FileWriter on stack
+[3]2016-08-19 11:14:46 | About to get evaluation data
+[0]2016-08-19 11:14:46 | About to get evaluation data
+[6]2016-08-19 11:14:46 | FileWriter popped off stack
+[6]2016-08-19 11:14:46 | About to get evaluation data
+[8]2016-08-19 11:14:46 | About to call jobStartup
+[5]2016-08-19 11:14:46 | About to call jobStartup
+[1]2016-08-19 11:14:46 | About to call jobStartup
+[11]2016-08-19 11:14:46 | About to push FileWriter on stack
+[11]2016-08-19 11:14:46 | FileWriter popped off stack
+[10]2016-08-19 11:14:46 | About to push FileWriter on stack
+[11]2016-08-19 11:14:46 | About to get evaluation data
+[8]2016-08-19 11:14:46 | About to push FileWriter on stack
+[10]2016-08-19 11:14:46 | FileWriter popped off stack
+[5]2016-08-19 11:14:46 | About to push FileWriter on stack
+[10]2016-08-19 11:14:46 | About to get evaluation data
+[7]2016-08-19 11:14:46 | About to call jobStartup
+[1]2016-08-19 11:14:46 | About to push FileWriter on stack
+[5]2016-08-19 11:14:46 | FileWriter popped off stack
+[8]2016-08-19 11:14:46 | FileWriter popped off stack
+[5]2016-08-19 11:14:46 | About to call taskStartup
+[8]2016-08-19 11:14:46 | About to call taskStartup
+[1]2016-08-19 11:14:46 | FileWriter popped off stack
+[7]2016-08-19 11:14:46 | About to push FileWriter on stack
+[1]2016-08-19 11:14:46 | About to call taskStartup
+[7]2016-08-19 11:14:46 | FileWriter popped off stack
+[5]2016-08-19 11:14:46 | About to push FileWriter on stack
+[5]2016-08-19 11:14:46 | FileWriter popped off stack
+[7]2016-08-19 11:14:46 | About to call taskStartup
+[5]2016-08-19 11:14:46 | About to get evaluation data
+[8]2016-08-19 11:14:46 | About to push FileWriter on stack
+[8]2016-08-19 11:14:46 | FileWriter popped off stack
+[8]2016-08-19 11:14:46 | About to get evaluation data
+[1]2016-08-19 11:14:46 | About to push FileWriter on stack
+[1]2016-08-19 11:14:46 | FileWriter popped off stack
+[1]2016-08-19 11:14:46 | About to get evaluation data
+[7]2016-08-19 11:14:46 | About to push FileWriter on stack
+[7]2016-08-19 11:14:46 | FileWriter popped off stack
+[7]2016-08-19 11:14:46 | About to get evaluation data
+[4]2016-08-19 11:14:46 | About to pInstantiatePool
+[2]2016-08-19 11:14:46 | About to pInstantiatePool
+[3]2016-08-19 11:14:46 | About to pInstantiatePool
+[0]2016-08-19 11:14:46 | About to pInstantiatePool
+[6]2016-08-19 11:14:46 | About to pInstantiatePool
+[11]2016-08-19 11:14:46 | About to pInstantiatePool
+[10]2016-08-19 11:14:46 | About to pInstantiatePool
+[5]2016-08-19 11:14:46 | About to pInstantiatePool
+[9]2016-08-19 11:14:46 | About to pInstantiatePool
+[0]2016-08-19 11:14:46 | Creating session with strategy: ALL_WORKERS_CONNECT_TO_CLIENT
+[3]2016-08-19 11:14:46 | Creating session with strategy: ALL_WORKERS_CONNECT_TO_CLIENT
+[2]2016-08-19 11:14:46 | Creating session with strategy: ALL_WORKERS_CONNECT_TO_CLIENT
+[4]2016-08-19 11:14:46 | Creating session with strategy: ALL_WORKERS_CONNECT_TO_CLIENT
+[6]2016-08-19 11:14:46 | Creating session with strategy: ALL_WORKERS_CONNECT_TO_CLIENT
+[5]2016-08-19 11:14:46 | Creating session with strategy: ALL_WORKERS_CONNECT_TO_CLIENT
+[7]2016-08-19 11:14:46 | About to pInstantiatePool
+[8]2016-08-19 11:14:47 | About to pInstantiatePool
+[1]2016-08-19 11:14:47 | About to pInstantiatePool
+[7]2016-08-19 11:14:47 | Creating session with strategy: ALL_WORKERS_CONNECT_TO_CLIENT
+[9]2016-08-19 11:14:47 | Creating session with strategy: ALL_WORKERS_CONNECT_TO_CLIENT
+[11]2016-08-19 11:14:47 | Creating session with strategy: ALL_WORKERS_CONNECT_TO_CLIENT
+[10]2016-08-19 11:14:47 | Creating session with strategy: ALL_WORKERS_CONNECT_TO_CLIENT
+[8]2016-08-19 11:14:47 | Creating session with strategy: ALL_WORKERS_CONNECT_TO_CLIENT
+[1]2016-08-19 11:14:47 | Creating session with strategy: ALL_WORKERS_CONNECT_TO_CLIENT
