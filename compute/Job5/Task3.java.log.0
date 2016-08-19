@@ -6288,3 +6288,7 @@ Exception: null to: MatlabPoolPeerInstance{fUuid=f13599a1-5432-4c58-b605-720d973
 2016 08 19 15:16:20.267 UTC | 4 | INCOMING permit release (0, 0) - fHeapKbConsumed: 0 of 51200, fDirectKbConsumed: 0 of 512000, fNumMessagesQueued: 0
 2016 08 19 15:16:20.282 UTC | 4 | MATLAB: clearFunction Got 1 args to clear.
 2016 08 19 15:16:20.287 UTC | 6 | null.null: MATLAB: clearFunction clearing: /data/shared/brainardlab/analysis/IBIOColorDetect/compute/c_EffectOfTraningSize.m.
+2016 08 19 15:16:25.268 UTC | 6 | com.mathworks.toolbox.distcomp.pmode.io.DirectCommunicationGroup.doSelect: doSelect(): fresh select
+2016 08 19 15:16:30.273 UTC | 6 | com.mathworks.toolbox.distcomp.pmode.io.DirectCommunicationGroup.doSelect: doSelect(): fresh select
+2016 08 19 15:16:35.279 UTC | 6 | com.mathworks.toolbox.distcomp.pmode.io.DirectCommunicationGroup.doSelect: doSelect(): fresh select
+2016 08 19 15:16:40.284 UTC | 6 | com.mathworks.toolbox.distcomp.pmode.io.DirectCommunicationGroup.doSelect: doSelect(): fresh select
