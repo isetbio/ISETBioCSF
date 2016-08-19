@@ -11,7 +11,7 @@ function c_EffectOfTrainingSize
 ieInit; close all;
 
 %% Loop over triaing samples
-effectOfTrainingSize.nTrainingSamplesList = [50 100 500 1000];
+effectOfTrainingSize.nTrainingSamplesList = [50 100 500 1000 5000];
 for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
     
     %% Get the parameters we need
@@ -86,24 +86,24 @@ for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
     thresholdParams = thresholdParamsGenerate;
     
     %% Compute response instances
-%     t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
+    t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
     
     %% Find thresholds and summarize, template max likeli
     thresholdParams.method = 'mlpt';
-%     t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
+    t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
     effectOfTrainingSize.mlptThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);
     close all;
     
     %% Find thresholds and summarize, svm
     thresholdParams.method = 'svm';
     thresholdParams.PCAComponents = 500;
-%     t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
+    t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
     effectOfTrainingSize.svmThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);
     close all;
     
     %% Find thresholds and summarize, empirical max likeli
     thresholdParams.method = 'mlpe';
-%     t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
+    t_colorGaborDetectFindPerformance(rParams,testDirectionParams,thresholdParams);
     effectOfTrainingSize.mlpeThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane(rParams,testDirectionParams,thresholdParams);
     close all;
 end
