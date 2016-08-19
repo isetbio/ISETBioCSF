@@ -30,6 +30,12 @@ for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
     rParams.gaborParams.cyclesPerDegree = 10;
     rParams.gaborParams.gaussianFWHMDegs = 3.75*(1/rParams.gaborParams.cyclesPerDegree);
     rParams.gaborParams.fieldOfViewDegs = 2.1*rParams.gaborParams.gaussianFWHMDegs;
+
+    % Keep mosaic size in lock step with stimulus.  This is also forced before
+    % the mosaic is created, but we need it here so that filenames are
+    % consistent.  It is possible that we should not have a separate mosaic
+    % size field, and just alwasy force it to match the scene.
+    rParams.mosaicParams.filedOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
     
     % Set background luminance
     %
