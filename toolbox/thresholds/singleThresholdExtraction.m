@@ -31,23 +31,32 @@ options.MaxFunEvals = 10000*100;
 options.MaxIter     = 500*100;
 options.Display     = 'off';
 
-%% Fit the data to a curve
+%% Fit psychometric function to the data
 %
-% Try starting the search at each stimulus level and keep the best.
-for ii = 1:length(stimLevels)
-    paramsEstimate = [stimLevels(ii) 2 0.5 0];
-    [paramsValuesAll{ii},LLAll(ii)] = PAL_PFML_Fit(stimLevels(:), numPos(:), outOfNum(:), ...
-        paramsEstimate, paramsFree, PF, 'SearchOptions', options);
-    thresholdAll(ii) = PF(paramsValuesAll{ii}, criterionFraction, 'inverse');
+% Try starting the search at various initial values and keep the best.
+tryIndex = 1;
+startSlopes = [2];
+startLocations = stimLevels;
+for jj = 1:length(startSlopes)
+    for ii = 1:length(startLocations)
+        paramsEstimate = [startLocations(ii) startSlopes(jj) 0.5 0];
+        [paramsValuesAll{tryIndex},LLAll(tryIndex)] = PAL_PFML_Fit(stimLevels(:), numPos(:), outOfNum(:), ...
+            paramsEstimate, paramsFree, PF, 'SearchOptions', options);
+        thresholdAll(tryIndex) = PF(paramsValuesAll{tryIndex}, criterionFraction, 'inverse');
+        tryIndex = tryIndex + 1;
+    end
 end
 [~,bestIndex] = max(LLAll);
 bestII = bestIndex(1);
 paramsValues = paramsValuesAll{bestII};
 threshold = thresholdAll(bestII);
 
+% Deal with catostrophic cases
 if (threshold > 1 | ~isreal(threshold) | isinf(threshold))
     threshold = NaN;
 end
+
+% Provide fit psychometric function on passed stimulus levels
 fitFractionCorrect = PF(paramsValues,fitStimLevels);
 
 end

@@ -65,7 +65,7 @@ testDirectionParams = LMPlaneInstanceParamsGenerate;
 testDirectionParams.startAngle = 45;
 testDirectionParams.deltaAngle = 90;
 testDirectionParams.nAngles = 1;
-testDirectionParams.trialsNum = 100;
+testDirectionParams.trialsNum = 200;
 
 % Number of contrasts to run in each color direction
 testDirectionParams.nContrastsPerDirection = 20; 
@@ -83,7 +83,7 @@ rParams.colorModulationParams.coneContrasts = [0.5 0.5 0.5]';
 %t_colorGaborScene(rParams);
 
 %% Compute response instances
-%t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
+t_colorGaborConeCurrentEyeMovementsResponseInstances(rParams,testDirectionParams);
 
 %% Find thresholds and summarize, empirical max likeli
 thresholdParams.method = 'mlpt';

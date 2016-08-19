@@ -60,6 +60,7 @@ theParamsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, 
 theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
 
 %% Create the cone mosaic
+rParams.mosaicParams.fieldOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
 theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
 
 %% Create stimulus temporal window

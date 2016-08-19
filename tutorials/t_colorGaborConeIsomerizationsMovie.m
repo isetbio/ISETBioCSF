@@ -87,6 +87,7 @@ visualizeSceneOrOpticalImageSequence(rwObject,paramsList,theProgram, ...
     'optical image', theOI, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborOpticalImageMovie');
 
 %% Create the coneMosaic object we'll use to compute cone respones
+rParams.mosaicParams.fieldOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
 theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
 for ii = 1:rParams.temporalParams.nSampleTimes      
     % Compute mosaic response for each stimulus frame

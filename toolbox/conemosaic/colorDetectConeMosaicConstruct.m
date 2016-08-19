@@ -44,7 +44,7 @@ if (isfield(mosaicParams, 'osNoise'))
 end
 
 
-% Density of LMS cones
+% Relative number of LMS cones
 if (isfield(mosaicParams, 'LMSRatio'))
     if (numel(mosaicParams.LMSRatio) == 3)
         theMosaic.spatialDensity = [0 mosaicParams.LMSRatio(1) mosaicParams.LMSRatio(2) mosaicParams.LMSRatio(3)]';

@@ -83,6 +83,7 @@ renderVideo = false;
 theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
 
 %% Create the cone mosaic
+rParams.mosaicParams.fieldOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
 theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
 
 %% Define color direction cone contrasts as well as contrast scalars.
