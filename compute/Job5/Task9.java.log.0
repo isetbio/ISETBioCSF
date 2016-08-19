@@ -4377,3 +4377,5 @@ Exception: null to: MatlabPoolPeerInstance{fUuid=f13599a1-5432-4c58-b605-720d973
 2016 08 19 15:16:30.275 UTC | 6 | com.mathworks.toolbox.distcomp.pmode.io.DirectCommunicationGroup.doSelect: doSelect(): fresh select
 2016 08 19 15:16:35.280 UTC | 6 | com.mathworks.toolbox.distcomp.pmode.io.DirectCommunicationGroup.doSelect: doSelect(): fresh select
 2016 08 19 15:16:40.286 UTC | 6 | com.mathworks.toolbox.distcomp.pmode.io.DirectCommunicationGroup.doSelect: doSelect(): fresh select
+2016 08 19 15:16:45.291 UTC | 6 | com.mathworks.toolbox.distcomp.pmode.io.DirectCommunicationGroup.doSelect: doSelect(): fresh select
+2016 08 19 15:16:50.293 UTC | 6 | com.mathworks.toolbox.distcomp.pmode.io.DirectCommunicationGroup.doSelect: doSelect(): fresh select
