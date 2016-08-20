@@ -61,8 +61,11 @@ classdef IBIOColorDetectReadWrite < handle
         % Get unique identifier for data
         fileid = getid(obj,name,varagin);
         
-        % Get unique identifier for data
+        % Read the data
         data = read(obj,fileid,varargin);
+        
+        % Delete the data
+        delete(obj,fileid,varargin);
         
         % Get me a scratch directory
         tempDir = tempdir(obj,varargin);
