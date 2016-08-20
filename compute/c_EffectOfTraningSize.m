@@ -98,7 +98,7 @@ if (~p.Results.PlotOnly)
         testDirectionParams.trialsNum = effectOfTrainingSize.nTrainingSamplesList(tt);
         
         %% Compute response instances
-        %t_colorGaborConeCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'visualizeResponses',false);
+        t_colorGaborConeCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'visualizeResponses',false);
         
         %% Find thresholds and summarize, template max likeli
         thresholdParams.method = 'mlpt';
