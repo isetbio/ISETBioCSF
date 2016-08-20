@@ -4,9 +4,9 @@ function [usePercentCorrect,useStdErr,h] = classifyForOneDirectionAndContrast(no
 % Do classification for one stimulus color direction and contrast.
 %
 % Optional key/value pairs
-%   'Plot' - true/false (default false).  Plot classification boundary
-%   'PlotAxis1' - First PCA component to plot (default 1)
-%   'PlotAxis2' - Second PCA component to plot (default 2)
+%   'plotSvmBoundary' - true/false (default false).  Plot classification boundary
+%   'plotPCAAxis1' - First PCA component to plot (default 1)
+%   'plotPCAAxis2' - Second PCA component to plot (default 2)
 %
 % 7/14/16  dhb, xd  Pulled this out.  Hoping it will work.
 
@@ -15,9 +15,9 @@ p = inputParser;
 p.addRequired('noStimData',@isstruct);
 p.addRequired('stimData',@isstruct);
 p.addRequired('thresholdParams',@isstruct);
-p.addParameter('Plot',false,@islogical);
-p.addParameter('PlotAxis1',1,@isnumeric)
-p.addParameter('PlotAxis2',2,@isnumeric)
+p.addParameter('plotSvmBoundary',false,@islogical);
+p.addParameter('plotPCAAxis1',1,@isnumeric)
+p.addParameter('plotPCAAxis2',2,@isnumeric)
 p.parse(noStimData,stimData,thresholdParams,varargin{:});
 
 %% Put zero contrast response instances into data that we will pass to the SVM
@@ -44,10 +44,10 @@ switch (thresholdParams.method)
         fprintf(' correct: %2.2f%%\n', usePercentCorrect*100);
         
         % Optional plot of classification boundary
-        if (p.Results.Plot)
+        if (p.Results.plotSvmBoundary)
             % Plot the data points along these two components
-            PCAAxis1 = p.Results.PlotAxis1;
-            PCAAxis2 = p.Results.PlotAxis2;
+            PCAAxis1 = p.Results.plotPCAAxis1;
+            PCAAxis2 = p.Results.plotPCAAxis2;
             
             h = figure('Position',[0 0 750 750]);
             hold on;
