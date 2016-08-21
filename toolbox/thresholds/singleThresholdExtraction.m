@@ -35,7 +35,7 @@ options.Display     = 'off';
 %
 % Try starting the search at various initial values and keep the best.
 tryIndex = 1;
-startSlopes = [2];
+startSlopes = [0.001 0.01 0.1 1];
 startLocations = stimLevels;
 for jj = 1:length(startSlopes)
     for ii = 1:length(startLocations)
@@ -43,10 +43,13 @@ for jj = 1:length(startSlopes)
         [paramsValuesAll{tryIndex},LLAll(tryIndex)] = PAL_PFML_Fit(stimLevels(:), numPos(:), outOfNum(:), ...
             paramsEstimate, paramsFree, PF, 'SearchOptions', options);
         thresholdAll(tryIndex) = PF(paramsValuesAll{tryIndex}, criterionFraction, 'inverse');
-        tryIndex = tryIndex + 1;
+        if (paramsValuesAll{tryIndex}(1) < 0 | paramsValuesAll{tryIndex}(2) < 0)
+            LLAll(tryIndex) = -Inf;
+        end
+        tryIndex = tryIndex + 1;       
     end
 end
-[~,bestIndex] = max(LLAll);
+[~,bestIndex] = max(real(LLAll));
 bestII = bestIndex(1);
 paramsValues = paramsValuesAll{bestII};
 threshold = thresholdAll(bestII);
