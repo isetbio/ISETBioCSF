@@ -20,6 +20,10 @@ function [fileid,filedir,filename] = getid(obj,name,paramsList,theProgram,vararg
 %   'MovieType'
 %      Type for movie to save, represented as file extension.
 %      'm4v' - MPEG-4 (default)
+%   'MakeDirectories' - true/false (default true).  Make the directories if
+%      they don't exist.  This is very useful for writes, but not so good
+%      for reads or deletes as it creates orphan directories if you don't
+%      pass in the right arguments.
 
 %% Parse input.
 p = inputParser;
@@ -30,11 +34,12 @@ p.addParameter('Type','mat',@ischar);
 p.addParameter('ArtifactParams',[],@isstruct);
 p.addParameter('FigureType','pdf',@ischar);
 p.addParameter('MovieType','m4v',@ischar);
+p.addParameter('MakeDirectories',true,@islogical);
 p.parse(name,paramsList,theProgram,varargin{:});
 
 %% Get parent directory list and make sure the output tree is in place
 theParentDir = fullfile(getpref('IBIOColorDetect','outputBaseDir'));
-if (~exist(theParentDir,'dir'))
+if (~exist(theParentDir,'dir') & p.Results.MakeDirectories)
     mkdir(theParentDir);
 end
 if (~isempty(p.Results.paramsList))
@@ -65,7 +70,7 @@ if (~isempty(p.Results.paramsList))
                 error('Unkown parent parameters type');
         end
         theParentDir = fullfile(theParentDir,thisParentDir);
-        if (~exist(theParentDir,'dir'))
+        if (~exist(theParentDir,'dir') & p.Results.MakeDirectories)
             mkdir(theParentDir);
         end
     end    
@@ -80,13 +85,13 @@ switch (p.Results.Type)
     case {'movie','movieFile'}
         theTypeDir = fullfile(theParentDir,'movies');
 end
-if (~exist(theTypeDir,'dir'))
+if (~exist(theTypeDir,'dir') & p.Results.MakeDirectories)
     mkdir(theTypeDir);
 end
 
 %% Add in the name of reading or writing program
 filedir = fullfile(theTypeDir,theProgram);
-if (~exist(filedir,'dir'))
+if (~exist(filedir,'dir') & p.Results.MakeDirectories)
     mkdir(filedir);
 end
 

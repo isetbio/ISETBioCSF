@@ -37,7 +37,7 @@ if (isempty(data))
 end
 
 %% Get fileid
-[fileid,filedir,filename] = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:});
+[fileid,filedir,filename] = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:},'MakeDirectories',true);
 
 %% Write the data
 switch (p.Results.Type)

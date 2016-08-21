@@ -16,7 +16,7 @@ p.addParameter('Type','mat',@ischar);
 p.parse(name,paramsList,theProgram,varargin{:});
 
 %% Get fileid
-fileid = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:});
+fileid = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:},'MakeDirectories',false);
 
 %% Read the data
 switch (p.Results.Type)
