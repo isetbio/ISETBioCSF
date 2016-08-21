@@ -8,11 +8,40 @@ function c_EffectOfTrainingSize(varargin)
 % cpd).
 %
 % Key/value pairs
-%   'PlotOnly' - true/false (default false).  Just plot the summary figure.
+%   'nTrainingSamplesList' - vector (default [50 100 500 1000 5000].  Vector
+%       of number of training samples to cycle through.
+%   'cyclesPerDegree' - value (default 10). Spatial frequency of grating to be investigated.
+%       This is reciprocally related to the size of the image/mosaic.
+%   'computeResponses' - true/false (default true).  Compute responses.
+%   'computeMLPTPerformance' - true/false (default true).  Compute template
+%       maximum likelihood performance.
+%   'computeMLPEPerformance' - true/false (default true).  Compute
+%       empirical maximum likelihood performance.
+%   'computeSVMPerformance' - true/false (default true).  Compute SVM performance.
+%   'nPCAComponents' - integer (default 500).  Number of PCA components to
+%       use with SVM.
+%   'computeMLPTThresholds' - true/false (default true).  Compute template
+%       maximum likelihood thresholds.
+%   'computeMLPEThresholds' - true/false (default true).  Compute
+%       empirical maximum likelihood thresholds.
+%   'computeSVMThresholds' - true/false (default true).  Compute SVM thresholds.
+%   'plotPsychometric' - true/false (default true).  Plot psychometric
+%       functions.
+%   'plotTrainingSize' - true/false (default true).  Plot results.
 
 %% Parse input
 p = inputParser;
-p.addParameter('PlotOnly',false,@islogical);
+p.addParameter('nTrainingSamplesList',[50 100 500 1000 5000],@isnumeric);
+p.addParameter('computeResponses',true,@islogical);
+p.addParameter('computeMLPTPerformance',true,@islogical);
+p.addParameter('computeMLPEPerformance',true,@islogical);
+p.addParameter('computeSVMPerformance',true,@islogical);
+p.addParameter('nPCAComponents',500,@isnumeric);
+p.addParameter('computeMLPTThresholds',true,@islogical);
+p.addParameter('computeMLPEThresholds',true,@islogical);
+p.addParameter('computeSVMThresholds',true,@islogical);p.addParameter('fitPsychometric',true,@islogical);
+p.addParameter('plotPsychometric',true,@islogical);
+p.addParameter('plotTrainingSize',true,@islogical);
 p.parse(varargin{:});
 
 %% Get the parameters we need
@@ -90,48 +119,78 @@ testDirectionParams.contrastScale = 'log';    % choose between 'linear' and 'log
 thresholdParams = thresholdParamsGenerate;
 
 %% Loop over triaing samples
-effectOfTrainingSize.nTrainingSamplesList = [50 100 500 1000 5000 10000];
-if (~p.Results.PlotOnly)
-    for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
-        
-        % Set number of trials
-        testDirectionParams.trialsNum = effectOfTrainingSize.nTrainingSamplesList(tt);
-        
-        %% Compute response instances
+effectOfTrainingSize.nTrainingSamplesList = [50 100 500 1000 5000];
+for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
+    
+    % Set number of trials
+    testDirectionParams.trialsNum = effectOfTrainingSize.nTrainingSamplesList(tt);
+    
+    %% Compute response instances
+    if (p.Results.computeResponses)
         t_colorGaborConeCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'visualizeResponses',false);
-        
-        %% Find thresholds and summarize, template max likeli
-        thresholdParams.method = 'mlpt';
-        t_colorGaborDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
-        effectOfTrainingSize.mlptThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams,'plotPsychometric',false,'plotEllipse',false);
-        close all;
-        
-        %% Find thresholds and summarize, svm
-        thresholdParams.method = 'svm';
-        thresholdParams.PCAComponents = 500;
-        t_colorGaborDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
-        effectOfTrainingSize.svmThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams,'plotPsychometric',false,'plotEllipse',false);
-        close all;
-        
-        %% Find thresholds and summarize, empirical max likeli
-        thresholdParams.method = 'mlpe';
-        t_colorGaborDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
-        effectOfTrainingSize.mlpeThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams,'plotPsychometric',false,'plotEllipse',false);
-        close all;
     end
     
-    %% Write out the data
-    %
-    % Set trialsNum to 0 to define a summary directory name
-    fprintf('Writing performance data ... ');
-    testDirectionParams.trialsNum = 0;
-    paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
-    rwObject = IBIOColorDetectReadWriteBasic;
-    writeProgram = mfilename;
-    rwObject.write('effectOfTrainingSize',effectOfTrainingSize,paramsList,writeProgram);
-    fprintf('done\n');
-else
-    % Read in the data
+    %% Find performance, template max likeli
+    if (p.Results.computeMLPTPerformance)
+        thresholdParams.method = 'mlpt';
+        t_colorGaborDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
+    end
+    
+     %% Find performance\, empirical max likeli
+    if (p.Results.computeMLPEPerformance)
+        thresholdParams.method = 'mlpe';
+        t_colorGaborDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
+    end
+    
+    %% Find performance, svm
+    if (p.Results.computeSVMPerformance)
+        thresholdParams.method = 'svm';
+        thresholdParams.PCAComponents = p.Results.nPCAComponents;
+        t_colorGaborDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
+    end
+   
+    %% Fit psychometric functions
+    if (p.Results.fitPsychometric)
+        if (p.Results.computeMLPTThresholds)
+            thresholdParams.method = 'mlpt';
+            effectOfTrainingSize.mlptThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
+                'plotPsychometric',p.Results.plotPsychometric,'plotEllipse',false);
+            close all;
+        end
+        
+        if (p.Results.computeMLPEThresholds)      
+            thresholdParams.method = 'mlpe';
+            effectOfTrainingSize.mlpeThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
+                'plotPsychometric',p.Results.plotPsychometric,'plotEllipse',false);
+            close all;
+        end
+        
+        if (p.Results.computeSVMThresholds) 
+            thresholdParams.method = 'svm';
+            thresholdParams.PCAComponents = p.Results.nPCAComponents;
+            effectOfTrainingSize.svmThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
+                'plotPsychometric',p.Results.plotPsychometric,'plotEllipse',false);
+            close all;
+        end
+    end
+end
+
+%% Write out the data
+%
+% Set trialsNum to 0 to define a summary directory name
+fprintf('Writing performance data ... ');
+testDirectionParams.trialsNum = 0;
+paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+rwObject = IBIOColorDetectReadWriteBasic;
+writeProgram = mfilename;
+rwObject.write('effectOfTrainingSize',effectOfTrainingSize,paramsList,writeProgram);
+fprintf('done\n');
+
+%% Make a plot of estimated threshold versus training set size
+%
+% The way the plot is coded counts on the test contrasts never changing
+% across the conditions, which we could explicitly check for here.
+if (p.Results.plotTrainingSize)
     fprintf('Reading performance data ...');
     testDirectionParams.trialsNum = 0;
     paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
@@ -139,31 +198,27 @@ else
     writeProgram = mfilename;
     effectOfTrainingSize = rwObject.read('effectOfTrainingSize',paramsList,writeProgram);
     fprintf('done\n');
+    
+    hFig = figure; clf; hold on
+    fontBump = 4;
+    set(gca,'FontSize', rParams.plotParams.axisFontSize+fontBump);
+    plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.mlptThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
+        'ro','MarkerSize',rParams.plotParams.markerSize,'MarkerFaceColor','r');
+    plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.mlpeThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
+        'go','MarkerSize',rParams.plotParams.markerSize,'MarkerFaceColor','g');
+    plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.svmThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
+        'bo','MarkerSize',rParams.plotParams.markerSize,'MarkerFaceColor','b');
+    plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.mlptThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
+        'r','LineWidth',rParams.plotParams.lineWidth);
+    plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.mlpeThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
+        'g','LineWidth',rParams.plotParams.lineWidth);
+    plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.svmThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
+        'b','LineWidth',rParams.plotParams.lineWidth);
+    xlabel('Log10 Training Set Size', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+    ylabel('Threshold Contrast', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+    xlim([1 4]); ylim([0 1e-2]);
+    legend({'MaxLikelihood, signal known', 'MaxLikelihood, signal estimated', sprintf('SVM, PCA %d',thresholdParams.PCAComponents)},'Location','NorthEast','FontSize',rParams.plotParams.labelFontSize+fontBump);
+    box off; grid on
+    title(sprintf('Effect of Training Set Size, %0.2f deg mosaic',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
+    rwObject.write('effectOfTrainingSize',hFig,paramsList,writeProgram,'Type','figure');
 end
-
-%% Make a plot of estimated threshold versus training set size
-%
-% The way the plot is coded counts on the test contrasts never changing
-% across the conditions, which we could explicitly check for here.
-hFig = figure; clf; hold on
-fontBump = 4;
-set(gca,'FontSize', rParams.plotParams.axisFontSize+fontBump);
-plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.mlptThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
-    'ro','MarkerSize',rParams.plotParams.markerSize,'MarkerFaceColor','r');
-plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.mlpeThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
-    'go','MarkerSize',rParams.plotParams.markerSize,'MarkerFaceColor','g');
-plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.svmThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
-    'bo','MarkerSize',rParams.plotParams.markerSize,'MarkerFaceColor','b');
-plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.mlptThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
-    'r','LineWidth',rParams.plotParams.lineWidth);
-plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.mlpeThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
-    'g','LineWidth',rParams.plotParams.lineWidth);
-plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.svmThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
-    'b','LineWidth',rParams.plotParams.lineWidth);
-xlabel('Log10 Training Set Size', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-ylabel('Threshold Contrast', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-xlim([1 4]); ylim([0 1e-2]);
-legend({'MaxLikelihood, signal known', 'MaxLikelihood, signal estimated', sprintf('SVM, PCA %d',thresholdParams.PCAComponents)},'Location','NorthEast','FontSize',rParams.plotParams.labelFontSize+fontBump);
-box off; grid on
-title(sprintf('Effect of Training Set Size, %0.2f deg mosaic',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
-rwObject.write('effectOfTrainingSize',hFig,paramsList,writeProgram,'Type','figure');
