@@ -119,7 +119,7 @@ testDirectionParams.contrastScale = 'log';    % choose between 'linear' and 'log
 thresholdParams = thresholdParamsGenerate;
 
 %% Loop over triaing samples
-effectOfTrainingSize.nTrainingSamplesList = [50 100 500 1000 5000];
+effectOfTrainingSize.nTrainingSamplesList = p.Results.nTrainingSamplesList;
 for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
     
     % Set number of trials

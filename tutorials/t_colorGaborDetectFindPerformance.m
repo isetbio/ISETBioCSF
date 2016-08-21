@@ -18,7 +18,7 @@ function validationData = t_colorGaborDetectFindPerformance(varargin)
 %
 % Key/value pairs
 %   'rParams' - Value the is the rParams structure to use
-%   'testDirectionParams - Value is the testDirectionParams structure to use
+%   'testDirectionParams' - Value is the testDirectionParams structure to use
 %   'setRngSeed' - true/false (default true).  Set the rng seed to a
 %        value so output is reproducible.
 %   'compute' - true/false (default true).  Do the computations.
@@ -143,7 +143,7 @@ if (p.Results.compute)
     nParforConditions = length(parforConditionStructs);
     usePercentCorrect = zeros(size(testConeContrasts,2),1);
     useStdErr = zeros(size(testConeContrasts,2),1);
-    parfor kk = 1:nParforConditions
+    for kk = 1:nParforConditions
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
