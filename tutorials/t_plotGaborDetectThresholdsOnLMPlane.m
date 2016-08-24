@@ -107,7 +107,8 @@ performanceData = rwObject.read('performanceData',paramsList,readProgram);
 % If everything is working right, these check parameter structures will
 % match what we used to specify the file we read in.
 %
-% SHOULD ACTUALLY CHECK FOR EQUALITY HERE.
+% SHOULD ACTUALLY CHECK FOR EQUALITY HERE.  Should be able to use
+% RecursivelyCompareStructs to do so.
 rParamsCheck = performanceData.rParams;
 LMPlaneInstanceParamsCheck = performanceData.LMPlaneInstanceParams;
 thresholdParamsCheck = performanceData.thresholdParams;
