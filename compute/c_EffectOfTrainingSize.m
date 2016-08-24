@@ -32,6 +32,7 @@ function c_EffectOfTrainingSize(varargin)
 %% Parse input
 p = inputParser;
 p.addParameter('nTrainingSamplesList',[50 100 500 1000 5000],@isnumeric);
+p.addParameter('cyclesPerDegree',10,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMLPTPerformance',true,@islogical);
 p.addParameter('computeMLPEPerformance',true,@islogical);
@@ -55,7 +56,7 @@ rParams = colorGaborResponseParamsGenerate;
 % our half-cosine window to match that and also make the field of view
 % just a tad bigger.
 rParams.gaborParams.windowType = 'halfcos';
-rParams.gaborParams.cyclesPerDegree = 10;
+rParams.gaborParams.cyclesPerDegree = p.Results.cyclesPerDegree;
 rParams.gaborParams.gaussianFWHMDegs = 3.75*(1/rParams.gaborParams.cyclesPerDegree);
 rParams.gaborParams.fieldOfViewDegs = 2.1*rParams.gaborParams.gaussianFWHMDegs;
 
