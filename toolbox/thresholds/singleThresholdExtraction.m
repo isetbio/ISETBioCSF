@@ -27,40 +27,64 @@ PF             = @PAL_Weibull;
 %% Some optimization settings for the fit
 options             = optimset('fminsearch');
 options.TolFun      = 1e-09;
-options.MaxFunEvals = 10000*100;
-options.MaxIter     = 500*100;
+options.MaxFunEvals = 1000;
+options.MaxIter     = 1000;
 options.Display     = 'off';
+
+%% Search grid specification for Palemedes
+gridLevels = 100;
+searchGrid.alpha = logspace(log10(stimLevels(1)),log10(stimLevels(end)),gridLevels);
+searchGrid.beta = 10.^linspace(-1,1,gridLevels);
+searchGrid.gamma = 0.5;
+searchGrid.lambda = 0.0;
+
+%% Use Palamedes grid search method
+[paramsValues,LL,flag] = PAL_PFML_Fit(stimLevels(:), numPos(:), outOfNum(:), ...
+            searchGrid, paramsFree, PF, 'SearchOptions', options);
+
+%% Get threshold and deal with catastrophic cases
+threshold = PF(paramsValues, criterionFraction, 'inverse');
+if (threshold < 0 | threshold > 1 | ~isreal(threshold) | isinf(threshold))
+    threshold = NaN;
+end
+
+%% Provide fit psychometric function on passed stimulus levels
+if (~isnan(threshold))
+    fitFractionCorrect = PF(paramsValues,fitStimLevels);
+else
+    fitFractionCorrect = NaN*ones(size(fitStimLevels));
+end
+
+% Only return threshold if fit is OK.
+% if (flag)
+% else
+%     threshold = NaN;
+% end
 
 %% Fit psychometric function to the data
 %
 % Try starting the search at various initial values and keep the best.
-tryIndex = 1;
-startSlopes = [0.001 0.01 0.1 1];
-startLocations = stimLevels;
-for jj = 1:length(startSlopes)
-    for ii = 1:length(startLocations)
-        paramsEstimate = [startLocations(ii) startSlopes(jj) 0.5 0];
-        [paramsValuesAll{tryIndex},LLAll(tryIndex)] = PAL_PFML_Fit(stimLevels(:), numPos(:), outOfNum(:), ...
-            paramsEstimate, paramsFree, PF, 'SearchOptions', options);
-        thresholdAll(tryIndex) = PF(paramsValuesAll{tryIndex}, criterionFraction, 'inverse');
-        if (paramsValuesAll{tryIndex}(1) < 0 | paramsValuesAll{tryIndex}(2) < 0)
-            LLAll(tryIndex) = -Inf;
-        end
-        tryIndex = tryIndex + 1;       
-    end
-end
-[~,bestIndex] = max(real(LLAll));
-bestII = bestIndex(1);
-paramsValues = paramsValuesAll{bestII};
-threshold = thresholdAll(bestII);
+% tryIndex = 1;
+% startSlopes = [0.001 0.01 0.1 1];
+% startLocations = stimLevels;
+% for jj = 1:length(startSlopes)
+%     for ii = 1:length(startLocations)
+%         paramsEstimate = [startLocations(ii) startSlopes(jj) 0.5 0];
+%         [paramsValuesAll{tryIndex},LLAll(tryIndex)] = PAL_PFML_Fit(stimLevels(:), numPos(:), outOfNum(:), ...
+%             paramsEstimate, paramsFree, PF, 'SearchOptions', options);
+%         thresholdAll(tryIndex) = PF(paramsValuesAll{tryIndex}, criterionFraction, 'inverse');
+%         if (paramsValuesAll{tryIndex}(1) < 0 | paramsValuesAll{tryIndex}(2) < 0)
+%             LLAll(tryIndex) = -Inf;
+%         end
+%         tryIndex = tryIndex + 1;       
+%     end
+% end
+% [~,bestIndex] = max(real(LLAll));
+% bestII = bestIndex(1);
+% paramsValues = paramsValuesAll{bestII};
+% threshold = thresholdAll(bestII);
 
-% Deal with catostrophic cases
-if (threshold > 1 | ~isreal(threshold) | isinf(threshold))
-    threshold = NaN;
-end
 
-% Provide fit psychometric function on passed stimulus levels
-fitFractionCorrect = PF(paramsValues,fitStimLevels);
 
 end
 
