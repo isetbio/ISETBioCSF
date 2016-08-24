@@ -4,8 +4,9 @@ function c_EffectOfTrainingSize(varargin)
 % Study effect of SVM training size on estimated thresholds, and compare to
 % signal known exactly ML classifier and empirical ML classifier.
 %
-% This looks at L+M detection thrsholds at a moderate spatial frequency (10
-% cpd).
+% This looks at L+M detection thrsholds, by default at a moderate spatial frequency (10
+% cpd).  The stimulus size is inversely proportional to spatial frequency,
+% so using a larger spatial frequency speeds things up.
 %
 % Key/value pairs
 %   'nTrainingSamplesList' - vector (default [50 100 500 1000 5000].  Vector
@@ -23,7 +24,7 @@ function c_EffectOfTrainingSize(varargin)
 %   'computeMLPTThresholds' - true/false (default true).  Compute template
 %       maximum likelihood thresholds.
 %   'computeMLPEThresholds' - true/false (default true).  Compute
-%       empirical maximum likelihood thresholds.
+%       empirical maximum likelihood thresholds.cl
 %   'computeSVMThresholds' - true/false (default true).  Compute SVM thresholds.
 %   'plotPsychometric' - true/false (default true).  Plot psychometric
 %       functions.
