@@ -123,6 +123,12 @@ if (p.Results.compute)
     rParams.mosaicParams.fieldOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
     theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
     
+    % Create the bipolar mosaic
+    theBipolarMosaic = colorDetectBipolarMosaicConstruct(theMosaic, rParams.bipolarParams);
+    
+    % Create the RGC mosaic
+    theIR = colorDetectIRConstruct(theBipolarMosaic, rParams.irParams);
+    
     %% Define color direction cone contrasts as well as contrast scalars.
     %
     % Directions
@@ -143,10 +149,11 @@ if (p.Results.compute)
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = [0 0 0]';
     colorModulationParamsTemp.contrast = 0;
+    testDirectionParams.trialsNum = 1;
     stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
         colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
     [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-        rParams.gaborParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
+        rParams.gaborParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, rParams.irParams, theOI, theMosaic, theBipolarMosaic, theIR);
     noStimData = struct(...
         'testContrast', colorModulationParamsTemp.contrast, ...
         'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
@@ -175,7 +182,7 @@ if (p.Results.compute)
 
     % Loop over color directions
     tic;
-    parfor kk = 1:nParforConditions
+    for kk = 1:nParforConditions
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
@@ -185,7 +192,7 @@ if (p.Results.compute)
         stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f',...
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
         [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-            rParams.gaborParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
+            rParams.gaborParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, rParams.irParams, theOI, theMosaic, theBipolarMosaic, theIR);
         stimData = struct(...
             'testContrast', colorModulationParamsTemp.contrast, ...
             'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...

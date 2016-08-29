@@ -43,5 +43,11 @@ params.mosaicParams.fieldOfViewDegs = params.gaborParams.fieldOfViewDegs;
 params.mosaicParams.timeStepInSeconds = params.temporalParams.stimulusSamplingIntervalInSeconds;
 params.mosaicParams.integrationTimeInSeconds = params.mosaicParams.timeStepInSeconds;
 
+%% Properties of the bipolar mosaic
+params.bipolarParams = bipolarParamsGenerate(varargin{:});
+
+%% Properties of the RGC mosaic
+params.irParams = irParamsGenerate(varargin{:});
+
 %% Parameters for plots
 params.plotParams = plotParamsGenerate(varargin{:});

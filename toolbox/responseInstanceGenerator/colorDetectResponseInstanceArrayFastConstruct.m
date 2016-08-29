@@ -1,4 +1,4 @@
-function [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
+function [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, backgroundParams, colorModulationParams, temporalParams, irParams, theOI, theMosaic, theBipolarMosaic, theIR)
 % [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
 % 
 % Construct an array of nTrials response instances given the
@@ -120,6 +120,11 @@ for iTrial = 1:nTrials
     coneIsomerizationRate = coneIsomerizationSequence/theMosaic.integrationTime;
     photocurrentSequence = theMosaic.os.compute(coneIsomerizationRate,theMosaic.pattern);
    
+    theBipolarMosaic.compute(theMosaic);       
+    
+    theIR = colorDetectIRConstruct(theBipolarMosaic, irParams);
+    theIR.compute(theBipolarMosaic);
+    
     % Accumulate data in cell array of structs.
     if (iTrial == 1)
         % Only include the central response
@@ -128,6 +133,8 @@ for iTrial = 1:nTrials
         timeIndicesToKeep = find(abs(timeAxis-temporalParams.secondsToIncludeOffset) <= temporalParams.secondsToInclude/2);
 
         theFirstInstance = struct(...
+            'theIRSpikes', single(theIR.mosaic{1}.get('psth')),...
+            'theBipolarMosaicCurrent', single(theBipolarMosaic.get('response')),...
             'theMosaicIsomerizations', single(coneIsomerizationSequence(:,:,timeIndicesToKeep)), ...
             'theMosaicPhotoCurrents', single(photocurrentSequence(:,:,timeIndicesToKeep)), ...
             'theMosaicEyeMovements', eyeMovementSequence(timeIndicesToKeep,:), ...
