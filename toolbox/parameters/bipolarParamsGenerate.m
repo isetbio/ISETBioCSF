@@ -1,5 +1,13 @@
 function bipolarParams = bipolarParamsGenerate()
 % bipolarParams = bipolarParamsCreate(varargin)
+% 
+% cell type - type of bipolar, determines spatial pooling and polarity
+% filter type - determines how temporal filter is built, should always be
+%                   type 1.
+% rectify type - 1 is linear center, surround set to zero
+%                2 is rectified center, surround set to zero
+%                3 is linear center, linear surround
+%                4 is rectified center, rectified surround
 
 bipolarParams.cellType = 'onDiffuse';
 % sets filter as theoretical, mean physiology, or individual phys:
