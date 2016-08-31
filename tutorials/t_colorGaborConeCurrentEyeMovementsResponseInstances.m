@@ -89,7 +89,7 @@ if (isempty(rParams))
 
     % Override some defult parameters
     rParams.gaborParams.fieldOfViewDegs = 1;
-    trialsNum = 10;    
+    trialsNum = 100;    
     
     % Set duration equal to sampling interval to do just one frame.
     rParams.temporalParams.simulationTimeStepSecs = 200/1000;

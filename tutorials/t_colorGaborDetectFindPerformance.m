@@ -73,6 +73,8 @@ if (isempty(rParams))
     rParams = colorGaborResponseParamsGenerate;
     
     % Override some defult parameters
+        
+    % Override some defult parameters
     %
     % Set duration equal to sampling interval to do just one frame.
     rParams.temporalParams.simulationTimeStepSecs = 200/1000;
@@ -86,6 +88,13 @@ if (isempty(rParams))
     rParams.mosaicParams.isomerizationNoise = true;
     rParams.mosaicParams.osNoise = true;
     rParams.mosaicParams.osModel = 'Linear';
+    
+    
+    rParams.gaborParams.fieldOfViewDegs = 1;
+    rParams.mosaicParams.fieldOfViewDegs = 1;    
+ 
+    % Set this flag to false to not run bipolar and IR/RGC computation
+    rParams.irParams.runFlag = true;
 end
 
 %% Parameters that define the LM instances we'll generate here
@@ -95,12 +104,14 @@ end
 if (isempty(testDirectionParams))
     testDirectionParams = LMPlaneInstanceParamsGenerate;
 end
-
+testDirectionParams.trialsNum = 100;
 %% Parameters related to how we find thresholds from responses
 if (isempty(thresholdParams))
     thresholdParams = thresholdParamsGenerate;
 end
 
+% Overwrite parameter to classify on irspikes
+thresholdParams.signalSource = 'irspikes';
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 readProgram = 't_colorGaborConeCurrentEyeMovementsResponseInstances';
@@ -144,7 +155,8 @@ if (p.Results.compute)
     nParforConditions = length(parforConditionStructs);
     usePercentCorrect = zeros(size(testConeContrasts,2),1);
     useStdErr = zeros(size(testConeContrasts,2),1);
-    parfor kk = 1:nParforConditions
+%     parfor kk = 1:nParforConditions
+    for kk = 1:nParforConditions
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;

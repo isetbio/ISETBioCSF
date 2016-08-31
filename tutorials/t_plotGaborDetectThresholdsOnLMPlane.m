@@ -78,6 +78,11 @@ if (isempty(rParams))
     rParams.mosaicParams.isomerizationNoise = true;
     rParams.mosaicParams.osNoise = true;
     rParams.mosaicParams.osModel = 'Linear';
+    
+    
+    rParams.gaborParams.fieldOfViewDegs = 1;
+    
+    rParams.mosaicParams.fieldOfViewDegs = 1;
 end
 
 %% Parameters that define the LM instances we'll generate here
@@ -88,11 +93,12 @@ if (isempty(LMPlaneInstanceParams))
     LMPlaneInstanceParams = LMPlaneInstanceParamsGenerate;
 end
 
+LMPlaneInstanceParams.trialsNum = 100;
 %% Parameters related to how we find thresholds from responses
 if (isempty(thresholdParams))
     thresholdParams = thresholdParamsGenerate;
 end
-
+thresholdParams.signalSource = 'irspikes';
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 readProgram = 't_colorGaborDetectFindPerformance';

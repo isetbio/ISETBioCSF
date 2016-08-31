@@ -15,13 +15,19 @@ function [classificationData,classes] = classificationDataNoStimDataInitialize(n
 %   classificationDataStimDataInsert
 
 nTrials = numel(noStimData.responseInstanceArray);
-responseSize = numel(noStimData.responseInstanceArray(1).theMosaicPhotoCurrents(:));
+if (strcmp(thresholdParams.signalSource,'irspikes'))
+    responseSize = numel(sum(noStimData.responseInstanceArray(1).theIRSpikes,3));   
+else
+    responseSize = numel(noStimData.responseInstanceArray(1).theMosaicPhotoCurrents(:));
+end
 if (thresholdParams.nIntervals == 1)
     classificationData = zeros(2*nTrials, responseSize);
     classes = zeros(2*nTrials, 1);
     for iTrial = 1:nTrials
         if (strcmp(thresholdParams.signalSource,'photocurrents'))
             classificationData(iTrial,:) = noStimData.responseInstanceArray(iTrial).theMosaicPhotoCurrents(:);
+        elseif (strcmp(thresholdParams.signalSource,'irspikes'))
+            classificationData(iTrial,:) = noStimData.responseInstanceArray(iTrial).theIRSpikes(:);
         else
             classificationData(iTrial,:) = noStimData.responseInstanceArray(iTrial).theMosaicIsomerizations(:);
         end
@@ -37,6 +43,9 @@ elseif (thresholdParams.nIntervals == 2)
         if (strcmp(thresholdParams.signalSource,'photocurrents'))
             classificationData(iTrial,1:responseSize) = noStimData.responseInstanceArray(iTrial).theMosaicPhotoCurrents(:);
             classificationData(nTrials/2+iTrial,responseSize+1:end) = noStimData.responseInstanceArray(nTrials/2+iTrial).theMosaicPhotoCurrents(:);
+        elseif (strcmp(thresholdParams.signalSource,'irspikes'))
+            classificationData(iTrial,1:responseSize) = reshape(sum(noStimData.responseInstanceArray(iTrial).theIRSpikes,3),responseSize,1);
+            classificationData(nTrials/2+iTrial,responseSize+1:end) = reshape(sum(noStimData.responseInstanceArray(nTrials/2+iTrial).theIRSpikes,3),responseSize,1);
         else
             classificationData(iTrial,1:responseSize) = noStimData.responseInstanceArray(iTrial).theMosaicIsomerizations(:);
             classificationData(nTrials/2+iTrial,responseSize+1:end) = noStimData.responseInstanceArray(nTrials/2+iTrial).theMosaicIsomerizations(:);
