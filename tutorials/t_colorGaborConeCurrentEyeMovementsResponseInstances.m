@@ -86,26 +86,21 @@ validationData = [];
 % parameters used by a number of tutorials and functions in this project.
 if (isempty(rParams))
     rParams = colorGaborResponseParamsGenerate;
-
-    % Override some defult parameters
-    rParams.gaborParams.fieldOfViewDegs = 1;
-    trialsNum = 10;    
     
+    % Override some defult parameters
+    %
     % Set duration equal to sampling interval to do just one frame.
     rParams.temporalParams.simulationTimeStepSecs = 200/1000;
-    rParams.temporalParams.stimulusDurationInSeconds = 20*rParams.temporalParams.simulationTimeStepSecs;
+    rParams.temporalParams.stimulusDurationInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.eyesDoNotMove = false;
+    rParams.temporalParams.eyesDoNotMove = true;
     
     rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
     rParams.mosaicParams.isomerizationNoise = true;
     rParams.mosaicParams.osNoise = true;
     rParams.mosaicParams.osModel = 'Linear';
-    
-    % Set this flag to false to not run bipolar and IR/RGC computation
-    rParams.irParams.runFlag = true;
 end
 
 %% Parameters that define the LM instances we'll generate here
@@ -128,16 +123,6 @@ if (p.Results.compute)
     rParams.mosaicParams.fieldOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
     theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
     
-    if rParams.irParams.runFlag
-        % Create the bipolar mosaic
-        theBipolarMosaic = colorDetectBipolarMosaicConstruct(theMosaic, rParams.bipolarParams);
-        
-        % Create the RGC mosaic
-        theIR = colorDetectIRConstruct(theBipolarMosaic, rParams.irParams);
-    else
-        theBipolarMosaic = [];
-        theIR = [];
-    end
     %% Define color direction cone contrasts as well as contrast scalars.
     %
     % Directions
@@ -154,17 +139,14 @@ if (p.Results.compute)
     parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
     nParforConditions = length(parforConditionStructs);
     
-    testDirectionParams.trialsNum = trialsNum;  
-    
     % Generate data for the no stimulus condition
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = [0 0 0]';
     colorModulationParamsTemp.contrast = 0;
-    
     stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
         colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
     [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-        rParams.gaborParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, rParams.irParams, theOI, theMosaic, theBipolarMosaic, theIR);
+        rParams.gaborParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
     noStimData = struct(...
         'testContrast', colorModulationParamsTemp.contrast, ...
         'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
@@ -193,17 +175,17 @@ if (p.Results.compute)
 
     % Loop over color directions
     tic;
-    for kk = 1:nParforConditions
+    parfor kk = 1:nParforConditions
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
-        colorModulationParamsTemp.contrast = .999;%thisConditionStruct.contrast;
+        colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
         
         % Make noisy instances for each contrast
         stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f',...
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
         [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-            rParams.gaborParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, rParams.irParams, theOI, theMosaic, theBipolarMosaic, theIR);
+            rParams.gaborParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
         stimData = struct(...
             'testContrast', colorModulationParamsTemp.contrast, ...
             'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
