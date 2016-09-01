@@ -1,4 +1,4 @@
-function [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, backgroundParams, colorModulationParams, temporalParams, irParams, theOI, theMosaic, theBipolarMosaic, theIR)
+function [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayInnerRetinaFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, backgroundParams, colorModulationParams, temporalParams, irParams, theOI, theMosaic, theBipolarMosaic, theIR)
 % [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
 % 
 % Construct an array of nTrials response instances given the
