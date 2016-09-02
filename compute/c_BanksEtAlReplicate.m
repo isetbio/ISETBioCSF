@@ -11,7 +11,9 @@ function c_BanksEtAlReplicate(varargin)
 %   'cyclesPerDegree' - vector (default [3 5 10 20 40]). Spatial frequencoes of grating to be investigated.
 %   'luminances' - vector (default [3.4 34 340]).  Luminances in cd/m2 to be investigated.
 %   'blur' - true/false (default true). Incorporate lens blur.
+%   'imagePixels' - value (default 400).  Size of image pixel array
 %   'computeResponses' - true/false (default true).  Compute responses.
+%   'findPerformance' - true/false (default true).  Find performance.
 %   'fitPsychometric' - true/false (default true).  Fit psychometric functions.
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotCSF' - true/false (default true).  Plot results.
@@ -19,10 +21,12 @@ function c_BanksEtAlReplicate(varargin)
 %% Parse input
 p = inputParser;
 p.addParameter('nTrainingSamples',500,@isnumeric);
-p.addParameter('cyclesPerDegree',[3 5 10 20 40 50],@isnumeric);
-p.addParameter('luminances',[3.4 34 340],@isnumeric);
+p.addParameter('cyclesPerDegree',[2 3 5 10 20 40 50],@isnumeric);
+p.addParameter('luminances',[3.4 34 340 3400],@isnumeric);
 p.addParameter('blur',true,@islogical);
+p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
+p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotCSF',true,@islogical);
@@ -46,6 +50,8 @@ for ll = 1:length(p.Results.luminances)
         rParams.gaborParams.cyclesPerDegree = p.Results.cyclesPerDegree(cc);
         rParams.gaborParams.gaussianFWHMDegs = 3.75*(1/rParams.gaborParams.cyclesPerDegree);
         rParams.gaborParams.fieldOfViewDegs = 2.1*rParams.gaborParams.gaussianFWHMDegs;
+        rParams.gaborParams.row = p.Results.imagePixels;
+        rParams.gaborParams.col = p.Results.imagePixels;
         
         % Blur
         rParams.oiParams.blur = p.Results.blur;
@@ -119,7 +125,9 @@ for ll = 1:length(p.Results.luminances)
         
         %% Find performance, template max likeli
         thresholdParams.method = 'mlpt';
-        t_colorGaborDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
+        if (p.Results.findPerformance)
+            t_colorGaborDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
+        end
         
         %% Fit psychometric functions
         if (p.Results.fitPsychometric)
@@ -164,12 +172,11 @@ if (p.Results.plotCSF)
     set(gcf,'Position',[100 100 450 650]);
     set(gca,'FontSize', rParams.plotParams.axisFontSize+fontBump);
     theColors = ['r' 'g' 'b'];
+    legendStr = cell(length(p.Results.luminances),1);
     for ll = 1:length(p.Results.luminances)
         theColorIndex = rem(ll,length(theColors)) + 1;
-        plot(banksEtAlReplicate.cyclesPerDegree,1./[banksEtAlReplicate.mlptThresholds(ll,:).thresholdContrasts]*banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1), ...
-            [theColors(theColorIndex) 'o'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex));
-        plot(banksEtAlReplicate.cyclesPerDegree,1./[banksEtAlReplicate.mlptThresholds(ll,:).thresholdContrasts]*banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1), ...
-            theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);
+        plot(banksEtAlReplicate.cyclesPerDegree(ll,:),1./[banksEtAlReplicate.mlptThresholds(ll,:).thresholdContrasts]*banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1), ...
+            [theColors(theColorIndex) 'o-'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
         legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
     end
     set(gca,'XScale','log');
@@ -180,10 +187,11 @@ if (p.Results.plotCSF)
     legend(legendStr,'Location','NorthEast','FontSize',rParams.plotParams.labelFontSize+fontBump);
     box off; grid on
     if (p.Results.blur)
-        title(sprintf('Computational Observer CSF - w/ Blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
+        title(sprintf('Computational Observer CSF - w/ blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
+        rwObject.write('banksEtAlReplicateWithBlur',hFig,paramsList,writeProgram,'Type','figure');
     else
-        title(sprintf('Computational Observer CSF - no/ Blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
+        title(sprintf('Computational Observer CSF - no blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
+        rwObject.write('banksEtAlReplicateNoBlur',hFig,paramsList,writeProgram,'Type','figure');
     end
-    rwObject.write('banksEtAlReplicate',hFig,paramsList,writeProgram,'Type','figure');
 end
 

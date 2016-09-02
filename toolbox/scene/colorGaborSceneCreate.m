@@ -21,6 +21,8 @@ function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(gaborParams,back
 % 7/7/16 xd   adapted from t_colorGaborScene
 % 7/7/16 npc  added viewing distance param
 % 8/11/16 dhb add display factor adjustment
+% 9/2/16  dhb increase number of steps in inverse gamma call, to avoid
+%             display quantization.
 
 %% Optional arg for when we are maximizing contrast
 if (nargin < 4 || isempty(gamutCheckFlag))
@@ -150,7 +152,7 @@ else
     gamutScaleFactor = 1;
 end
 
-%% Convert the gaborConeExcitations image to RGB
+%% Convert the gabor cone excitations image to RGB
 [gaborConeExcitationsCalFormat,m,n] = ImageToCalFormat(gaborConeExcitations);
 gaborPrimaryCalFormat = M_ConeExcitationsToPrimary*gaborConeExcitationsCalFormat;
 gaborPrimary = CalFormatToImage(gaborPrimaryCalFormat,m,n);
@@ -165,8 +167,10 @@ if (maxPrimary > 1 | minPrimary < 0)
 end
 
 % Gamma correct the primary values, so we can pop them into an isetbio
-% scene in some straightforward manner.
-gaborRGB = round(ieLUTLinear(gaborPrimary,displayGet(display,'inverse gamma')));
+% scene in some straightforward manner.  It's important to have a lot of
+% steps in the inverse gamma, so that one doesn't truncate very low
+% contrast scenes.  2^20 seems like a lot.
+gaborRGB = round(ieLUTLinear(gaborPrimary,displayGet(display,'inverse gamma',2^20)));
 
 % Finally, make the actual isetbio scene
 % This combines the image we build and the display properties.
