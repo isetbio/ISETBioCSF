@@ -40,7 +40,8 @@ withTutorials = tbToolboxRecord( ...
 
 % obtain or update the git repo and add subfolders to the Matlab path
 config = [withToolbox withTutorials];
-tbDeployToolboxes('config', config, 'toolboxRoot', projectBaseDir);
+tbDeployToolboxes('config', config, 'toolboxRoot', projectBaseDir, 'runLocalHooks', false);
+
 
 %% Set preferences for project output
 %
