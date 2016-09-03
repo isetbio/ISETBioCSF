@@ -21,8 +21,8 @@ function c_BanksEtAlReplicate(varargin)
 %% Parse input
 p = inputParser;
 p.addParameter('nTrainingSamples',500,@isnumeric);
-p.addParameter('cyclesPerDegree',[2 3 5 10 20 40 50],@isnumeric);
-p.addParameter('luminances',[3.4 34 340 3400],@isnumeric);
+p.addParameter('cyclesPerDegree',[3 5 10 20 40 50],@isnumeric);
+p.addParameter('luminances',[3.4 34 340],@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
