@@ -142,11 +142,14 @@ end
 
 %% Write out the data
 %
-% Set cyclesPerDegree to 0 to define a summary directory name
+% Set key Gabor params to 0 to define a summary directory name
 if (p.Results.fitPsychometric)
     fprintf('Writing performance data ... ');
-    rParams.gaborParams.cyclesPerDegree = 0;
-    paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+    nameParams = rParams.gaborParams;
+    nameParams.cyclesPerDegree = 0;
+    nameParams.fieldOfViewDegs = 0;
+    nameParams.gaussianFWHMDegs = 0;
+    paramsList = {nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;
     rwObject.write('banksEtAlReplicate',banksEtAlReplicate,paramsList,writeProgram);
@@ -159,8 +162,11 @@ end
 % across the conditions, which we could explicitly check for here.
 if (p.Results.plotCSF)
     fprintf('Reading performance data ...');
-    rParams.gaborParams.cyclesPerDegree = 0;
-    paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+    nameParams = rParams.gaborParams;
+    nameParams.cyclesPerDegree = 0;
+    nameParams.fieldOfViewDegs = 0;
+    nameParams.gaussianFWHMDegs = 0;
+    paramsList = {nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;
     banksEtAlReplicate = rwObject.read('banksEtAlReplicate',paramsList,writeProgram);
