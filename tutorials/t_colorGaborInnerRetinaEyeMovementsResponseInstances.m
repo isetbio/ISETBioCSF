@@ -93,10 +93,10 @@ if (isempty(rParams))
     
     % Set duration equal to sampling interval to do just one frame.
     rParams.temporalParams.simulationTimeStepSecs = 200/1000;
-    rParams.temporalParams.stimulusDurationInSeconds = 20*rParams.temporalParams.simulationTimeStepSecs;
+    rParams.temporalParams.stimulusDurationInSeconds = 1*rParams.temporalParams.simulationTimeStepSecs;
     rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.eyesDoNotMove = false;
+    rParams.temporalParams.eyesDoNotMove = true;
     
     rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
