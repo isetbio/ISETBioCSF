@@ -8,14 +8,12 @@ rParams = colorGaborResponseParamsGenerate;
 LMplaneDirectionParams = LMPlaneInstanceParamsGenerate;
 thresholdParams = thresholdParamsGenerate;
 
-
 % Adapt Gabor params to match P&W 1996
 displayFlattenedStruct = true;
 rParams = adaptGaborParamsBasedOnConstantCycleCondition(rParams, displayFlattenedStruct);
 
 % Adapt LMplane params to match P&W 1996
-LMplaneDirectionParams = adaptLMPLaneDirectionParamsBasedOnFig3A(LMplaneDirectionParams, displayFlattenedStruct);
-        
+LMplaneDirectionParams = adaptLMPLaneDirectionParamsBasedOnFig3A(LMplaneDirectionParams, displayFlattenedStruct);       
 
 % Start computing
 theOI = colorDetectOpticalImageConstruct(rParams.oiParams)
