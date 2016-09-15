@@ -24,7 +24,7 @@ spotParams.pupilDiameterMm = 7;
 % The spot
 spotParams.spotSizeDegs = 1.5;
 spotParams.spotWavelengthNm = 680;
-spotParams.spotCornealIrradianceUW = 20;
+spotParams.spotCornealIrradianceUW = 20;svm
 
 % Background parameters
 spotParams.backgroundDizeDegs = 2;

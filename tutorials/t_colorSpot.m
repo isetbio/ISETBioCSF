@@ -1,18 +1,17 @@
-function validationData = t_colorGaborScene(rParams)
-% validationData = t_colorGaborScene(rParams)
+function validationData = t_colorSpot(rParams)
+% validationData = t_colorSpot(rParams)
 %
-% Illustrates the basic steps required to calculate cone isomerizations
-% for a static color Gabor modulation.
-%
-% Create a scene with a color gabor patch with color directions
-% specified as L, M, and S cone contrasts.  The scene will produce
-% a Gabor with these contrasts on a specified monitor.  Then passes the
-% scene through the optics and a cone mosaic and gets the isomerizations at
-% each cone.  
+% Illustrates the basic steps required to calculate cone isomerizations for
+% a monochromatic spot on a background, where the key parameters that will
+% vary are the size of the spot, the size of the background, and the
+% radiometric properties of the spot and the background.  The reason we
+% want to do this is so that we can make predictions for how thresholds
+% will vary as we change these properties, particularly the size of the
+% spot, for various radiometric, mosaic, and eccentricity choices.
 %
 % If parameters structure is not passed, the routine will use the defaults
 % provided by
-%   colorGaborResponseParamsGenerate
+%   colorSpotResponseParamsGenerate
 % That function and its subfunctions also documents what the relavant parameters are.
 %
 % The code illustrated here is encapsulated into function
@@ -25,11 +24,8 @@ function validationData = t_colorGaborScene(rParams)
 % specified IBIOColorDetect rwObject.
 %
 % See also:
-%	t_colorGaborConeIsomerizationsMovie
-%   colorGaborResponseParamsGenerate
-%   colorGaborSceneCreate 
 %
-% 7/6/16  dhb  Wrote it.
+% 9/14/16  dhb, wst  Wrote it.
 
 %% Clear
 if (nargin == 0)
@@ -44,7 +40,7 @@ rng(1);
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
 % parameters used by a number of tutorials and functions in this project.
 if (nargin < 1 | isempty(rParams))
-    rParams = colorGaborResponseParamsGenerate;
+    rParams = colorSpotResponseParamsGenerate;
 end
 
 %% Set up the rw object for this program
