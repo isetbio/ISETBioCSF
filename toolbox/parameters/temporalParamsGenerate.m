@@ -33,7 +33,7 @@ temporalParams.addCRTrasterEffect = false;
 temporalParams.rasterSamples = 5; 
 
 % Some computed temporal parameters
-[temporalParams.sampleTimes,temporalParams.gaussianTemporalWindow] = gaussianTemporalWindowCreate(temporalParams);
+[temporalParams.sampleTimes, temporalParams.gaussianTemporalWindow, temporalParams.rasterModulation] = gaussianTemporalWindowCreate(temporalParams);
 temporalParams.nSampleTimes = length(temporalParams.sampleTimes);
 
 % if (temporalParams.addCRTrasterEffect)
