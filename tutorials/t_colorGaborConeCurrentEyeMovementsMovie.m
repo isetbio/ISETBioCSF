@@ -1,4 +1,4 @@
-function validationData = t_coneGaborConeCurrentEyeMovementsMovie(rParams)
+function validationData = t_colorGaborConeCurrentEyeMovementsMovie(rParams)
 % validationData = t_coneGaborConeCurrentEyeMovementsMovie(rParams)
 %
 % Show how to generate a movie with the cone absoprtions and photocurrent
