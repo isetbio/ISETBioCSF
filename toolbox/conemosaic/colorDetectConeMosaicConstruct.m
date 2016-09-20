@@ -25,9 +25,18 @@ if (isfield(mosaicParams, 'timeStepInSeconds'))
     if (mosaicParams.timeStepInSeconds ~= mosaicParams.integrationTimeInSeconds)
         error('Cannot have different sample and integration times anymore');
     end
+else
+    error('Missing timeStepInSeconds');
 end
-theMosaic = coneMosaic('integrationTime',mosaicParams.integrationTimeInSeconds);
+theMosaic = coneMosaic('integrationTime', mosaicParams.integrationTimeInSeconds);
 
+% Set outer-segment params 
+theOS = osLinear();
+theOS.noiseFlag = mosaicParams.osNoise;
+% Set the outer-segment time step equal to the integration time.
+% This maybe ok for @osLinear, but definitely not for @osBiophys
+theOS.timeStep  = mosaicParams.timeStepInSeconds;
+theMosaic.os = theOS;
 
 % Set mosaic field of view.  In principle this would be as large as the
 % stimulus, but space and time considerations may lead to it being smaller.
