@@ -13,6 +13,10 @@ function c_AdaptiveMethodTraining(varargin)
 %       'nnmes' - nearest neighbor, squared error metric
 %       'nncorr' - nearest neighbor, correlation-based error metric
 %       'uniflikely' - compute likelyhood that each interval is uniform field.
+%   'filterMethod' - string (default 'none').  Filter the data and if so how?
+%       'none' - don't do any filtering
+%       'lowpass' - lowpass filtering and downsample.
+%   'lowpassParam' - value (default XX).  Parameter to use for lowpass filter
 %   'nResponseSamples' - value (default 1000).  Number of precomputed responses to
 %       draw from.
 %   'trainingFraction' - value (0.8). Fraction of responses to use for
@@ -31,6 +35,8 @@ function c_AdaptiveMethodTraining(varargin)
 %% Parse input
 p = inputParser;
 p.addParameter('learningMethod','nnmse',@ischar);
+p.addParameter('filterMethod','none',@ischar);
+p.addParameter('lowpassParam',10,@isnumeric);
 p.addParameter('nResponseSamples',1000,@isnumeric);
 p.addParameter('trainingFraction',0.6,@isnumeric);
 p.addParameter('nTrialsPerStaircase',150,@isnumeric);
@@ -163,6 +169,46 @@ for cc = 1:testDirectionParams.nContrastsPerDirection
     end
 end
 
+%% Start setting up learning structure
+%
+% Curiously, the syntax ancillaryData.theMosaic.pattern causes an
+% error, while theMosaic.pattern is fine.  But we want to keep
+% theMosaic in learningStructure so it is easy to pass around.
+learningStructure.theMosaic = ancillaryData.theMosaic;
+theMosaic = learningStructure.theMosaic;
+for ii = 1:3
+    learningStructure.coneIndex{ii} = find(theMosaic.pattern(:) == ii+1);
+end
+learningStructure.lowpassParam = p.Results.lowpassParam;
+clear theMosaic
+
+%% Let's take a look at the mosaic responses at high contrast
+figure; clf;
+aNoiseIntervalResponse = noStimData.responseInstanceArray(1).theMosaicIsomerizations;
+aSignalIntervalResponse = stimData{end}.responseInstanceArray(1).theMosaicIsomerizations;
+aNoiseIntervalResponseScale = zeros(size(aNoiseIntervalResponse));
+aSignalIntervalResponseScale = zeros(size(aSignalIntervalResponse));
+for ii = 1:3
+    aNoiseIntervalResponseScale(learningStructure.coneIndex{ii}) = aNoiseIntervalResponse(learningStructure.coneIndex{ii})/mean(aNoiseIntervalResponse(learningStructure.coneIndex{ii}));
+    aSignalIntervalResponseScale(learningStructure.coneIndex{ii}) = aSignalIntervalResponse(learningStructure.coneIndex{ii})/mean(aNoiseIntervalResponse(learningStructure.coneIndex{ii}));
+end
+[imRows,imCols] = size(aNoiseIntervalResponse);
+pixelPerm = randperm(imRows*imCols);
+aNoiseIntervalResponseScramble = reshape(aNoiseIntervalResponseScale(pixelPerm),imRows,imCols);
+aSignalIntervalResponseScramble = reshape(aSignalIntervalResponseScale(pixelPerm),imRows,imCols);
+subplot(2,2,1);
+imshow(0.8*aNoiseIntervalResponseScale/mean(aNoiseIntervalResponseScale(:)));
+title('Blank');
+subplot(2,2,2);
+imshow(0.8*aSignalIntervalResponseScale/mean(aNoiseIntervalResponseScale(:)));
+title('Grating');
+subplot(2,2,3);
+imshow(0.8*aNoiseIntervalResponseScramble/mean(aNoiseIntervalResponseScale(:)));
+title('Scrambled Blank');
+subplot(2,2,4);
+imshow(0.8*aSignalIntervalResponseScramble/mean(aNoiseIntervalResponseScale(:)));
+title('Scrambled Grating');
+
 %% Set up staircases
 %
 % Some parameters
@@ -191,10 +237,6 @@ nTotalTrials = nInterleavedStaircases*numTrialsPerStaircase;
 learningStructure.nTrials0 = 0; learningStructure.nTrials1 = 0;
 learningStructure.trialResponseData0 = zeros(2*responseDimension,nTotalTrials);
 learningStructure.trialResponseData1 = zeros(2*responseDimension,nTotalTrials);
-theMosaic = ancillaryData.theMosaic;
-for ii = 1:3
-    learningStructure.coneIndex{ii} = find(theMosaic.pattern(:) == ii+1);
-end
 sampleCount = 1;
 for i = 1:numTrialsPerStaircase
     staircaseOrder = randperm(nInterleavedStaircases);
@@ -224,16 +266,13 @@ for i = 1:numTrialsPerStaircase
         % Simulate trial. Every response sample only gets used only once.
         %
         % First get noise and signal interval responses
-        noiseIntervalResponse = noStimData.responseInstanceArray(sampleCount).theMosaicIsomerizations(:);
-        signalIntervalResponse = stimData{contrastIndex}.responseInstanceArray(sampleCount).theMosaicIsomerizations(:);
-        % logLikelyN = computeUnifLikelihood(noStimData.responseInstanceArray(sampleCount).theMosaicIsomerizations(:),learningStructure);
-        % logLikelyS = computeUnifLikelihood(stimData{contrastIndex}.responseInstanceArray(sampleCount).theMosaicIsomerizations(:),learningStructure);
-        % if (logLikelyN > logLikelyS)
-        %     fprintf('Correct\n');
-        % else
-        %     fprintf('Wrong\n');
-        % end
+        noiseIntervalResponse = noStimData.responseInstanceArray(sampleCount).theMosaicIsomerizations;
+        signalIntervalResponse = stimData{contrastIndex}.responseInstanceArray(sampleCount).theMosaicIsomerizations;
         sampleCount = sampleCount+1;
+        
+        % Filter if desired
+        noiseIntervalResponse = filterAndVectorizeResponse(p.Results.filterMethod,noiseIntervalResponse,learningStructure);
+        signalIntervalResponse = filterAndVectorizeResponse(p.Results.filterMethod,signalIntervalResponse,learningStructure);
         
         % Then simulate trial
         [response,learningStructure] = simulateTrial(p.Results.learningMethod,true,noiseIntervalResponse,signalIntervalResponse,learningStructure);
@@ -293,9 +332,15 @@ for cc = 1:length(testContrasts)
     for jj = 1:p.Results.nTrialsPerTestContrast;
         
         % Simulate trial. We only use each sample once
-        noiseIntervalResponse = noStimData.responseInstanceArray(nTrainingSamples+sampleCount).theMosaicIsomerizations(:);
-        signalIntervalResponse = stimData{cc}.responseInstanceArray(nTrainingSamples+sampleCount).theMosaicIsomerizations(:);
+        noiseIntervalResponse = noStimData.responseInstanceArray(nTrainingSamples+sampleCount).theMosaicIsomerizations;
+        signalIntervalResponse = stimData{cc}.responseInstanceArray(nTrainingSamples+sampleCount).theMosaicIsomerizations;
         sampleCount = sampleCount+1;
+        
+        % Filter if desired
+        noiseIntervalResponse = filterAndVectorizeResponse(p.Results.filterMethod,noiseIntervalResponse,learningStructure);
+        signalIntervalResponse = filterAndVectorizeResponse(p.Results.filterMethod,signalIntervalResponse,learningStructure);
+        
+        % Simulate trial
         response = simulateTrial(p.Results.learningMethod,false,noiseIntervalResponse,signalIntervalResponse,learningStructure);
         
         % Decide whether response was correct and keep track
@@ -435,4 +480,23 @@ for ii = 1:3
     z = (intervalResponse(index)-u)/s;
     logLikely = logLikely + sum(log(normpdf(z)));
 end
+end
+
+
+function filteredResponse = filterAndVectorizeResponse(method,response,learningStructure)
+% function filteredResponse = filterResponse(method,response,learningStructure)
+%
+% Optionally apply a lowpass filter and downsampling to mosaic responses.
+
+switch (method)
+    case 'none'
+        % Just vectorize from image format
+        filteredResponse = response(:);
+        
+    case 'lowpass'
+        % Lowpass filter and vectorize
+        % A filter param is in learningStructure.lowpassParam
+        % The mosaic object is in learningStructure.theMosaic
+end
+
 end
