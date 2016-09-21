@@ -1,4 +1,4 @@
-function c_EffectOfTrainingSize(varargin)
+function c_AdaptiveMethodTraining(varargin)
 % c_AdaptiveMethodTraining(varargin)
 %
 % Explore learning classifier in the context of adaptive psychophysical
@@ -9,13 +9,17 @@ function c_EffectOfTrainingSize(varargin)
 % so using a larger spatial frequency speeds things up.
 %
 % Key/value pairs
+%   'learningMethod' - string (default 'nnmse').  Learning rule to use.
+%       'nnmes' - nearest neighbor, squared error metric
+%       'nncorr' - nearest neighbor, correlation-based error metric
+%       'uniflikely' - compute likelyhood that each interval is uniform field.
 %   'nResponseSamples' - value (default 1000).  Number of precomputed responses to
 %       draw from.
 %   'trainingFraction' - value (0.8). Fraction of responses to use for
 %       training.  Rest are used for test
-%   'nAdaptiveTrialsPerStaircase' - value (default 400). Number of trials to run the adaptive
+%   'nTrialsPerStaircase' - value (default 400). Number of trials to run the adaptive
 %       procedure
-%   'nTestTrialsPerContrast' - value (default 20).  Number of test trials per contrast,
+%   'nTrialsPerTestContrast' - value (default 20).  Number of test trials per contrast,
 %       after training.
 %   'cyclesPerDegree' - value (default 10). Spatial frequency of grating to be investigated.
 %       This is reciprocally related to the size of the image/mosaic.
@@ -26,10 +30,11 @@ function c_EffectOfTrainingSize(varargin)
 
 %% Parse input
 p = inputParser;
+p.addParameter('learningMethod','nnmse',@ischar);
 p.addParameter('nResponseSamples',1000,@isnumeric);
-p.addParameter('trainingFraction',0.8,@isnumeric);
-p.addParameter('nAdaptiveTrialsPerStaircase',400,@isnumeric);
-p.addParameter('nTestTrialsPerContrast',20,@isnumeric);
+p.addParameter('trainingFraction',0.6,@isnumeric);
+p.addParameter('nTrialsPerStaircase',150,@isnumeric);
+p.addParameter('nTrialsPerTestContrast',20,@isnumeric);
 p.addParameter('cyclesPerDegree',10,@isnumeric);
 p.addParameter('computeResponses',false,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
@@ -135,7 +140,7 @@ colorModulationParamsTemp.contrast = 0;
 paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
 noStimData = rwObject.read('responseInstances',paramsList,readProgram);
 ancillaryData = rwObject.read('ancillaryData',paramsList,readProgram);
-fprintf('done\n');
+fprintf(' done\n');
 responseDimension = length(noStimData.responseInstanceArray(1).theMosaicIsomerizations(:));
 testConeContrasts = ancillaryData.testConeContrasts;
 if (size(testConeContrasts,2) ~= 1)
@@ -152,7 +157,7 @@ for cc = 1:testDirectionParams.nContrastsPerDirection
     colorModulationParamsTemp.contrast = testContrasts(cc);
     paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
     stimData{cc} = rwObject.read('responseInstances',paramsList,readProgram);
-    fprintf('done\n');
+    fprintf(' done\n');
     if (numel(stimData{cc}.responseInstanceArray) ~= testDirectionParams.trialsNum)
         error('Inconsistent number of trials');
     end
@@ -161,13 +166,16 @@ end
 %% Set up staircases
 %
 % Some parameters
-numTrialsPerStaircase = p.Results.nAdaptiveTrialsPerStaircase;
+numTrialsPerStaircase = p.Results.nTrialsPerStaircase;
 maxContrast = testDirectionParams.highContrast;
 minContrast = testDirectionParams.lowContrast;
-stepSizes = [0.05 0.01 0.005 0.001 0.0005 0.0001];
+stepSizes = [0.05 0.01];
 nUps = [3 2 3];
 nDowns = [1 1 2];
 nInterleavedStaircases = length(nUps);
+if (nInterleavedStaircases*p.Results.nTrialsPerStaircase > nTrainingSamples)
+    error('Can only use each training sample once during learning, need more training samples');
+end
 
 % Initialize staircase objects
 for k = 1:nInterleavedStaircases;
@@ -176,13 +184,18 @@ for k = 1:nInterleavedStaircases;
         'MaxValue', maxContrast, 'MinValue', minContrast);
 end
 
-%% Simulate interleaved staircases and learn decision rule
+%% Simulate interleaved staircases and learn decision rule on a trial by trial basis
 %
 % Make space to hold sensor responses
 nTotalTrials = nInterleavedStaircases*numTrialsPerStaircase;
-nTrials0 = 0; nTrials1 = 0;
-trialResponseData0 = zeros(2*responseDimension,nTotalTrials);
-trialResponseData1	 = zeros(2*responseDimension,nTotalTrials);
+learningStructure.nTrials0 = 0; learningStructure.nTrials1 = 0;
+learningStructure.trialResponseData0 = zeros(2*responseDimension,nTotalTrials);
+learningStructure.trialResponseData1 = zeros(2*responseDimension,nTotalTrials);
+theMosaic = ancillaryData.theMosaic;
+for ii = 1:3
+    learningStructure.coneIndex{ii} = find(theMosaic.pattern(:) == ii+1);
+end
+sampleCount = 1;
 for i = 1:numTrialsPerStaircase
     staircaseOrder = randperm(nInterleavedStaircases);
     for k = 1:nInterleavedStaircases
@@ -208,168 +221,49 @@ for i = 1:numTrialsPerStaircase
             error('Oops.  Comparsion contrast not in test set');
         end
         
-        % Simulate trial
-        noiseIntervalResponseIndex = randi(nTrainingSamples);
-        noiseIntervalResponse = noStimData.responseInstanceArray(noiseIntervalResponseIndex).theMosaicIsomerizations(:);
-        signalIntervalResponseIndex = randi(nTrainingSamples);
-        signalIntervalResponse = stimData{contrastIndex}.responseInstanceArray(signalIntervalResponseIndex).theMosaicIsomerizations(:);
+        % Simulate trial. Every response sample only gets used only once.
+        %
+        % First get noise and signal interval responses
+        noiseIntervalResponse = noStimData.responseInstanceArray(sampleCount).theMosaicIsomerizations(:);
+        signalIntervalResponse = stimData{contrastIndex}.responseInstanceArray(sampleCount).theMosaicIsomerizations(:);
+        % logLikelyN = computeUnifLikelihood(noStimData.responseInstanceArray(sampleCount).theMosaicIsomerizations(:),learningStructure);
+        % logLikelyS = computeUnifLikelihood(stimData{contrastIndex}.responseInstanceArray(sampleCount).theMosaicIsomerizations(:),learningStructure);
+        % if (logLikelyN > logLikelyS)
+        %     fprintf('Correct\n');
+        % else
+        %     fprintf('Wrong\n');
+        % end
+        sampleCount = sampleCount+1;
         
-        % Determine which trial type (noise-signal, signal-noise) this is,
-        % and construct trial response
-        trialType = round(rand);
-        if (trialType == 0)
-            trialResponse = [noiseIntervalResponse ; signalIntervalResponse];
-        else
-            trialResponse = [signalIntervalResponse ; noiseIntervalResponse];
-        end
-        
-        % Classify trial response.  Just guess if we haven't seen exemplars
-        % of each type.  Use nearest neighbor classification on trials we
-        % have seen if we have.
-        if (nTrials0 == 0 & nTrials1 == 0)
-            responseType = round(rand);
-        else
-            trialDistances0 = zeros(nTrials0,1);
-            for ii = 1:nTrials0
-                trialDistances0(ii) = norm(trialResponse-trialResponseData0(:,ii));
-            end
-            trialDistances1 = zeros(nTrials1,1);
-            for ii = 1:nTrials1
-                trialDistances1(ii) = norm(trialResponse-trialResponseData1(:,ii));
-            end
-            if (min(trialDistances0) < min(trialDistances1))
-                responseType = 0;
-            else
-                responseType = 1;
-            end
-        end
-        
-        % Decide whether response was correct or not
-        if (responseType == trialType)
-            response = 1;
-        else
-            response = 0;
-        end
-        
-        % Save trial response data
-        if (trialType == 0)
-            nTrials0 = nTrials0+1;
-            trialResponseData0(:,nTrials0) = trialResponse;
-        else
-            nTrials1 = nTrials1+1;
-            trialResponseData1(:,nTrials1) = trialResponse;
-        end
+        % Then simulate trial
+        [response,learningStructure] = simulateTrial(p.Results.learningMethod,true,noiseIntervalResponse,signalIntervalResponse,learningStructure);
         
         % Update staircase
         st{staircaseOrder(k)} = updateForTrial(st{staircaseOrder(k)},comparisonContrast,response);
         
         % Report
-        fprintf('Simulating staircase %d, trial %d, contrast %0.5f, trial type = %d, response type = %d, response %d\n',staircaseOrder(k),i,comparisonContrast,trialType,responseType,response);      
-    end
-end
-
-%% Now freeze decision rule and measure psychometric function
-nCorrects = zeros(length(testContrasts),1);
-for cc = 1:length(testContrasts)    
-    for jj = 1:p.Results.nTestTrialsPerContrast; 
-        
-        % Simulate trial.  These trials come from test set of sampled
-        % responses.ß
-        noiseIntervalResponseIndex = randi(p.Results.nResponseSamples-nTrainingSamples);
-        noiseIntervalResponse = noStimData.responseInstanceArray(nTrainingSamples+noiseIntervalResponseIndex).theMosaicIsomerizations(:);
-        signalIntervalResponseIndex = randi(p.Results.nResponseSamples-nTrainingSamples);
-        signalIntervalResponse = stimData{cc}.responseInstanceArray(nTrainingSamples+signalIntervalResponseIndex).theMosaicIsomerizations(:);
-        
-        % Determine which trial type (noise-signal, signal-noise) this is,
-        % and construct trial response
-        trialType = round(rand);
-        if (trialType == 0)
-            trialResponse = [noiseIntervalResponse ; signalIntervalResponse];
-        else
-            trialResponse = [signalIntervalResponse ; noiseIntervalResponse];
-        end
-        
-        % Classify trial response.  Just guess if we haven't seen exemplars
-        % of each type.  Use nearest neighbor classification on trials we
-        % have seen if we have.
-        if (nTrials0 == 0 & nTrials1 == 0)
-            responseType = round(rand);
-        else
-            trialDistances0 = zeros(nTrials0,1);
-            for ii = 1:nTrials0
-                trialDistances0(ii) = norm(trialResponse-trialResponseData0(:,ii));
-            end
-            trialDistances1 = zeros(nTrials1,1);
-            for ii = 1:nTrials1
-                trialDistances1(ii) = norm(trialResponse-trialResponseData1(:,ii));
-            end
-            if (min(trialDistances0) < min(trialDistances1))
-                responseType = 0;
-            else
-                responseType = 1;
-            end
-        end
-        
-        % Decide whether response was correct and keep track
-        if (responseType == trialType)
-            nCorrects(cc) = nCorrects(cc)+1;
+        if (rem(i,40) == 0)
+            fprintf('Simulating staircase %d, trial %d, contrast %0.5f, response %d\n',staircaseOrder(k),i,comparisonContrast,response);
         end
     end
 end
 
-%% Analyze staircase data
+%% Summarize staircase data
 valuesStair = []; responsesStair = [];
-nTrialsKeep = 100;
-nTrialsDiscard = numTrialsPerStaircase-nTrialsKeep;
 for k = 1:nInterleavedStaircases
     threshStair(k) = getThresholdEstimate(st{k});
-    [valuesSingleStair{k},responsesSingleStair{k}] = getTrials(st{k},nTrialsDiscard);
+    [valuesSingleStair{k},responsesSingleStair{k}] = getTrials(st{k});
     valuesStair = [valuesStair valuesSingleStair{k}];
     responsesStair = [responsesStair responsesSingleStair{k}];
 end
-[meanValues,nCorrectStair,nTrialsStair] = GetAggregatedStairTrials(valuesStair,responsesStair,20);
+[meanValues,nCorrectStair,nTrialsStair] = GetAggregatedStairTrials(valuesStair,responsesStair,30);
 
-%% Fit staircase data using Palamedes
-paramsFree     = [1 1 0 0];
-PF             = @PAL_Weibull;
-
-% Some optimization settings for the fit
-options             = optimset('fminsearch');
-options.TolFun      = 1e-09;
-options.MaxFunEvals = 1000;
-options.MaxIter     = 1000;
-options.Display     = 'off';
-
-% Search grid specification for Palemedes
-gridLevels = 100;
-searchGrid.alpha = logspace(log10(testContrasts(1)),log10(testContrasts(end)),gridLevels);
-searchGrid.beta = 10.^linspace(-2,2,gridLevels);
-searchGrid.gamma = 0.5;
-searchGrid.lambda = 0.0;
-
-% Use Palamedes grid search method
-[paramsValues,LL,flag] = PAL_PFML_Fit(valuesStair(:), responsesStair(:), ones(size(responsesStair(:))), ...
-    searchGrid, paramsFree, PF, 'SearchOptions', options);
-
-% Get threshold and deal with catastrophic cases
-threshold = PF(paramsValues, thresholdParams.criterionFraction, 'inverse');
-if (threshold < 0 | threshold > 1 | ~isreal(threshold) | isinf(threshold))
-    threshold = NaN;
-end
-
-%% Provide fit psychometric function on passed stimulus levels
-% if (~isnan(threshold))
-%     fitFractionCorrect = PF(paramsValues,fitStimLevels);
-% else
-%     fitFractionCorrect = NaN*ones(size(fitStimLevels));
-% end
-
-%% Make a figure of what happened during the staircase
+%% Make a figure of what happened during the staircases
 stairFig = figure; clf;
 colors = ['r' 'g' 'b' 'y' 'c'];
 subplot(1,2,1); hold on
 for k = 1:nInterleavedStaircases
-    xvalues = 1:nTrialsKeep;
+    xvalues = 1:p.Results.nTrialsPerStaircase;
     index = find(responsesSingleStair{k} == 0);
     plot(xvalues,log10(valuesSingleStair{k}),[colors(k) '-']);
     plot(xvalues,log10(valuesSingleStair{k}),[colors(k) 'o'],'MarkerFaceColor',colors(k),'MarkerSize',6);
@@ -377,80 +271,168 @@ for k = 1:nInterleavedStaircases
         plot(xvalues(index),log10(valuesSingleStair{k}(index)),[colors(k) 'o'],'MarkerFaceColor','w','MarkerSize',6);
     end
 end
-plot(xvalues,log10(threshold)*ones(1,numTrialsPerStaircase),'k');
 xlabel('Trial Number','FontSize',16);
 ylabel('Log10 Contrast','FontSize',16);
 title(sprintf('TAFC staircase plot'),'FontSize',16);
 
 subplot(1,2,2); hold on
 plot(log10(meanValues),nCorrectStair./nTrialsStair,'ko','MarkerSize',6,'MarkerFaceColor','k');
-plot(log10([threshold threshold]),[0 thresholdParams.criterionFraction],'r','LineWidth',2);
 xlabel('Log10 Contrast','FontSize',16);
 ylabel('Prob Correct','FontSize',16);
 title(sprintf('TAFC staircase psychometric function'),'FontSize',16);
-%xlim([comparisonStimuli(1)-testStimulus comparisonStimuli(end)-testStimulus])
 ylim([0 1]);
-% if (exist('FigureSave','file'))
-%     FigureSave('StaircaseFC',gcf','pdf');
-% else
-%     saveas(gcf','StaircaseFC','pdf');
-% end
 
-%% Fit psychometric functions
-if (p.Results.fitPsychometric)
-    if (p.Results.computeMLPTThresholds)
-        thresholdParams.method = 'mlpt';
-        effectOfTrainingSize.mlptThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
-            'plotPsychometric',p.Results.plotPsychometric,'plotEllipse',false);
-        close all;
+%% Now freeze decision rule and simulate out psychometric function
+nCorrects = zeros(length(testContrasts),1);
+if ((p.Results.nResponseSamples-nTrainingSamples) < length(testContrasts)*p.Results.nTrialsPerTestContrast)
+    error('Not enough test samples, need more samples');
+end
+sampleCount = 1;
+for cc = 1:length(testContrasts)
+    fprintf('Psychometric function calculation, conrast %d of %d\n',cc,length(testContrasts));
+    for jj = 1:p.Results.nTrialsPerTestContrast;
+        
+        % Simulate trial. We only use each sample once
+        noiseIntervalResponse = noStimData.responseInstanceArray(nTrainingSamples+sampleCount).theMosaicIsomerizations(:);
+        signalIntervalResponse = stimData{cc}.responseInstanceArray(nTrainingSamples+sampleCount).theMosaicIsomerizations(:);
+        sampleCount = sampleCount+1;
+        response = simulateTrial(p.Results.learningMethod,false,noiseIntervalResponse,signalIntervalResponse,learningStructure);
+        
+        % Decide whether response was correct and keep track
+        if (response)
+            nCorrects(cc) = nCorrects(cc)+1;
+        end
     end
 end
 
+%% Fit and plot psychometric function
+fitContrasts = logspace(log10(min(testContrasts)),log10(max(testContrasts)),100)';
+[threshold,fitFractionCorrect,paramsValues] = singleThresholdExtraction(testContrasts,nCorrects/p.Results.nTrialsPerTestContrast,thresholdParams.criterionFraction,p.Results.nTrialsPerTestContrast,fitContrasts);
+hFig = figure; hold on
+set(gca,'FontSize',rParams.plotParams.axisFontSize);
+plot(log10(testContrasts), nCorrects/p.Results.nTrialsPerTestContrast,'ro', 'MarkerSize', rParams.plotParams.markerSize, 'MarkerFaceColor', [1.0 0.5 0.50]);
+plot(log10(fitContrasts),fitFractionCorrect,'r','LineWidth', 2.0);
+plot(log10(threshold)*[1 1],[0 thresholdParams.criterionFraction],'b', 'LineWidth', 2.0);
+axis 'square'
+set(gca, 'YLim', [0 1.0],'XLim', log10([testContrasts(1) testContrasts(end)]), 'FontSize', 14);
+xlabel('contrast', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
+ylabel('percent correct', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
+box off; grid on
+title({sprintf('LMangle = %2.1f deg, LMthreshold (%0.4f%%,%0.4f%%)', atan2(testConeContrasts(2), testConeContrasts(1))/pi*180, ...
+    100*threshold*testConeContrasts(1), 100*threshold*testConeContrasts(2)) ; ''}, ...
+    'FontSize',rParams.plotParams.titleFontSize);
+%rwObject.write(sprintf('LMPsychoFunctions_%d',ii),hFig,paramsList,writeProgram,'Type','figure');
 
-%% Write out the data
+end
+
+function [response,learningStructure] = simulateTrial(method,learn,noiseIntervalResponse,signalIntervalResponse,learningStructure)
+% [response,learningStructure] = simulateTrial(method,learn,noiseIntervalResponse,signalIntervalResponse,learningStructure)
 %
-% Set trialsNum to 0 to define a summary directory name
-% fprintf('Writing performance data ... ');
-% testDirectionParams.trialsNum = 0;
-% paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
-% rwObject = IBIOColorDetectReadWriteBasic;
-% writeProgram = mfilename;
-% rwObject.write('effectOfTrainingSize',effectOfTrainingSize,paramsList,writeProgram);
-% fprintf('done\n');
+% Simulate out a trial and update the learning structure, which is method
+% dependent.
+
+% Determine which trial type (noise-signal, signal-noise) this is,
+% and construct trial response
+trialType = round(rand);
+if (trialType == 0)
+    trialResponse = [noiseIntervalResponse ; signalIntervalResponse];
+else
+    trialResponse = [signalIntervalResponse ; noiseIntervalResponse];
+end
+
+% Classify trial response.
+switch (method)
+    
+    case {'nnmse' 'nncorr'}
+        % Nearest neighbor methodsJust guess if we haven't seen exemplars
+        % of each type.  Use nearest neighbor classification on trials we
+        % have seen if we have.
+        if (learningStructure.nTrials0 == 0 & learningStructure.nTrials1 == 0)
+            responseType = round(rand);
+        else
+            trialDistances0 = zeros(learningStructure.nTrials0,1);
+            for ii = 1:learningStructure.nTrials0
+                switch (method)
+                    case 'nnmse'
+                        trialDistances0(ii) = norm(trialResponse-learningStructure.trialResponseData0(:,ii));
+                    case 'nncorr'
+                        trialDistances0(ii)  = 1/corr(trialResponse,learningStructure.trialResponseData0(:,ii));
+                end
+            end
+            trialDistances1 = zeros(learningStructure.nTrials1,1);
+            for ii = 1:learningStructure.nTrials1
+                switch (method)
+                    case 'nnmse'
+                        trialDistances1(ii) = norm(trialResponse-learningStructure.trialResponseData1(:,ii));
+                    case 'nncorr'
+                        trialDistances1(ii) = 1/corr(trialResponse,learningStructure.trialResponseData1(:,ii));
+                end
+            end
+            if (min(trialDistances0) < min(trialDistances1))
+                responseType = 0;
+            else
+                responseType = 1;
+            end
+        end
+        
+    case 'uniflikely'
+        % Figure out which interval is more likely to be a uniform field
+        % and respond accordingly.
+        responseDim = length(trialResponse);
+        firstIntervalResponse = trialResponse(1:responseDim/2);
+        secondIntervalResponse = trialResponse(responseDim/2+1:responseDim);
+        firstLikely = computeUnifLikelihood(firstIntervalResponse,learningStructure);
+        secondLikely = computeUnifLikelihood(secondIntervalResponse,learningStructure);
+        if (trialType == 1)
+            if (secondLikely < firstLikely)
+                responseType = 1;
+            else
+                responseType = 0;
+            end
+        else
+            if (secondLikely < firstLikely)
+                responseType = 0;
+            else
+                responseType = 1;
+            end
+        end
+    otherwise
+        error('Unknown learning method specified');
+end
+
+% Learn if desired
 %
-% %% Make a plot of estimated threshold versus training set size
-% %
-% % The way the plot is coded counts on the test contrasts never changing
-% % across the conditions, which we could explicitly check for here.
-% if (p.Results.plotTrainingSize)
-%     fprintf('Reading performance data ...');
-%     testDirectionParams.trialsNum = 0;
-%     paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
-%     rwObject = IBIOColorDetectReadWriteBasic;
-%     writeProgram = mfilename;
-%     effectOfTrainingSize = rwObject.read('effectOfTrainingSize',paramsList,writeProgram);
-%     fprintf('done\n');
+% Save trial response data for future classification
+if (learn)
+    if (trialType == 0)
+        learningStructure.nTrials0 = learningStructure.nTrials0+1;
+        learningStructure.trialResponseData0(:,learningStructure.nTrials0) = trialResponse;
+    else
+        learningStructure.nTrials1 = learningStructure.nTrials1+1;
+        learningStructure.trialResponseData1(:,learningStructure.nTrials1) = trialResponse;
+    end
+end
+
+% Decide whether response was correct or not
+if (responseType == trialType)
+    response = 1;
+else
+    response = 0;
+end
+end
+
+function logLikely = computeUnifLikelihood(intervalResponse,learningStructure)
+% logLikely = computeUnifLikelihood(intervalResponse,learningStructure)
 %
-%     hFig = figure; clf; hold on
-%     fontBump = 4;
-%     set(gca,'FontSize', rParams.plotParams.axisFontSize+fontBump);
-%     plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.mlptThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
-%         'ro','MarkerSize',rParams.plotParams.markerSize,'MarkerFaceColor','r');
-%     plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.mlpeThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
-%         'go','MarkerSize',rParams.plotParams.markerSize,'MarkerFaceColor','g');
-%     plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.svmThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
-%         'bo','MarkerSize',rParams.plotParams.markerSize,'MarkerFaceColor','b');
-%     plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.mlptThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
-%         'r','LineWidth',rParams.plotParams.lineWidth);
-%     plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.mlpeThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
-%         'g','LineWidth',rParams.plotParams.lineWidth);
-%     plot(log10(effectOfTrainingSize.nTrainingSamplesList),[effectOfTrainingSize.svmThresholds(:).thresholdContrasts]*effectOfTrainingSize.mlptThresholds(1).testConeContrasts(1), ...
-%         'b','LineWidth',rParams.plotParams.lineWidth);
-%     xlabel('Log10 Training Set Size', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-%     ylabel('Threshold Contrast', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-%     xlim([1 4]); ylim([0 1e-2]);
-%     legend({'MaxLikelihood, signal known', 'MaxLikelihood, signal estimated', sprintf('SVM, PCA %d',thresholdParams.PCAComponents)},'Location','NorthEast','FontSize',rParams.plotParams.labelFontSize+fontBump);
-%     box off; grid on
-%     title(sprintf('Effect of Training Set Size, %0.2f deg mosaic',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
-%     rwObject.write('effectOfTrainingSize',hFig,paramsList,writeProgram,'Type','figure');
-% end
+% Compute the log likelihood that the respones from an interval came from a
+% uniform field, based on a simple normal approximation.
+
+logLikely = 0;
+for ii = 1:3
+    index = learningStructure.coneIndex{ii};
+    u = mean(intervalResponse(index));
+    s = std(intervalResponse(index));
+    z = (intervalResponse(index)-u)/s;
+    logLikely = logLikely + sum(log(normpdf(z)));
+end
+end
