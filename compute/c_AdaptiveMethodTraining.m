@@ -486,7 +486,8 @@ end
 function filteredResponse = filterAndVectorizeResponse(method,response,learningStructure)
 % function filteredResponse = filterResponse(method,response,learningStructure)
 %
-% Optionally apply a lowpass filter and downsampling to mosaic responses.
+% Optionally apply a lowpass filter and downsampling to mosaic responses,
+% and make it a column vector.
 
 switch (method)
     case 'none'
