@@ -17,19 +17,17 @@ function spotParams = spotParamsGenerate(varargin)
 spotParams.type = 'Spot';
 
 % Whole field of view
-spotParams.fieldOfViewDegs = 4;
 spotParams.viewingDistance = 0.75;
-spotParams.pupilDiameterMm = 7;
 
 % The spot
 spotParams.spotSizeDegs = 1.5;
 spotParams.spotWavelengthNm = 680;
-spotParams.spotCornealIrradianceUW = 20;svm
+spotParams.spotCornealIrradianceUW = 20;
 
 % Background parameters
-spotParams.backgroundDizeDegs = 2;
+spotParams.backgroundSizeDegs = 2;
 spotParams.backgroundWavelengthsNm = [830 790 680];
-spotParams.backgroundCornealIrradianceUW = [830 790 680];
+spotParams.backgroundCornealIrradianceUW = [20 10 20];
 
 % Pixel resolution of scene image
 spotParams.row = 128;

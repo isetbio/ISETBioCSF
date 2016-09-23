@@ -43,20 +43,23 @@ if (nargin < 1 | isempty(rParams))
     rParams = colorSpotResponseParamsGenerate;
 end
 
+% Override some defaults to make more sense for our spot application
+rParams.oiParams.pupilDiamMm = 7;
+
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
+paramsList = {rParams.spotParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
 
-%% Make the grayscale gabor pattern and have a look
+%% Make the grayscale spot pattern and have a look
 %
 % The routine imageHarmonicParamsFromGaborParams massages the
-% gaborParams/colorModulationParams information into the form needed by
+% spotParams/colorModulationParams information into the form needed by
 % isetbio's imageHarmonic function.
-gaborPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(rParams.gaborParams,rParams.colorModulationParams));
+spotPattern = drawSpot(rParams.spotParams);
 
 % We can see it as a grayscale image
-vcNewGraphWin; imagesc(gaborPattern); colormap(gray); axis square
+vcNewGraphWin; imagesc(spotPattern); colormap(gray); axis square
 
 % And plot a slice through the center.
 %
@@ -67,8 +70,8 @@ vcNewGraphWin; imagesc(gaborPattern); colormap(gray); axis square
 % and make sure they come out right as well.
 figure; hold on;
 set(gca,'FontSize',rParams.plotParams.axisFontSize);
-xDegs = linspace(-rParams.gaborParams.fieldOfViewDegs/2,rParams.gaborParams.fieldOfViewDegs/2,rParams.gaborParams.col);
-plot(xDegs,gaborPattern(rParams.gaborParams.row/2,:));
+xDegs = linspace(-rParams.spotParams.backgroundSizeDegs/2,rParams.spotParams.backgroundSizeDegs/2,rParams.spotParams.col);
+plot(xDegs,spotPattern(rParams.spotParams.row/2,:));
 xlabel('Position (degrees)','FontSize',rParams.plotParams.labelFontSize);
 ylabel('Image Intensity','FontSize',rParams.plotParams.labelFontSize);
 
@@ -77,7 +80,7 @@ ylabel('Image Intensity','FontSize',rParams.plotParams.labelFontSize);
 % First, make it a modulation around the mean
 % This is easy, because imageHarmoic generates the Gabor as a modulation
 % around 1.  Subtracting 1 gives us a modulation in the range -1 to 1.
-gaborModulation = gaborPattern-1;
+spotModulation = spotPattern-1;
 
 % Convert Gabor to a color modulation specified in cone space
 %
@@ -119,20 +122,20 @@ backgroundConeExcitations = M_XYZToCones*xyYToXYZ(rParams.backgroundParams.backg
 % Convert test cone contrasts to cone excitations
 testConeExcitations = (rParams.colorModulationParams.coneContrasts .* backgroundConeExcitations);
 
-% Make the color gabor in LMS excitations
-gaborConeExcitationsBg = ones(rParams.gaborParams.row,rParams.gaborParams.col);
-gaborConeExcitations = zeros(rParams.gaborParams.row,rParams.gaborParams.col,3);
+% Make the color spot in LMS excitations
+spotConeExcitationsBg = ones(rParams.spotParams.row,rParams.spotParams.col);
+spotConeExcitations = zeros(rParams.spotParams.row,rParams.spotParams.col,3);
 for ii = 1:3
-    gaborConeExcitations(:,:,ii) = gaborConeExcitationsBg*backgroundConeExcitations(ii) + ...
-        gaborModulation*testConeExcitations(ii);
+    spotConeExcitations(:,:,ii) = spotConeExcitationsBg*backgroundConeExcitations(ii) + ...
+        spotModulation*testConeExcitations(ii);
 end
 
 % Check that contrasts come out right.  They will be a little
 % less than nominal values becuase it's a Gabor, not a sinusoid.
 coneTypes = {'L' 'M' 'S'};
 for ii = 1:3
-    gaborPlane = gaborConeExcitations(:,:,ii);
-    theMax = max(gaborPlane(:)); theMin = min(gaborPlane(:));
+    spotPlane = spotConeExcitations(:,:,ii);
+    theMax = max(spotPlane(:)); theMin = min(spotPlane(:));
     actualConeContrasts(ii) = (theMax-theMin)/(theMax+theMin);
     fprintf('Actual absolute %s cone contrast: %0.3f, nominal: % 0.3f\n', coneTypes{ii}, ...
         actualConeContrasts(ii),abs(rParams.colorModulationParams.coneContrasts(ii)));
@@ -141,7 +144,7 @@ end
 %% And take a look at the LMS image.  This is just a straight rendering of
 % LMS and so won't look the right colors, but we can check that it is
 % qualitatively correct.
-vcNewGraphWin; imagesc(gaborConeExcitations/max(gaborConeExcitations(:))); axis square
+vcNewGraphWin; imagesc(spotConeExcitations/max(spotConeExcitations(:))); axis square
 
 %% Produce an isetbio scene
 %
@@ -157,7 +160,7 @@ vcNewGraphWin; imagesc(gaborConeExcitations/max(gaborConeExcitations(:))); axis 
 % spectra we expect these differences to be small.  We could check this by
 % doing the calculations with different monitor descriptions.
 display = displayCreate(rParams.backgroundParams.monitorFile);
-display = displaySet(display,'viewingdistance', rParams.gaborParams.viewingDistance);
+display = displaySet(display,'viewingdistance', rParams.spotParams.viewingDistance);
 
 % Get display channel spectra.  The S vector displayChannelS is PTB format
 % for specifying wavelength sampling: [startWl deltaWl nWlSamples],
@@ -184,16 +187,16 @@ M_XYZToPrimary = inv(M_PrimaryToXYZ);
 displayMaxXYZ = M_PrimaryToXYZ*[1 1 1]';
 fprintf('Max luminace of the display is %0.1f cd/m2\n',displayMaxXYZ(2));
 
-% Convert the gaborConeExcitations image to RGB
-[gaborConeExcitationsCalFormat,m,n] = ImageToCalFormat(gaborConeExcitations);
-gaborPrimaryCalFormat = M_ConeExcitationsToPrimary*gaborConeExcitationsCalFormat;
-gaborPrimary = CalFormatToImage(gaborPrimaryCalFormat,m,n);
+% Convert the spotConeExcitations image to RGB
+[spotConeExcitationsCalFormat,m,n] = ImageToCalFormat(spotConeExcitations);
+spotPrimaryCalFormat = M_ConeExcitationsToPrimary*spotConeExcitationsCalFormat;
+spotPrimary = CalFormatToImage(spotPrimaryCalFormat,m,n);
 
-% Check that the image is within the monitor gamut.  If the gabor
+% Check that the image is within the monitor gamut.  If the spot
 % represents an actual stimulus produced with an actual monitor, things
 % should be OK if both are represented properly in this routine.
-maxPrimary = max(gaborPrimaryCalFormat(:));
-minPrimary = min(gaborPrimaryCalFormat(:));
+maxPrimary = max(spotPrimaryCalFormat(:));
+minPrimary = min(spotPrimaryCalFormat(:));
 fprintf('Maximum linear RGB (primary) value is %0.2f, minimum %0.2f\n',maxPrimary,minPrimary);
 if (maxPrimary > 1 || minPrimary < 0)
     error('RGB primary image is out of gamut.  You need to do something about this.');
@@ -202,7 +205,7 @@ end
 % Gamma correct the primary values, so we can pop them into an isetbio
 % scene in some straightforward manner.
 nLevels = size(displayGet(display,'gamma'),1);
-gaborRGB = round(ieLUTLinear(gaborPrimary,displayGet(display,'inverse gamma')));
+spotRGB = round(ieLUTLinear(spotPrimary,displayGet(display,'inverse gamma')));
 
 % Make a plot of the gamma correction functions.  These should look
 % compressive, the inverse of the monitor gamma function.  In the display
@@ -212,8 +215,8 @@ vcNewGraphWin; hold on
 set(gca,'FontSize',10);
 theColors = ['r' 'g' 'b'];
 for ii = 1:3
-    tempPrimary = gaborPrimary(:,:,ii);
-    tempRGB = gaborRGB(:,:,ii);
+    tempPrimary = spotPrimary(:,:,ii);
+    tempRGB = spotRGB(:,:,ii);
     plot(tempPrimary(:),tempRGB(:),['o' theColors(ii)],'MarkerFaceColor',theColors(ii));
 end
 xlim([0 1]);
@@ -225,25 +228,25 @@ title('Gamma correction','FontSize',rParams.plotParams.titleFontSize);
 
 % Finally, make the actual isetbio scene
 % This combines the image we build and the display properties.
-gaborScene = sceneFromFile(gaborRGB,'rgb',[],display);
-gaborScene = sceneSet(gaborScene, 'h fov', rParams.gaborParams.fieldOfViewDegs);
+spotScene = sceneFromFile(spotRGB,'rgb',[],display);
+spotScene = sceneSet(spotScene, 'h fov', rParams.spotParams.backgroundSizeDegs);
 
 % Look at the scene image.  It is plausible for an L-M grating.  Remember that we
 % are looking at the stimuli on a monitor different from the display file
 % that we loaded, and thus the RGB values will not produce exactly the
 % desired appearance.
-vcNewGraphWin; [~,h] = scenePlot(gaborScene,'radiance image no grid');
-rwObject.write('colorGaborScene',h,paramsList,theProgram,'Type','figure');
+vcNewGraphWin; [~,h] = scenePlot(spotScene,'radiance image no grid');
+rwObject.write('colorSpotScene',h,paramsList,theProgram,'Type','figure');
 
 %% Create oi
-gaborOI = oiCreate('wvf human');
-gaborOI = oiSet(gaborOI,'h fov',rParams.gaborParams.fieldOfViewDegs);
+spotOI = oiCreate('wvf human');
+spotOI = oiSet(spotOI,'h fov',rParams.spotParams.backgroundSizeDegs);
 
 % Set pupil diameter
-focalLength = oiGet(gaborOI,'distance');
+focalLength = oiGet(spotOI,'distance');
 desiredFNumber = focalLength/(rParams.oiParams.pupilDiamMm/1000);
-gaborOI  = oiSet(gaborOI ,'optics fnumber',desiredFNumber);
-pupilDiamMmCheck = 1000*oiGet(gaborOI,'optics aperture diameter');
+spotOI  = oiSet(spotOI ,'optics fnumber',desiredFNumber);
+pupilDiamMmCheck = 1000*oiGet(spotOI,'optics aperture diameter');
 if (max(abs(pupilDiamMmCheck - rParams.oiParams.pupilDiamMm)) > 1e-8)
     error('Failed to set pupil diameter as expected');
 end
@@ -251,57 +254,57 @@ end
 %% Compute blurred optical image
 %
 % Turn of default off axis intensity falloff calculation first.
-optics = oiGet(gaborOI,'optics');
+optics = oiGet(spotOI,'optics');
 optics = opticsSet(optics,'off axis method','skip');
-gaborOI = oiSet(gaborOI,'optics',optics);
-gaborOIBlur = oiCompute(gaborOI,gaborScene);
+spotOI = oiSet(spotOI,'optics',optics);
+spotOIBlur = oiCompute(spotOI,spotScene);
 
 % Note how different the color appearance is than the scene.  This is
 % because the OI incorprates the transmittance of the lens.  Down below we
 % will turn that off as a check.
-vcNewGraphWin; [~,h] = oiPlot(gaborOIBlur,'irradiance image no grid');
+vcNewGraphWin; [~,h] = oiPlot(spotOIBlur,'irradiance image no grid');
 rwObject.write('colorGaborOpticalImageBlur',h,paramsList,theProgram,'Type','figure');
-clearvars('gaborOIBlur');
+clearvars('spotOIBlur');
 
 %% Turn off optics for current purpose of checking LMS contrast 
 % This involves replacing the OTF with a unity OTF, and recompute
 optics = opticsSet(optics,'OTF',ones(size(opticsGet(optics,'OTF'))));
-gaborOI = oiSet(gaborOI,'optics',optics);
-gaborOI = oiCompute(gaborOI,gaborScene);
+spotOI = oiSet(spotOI,'optics',optics);
+spotOI = oiCompute(spotOI,spotScene);
 
 % Look at the OI
-vcNewGraphWin; [~,h] = oiPlot(gaborOI,'irradiance image no grid');
+vcNewGraphWin; [~,h] = oiPlot(spotOI,'irradiance image no grid');
 rwObject.write('colorGaborOpticalImageNoBlur',h,paramsList,theProgram,'Type','figure');
 
 % Just for fun, put OI into isetbio's interactive window
-vcAddAndSelectObject(gaborOI); oiWindow;
+vcAddAndSelectObject(spotOI); oiWindow;
 
 %% Verify that removing lens transmittance has expected effect
-lens = oiGet(gaborOI,'lens');
+lens = oiGet(spotOI,'lens');
 lens.density = 0;
-gaborOINoLens = oiSet(gaborOI,'lens',lens);
-gaborOINoLens = oiCompute(gaborOINoLens,gaborScene);
-vcAddAndSelectObject(gaborOINoLens); oiWindow;
+spotOINoLens = oiSet(spotOI,'lens',lens);
+spotOINoLens = oiCompute(spotOINoLens,spotScene);
+vcAddAndSelectObject(spotOINoLens); oiWindow;
 
 %% Create and get noise free sensor using coneMosaic obj
 % Create a coneMosaic object here. When setting the fov, if only one value
 % is specified, it will automatically make a square cone mosaic.
-gaborConeMosaic = coneMosaic;
-gaborConeMosaic.setSizeToFOV(rParams.gaborParams.fieldOfViewDegs);
+spotConeMosaic = coneMosaic;
+spotConeMosaic.setSizeToFOV(rParams.spotParams.backgroundSizeDegs);
 
 % There is also an option of whether the cone current should be calculated
 % in the compute function. If set to true, it uses an os object inside the
 % coneMosaic object. The default is the linearOS.  Here we don't need that.
-gaborConeMosaic.noiseFlag = false;
-isomerizations = gaborConeMosaic.compute(gaborOI,'currentFlag',false);
+spotConeMosaic.noiseFlag = false;
+isomerizations = spotConeMosaic.compute(spotOI,'currentFlag',false);
 
 %% Take a look at the mosaic responses in the window
-gaborConeMosaic.window;
+spotConeMosaic.window;
 
 % And must make a plot in a figure
-vcNewGraphWin; [~,h] = gaborConeMosaic.plot('cone mosaic');
+vcNewGraphWin; [~,h] = spotConeMosaic.plot('cone mosaic');
 rwObject.write('colorGaborMosaic',h,paramsList,theProgram,'Type','figure');
-vcNewGraphWin; [~,h] = gaborConeMosaic.plot('mean absorptions');
+vcNewGraphWin; [~,h] = spotConeMosaic.plot('mean absorptions');
 rwObject.write('colorGaborIsomerizations',h,paramsList,theProgram,'Type','figure');
 
 %% Get min max for LMS cone isomerizations
@@ -314,7 +317,7 @@ rwObject.write('colorGaborIsomerizations',h,paramsList,theProgram,'Type','figure
 % possible that the oi/coneMosaic object leads to slightly different cone
 % fundamentals, or that the monitor quantization leads to the small
 % deviatoins.  Someone energetic could track this down.
-conePattern = gaborConeMosaic.pattern;
+conePattern = spotConeMosaic.pattern;
 for ii = 2:4
     maxIsomerizations(ii) = max(isomerizations(conePattern==ii));
     minIsomerizations(ii) = min(isomerizations(conePattern==ii));

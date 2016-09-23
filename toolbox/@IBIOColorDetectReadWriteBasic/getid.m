@@ -60,6 +60,8 @@ if (~isempty(p.Results.paramsList))
                 thisParentDir = obj.paramsToPsychoEllipsoidDirName(thisParams);
             case 'Gabor'
                 thisParentDir = obj.paramsToGaborDirName(thisParams);
+            case 'Spot'
+                thisParentDir = obj.paramsToSpotDirName(thisParams);
             case 'Temporal'
                 thisParentDir = obj.paramsToTemporalDirName(thisParams);
             case 'Optics'

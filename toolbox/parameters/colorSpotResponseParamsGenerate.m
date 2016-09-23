@@ -35,11 +35,11 @@ params.temporalParams = temporalParamsGenerate(varargin{:});
 
 %% Properties related to computing the retinal image
 params.oiParams = oiParamsGenerate(varargin{:});
-params.oiParams.fieldOfViewDegs = params.gaborParams.fieldOfViewDegs;
+params.oiParams.fieldOfViewDegs = params.spotParams.backgroundSizeDegs;
 
 %% Properties of the cone mosaic
 params.mosaicParams = mosaicParamsGenerate(varargin{:});
-params.mosaicParams.fieldOfViewDegs = params.gaborParams.fieldOfViewDegs;
+params.mosaicParams.fieldOfViewDegs = params.spotParams.backgroundSizeDegs;
 params.mosaicParams.timeStepInSeconds = params.temporalParams.stimulusSamplingIntervalInSeconds;
 params.mosaicParams.integrationTimeInSeconds = params.mosaicParams.timeStepInSeconds;
 
