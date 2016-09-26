@@ -498,8 +498,9 @@ switch (method)
         % Lowpass filter and vectorize
         % A filter param is in learningStructure.lowpassParam (space constant in microns)
         % The mosaic object is in learningStructure.theMosaic
-        % See t_coneMosaicLowPassResponses() for a demonstration of lowPassMosaicResponse
-        [filteredResponse, Lmap, Mmap, Smap] = learningStructure.theMosaic.lowPassMosaicResponse(response, learningStructure.lowpassParam * [1 1 1]);
+        % See t_coneMosaicLowPassResponses() for a detailed demonstration
+        % of the lowPassMosaicResponse() coneMosaic method
+        [filteredResponse, ~, ~, ~] = learningStructure.theMosaic.lowPassMosaicResponse(response, learningStructure.lowpassParam * [1 1 1]);
         
         % Vectorize from image format
         filteredResponse = filteredResponse(:);
