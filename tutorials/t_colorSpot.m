@@ -75,76 +75,71 @@ plot(xDegs,spotPattern(rParams.spotParams.row/2,:));
 xlabel('Position (degrees)','FontSize',rParams.plotParams.labelFontSize);
 ylabel('Image Intensity','FontSize',rParams.plotParams.labelFontSize);
 
-%% Convert Gabor to a color modulation specified in cone space
-%
-% First, make it a modulation around the mean
-% This is easy, because imageHarmoic generates the Gabor as a modulation
-% around 1.  Subtracting 1 gives us a modulation in the range -1 to 1.
-spotModulation = spotPattern-1;
+%% Take the measurements made for the AO stimulus and compute the radiance we need
 
-% Convert Gabor to a color modulation specified in cone space
-%
-% This requires a little colorimetry.
-%
-% Need to load cone fundamentals and XYZ color matching functions to do the
-% needed conversions.  Here we'll use the Stockman-Sharpe 2-degree
-% fundamentals and the proposed CIE corresponding XYZ functions.  These
-% have the advantage that they are an exact linear transformation away from
-% one another.
-%
-% This is the PTB style data, which I (DHB) know like the back of my hand.  There
-% is an Isetbio way to do this too, I'm sure.  The factor of 683 in front
-% of the XYZ color matching functions brings the luminance units into cd/m2
-% when radiance is in Watts/[m2-sr-nm], which are fairly standard units.
-whichXYZ = 'xyzCIEPhys2';
-theXYZ = load(['T_' whichXYZ]);
-eval(['T_XYZ = 683*theXYZ.T_' whichXYZ ';']);
-eval(['S_XYZ = theXYZ.S_' whichXYZ ';']);
-clear theXYZ
+% Wavelengths sampling
+startWl = 550;
+endWl = 830;
+deltaWl = 10;
+wls = (startWl:deltaWl:endWl)';
+nWls = length(wls);
 
-whichCones = 'cones_ss2';
-theCones = load(['T_' whichCones]);
-eval(['T_cones = 683*theCones.T_' whichCones ';']);
-eval(['S_cones = theCones.S_' whichCones ';']);
-clear theCones
-
-% Tranform background into cone excitation coordinates. I always like to
-% check with a little plot that I didn't bungle the regression.
-M_XYZToCones = ((T_XYZ')\(T_cones'))';
-T_conesCheck = M_XYZToCones*T_XYZ;
-if (max(abs(T_conesCheck(:)-T_cones(:))) > 1e-3)
-    error('Cone fundamentals are not a close linear transform of XYZ CMFs');
+% Background
+nBgWavelenths = length(rParams.spotParams.backgroundWavelengthsNm);
+bgRadiance = zeros(nWls,1);
+for ww = 1:nBgWavelenths
+    theWavelength = rParams.spotParams.backgroundWavelengthsNm(ww);
+    theCornealIrradiance = rParams.spotParams.backgroundCornealIrradianceUW(ww);
+    
+    % UW is really UW/cm2 because the area of the detector is 1 cm2.  This
+    % conversion gives us radiance in UW/[sr-cm2] for the narrowband laser
+    % light.
+    bgRadianceRaw(ww) = CornIrradianceAndDegrees2ToRadiance(theCornealIrradiance,rParams.spotParams.backgroundSizeDegs^2);  
+    
+    % Convert to Watts/[sr-m2-nm] where we take the wavelength sampling
+    % into account so that in the end the calculation of cone responses
+    % will come out correctly.
+    index = find(theWavelength == wls);
+    if (length(index) ~= 1)
+        error('Something funky about wls');
+    end
+    bgRadiance(index) = (10^4)*(10^-6)*bgRadianceRaw(ww)/deltaWl; 
 end
 
-% Convert background to cone excitations
-backgroundConeExcitations = M_XYZToCones*xyYToXYZ(rParams.backgroundParams.backgroundxyY);
 
-% Convert test cone contrasts to cone excitations
-testConeExcitations = (rParams.colorModulationParams.coneContrasts .* backgroundConeExcitations);
+% Spot
 
-% Make the color spot in LMS excitations
-spotConeExcitationsBg = ones(rParams.spotParams.row,rParams.spotParams.col);
-spotConeExcitations = zeros(rParams.spotParams.row,rParams.spotParams.col,3);
-for ii = 1:3
-    spotConeExcitations(:,:,ii) = spotConeExcitationsBg*backgroundConeExcitations(ii) + ...
-        spotModulation*testConeExcitations(ii);
+%% Produce the isetbio scene
+
+% Create an empty scene
+scene = sceneCreate('empty');
+scene = sceneSet(scene,'wavelength',wls);
+
+%% Make an image with the background spectral radiance at all locations
+radianceEnergy = zeros(rParams.spotParams.row,rParams.spotParams.col,nWls);
+for i = 1:rParams.spotParams.row
+    for j = 1:rParams.spotParams.col
+        radianceEnergy(i,j,:) = bgRadiance;
+    end
 end
 
-% Check that contrasts come out right.  They will be a little
-% less than nominal values becuase it's a Gabor, not a sinusoid.
-coneTypes = {'L' 'M' 'S'};
-for ii = 1:3
-    spotPlane = spotConeExcitations(:,:,ii);
-    theMax = max(spotPlane(:)); theMin = min(spotPlane(:));
-    actualConeContrasts(ii) = (theMax-theMin)/(theMax+theMin);
-    fprintf('Actual absolute %s cone contrast: %0.3f, nominal: % 0.3f\n', coneTypes{ii}, ...
-        actualConeContrasts(ii),abs(rParams.colorModulationParams.coneContrasts(ii)));
-end
+%% Convert to quantal units
+radiancePhotons = Energy2Quanta(wls,radianceEnergy);
 
-%% And take a look at the LMS image.  This is just a straight rendering of
-% LMS and so won't look the right colors, but we can check that it is
-% qualitatively correct.
-vcNewGraphWin; imagesc(spotConeExcitations/max(spotConeExcitations(:))); axis square
+%% Put in the photons and the illuminant
+%
+% This now makes the implied surface reflectance 
+% what we started with, as we check a little further
+% down.
+scene = sceneSet(scene,'photons',radiancePhotons);
+%scene = sceneSet(scene,'illuminant energy',theIlluminant);
+
+%% Look at the image contained in our beautiful scene 
+%
+% This will replace what was in the first figure we had
+% and should look the same.
+sceneShowImage(scene);
+
 
 %% Produce an isetbio scene
 %
