@@ -1,12 +1,12 @@
-function dirname = paramsToGaborDirName(obj,spotParams)
-% dirname = paramsToGaborDirName(obj,spotParams)
+function dirname = paramsToSpotSpatialDirName(obj,spotParams)
+% dirname = paramsToSpotSpatialDirName(obj,spotParams)
 % 
 % Generate a directory names that captures the basic mixture of monochromatic
 % light spot stimulus parameters.
 %
 % Currently does not include background wavelength parameters
 
-if (~strcmp(spotParams.type,'Spot'))
+if (~strcmp(spotParams.type,'SpotSpatial'))
     error('Incorrect parameter type passed');
 end
 

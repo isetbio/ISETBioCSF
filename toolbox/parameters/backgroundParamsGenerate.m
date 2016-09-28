@@ -10,8 +10,13 @@ function backgroundParams = backgroundParamsGenerate(varargin)
 %               Adjust display to make it work.
 
 backgroundParams.type = 'Background';
+backgroundParams.backgroundType = 'Gabor';
 
-backgroundParams.backgroundxyY = [0.27 0.30 49.8]';
-backgroundParams.monitorFile = 'CRT-MODEL';
-backgroundParams.leakageLum = 1.0;
-backgroundParams.lumFactor = 1;
+switch (backgroundParams.backgroundType)
+    case 'Gabor'
+        backgroundParams.backgroundxyY = [0.27 0.30 49.8]';
+        backgroundParams.monitorFile = 'CRT-MODEL';
+        backgroundParams.leakageLum = 1.0;
+        backgroundParams.lumFactor = 1;
+    case 'Spot'
+end

@@ -1,5 +1,5 @@
-function spotParams = spotSpatialParamsGenerate(varargin)
-% spotParams = spotSpatialParamsGenerate(varargin)
+function spotParams = spotParamsGenerate(varargin)
+% spotParams = spotParamsGenerate(varargin)
 %
 % Define parameters of a spatial gabor pattern.  Actually, the spatial
 % window can also be a half-cosine.

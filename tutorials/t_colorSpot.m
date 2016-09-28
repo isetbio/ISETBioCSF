@@ -106,7 +106,6 @@ for ww = 1:nBgWavelengths
     bgRadiance(index) = (10^4)*(10^-6)*bgRadianceRaw(ww)/deltaWl; 
 end
 
-
 % Spot
 nSpotWavelengths = length(rParams.spotParams.spotWavelengthNm);
 spotRadiance = zeros(nWls,1);
@@ -117,8 +116,6 @@ for ww = 1:nSpotWavelengths
     % UW is really UW/cm2 because the area of the detector is 1 cm2.  This
     % conversion gives us radiance in UW/[sr-cm2] for the narrowband laser
     % light.
-    % I think we still want to use the background field size here but will
-    % confirm with DHB -- wst, 9-28-2016
     spotRadianceRaw(ww) = CornIrradianceAndDegrees2ToRadiance(theCornealIrradiance,rParams.spotParams.backgroundSizeDegs^2);  
     
     % Convert to Watts/[sr-m2-nm] where we take the wavelength sampling
@@ -136,6 +133,7 @@ end
 % Create an empty scene to use for the background
 sceneBg = sceneCreate('empty');
 sceneBg = sceneSet(sceneBg,'wavelength',wls);
+sceneBg = sceneSet(sceneBg, 'h fov', rParams.spotParams.backgroundSizeDegs);
 
 %% Make an image with the background spectral radiance at all locations
 radianceEnergyBg = zeros(rParams.spotParams.row,rParams.spotParams.col,nWls);
@@ -164,8 +162,9 @@ sceneShowImage(sceneBg);
 
 %% Repeat the previous sections for the spot representation
 % Creat an empty scene to use for the spot
-sceneSpot = sceneCreate('empty');
-sceneSpot = sceneSet(sceneSpot,'wavelength',wls);
+spotScene = sceneCreate('empty');
+spotScene = sceneSet(spotScene,'wavelength',wls);
+spotScene = sceneSet(spotScene, 'h fov', rParams.spotParams.backgroundSizeDegs);
 
 %% Make an image with the background + spot spectral radiance at all locations
 radianceEnergySpot = zeros(rParams.spotParams.row,rParams.spotParams.col,nWls);
@@ -187,99 +186,15 @@ radiancePhotonsSpot = Energy2Quanta(wls,radianceEnergySpot);
 % This now makes the implied surface reflectance 
 % what we started with, as we check a little further
 % down.
-sceneSpot = sceneSet(sceneSpot,'photons',radiancePhotonsSpot);
+spotScene = sceneSet(spotScene,'photons',radiancePhotonsSpot);
 %scene = sceneSet(scene,'illuminant energy',theIlluminant);
 
 %% Look at the image contained in our beautiful scene 
 %
 % This will replace what was in the first figure we had
 % and should look the same.
-sceneShowImage(sceneSpot);
-
-%% Produce an isetbio scene
-%
-% This should represent a monitor image that produces the desired LMS
-% excitations.
-
-% We need a display.  We'll just use the description of a CRT that we have
-% handy.  In doing so, we are assuming that the differences between CRT's
-% used in different threshold experiments do not have a substantial effect
-% on the thresholds.  There will be a little effect because differences in
-% channel spectra will lead to differences in the retinal image because of
-% chromatic aberration, but given the general similarity of monitor channel
-% spectra we expect these differences to be small.  We could check this by
-% doing the calculations with different monitor descriptions.
-display = displayCreate(rParams.backgroundParams.monitorFile);
-display = displaySet(display,'viewingdistance', rParams.spotParams.viewingDistance);
-
-% Get display channel spectra.  The S vector displayChannelS is PTB format
-% for specifying wavelength sampling: [startWl deltaWl nWlSamples],
-displayChannelWavelengths = displayGet(display,'wave');
-displayChannelS = WlsToS(displayChannelWavelengths);
-displayChannelSpectra = displayGet(display,'spd');
-
-% Spline XYZ and cones to same wavelength sampling as display
-T_conesForDisplay = SplineCmf(S_cones,T_cones,displayChannelWavelengths);
-T_XYZForDisplay = SplineCmf(S_XYZ,T_XYZ,displayChannelWavelengths);
-
-% Find the matrix that converts between linear channel weights (called
-% "primary" in PTB lingo) and LMS excitations, and its inverse.  Multiplication by
-% the deltaWl is to handle fact that in isetbio radiance is specified in
-% Watts/[m2-sr-nm].
-%
-% Also get matrices for going in and out of XYZ, and compute display max
-% luminance as a sanity check.
-M_PrimaryToConeExcitations = T_conesForDisplay*displayChannelSpectra*displayChannelS(2);
-M_ConeExcitationsToPrimary = inv(M_PrimaryToConeExcitations);
-
-M_PrimaryToXYZ = T_XYZForDisplay*displayChannelSpectra*displayChannelS(2);
-M_XYZToPrimary = inv(M_PrimaryToXYZ);
-displayMaxXYZ = M_PrimaryToXYZ*[1 1 1]';
-fprintf('Max luminace of the display is %0.1f cd/m2\n',displayMaxXYZ(2));
-
-% Convert the spotConeExcitations image to RGB
-[spotConeExcitationsCalFormat,m,n] = ImageToCalFormat(spotConeExcitations);
-spotPrimaryCalFormat = M_ConeExcitationsToPrimary*spotConeExcitationsCalFormat;
-spotPrimary = CalFormatToImage(spotPrimaryCalFormat,m,n);
-
-% Check that the image is within the monitor gamut.  If the spot
-% represents an actual stimulus produced with an actual monitor, things
-% should be OK if both are represented properly in this routine.
-maxPrimary = max(spotPrimaryCalFormat(:));
-minPrimary = min(spotPrimaryCalFormat(:));
-fprintf('Maximum linear RGB (primary) value is %0.2f, minimum %0.2f\n',maxPrimary,minPrimary);
-if (maxPrimary > 1 || minPrimary < 0)
-    error('RGB primary image is out of gamut.  You need to do something about this.');
-end
-
-% Gamma correct the primary values, so we can pop them into an isetbio
-% scene in some straightforward manner.
-nLevels = size(displayGet(display,'gamma'),1);
-spotRGB = round(ieLUTLinear(spotPrimary,displayGet(display,'inverse gamma')));
-
-% Make a plot of the gamma correction functions.  These should look
-% compressive, the inverse of the monitor gamma function.  In the display
-% file CRT-MODEL that we are using, the gamma was given as a power function
-% with an exponent of 2, just to model something typical.
-vcNewGraphWin; hold on
-set(gca,'FontSize',10);
-theColors = ['r' 'g' 'b'];
-for ii = 1:3
-    tempPrimary = spotPrimary(:,:,ii);
-    tempRGB = spotRGB(:,:,ii);
-    plot(tempPrimary(:),tempRGB(:),['o' theColors(ii)],'MarkerFaceColor',theColors(ii));
-end
-xlim([0 1]);
-ylim([0 nLevels]);
-axis('square');
-xlabel('Linear channel value','FontSize',rParams.plotParams.labelFontSize);
-ylabel('Gamma corrected DAC settings','FontSize',rParams.plotParams.labelFontSize);
-title('Gamma correction','FontSize',rParams.plotParams.titleFontSize);
-
-% Finally, make the actual isetbio scene
-% This combines the image we build and the display properties.
-spotScene = sceneFromFile(spotRGB,'rgb',[],display);
-spotScene = sceneSet(spotScene, 'h fov', rParams.spotParams.backgroundSizeDegs);
+figure;
+sceneShowImage(spotScene);
 
 % Look at the scene image.  It is plausible for an L-M grating.  Remember that we
 % are looking at the stimuli on a monitor different from the display file
@@ -368,6 +283,7 @@ rwObject.write('colorGaborIsomerizations',h,paramsList,theProgram,'Type','figure
 % fundamentals, or that the monitor quantization leads to the small
 % deviatoins.  Someone energetic could track this down.
 conePattern = spotConeMosaic.pattern;
+coneTypes = {'L' 'M' 'S'};
 for ii = 2:4
     maxIsomerizations(ii) = max(isomerizations(conePattern==ii));
     minIsomerizations(ii) = min(isomerizations(conePattern==ii));
