@@ -85,9 +85,9 @@ wls = (startWl:deltaWl:endWl)';
 nWls = length(wls);
 
 % Background
-nBgWavelenths = length(rParams.spotParams.backgroundWavelengthsNm);
+nBgWavelengths = length(rParams.spotParams.backgroundWavelengthsNm);
 bgRadiance = zeros(nWls,1);
-for ww = 1:nBgWavelenths
+for ww = 1:nBgWavelengths
     theWavelength = rParams.spotParams.backgroundWavelengthsNm(ww);
     theCornealIrradiance = rParams.spotParams.backgroundCornealIrradianceUW(ww);
     
@@ -108,38 +108,93 @@ end
 
 
 % Spot
+nSpotWavelengths = length(rParams.spotParams.spotWavelengthNm);
+spotRadiance = zeros(nWls,1);
+for ww = 1:nSpotWavelengths
+    theWavelength = rParams.spotParams.spotWavelengthNm(ww);
+    theCornealIrradiance = rParams.spotParams.spotCornealIrradianceUW(ww);
+    
+    % UW is really UW/cm2 because the area of the detector is 1 cm2.  This
+    % conversion gives us radiance in UW/[sr-cm2] for the narrowband laser
+    % light.
+    % I think we still want to use the background field size here but will
+    % confirm with DHB -- wst, 9-28-2016
+    spotRadianceRaw(ww) = CornIrradianceAndDegrees2ToRadiance(theCornealIrradiance,rParams.spotParams.backgroundSizeDegs^2);  
+    
+    % Convert to Watts/[sr-m2-nm] where we take the wavelength sampling
+    % into account so that in the end the calculation of cone responses
+    % will come out correctly.
+    index = find(theWavelength == wls);
+    if (length(index) ~= 1)
+        error('Something funky about wls');
+    end
+    spotRadiance(index) = (10^4)*(10^-6)*spotRadianceRaw(ww)/deltaWl; 
+end
 
 %% Produce the isetbio scene
 
-% Create an empty scene
-scene = sceneCreate('empty');
-scene = sceneSet(scene,'wavelength',wls);
+% Create an empty scene to use for the background
+sceneBg = sceneCreate('empty');
+sceneBg = sceneSet(sceneBg,'wavelength',wls);
 
 %% Make an image with the background spectral radiance at all locations
-radianceEnergy = zeros(rParams.spotParams.row,rParams.spotParams.col,nWls);
+radianceEnergyBg = zeros(rParams.spotParams.row,rParams.spotParams.col,nWls);
 for i = 1:rParams.spotParams.row
     for j = 1:rParams.spotParams.col
-        radianceEnergy(i,j,:) = bgRadiance;
+        radianceEnergyBg(i,j,:) = bgRadiance;
     end
 end
 
 %% Convert to quantal units
-radiancePhotons = Energy2Quanta(wls,radianceEnergy);
+radiancePhotonsBg = Energy2Quanta(wls,radianceEnergyBg);
 
 %% Put in the photons and the illuminant
 %
 % This now makes the implied surface reflectance 
 % what we started with, as we check a little further
 % down.
-scene = sceneSet(scene,'photons',radiancePhotons);
+sceneBg = sceneSet(sceneBg,'photons',radiancePhotonsBg);
 %scene = sceneSet(scene,'illuminant energy',theIlluminant);
 
 %% Look at the image contained in our beautiful scene 
 %
 % This will replace what was in the first figure we had
 % and should look the same.
-sceneShowImage(scene);
+sceneShowImage(sceneBg);
 
+%% Repeat the previous sections for the spot representation
+% Creat an empty scene to use for the spot
+sceneSpot = sceneCreate('empty');
+sceneSpot = sceneSet(sceneSpot,'wavelength',wls);
+
+%% Make an image with the background + spot spectral radiance at all locations
+radianceEnergySpot = zeros(rParams.spotParams.row,rParams.spotParams.col,nWls);
+for i = 1:rParams.spotParams.row
+    for j = 1:rParams.spotParams.col
+        if spotPattern(i,j)== 0; % Background pixels are flagged "0"
+            radianceEnergySpot(i,j,:) = bgRadiance;
+        elseif spotPattern(i,j) == 1; % Stimulus pixels are flagged "1"
+            radianceEnergySpot(i,j,:) = bgRadiance+spotRadiance;
+        end
+    end
+end
+
+%% Convert to quantal units
+radiancePhotonsSpot = Energy2Quanta(wls,radianceEnergySpot);
+
+%% Put in the photons and the illuminant
+%
+% This now makes the implied surface reflectance 
+% what we started with, as we check a little further
+% down.
+sceneSpot = sceneSet(sceneSpot,'photons',radiancePhotonsSpot);
+%scene = sceneSet(scene,'illuminant energy',theIlluminant);
+
+%% Look at the image contained in our beautiful scene 
+%
+% This will replace what was in the first figure we had
+% and should look the same.
+sceneShowImage(sceneSpot);
 
 %% Produce an isetbio scene
 %
