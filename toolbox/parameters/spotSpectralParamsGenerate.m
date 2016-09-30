@@ -26,7 +26,8 @@ spotParams.spotCornealIrradianceUW = 20;
 
 % Background parameters
 spotParams.backgroundSizeDegs = 2;
-
+spotParams.backgroundWavelengthsNm = [830 790 680];
+spotParams.backgroundCornealIrradianceUW = [20 10 1];
 
 % Pixel resolution of scene image
 spotParams.row = 128;

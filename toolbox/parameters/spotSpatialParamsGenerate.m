@@ -1,34 +1,35 @@
-function spotParams = spotParamsGenerate(varargin)
+function spotSpatialParams = spotParamsGenerate(varargin)
 % spotParams = spotParamsGenerate(varargin)
 %
-% Define parameters of a spatial gabor pattern.  Actually, the spatial
-% window can also be a half-cosine.
+% Define parameters of a simple circular spot on a background.
+% Area outside of background is assumed to be black.
 %
 %   fieldOfViewDegs - Field of view in degrees, horizontal direction.
-%   cyclesPerDegree - Grating cycles per degree.
-%   gaussianFWHMDegs - Full width at half max of spatial Gaussian window.
-%                      For half-cosine, this is one half the full width.
-%   row - Row dimension of scene on monitor
-%   col - Col dimension of scene on monitor
-%   ang - Angle of grating, in radians
-%   ph  - Phase of grating, in radians relative to image center
-%   viewingDistance - Viewing distance of observer from monitor in meters.
+%   spotSizeDegs - Diameter of the spot, in degrees.
+%   backgroundSizeDegs - Linear size of the background square, in degrees.
+%   imageSizeDegs - Linear size of the image, in degrees
+%   row - Row dimension of image in pixels.
+%   col - Col dimension of image in pixels
+%
+% Row and coloum dimensions should be equal.
 
-spotParams.type = 'SpotSpatial';
+spotSpatialParams.type = 'SpotSpatial';
 
 % Whole field of view
-spotParams.viewingDistance = 0.75;
+spotSpatialParams.viewingDistance = 0.75;
 
 % The spot
-spotParams.spotSizeDegs = 1;
-spotParams.spotWavelengthNm = 680;
-spotParams.spotCornealIrradianceUW = 20;
+spotSpatialParams.spotSizeDegs = 1;
 
 % Background parameters
-spotParams.backgroundSizeDegs = 2;
-spotParams.backgroundWavelengthsNm = [830 790 680];
-spotParams.backgroundCornealIrradianceUW = [20 10 1];
+spotSpatialParams.backgroundSizeDegs = 2;
+
+% Image size 
+spotSpatialParams.imageSizeDegs
 
 % Pixel resolution of scene image
-spotParams.row = 128;
-spotParams.col = 128;
+spotSpatialParams.row = 128;
+spotSpatialParams.col = 128;
+if (spotSpatialParams.row ~= spotSpatialParams.col)
+    error('Image should be square');
+end
