@@ -66,6 +66,8 @@ if (~isempty(p.Results.paramsList))
                 thisParentDir = obj.paramsToOiDirName(thisParams);
             case 'Mosaic'
                 thisParentDir = obj.paramsToMosaicDirName(thisParams);
+            case 'SpotSpatial'
+                theParentDir = obj.paramsToSpotSpatialDirName(thisParams);
             otherwise
                 error('Unkown parent parameters type');
         end

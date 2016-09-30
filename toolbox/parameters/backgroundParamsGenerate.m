@@ -22,7 +22,7 @@ function backgroundParams = backgroundParamsGenerate(varargin)
 
 % Parse input
 p = inputParser;
-p.addParameter('backgroundType','monitor',@isstring);
+p.addParameter('backgroundType','monitor',@ischar);
 p.parse(varargin{:});
 
 backgroundParams.type = 'Background';

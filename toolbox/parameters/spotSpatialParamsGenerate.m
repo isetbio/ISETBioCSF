@@ -25,7 +25,7 @@ spotSpatialParams.spotSizeDegs = 1;
 spotSpatialParams.backgroundSizeDegs = 2;
 
 % Image size 
-spotSpatialParams.imageSizeDegs
+spotSpatialParams.imageSizeDegs = 3;
 
 % Pixel resolution of scene image
 spotSpatialParams.row = 128;

@@ -22,7 +22,7 @@ function colorModulationParams = colorModulationParamsGenerate(varargin)
 
 % Parse input
 p = inputParser;
-p.addParameter('modulationType','monitor',@isstring);
+p.addParameter('modulationType','monitor',@ischar);
 p.parse(varargin{:});
 
 colorModulationParams.type = 'ColorModulation';
