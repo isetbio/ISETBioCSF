@@ -6,11 +6,15 @@ function backgroundParams = backgroundParamsGenerate(varargin)
 % Key/value pairs
 %   'backgroundType' - String (default 'monitor') Type of background
 %     'monitor' - Specify properties of a background on a monitor
-%     'AO' - Specify parameters of adaptive optics rig bacgkround
+%     'AO' - Specify parameters of adaptive optics rig background
 %
-% If type is 'monitor', these are the parameters:
+% If backgroundType is 'monitor', these are the parameters:
+%   backgroundxYY - Colorimetric specification of background, in CIE xyY (cd/m2)
+%   monitorFile - Isetbio display description of monitor on which grating is shown.
+%   leakageLum - Luminance when monitor input is zero.
+%   lumFactor - Multiply background luminance by this factor.
 %
-% If type is 'AO', these are the parameters
+% If backgroundType is 'AO', these are the parameters
 %   backgroundWavelengthsNm - Vector of wavelengths of light superimposed
 %     in the background.
 %   backgroundCornealIrradianceUW - Vector of corneal irradiance for each

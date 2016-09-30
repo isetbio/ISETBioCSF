@@ -1,7 +1,7 @@
-function spotSpatialParams = spotParamsGenerate(varargin)
-% spotParams = spotParamsGenerate(varargin)
+function spotSpatialParams = spotSpatialParamsGenerate(varargin)
+% spotSpatialParams = spotSpatialParamsGenerate(varargin)
 %
-% Define parameters of a simple circular spot on a background.
+% Define spatial parameters of a simple circular spot on a background.
 % Area outside of background is assumed to be black.
 %
 %   fieldOfViewDegs - Field of view in degrees, horizontal direction.

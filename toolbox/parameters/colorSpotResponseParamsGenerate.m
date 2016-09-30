@@ -22,13 +22,13 @@ function params = colorSpotResponseParamsGenerate(varargin)
 params.type = 'SpotResponseGeneration';
  
 %% Define Gabor spatial parameters
-params.spotParams = spotParamsGenerate(varargin{:});
+params.spotSpatialParams = spotSpatialParamsGenerate(varargin{:});
 
 %% Define background/CRT params
-params.backgroundParams = backgroundParamsGenerate(varargin{:});
+params.backgroundParams = backgroundParamsGenerate('backgroundType','AO',varargin{:});
 
 %% Define color modulation parameters
-params.colorModulationParams = colorModulationParamsGenerate(varargin{:});
+params.colorModulationParams = colorModulationParamsGenerate('modulationType','AO',varargin{:});
 
 %% Parameters related to temporal properties of stimulus and response
 params.temporalParams = temporalParamsGenerate(varargin{:});
