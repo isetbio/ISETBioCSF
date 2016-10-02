@@ -16,7 +16,7 @@ function spatialParams = spatialParamsGenerate(varargin)
 %   windowType - What type of spatial window
 %     'Gaussian' - Gaussian window, this is a real Gabor
 %     'halfcos' - Half-cosine window instead.
-%   fieldOfViewDegs - Field of view in degrees, horizontal direction.
+%   fieldOfViewDegs - Field of view in degrees, linear horizontal dimension.
 %   cyclesPerDegree - Grating cycles per degree.
 %   gaussianFWHMDegs - Full width at half max of spatial Gaussian window.
 %                      For half-cosine, this is one half the full width.
@@ -30,7 +30,7 @@ function spatialParams = spatialParamsGenerate(varargin)
 %   fieldOfViewDegs - Field of view in degrees, horizontal direction.
 %   spotSizeDegs - Diameter of the spot, in degrees.
 %   backgroundSizeDegs - Linear size of the background square, in degrees.
-%   imageSizeDegs - Linear size of the image, in degrees
+%   fieldOfViewDegs - Linear size of the full image, in degrees
 %   row - Row dimension of image in pixels.
 %   col - Col dimension of image in pixels
 %     Row and coloum dimensions should be equal.
@@ -47,7 +47,7 @@ spatialParams.spatialType = p.Results.spatialType;
 
 switch (spatialParams.spatialType)
     case 'Gabor'
-        spatialParams.windowType = p.Results.WindowType;
+        spatialParams.windowType = p.Results.windowType;
         spatialParams.fieldOfViewDegs = 4;
         spatialParams.cyclesPerDegree = 2;
         spatialParams.gaussianFWHMDegs = 1.5;
@@ -57,10 +57,9 @@ switch (spatialParams.spatialType)
         spatialParams.ph = 0;
         spatialParams.viewingDistance = 0.75;
     case 'spot'
-        spatialParams.type = 'SpotSpatial';
         spatialParams.spotSizeDegs = 1;
         spatialParams.backgroundSizeDegs = 2;
-        spatialParams.imageSizeDegs = 3;
+        spatialParams.fieldOfViewDegs = 3;
         spatialParams.row = 128;
         spatialParams.col = 128;
         if (spatialParams.row ~= spatialParams.col)

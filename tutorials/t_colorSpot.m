@@ -11,11 +11,11 @@ function validationData = t_colorSpot(rParams)
 %
 % If parameters structure is not passed, the routine will use the defaults
 % provided by
-%   colorSpotResponseParamsGenerate
+%   responseParamsGenerate('spatialType','spot','backgroundType','AO','modulationType','AO')
 % That function and its subfunctions also documents what the relavant parameters are.
 %
 % The code illustrated here is encapsulated into function
-%   colorGaborSceneCreate.
+%   colorSceneCreate.
 %
 % The returned validation structure allows this routine to be called from a
 % validation script driven by the UnitTest toolbox.
@@ -40,7 +40,7 @@ rng(1);
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
 % parameters used by a number of tutorials and functions in this project.
 if (nargin < 1 | isempty(rParams))
-    rParams = colorSpotResponseParamsGenerate;
+    rParams = responseParamsGenerate('spatialType','spot','backgroundType','AO','modulationType','AO');
 end
 
 % Override some defaults to make more sense for our spot application
@@ -49,10 +49,10 @@ rParams.oiParams.pupilDiamMm = 7;
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-paramsList = {rParams.spotSpatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
+paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
 
 %% Make the grayscale spot pattern and have a look
-spotPattern = drawSpot(rParams.spotSpatialParams);
+spotPattern = drawSpot(rParams.spatialParams);
 
 % We can see it as a grayscale image
 vcNewGraphWin; imagesc(spotPattern); colormap(gray); axis square
@@ -66,8 +66,8 @@ vcNewGraphWin; imagesc(spotPattern); colormap(gray); axis square
 % and make sure they come out right as well.
 figure; hold on;
 set(gca,'FontSize',rParams.plotParams.axisFontSize);
-xDegs = linspace(-rParams.spotSpatialParams.backgroundSizeDegs/2,rParams.spotSpatialParams.backgroundSizeDegs/2,rParams.spotSpatialParams.col);
-plot(xDegs,spotPattern(rParams.spotSpatialParams.row/2,:));
+xDegs = linspace(-rParams.spatialParams.backgroundSizeDegs/2,rParams.spatialParams.backgroundSizeDegs/2,rParams.spatialParams.col);
+plot(xDegs,spotPattern(rParams.spatialParams.row/2,:));
 xlabel('Position (degrees)','FontSize',rParams.plotParams.labelFontSize);
 ylabel('Image Intensity','FontSize',rParams.plotParams.labelFontSize);
 
@@ -90,7 +90,7 @@ for ww = 1:nBgWavelengths
     % UW is really UW/cm2 because the area of the detector is 1 cm2.  This
     % conversion gives us radiance in UW/[sr-cm2] for the narrowband laser
     % light.
-    bgRadianceRaw(ww) = CornIrradianceAndDegrees2ToRadiance(theCornealIrradiance,rParams.spotSpatialParams.backgroundSizeDegs^2);  
+    bgRadianceRaw(ww) = CornIrradianceAndDegrees2ToRadiance(theCornealIrradiance,rParams.spatialParams.backgroundSizeDegs^2);  
     
     % Convert to Watts/[sr-m2-nm] where we take the wavelength sampling
     % into account so that in the end the calculation of cone responses
@@ -112,7 +112,7 @@ for ww = 1:nSpotWavelengths
     % UW is really UW/cm2 because the area of the detector is 1 cm2.  This
     % conversion gives us radiance in UW/[sr-cm2] for the narrowband laser
     % light.
-    spotRadianceRaw(ww) = CornIrradianceAndDegrees2ToRadiance(theCornealIrradiance,rParams.spotSpatialParams.backgroundSizeDegs^2);  
+    spotRadianceRaw(ww) = CornIrradianceAndDegrees2ToRadiance(theCornealIrradiance,rParams.spatialParams.backgroundSizeDegs^2);  
     
     % Convert to Watts/[sr-m2-nm] where we take the wavelength sampling
     % into account so that in the end the calculation of cone responses
@@ -129,12 +129,12 @@ end
 % Create an empty scene to use for the background
 sceneBg = sceneCreate('empty');
 sceneBg = sceneSet(sceneBg,'wavelength',wls);
-sceneBg = sceneSet(sceneBg, 'h fov', rParams.spotSpatialParams.backgroundSizeDegs);
+sceneBg = sceneSet(sceneBg, 'h fov', rParams.spatialParams.backgroundSizeDegs);
 
 %% Make an image with the background spectral radiance at all locations
-radianceEnergyBg = zeros(rParams.spotSpatialParams.row,rParams.spotSpatialParams.col,nWls);
-for i = 1:rParams.spotSpatialParams.row
-    for j = 1:rParams.spotSpatialParams.col
+radianceEnergyBg = zeros(rParams.spatialParams.row,rParams.spatialParams.col,nWls);
+for i = 1:rParams.spatialParams.row
+    for j = 1:rParams.spatialParams.col
         radianceEnergyBg(i,j,:) = bgRadiance;
     end
 end
@@ -160,12 +160,12 @@ sceneShowImage(sceneBg);
 % Creat an empty scene to use for the spot
 spotScene = sceneCreate('empty');
 spotScene = sceneSet(spotScene,'wavelength',wls);
-spotScene = sceneSet(spotScene, 'h fov', rParams.spotSpatialParams.backgroundSizeDegs);
+spotScene = sceneSet(spotScene, 'h fov', rParams.spatialParams.backgroundSizeDegs);
 
 %% Make an image with the background + spot spectral radiance at all locations
-radianceEnergySpot = zeros(rParams.spotSpatialParams.row,rParams.spotSpatialParams.col,nWls);
-for i = 1:rParams.spotSpatialParams.row
-    for j = 1:rParams.spotSpatialParams.col
+radianceEnergySpot = zeros(rParams.spatialParams.row,rParams.spatialParams.col,nWls);
+for i = 1:rParams.spatialParams.row
+    for j = 1:rParams.spatialParams.col
         if spotPattern(i,j)== 0; % Background pixels are flagged "0"
             radianceEnergySpot(i,j,:) = bgRadiance;
         elseif spotPattern(i,j) == 1; % Stimulus pixels are flagged "1"
@@ -201,7 +201,7 @@ rwObject.write('colorSpotScene',h,paramsList,theProgram,'Type','figure');
 
 %% Create oi
 spotOI = oiCreate('wvf human');
-spotOI = oiSet(spotOI,'h fov',rParams.spotSpatialParams.backgroundSizeDegs);
+spotOI = oiSet(spotOI,'h fov',rParams.spatialParams.backgroundSizeDegs);
 
 % Set pupil diameter
 focalLength = oiGet(spotOI,'distance');
@@ -251,7 +251,7 @@ vcAddAndSelectObject(spotOINoLens); oiWindow;
 % Create a coneMosaic object here. When setting the fov, if only one value
 % is specified, it will automatically make a square cone mosaic.
 spotConeMosaic = coneMosaic;
-spotConeMosaic.setSizeToFOV(rParams.spotSpatialParams.backgroundSizeDegs);
+spotConeMosaic.setSizeToFOV(rParams.spatialParams.backgroundSizeDegs);
 
 % There is also an option of whether the cone current should be calculated
 % in the compute function. If set to true, it uses an os object inside the

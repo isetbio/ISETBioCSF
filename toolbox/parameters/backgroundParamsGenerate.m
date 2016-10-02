@@ -21,7 +21,7 @@ function backgroundParams = backgroundParamsGenerate(varargin)
 %     of the monochromatic lights in the background, units of UW/cm2.
 
 % Parse input
-p = inputParser;
+p = inputParser; p.KeepUnmatched = true;
 p.addParameter('backgroundType','monitor',@ischar);
 p.parse(varargin{:});
 
