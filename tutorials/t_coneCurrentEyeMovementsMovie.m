@@ -1,5 +1,5 @@
-function validationData = t_colorGaborConeCurrentEyeMovementsMovie(rParams)
-% validationData = t_coneGaborConeCurrentEyeMovementsMovie(rParams)
+function validationData = t_coneCurrentEyeMovementsMovie(rParams)
+% validationData = t_coneCurrentEyeMovementsMovie(rParams)
 %
 % Show how to generate a movie with the cone absoprtions and photocurrent
 % to a stimulus, with eye movements and optional CRT raster effects.
@@ -8,7 +8,7 @@ function validationData = t_colorGaborConeCurrentEyeMovementsMovie(rParams)
 % in the routine
 %   colorDetectResponseInstanceArrayConstruct
 % whose use is demonstrated in the tutorial
-%   t_colorGaborConeCurrentEyeMovementsResponseInstances.
+%   t_coneCurrentEyeMovementsResponseInstances.
 %
 % The returned validation structure allows this routine to be called from a
 % validation script driven by the UnitTest toolbox.
@@ -18,8 +18,8 @@ function validationData = t_colorGaborConeCurrentEyeMovementsMovie(rParams)
 %
 % See also:
 %   t_colorGabor
-%	t_colorGaborConeIsomerizationsMovie
-%   t_colorGaborConeCurrentEyeMovementsResponseInstances
+%	t_coneIsomerrizationsMovie
+%   t_coneCurrentEyeMovementsResponseInstances
 %   responseParamsGenerate
 %   colorSceneCreate 
 %   colorDetectOpticalImageConstruct

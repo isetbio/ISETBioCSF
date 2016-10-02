@@ -130,40 +130,40 @@ for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
     
     %% Compute response instances
     if (p.Results.computeResponses)
-        t_colorGaborConeCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'visualizeResponses',false);
+        t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'visualizeResponses',false);
     end
     
     %% Find performance, template max likeli
     if (p.Results.computeMLPTPerformance)
         thresholdParams.method = 'mlpt';
-        t_colorGaborDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
+        t_colorDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
     end
     
      %% Find performance\, empirical max likeli
     if (p.Results.computeMLPEPerformance)
         thresholdParams.method = 'mlpe';
-        t_colorGaborDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
+        t_colorDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
     end
     
     %% Find performance, svm
     if (p.Results.computeSVMPerformance)
         thresholdParams.method = 'svm';
         thresholdParams.PCAComponents = p.Results.nPCAComponents;
-        t_colorGaborDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
+        t_colorDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
     end
    
     %% Fit psychometric functions
     if (p.Results.fitPsychometric)
         if (p.Results.computeMLPTThresholds)
             thresholdParams.method = 'mlpt';
-            effectOfTrainingSize.mlptThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
+            effectOfTrainingSize.mlptThresholds(tt) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
                 'plotPsychometric',p.Results.plotPsychometric,'plotEllipse',false);
             close all;
         end
         
         if (p.Results.computeMLPEThresholds)      
             thresholdParams.method = 'mlpe';
-            effectOfTrainingSize.mlpeThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
+            effectOfTrainingSize.mlpeThresholds(tt) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
                 'plotPsychometric',p.Results.plotPsychometric,'plotEllipse',false);
             close all;
         end
@@ -171,7 +171,7 @@ for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
         if (p.Results.computeSVMThresholds) 
             thresholdParams.method = 'svm';
             thresholdParams.PCAComponents = p.Results.nPCAComponents;
-            effectOfTrainingSize.svmThresholds(tt) = t_plotGaborDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
+            effectOfTrainingSize.svmThresholds(tt) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
                 'plotPsychometric',p.Results.plotPsychometric,'plotEllipse',false);
             close all;
         end

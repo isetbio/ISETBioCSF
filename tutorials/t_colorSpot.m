@@ -60,10 +60,7 @@ vcNewGraphWin; imagesc(spotPattern); colormap(gray); axis square
 % And plot a slice through the center.
 %
 % This is useful for verifying that the spatial parameters produce the desired
-% result in degrees.  If you generate the Gabor for 0 cpd you can see the Gaussian
-% profile and verify that the FWHM is in fact the specified number of
-% degrees, and if you make the Gaussian window wide you can count cycles
-% and make sure they come out right as well.
+% result in degrees.
 figure; hold on;
 set(gca,'FontSize',rParams.plotParams.axisFontSize);
 xDegs = linspace(-rParams.spatialParams.backgroundSizeDegs/2,rParams.spatialParams.backgroundSizeDegs/2,rParams.spatialParams.col);

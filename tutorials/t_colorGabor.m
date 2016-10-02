@@ -25,7 +25,7 @@ function validationData = t_colorGabor(rParams)
 % specified IBIOColorDetect rwObject.
 %
 % See also:
-%	t_colorGaborConeIsomerizationsMovie
+%	t_coneIsomerrizationsMovie
 %   responseParamsGenerate
 %   colorSceneCreate 
 %

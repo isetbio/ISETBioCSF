@@ -8,9 +8,9 @@ rParams = responseParamsGenerate;
 LMplaneDirectionParams = LMPlaneInstanceParamsGenerate;
 thresholdParams = thresholdParamsGenerate;
 
-% Adapt Gabor params to match P&W 1996
+% Adapt spatial params to match P&W 1996
 displayFlattenedStruct = true;
-rParams = adaptGaborParamsBasedOnConstantCycleCondition(rParams, displayFlattenedStruct);
+rParams = adaptSpatialParamsBasedOnConstantCycleCondition(rParams, displayFlattenedStruct);
 
 % Adapt LMplane params to match P&W 1996
 LMplaneDirectionParams = adaptLMPLaneDirectionParamsBasedOnFig3A(LMplaneDirectionParams, displayFlattenedStruct);       
@@ -40,7 +40,7 @@ function LMplaneDirectionParams = adaptLMPLaneDirectionParamsBasedOnFig3A(LMplan
     end
 end
 
-function rParams = adaptGaborParamsBasedOnConstantCycleCondition(rParams, displayFlattenedStruct)
+function rParams = adaptSpatialParamsBasedOnConstantCycleCondition(rParams, displayFlattenedStruct)
     % Adapt to the Figure 3 params of P&W 1996 params
     % - constant cycle condition:  Gaussian spatial window decreases as spatial frequency increases
     % - SF = 2 cpd, 

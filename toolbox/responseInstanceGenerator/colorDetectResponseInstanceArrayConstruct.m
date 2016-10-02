@@ -4,7 +4,7 @@ function responseInstanceArray = colorDetectResponseInstanceArrayConstruct(stimu
 % Construct an array of nTrials response instances given the
 % simulationTimeStep, spatialParams, temporalParams, theOI, theMosaic
 %
-% See t_t_colorGaborConeCurrentEyeMovementsMovie for the idea, and
+% See t_t_coneCurrentEyeMovementsMovie for the idea, and
 % colorDetectResponseInstanceFastArrayConstruct for a version that uses some
 % tricks to run faster.
 %
@@ -13,8 +13,8 @@ function responseInstanceArray = colorDetectResponseInstanceArrayConstruct(stimu
 % Inform user regarding the computation progress
 progressHandle = generateProgressBar('Starting computation ...');
 
-% Save base gabor params
-theBaseGaborParams = spatialParams;
+% Save base spatial params
+theBaseSpatialParams = spatialParams;
 
 % Create stimulus temporal window
 [stimulusSampleTimes, gaussianTemporalWindow, rasterModulation] = gaussianTemporalWindowCreate(temporalParams);

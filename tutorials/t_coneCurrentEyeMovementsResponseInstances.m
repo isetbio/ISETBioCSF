@@ -1,5 +1,5 @@
-function validationData = t_colorGaborConeCurrentEyeMovementsResponseInstances(varargin)
-% validationData = t_colorGaborConeCurrentEyeMovementsResponseInstances(varargin)
+function validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
+% validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
 %
 % Show how to generate a number of response instances for a given stimulus
 % condition.  The default parameters are set up to generate just a single frame
@@ -10,14 +10,14 @@ function validationData = t_colorGaborConeCurrentEyeMovementsResponseInstances(v
 %   colorDetectResponseInstanceFastArrayConstruct
 % which does most of the hard work.  The basic principles underlying colorDetectResponseInstanceFastArrayConstruct
 % itself is demonstrated in tutorial
-%   t_colorGaborConeCurrentEyeMovementsMovie
+%   t_coneCurrentEyeMovementsMovie
 % but the actual routine has some tricks to make it go fast.  There is also
 % are routine
 %   colorDetectResponseInstanceArrayConstruct
 % that works more like the tutorial but is slower.
 %
 % This tutorial saves its output in a .mat file, which cah then read in by
-%   t_colorGaborDetectFindPerformance
+%   t_colorDetectFindPerformance
 % which shows how to use the data to find the thresholds.
 %
 % The returned validation structure allows this routine to be called from a
@@ -28,8 +28,8 @@ function validationData = t_colorGaborConeCurrentEyeMovementsResponseInstances(v
 %
 % See also:
 %   t_colorGaborRespnseGenerationParams
-%   t_colorGaborConeCurrentEyeMovementsMovie
-%	t_colorGaborDetectFindPerformance
+%   t_coneCurrentEyeMovementsMovie
+%	t_colorDetectFindPerformance
 %   colorDetectResponseInstanceArrayConstruct
 %   colorDetectResponseInstanceFastArrayConstruct
 %

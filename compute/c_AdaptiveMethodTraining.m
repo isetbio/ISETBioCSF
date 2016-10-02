@@ -130,12 +130,12 @@ nTrainingSamples = round(p.Results.trainingFraction*p.Results.nResponseSamples);
 
 %% Compute response instances, which serve as training samples
 if (p.Results.computeResponses)
-    t_colorGaborConeCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'visualizeResponses',false);
+    t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'visualizeResponses',false);
 end
 
 %% Read/write object
 rwObject = IBIOColorDetectReadWriteBasic;
-readProgram = 't_colorGaborConeCurrentEyeMovementsResponseInstances';
+readProgram = 't_coneCurrentEyeMovementsResponseInstances';
 writeProgram = mfilename;
 
 %% Read training samples for the no stimulus condition

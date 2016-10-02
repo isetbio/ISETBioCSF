@@ -1,16 +1,13 @@
-function validationData = t_colorGaborConeIsomerizationsMovie(rParams)
-% validationData = t_colorGaborConeIsomerizationsMovie(rParams)
+function validationData = t_coneIsomerrizationsMovie(rParams)
+% validationData = t_coneIsomerrizationsMovie(rParams)
 %
 % Illustrates the basic steps required to calculate cone isomerizations
 % for a Gaussian windowed temporal color Gabor modulation.
 %
-% If parameters structure is passed, the routine will use the defaults
+% If parameters structure is not passed, the routine will use the defaults
 % provided by
 %   responseParamsGenerate
 % That functions subfunctions also documents what the relavant parameters are.
-
-% The scene sequence generation logic illustrated here is encapsulated in a
-% fancier manner in colorGaborSceneSequenceCreate.
 %
 % The returned validation structure allows this routine to be called from a
 % validation script driven by the UnitTest toolbox.
@@ -19,10 +16,9 @@ function validationData = t_colorGaborConeIsomerizationsMovie(rParams)
 % specified IBIOColorDetect rwObject.
 %
 % See also:  
-%	t_coneGaborConeCurrentEyeMovementsMovie
+%	t_coneCurrentEyeMovementsMovie
 %   responseParamsGenerate
 %   colorSceneCreate
-%   colorGaborSceneSequenceCreate
 %
 % 7/8/16  dhb  Wrote it.
 

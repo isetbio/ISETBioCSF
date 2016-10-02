@@ -120,20 +120,20 @@ for ll = 1:length(p.Results.luminances)
         
         %% Compute response instances
         if (p.Results.computeResponses)
-            t_colorGaborConeCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'visualizeResponses',false);
+            t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'visualizeResponses',false);
         end
         
         %% Find performance, template max likeli
         thresholdParams.method = 'mlpt';
         if (p.Results.findPerformance)
-            t_colorGaborDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
+            t_colorDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
         end
         
         %% Fit psychometric functions
         if (p.Results.fitPsychometric)
             banksEtAlReplicate.cyclesPerDegree(ll,cc) = p.Results.cyclesPerDegree(cc);
             thresholdParams.method = 'mlpt';
-            banksEtAlReplicate.mlptThresholds(ll,cc) = t_plotGaborDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
+            banksEtAlReplicate.mlptThresholds(ll,cc) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
                 'plotPsychometric',p.Results.plotPsychometric,'plotEllipse',false);
             close all;
         end
@@ -142,7 +142,7 @@ end
 
 %% Write out the data
 %
-% Set key Gabor params to 0 to define a summary directory name
+% Set key spatial params to 0 to define a summary directory name
 if (p.Results.fitPsychometric)
     fprintf('Writing performance data ... ');
     nameParams = rParams.spatialParams;
