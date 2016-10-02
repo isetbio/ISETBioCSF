@@ -1,8 +1,8 @@
-function [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
-% [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
+function [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
+% [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, simulationTimeStep, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
 % 
 % Construct an array of nTrials response instances given the
-% simulationTimeStep, gaborParams, temporalParams, theOI, theMosaic.
+% simulationTimeStep, spatialParams, temporalParams, theOI, theMosaic.
 %
 % The noise free isomerizations response is returned for the first frame
 % in the temporal sequence.  It is for debugging and probably not of
@@ -49,7 +49,7 @@ for stimFrameIndex = 1:stimulusFramesNum
     % end
     
     % Create a scene for the current frame
-    theScene = colorGaborSceneCreate(gaborParams,backgroundParams,colorModulationParams);
+    theScene = colorGaborSceneCreate(spatialParams,backgroundParams,colorModulationParams);
     
     % Compute the optical image for the current frame
     theOI = oiCompute(theOI, theScene);

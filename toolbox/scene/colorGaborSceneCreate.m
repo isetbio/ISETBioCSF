@@ -1,11 +1,11 @@
-function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(gaborParams,backgroundParams,colorModulationParams,gamutCheckFlag)
-% [gaborScene,gamutScaleFactor] = colorGaborSceneCreate(gaborParams,backgroundParams,colorModulationParams,[gamutCheckFlag])
+function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(spatialParams,backgroundParams,colorModulationParams,gamutCheckFlag)
+% [gaborScene,gamutScaleFactor] = colorGaborSceneCreate(spatialParams,backgroundParams,colorModulationParams,[gamutCheckFlag])
 % 
 % Creates a colored Gabor IBIO scene. The scene will produce a specified
 % set of L, M, and S contrasts on a specific monitor.
 %
 % Inputs:
-%   gaborParams     -  A struct that specifies the parameters for the Gabor to generate.
+%   spatialParams     -  A struct that specifies the parameters for the Gabor to generate.
 %                      See t_colorGaborResponseGenerationParams
 %   backgroundParams - A struct that specifies background and display parameters 
 %   colorModulationParams -  A struct that specifies the parameters for the color modulation.
@@ -38,12 +38,12 @@ backgroundxyY(3) = backgroundxyY(3)*backgroundParams.lumFactor;
 %% Define parameters of a gabor pattern
 %
 % Extract this field since it's used throughout the function.
-fieldOfViewDegs = gaborParams.fieldOfViewDegs;
+fieldOfViewDegs = spatialParams.fieldOfViewDegs;
 
 %% Make the gabor pattern and have a look
 %
 % We can see it as a grayscale image
-gaborPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(gaborParams,colorModulationParams));
+gaborPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams,colorModulationParams));
 
 %% Convert the Gabor pattern to a modulation around the mean
 %
@@ -92,8 +92,8 @@ backgroundConeExcitations = M_XYZToCones*xyYToXYZ(backgroundxyY);
 testConeExcitationsDir = (coneContrast .* backgroundConeExcitations);
 
 % Make the color gabor in LMS excitations
-gaborConeExcitationsBg = ones(gaborParams.row,gaborParams.col);
-gaborConeExcitations = zeros(gaborParams.row,gaborParams.col,3);
+gaborConeExcitationsBg = ones(spatialParams.row,spatialParams.col);
+gaborConeExcitations = zeros(spatialParams.row,spatialParams.col,3);
 for ii = 1:3
     gaborConeExcitations(:,:,ii) = gaborConeExcitationsBg*backgroundConeExcitations(ii) + ...
         gaborModulation*testConeExcitationsDir(ii);
@@ -116,7 +116,7 @@ display = displayCreate(backgroundParams.monitorFile);
 display = displaySet(display,'spd',backgroundParams.lumFactor*displayGet(display,'spd'));
 
 % Set the viewing distance
-display = displaySet(display,'viewingdistance', gaborParams.viewingDistance);
+display = displaySet(display,'viewingdistance', spatialParams.viewingDistance);
 
 % Get display channel spectra.  The S vector displayChannelS is PTB format
 % for specifying wavelength sampling: [startWl deltaWl nWlSamples],

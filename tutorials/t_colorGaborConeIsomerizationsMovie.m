@@ -43,7 +43,7 @@ end
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
+paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
 
 %% Plot the Gaussian temporal window, just to make sure it looks right
 gaussianFigure = figure; clf;
@@ -61,7 +61,7 @@ for ii = 1:rParams.temporalParams.nSampleTimes
     rParamsTemp = rParams;
     rParamsTemp.colorModulationParams.contrast = rParams.colorModulationParams.contrast*rParams.temporalParams.gaussianTemporalWindow(ii);
     fprintf('Computing scene %d of %d, time %0.3f, windowVal %0.3f\n',ii,rParamsTemp.temporalParams.nSampleTimes,rParamsTemp.temporalParams.sampleTimes(ii),rParamsTemp.temporalParams.gaussianTemporalWindow(ii));
-    gaborScene{ii} = colorGaborSceneCreate(rParamsTemp.gaborParams,rParams.backgroundParams,rParamsTemp.colorModulationParams);
+    gaborScene{ii} = colorGaborSceneCreate(rParamsTemp.spatialParams,rParams.backgroundParams,rParamsTemp.colorModulationParams);
 end
 clearvars('rParamsTemp');
 
@@ -87,7 +87,7 @@ visualizeSceneOrOpticalImageSequence(rwObject,paramsList,theProgram, ...
     'optical image', theOI, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborOpticalImageMovie');
 
 %% Create the coneMosaic object we'll use to compute cone respones
-rParams.mosaicParams.fieldOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
+rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
 theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
 for ii = 1:rParams.temporalParams.nSampleTimes      
     % Compute mosaic response for each stimulus frame

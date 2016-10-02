@@ -57,16 +57,16 @@ rParams = colorGaborResponseParamsGenerate;
 % The stimulus was half-cosine windowed to contain 7.5 cycles.  We set
 % our half-cosine window to match that and also make the field of view
 % just a tad bigger.
-rParams.gaborParams.windowType = 'halfcos';
-rParams.gaborParams.cyclesPerDegree = p.Results.cyclesPerDegree;
-rParams.gaborParams.gaussianFWHMDegs = 3.75*(1/rParams.gaborParams.cyclesPerDegree);
-rParams.gaborParams.fieldOfViewDegs = 2.1*rParams.gaborParams.gaussianFWHMDegs;
+rParams.spatialParams.windowType = 'halfcos';
+rParams.spatialParams.cyclesPerDegree = p.Results.cyclesPerDegree;
+rParams.spatialParams.gaussianFWHMDegs = 3.75*(1/rParams.spatialParams.cyclesPerDegree);
+rParams.spatialParams.fieldOfViewDegs = 2.1*rParams.spatialParams.gaussianFWHMDegs;
 
 % Keep mosaic size in lock step with stimulus.  This is also forced before
 % the mosaic is created, but we need it here so that filenames are
 % consistent.  It is possible that we should not have a separate mosaic
 % size field, and just alwasy force it to match the scene.
-rParams.mosaicParams.fieldOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
+rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
 
 % Set background luminance
 %
@@ -183,7 +183,7 @@ end
 % Set trialsNum to 0 to define a summary directory name
 fprintf('Writing performance data ... ');
 testDirectionParams.trialsNum = 0;
-paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
 rwObject = IBIOColorDetectReadWriteBasic;
 writeProgram = mfilename;
 rwObject.write('effectOfTrainingSize',effectOfTrainingSize,paramsList,writeProgram);
@@ -196,7 +196,7 @@ fprintf('done\n');
 if (p.Results.plotTrainingSize)
     fprintf('Reading performance data ...');
     testDirectionParams.trialsNum = 0;
-    paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;
     effectOfTrainingSize = rwObject.read('effectOfTrainingSize',paramsList,writeProgram);

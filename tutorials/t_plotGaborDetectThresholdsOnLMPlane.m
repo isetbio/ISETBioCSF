@@ -101,7 +101,7 @@ writeProgram = mfilename;
 %% Read performance data
 %
 % We need this both for computing and plotting, so we just do it
-paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, LMPlaneInstanceParams, thresholdParams};
+paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, LMPlaneInstanceParams, thresholdParams};
 performanceData = rwObject.read('performanceData',paramsList,readProgram);
 
 % If everything is working right, these check parameter structures will

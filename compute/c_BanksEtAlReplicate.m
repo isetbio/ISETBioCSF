@@ -46,12 +46,12 @@ for ll = 1:length(p.Results.luminances)
         % The stimulus was half-cosine windowed to contain 7.5 cycles.  We set
         % our half-cosine window to match that and also make the field of view
         % just a tad bigger.
-        rParams.gaborParams.windowType = 'halfcos';
-        rParams.gaborParams.cyclesPerDegree = p.Results.cyclesPerDegree(cc);
-        rParams.gaborParams.gaussianFWHMDegs = 3.75*(1/rParams.gaborParams.cyclesPerDegree);
-        rParams.gaborParams.fieldOfViewDegs = 2.1*rParams.gaborParams.gaussianFWHMDegs;
-        rParams.gaborParams.row = p.Results.imagePixels;
-        rParams.gaborParams.col = p.Results.imagePixels;
+        rParams.spatialParams.windowType = 'halfcos';
+        rParams.spatialParams.cyclesPerDegree = p.Results.cyclesPerDegree(cc);
+        rParams.spatialParams.gaussianFWHMDegs = 3.75*(1/rParams.spatialParams.cyclesPerDegree);
+        rParams.spatialParams.fieldOfViewDegs = 2.1*rParams.spatialParams.gaussianFWHMDegs;
+        rParams.spatialParams.row = p.Results.imagePixels;
+        rParams.spatialParams.col = p.Results.imagePixels;
         
         % Blur
         rParams.oiParams.blur = p.Results.blur;
@@ -60,7 +60,7 @@ for ll = 1:length(p.Results.luminances)
         % the mosaic is created, but we need it here so that filenames are
         % consistent.  It is possible that we should not have a separate mosaic
         % size field, and just alwasy force it to match the scene.
-        rParams.mosaicParams.fieldOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
+        rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
         
         % Set background luminance
         %
@@ -145,7 +145,7 @@ end
 % Set key Gabor params to 0 to define a summary directory name
 if (p.Results.fitPsychometric)
     fprintf('Writing performance data ... ');
-    nameParams = rParams.gaborParams;
+    nameParams = rParams.spatialParams;
     nameParams.cyclesPerDegree = 0;
     nameParams.fieldOfViewDegs = 0;
     nameParams.gaussianFWHMDegs = 0;
@@ -162,7 +162,7 @@ end
 % across the conditions, which we could explicitly check for here.
 if (p.Results.plotCSF)
     fprintf('Reading performance data ...');
-    nameParams = rParams.gaborParams;
+    nameParams = rParams.spatialParams;
     nameParams.cyclesPerDegree = 0;
     nameParams.fieldOfViewDegs = 0;
     nameParams.gaussianFWHMDegs = 0;

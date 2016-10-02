@@ -114,7 +114,7 @@ if (p.Results.compute)
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = [0 0 0]';
     colorModulationParamsTemp.contrast = 0;
-    paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
     noStimData = rwObject.read('responseInstances',paramsList,readProgram);
     ancillaryData = rwObject.read('ancillaryData',paramsList,readProgram);
     
@@ -149,7 +149,7 @@ if (p.Results.compute)
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
         colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
-        paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+        paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
         stimData = rwObject.read('responseInstances',paramsList,readProgram);
         if (numel(stimData.responseInstanceArray) ~= nTrials)
             error('Inconsistent number of trials');
@@ -164,7 +164,7 @@ if (p.Results.compute)
         
         % Save classifier plot if we made one and then close the figure.
         if (p.Results.plotSvmBoundary)
-            paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp, thresholdParams};
+            paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp, thresholdParams};
             rwObject.write(sprintf('svmBoundary_PCA%d_PCA%d',plotSvmPCAAxis1,plotSvmPCAAxis2), ...
                 h,paramsList,writeProgram,'Type','figure');
             close(h);
@@ -194,7 +194,7 @@ if (p.Results.compute)
     
     %% Save classification performance data and a copy of this script
     fprintf('Writing performance data ... ');
-    paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, thresholdParams};
+    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, thresholdParams};
     rwObject.write('performanceData',performanceData,paramsList,writeProgram);
     fprintf('done\n');
     
@@ -207,7 +207,7 @@ end
 %% Plot performances obtained in each color direction as raw psychometric functions
 if (p.Results.plotPsychometric) 
     fprintf('Reading performance data ... ');
-    paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, thresholdParams};
+    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, thresholdParams};
     performanceData = rwObject.read('performanceData',paramsList,writeProgram);
     fprintf('done\n');
     
@@ -230,7 +230,7 @@ end
 %
 % Doesn't delete figures.  
 if (p.Results.delete)
-    paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, thresholdParams};
+    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, thresholdParams};
     rwObject.delete('performanceData',paramsList,writeProgram);
 end
 

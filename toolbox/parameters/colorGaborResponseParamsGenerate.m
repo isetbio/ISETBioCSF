@@ -12,7 +12,7 @@ function params = colorGaborResponseParamsGenerate(varargin)
 % various structs (e.g., field of view).
 %
 % See also:
-%   gaborParamsGenerate
+%   spatialParamsGenerate
 %   colorModulationParamsGenerate
 %   temporalParamsGenerate
 %   mosaicParamsGenerate
@@ -22,7 +22,7 @@ function params = colorGaborResponseParamsGenerate(varargin)
 params.type = 'ResponseGeneration';
  
 %% Define Gabor spatial parameters
-params.gaborParams = gaborParamsGenerate(varargin{:});
+params.spatialParams = spatialParamsGenerate(varargin{:});
 
 %% Define background/CRT params
 params.backgroundParams = backgroundParamsGenerate(varargin{:});
@@ -35,11 +35,11 @@ params.temporalParams = temporalParamsGenerate(varargin{:});
 
 %% Properties related to computing the retinal image
 params.oiParams = oiParamsGenerate(varargin{:});
-params.oiParams.fieldOfViewDegs = params.gaborParams.fieldOfViewDegs;
+params.oiParams.fieldOfViewDegs = params.spatialParams.fieldOfViewDegs;
 
 %% Properties of the cone mosaic
 params.mosaicParams = mosaicParamsGenerate(varargin{:});
-params.mosaicParams.fieldOfViewDegs = params.gaborParams.fieldOfViewDegs;
+params.mosaicParams.fieldOfViewDegs = params.spatialParams.fieldOfViewDegs;
 params.mosaicParams.timeStepInSeconds = params.temporalParams.stimulusSamplingIntervalInSeconds;
 params.mosaicParams.integrationTimeInSeconds = params.mosaicParams.timeStepInSeconds;
 

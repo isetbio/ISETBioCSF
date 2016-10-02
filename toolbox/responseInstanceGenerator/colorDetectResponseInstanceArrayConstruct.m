@@ -1,8 +1,8 @@
-function responseInstanceArray = colorDetectResponseInstanceArrayConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, temporalParams, theOI, theMosaic)
-% responseInstanceArray = colorDetectResponseInstanceArrayConstruct(stimulusLabel, nTrials, simulationTimeStep, gaborParams, temporalParams, theOI, theMosaic)
+function responseInstanceArray = colorDetectResponseInstanceArrayConstruct(stimulusLabel, nTrials, simulationTimeStep, spatialParams, temporalParams, theOI, theMosaic)
+% responseInstanceArray = colorDetectResponseInstanceArrayConstruct(stimulusLabel, nTrials, simulationTimeStep, spatialParams, temporalParams, theOI, theMosaic)
 % 
 % Construct an array of nTrials response instances given the
-% simulationTimeStep, gaborParams, temporalParams, theOI, theMosaic
+% simulationTimeStep, spatialParams, temporalParams, theOI, theMosaic
 %
 % See t_t_colorGaborConeCurrentEyeMovementsMovie for the idea, and
 % colorDetectResponseInstanceFastArrayConstruct for a version that uses some
@@ -14,7 +14,7 @@ function responseInstanceArray = colorDetectResponseInstanceArrayConstruct(stimu
 progressHandle = generateProgressBar('Starting computation ...');
 
 % Save base gabor params
-theBaseGaborParams = gaborParams;
+theBaseGaborParams = spatialParams;
 
 % Create stimulus temporal window
 [stimulusSampleTimes, gaussianTemporalWindow, rasterModulation] = gaussianTemporalWindowCreate(temporalParams);
@@ -33,11 +33,11 @@ for stimFrameIndex = 1:stimulusFramesNum
     % Apply CRT raster modulation
     if (~isempty(rasterModulation))
         colorModulationParams.contrast = theBasecolorModulationParams.contrast * gaussianTemporalWindow(stimFrameIndex) * rasterModulation(stimFrameIndex);
-        colorModulationParams.backgroundxyY(3) = gaborParams.leakageLum + theBasecolorModulationParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
+        colorModulationParams.backgroundxyY(3) = spatialParams.leakageLum + theBasecolorModulationParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
     end
     
     % Create a scene for the current frame
-    theScene = colorGaborSceneCreate(gaborParams);
+    theScene = colorGaborSceneCreate(spatialParams);
     
     % Compute the optical image
     theFrameOI{stimFrameIndex} = oiCompute(theOI, theScene);

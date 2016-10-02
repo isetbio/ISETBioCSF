@@ -1,5 +1,5 @@
-function gaborParams = gaborParamsGenerate(varargin)
-% gaborParams = gaborParamsGenerate(varargin)
+function spatialParams = spatialParamsGenerate(varargin)
+% spatialParams = spatialParamsGenerate(varargin)
 %
 % Define parameters of a spatial gabor pattern.  Actually, the spatial
 % window can also be a half-cosine.
@@ -17,14 +17,14 @@ function gaborParams = gaborParamsGenerate(varargin)
 %   ph  - Phase of grating, in radians relative to image center
 %   viewingDistance - Viewing distance of observer from monitor in meters.
 
-gaborParams.type = 'Gabor';
+spatialParams.type = 'Gabor';
 
-gaborParams.windowType = 'Gaussian';
-gaborParams.fieldOfViewDegs = 4;
-gaborParams.cyclesPerDegree = 2;
-gaborParams.gaussianFWHMDegs = 1.5;
-gaborParams.row = 128;
-gaborParams.col = 128;
-gaborParams.ang = 0;
-gaborParams.ph = 0;
-gaborParams.viewingDistance = 0.75;
+spatialParams.windowType = 'Gaussian';
+spatialParams.fieldOfViewDegs = 4;
+spatialParams.cyclesPerDegree = 2;
+spatialParams.gaussianFWHMDegs = 1.5;
+spatialParams.row = 128;
+spatialParams.col = 128;
+spatialParams.ang = 0;
+spatialParams.ph = 0;
+spatialParams.viewingDistance = 0.75;

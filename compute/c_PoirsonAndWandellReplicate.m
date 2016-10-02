@@ -1,5 +1,5 @@
 function c_PoirsonAndWandellReplicate
-% c_BanksEtAlReplicate(varargin)
+% c_PoirsonAndWandellReplicate(varargin)
 %
 % Compute color detection thresholds to replicate the Poirson & Wandell 1996
 
@@ -46,7 +46,7 @@ function rParams = adaptGaborParamsBasedOnConstantCycleCondition(rParams, displa
     % - SF = 2 cpd, 
     % - width of the Gaussian window at half height = 1.9 deg
     % viewing distance: 0.75 meters
-    rParams.gaborParams = setExistingFieldsInStruct(rParams.gaborParams, ...
+    rParams.spatialParams = setExistingFieldsInStruct(rParams.spatialParams, ...
         {    'cyclesPerDegree', 2.0; ...
             'gaussianFWHMDegs', 1.9; ...
              'fieldOfViewDegs', 5.0; ...        % In P&W 1996, in the constan cycle condition, this was 10 deg (Section 2.2, p 517)
@@ -88,13 +88,13 @@ function rParams = adaptGaborParamsBasedOnConstantCycleCondition(rParams, displa
     
     % Adapt optical image params
     rParams.oiParams = setExistingFieldsInStruct(rParams.oiParams, ...
-        {   'fieldOfViewDegs', rParams.gaborParams.fieldOfViewDegs*1.5 ...  % make it's FOV  50% larger than the stimulus
+        {   'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs*1.5 ...  % make it's FOV  50% larger than the stimulus
         });
     
     
     % Adapt mosaic params 
     rParams.mosaicParams = setExistingFieldsInStruct(rParams.mosaicParams, ...
-        {         'fieldOfViewDegs', rParams.gaborParams.fieldOfViewDegs; ...           % match stimulus size
+        {         'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs; ...           % match stimulus size
                 'timeStepInSeconds', rParams.temporalParams.simulationTimeStepSecs; ...
          'integrationTimeInSeconds', rParams.temporalParams.simulationTimeStepSecs; ...
                'isomerizationNoise', true; ...

@@ -54,13 +54,13 @@ end
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-theParamsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
+theParamsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
 
 %% Create the optics
 theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
 
 %% Create the cone mosaic
-rParams.mosaicParams.fieldOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
+rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
 theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
 
 %% Create stimulus temporal window
@@ -94,7 +94,7 @@ for stimFrameIndex = 1:stimulusFramesNum
     end
     
     % Create a scene for the current frame
-    theScene = colorGaborSceneCreate(rParams.gaborParams,rParams.backgroundParams,colorModulationParamsTemp);
+    theScene = colorGaborSceneCreate(rParams.spatialParams,rParams.backgroundParams,colorModulationParamsTemp);
     
     % Compute the optical image
     theOI = oiCompute(theOI, theScene);
