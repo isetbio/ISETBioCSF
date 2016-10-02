@@ -6,7 +6,7 @@ function validationData = t_colorGaborConeIsomerizationsMovie(rParams)
 %
 % If parameters structure is passed, the routine will use the defaults
 % provided by
-%   colorGaborResponseParamsGenerate
+%   responseParamsGenerate
 % That functions subfunctions also documents what the relavant parameters are.
 
 % The scene sequence generation logic illustrated here is encapsulated in a
@@ -20,7 +20,7 @@ function validationData = t_colorGaborConeIsomerizationsMovie(rParams)
 %
 % See also:  
 %	t_coneGaborConeCurrentEyeMovementsMovie
-%   colorGaborResponseParamsGenerate
+%   responseParamsGenerate
 %   colorGaborSceneCreate
 %   colorGaborSceneSequenceCreate
 %
@@ -37,7 +37,7 @@ rng(1);
 
 %% Get the parameters we need
 if (nargin < 1 | isempty(rParams))
-    rParams = colorGaborResponseParamsGenerate;
+    rParams = responseParamsGenerate;
 end
 
 %% Set up the rw object for this program

@@ -35,7 +35,7 @@ p.parse(varargin{:});
 %% Get the parameters we need
 %
 % Start with default
-rParams = colorGaborResponseParamsGenerate;
+rParams = responseParamsGenerate;
 
 %% Loop over spatial frequency
 for ll = 1:length(p.Results.luminances)

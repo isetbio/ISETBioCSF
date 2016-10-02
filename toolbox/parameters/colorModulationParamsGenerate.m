@@ -2,9 +2,9 @@ function colorModulationParams = colorModulationParamsGenerate(varargin)
 % colorModulationParams = colorModulationParamsGenerate(varargin)
 %
 % Generate parameters for a color modulation.
-
+%
 % Key/value pairs
-%   'modulationType' - String (default 'monitor') Type of modulation
+%   'modulationType' - String (default 'monitor') Type of color modulation
 %     'monitor' - Specify properties of a modulatoin on a monitor
 %     'AO' - Specify parameters of adaptive optics rig stimulus
 %
@@ -21,7 +21,7 @@ function colorModulationParams = colorModulationParamsGenerate(varargin)
 %     spot at full power, less any light leakage, units of UW/cm2.
 
 % Parse input
-p = inputParser;
+p = inputParser; p.KeepUnmatched = true;
 p.addParameter('modulationType','monitor',@ischar);
 p.parse(varargin{:});
 

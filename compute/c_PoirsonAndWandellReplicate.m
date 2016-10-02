@@ -4,7 +4,7 @@ function c_PoirsonAndWandellReplicate
 % Compute color detection thresholds to replicate the Poirson & Wandell 1996
 
 % Start with default parameters
-rParams = colorGaborResponseParamsGenerate;
+rParams = responseParamsGenerate;
 LMplaneDirectionParams = LMPlaneInstanceParamsGenerate;
 thresholdParams = thresholdParamsGenerate;
 

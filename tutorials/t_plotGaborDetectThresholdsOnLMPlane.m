@@ -62,7 +62,7 @@ validationData = [];
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
 % parameters used by a number of tutorials and functions in this project.
 if (isempty(rParams))
-    rParams = colorGaborResponseParamsGenerate;
+    rParams = responseParamsGenerate;
     
     % Override some defult parameters
     %

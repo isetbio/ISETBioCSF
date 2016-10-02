@@ -58,16 +58,14 @@ if (~isempty(p.Results.paramsList))
                 thisParentDir = obj.paramsToThresholdDirName(thisParams);
             case 'psychoEllipsoid'
                 thisParentDir = obj.paramsToPsychoEllipsoidDirName(thisParams);
-            case 'Gabor'
-                thisParentDir = obj.paramsToGaborDirName(thisParams);
+            case 'Spatial'
+                thisParentDir = obj.paramsToSpatialDirName(thisParams);
             case 'Temporal'
                 thisParentDir = obj.paramsToTemporalDirName(thisParams);
             case 'Optics'
                 thisParentDir = obj.paramsToOiDirName(thisParams);
             case 'Mosaic'
                 thisParentDir = obj.paramsToMosaicDirName(thisParams);
-            case 'SpotSpatial'
-                thisParentDir = obj.paramsToSpotSpatialDirName(thisParams);
             otherwise
                 error('Unkown parent parameters type');
         end

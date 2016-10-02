@@ -1,5 +1,5 @@
-function params = colorGaborResponseParamsGenerate(varargin)
-% params = colorGaborResponseParamsGenerate(varargin)
+function params = responseParamsGenerate(varargin)
+% params = responseParamsGenerate(varargin)
 %
 % This specifies the parameter structure for generating
 % responses in the form expected by other programs in this project.  It
@@ -10,6 +10,21 @@ function params = colorGaborResponseParamsGenerate(varargin)
 % own function.  See the help functions for the individual routines for what
 % fields get set.  This routine, however, coordinates some fields across the
 % various structs (e.g., field of view).
+%
+% Key/value pairs
+%   'spatialType' - String (default 'Gabor') Type of spatial pattern
+%     'Gabor' - Gabor pattern
+%     'spot' - Spatial spot on background
+%   'windowType' - String (default 'Gaussian') Type of spatial pattern.
+%     May not have an effect for all spatial types.
+%     'Gaussian' - Gaussian spatial window (true Gabor)
+%     'halfcos' - Half-cosine spatial window
+%   'backgroundType' - String (default 'monitor') Type of background
+%     'monitor' - Specify properties of a background on a monitor
+%     'AO' - Specify parameters of adaptive optics rig background
+%   'modulationType' - String (default 'monitor') Type of color modulation
+%     'monitor' - Specify properties of a modulatoin on a monitor
+%     'AO' - Specify parameters of adaptive optics rig stimulus
 %
 % See also:
 %   spatialParamsGenerate

@@ -20,7 +20,7 @@ function validationData = t_colorGaborConeCurrentEyeMovementsMovie(rParams)
 %   t_colorGaborScene
 %	t_colorGaborConeIsomerizationsMovie
 %   t_colorGaborConeCurrentEyeMovementsResponseInstances
-%   colorGaborResponseParamsGenerate
+%   responseParamsGenerate
 %   colorGaborSceneCreate 
 %   colorDetectOpticalImageConstruct
 %   colorDetectConeMosaicConstruct
@@ -43,7 +43,7 @@ rng(1);
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
 % parameters used by a number of tutorials and functions in this project.
 if (nargin < 1 | isempty(rParams))
-    rParams = colorGaborResponseParamsGenerate;
+    rParams = responseParamsGenerate;
     
     % Override some of the defaults
     rParams.mosaicParams.isomerizationNoise = true;

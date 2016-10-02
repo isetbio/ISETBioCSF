@@ -12,7 +12,7 @@ function validationData = t_colorGaborScene(rParams)
 %
 % If parameters structure is not passed, the routine will use the defaults
 % provided by
-%   colorGaborResponseParamsGenerate
+%   responseParamsGenerate
 % That function and its subfunctions also documents what the relavant parameters are.
 %
 % The code illustrated here is encapsulated into function
@@ -26,7 +26,7 @@ function validationData = t_colorGaborScene(rParams)
 %
 % See also:
 %	t_colorGaborConeIsomerizationsMovie
-%   colorGaborResponseParamsGenerate
+%   responseParamsGenerate
 %   colorGaborSceneCreate 
 %
 % 7/6/16  dhb  Wrote it.
@@ -44,7 +44,7 @@ rng(1);
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
 % parameters used by a number of tutorials and functions in this project.
 if (nargin < 1 | isempty(rParams))
-    rParams = colorGaborResponseParamsGenerate;
+    rParams = responseParamsGenerate;
 end
 
 %% Set up the rw object for this program

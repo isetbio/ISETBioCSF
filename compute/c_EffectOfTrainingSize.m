@@ -50,7 +50,7 @@ p.parse(varargin{:});
 %% Get the parameters we need
 %
 % Start with default
-rParams = colorGaborResponseParamsGenerate;
+rParams = responseParamsGenerate;
 
 % Get stimulus parameters correct
 %
