@@ -1,5 +1,5 @@
-function validationData = t_colorGaborScene(rParams)
-% validationData = t_colorGaborScene(rParams)
+function validationData = t_colorGabor(rParams)
+% validationData = t_colorGabor(rParams)
 %
 % Illustrates the basic steps required to calculate cone isomerizations
 % for a static color Gabor modulation.
@@ -16,7 +16,7 @@ function validationData = t_colorGaborScene(rParams)
 % That function and its subfunctions also documents what the relavant parameters are.
 %
 % The code illustrated here is encapsulated into function
-%   colorGaborSceneCreate.
+%   colorSceneCreate.
 %
 % The returned validation structure allows this routine to be called from a
 % validation script driven by the UnitTest toolbox.
@@ -27,7 +27,7 @@ function validationData = t_colorGaborScene(rParams)
 % See also:
 %	t_colorGaborConeIsomerizationsMovie
 %   responseParamsGenerate
-%   colorGaborSceneCreate 
+%   colorSceneCreate 
 %
 % 7/6/16  dhb  Wrote it.
 

@@ -49,7 +49,7 @@ for stimFrameIndex = 1:stimulusFramesNum
     % end
     
     % Create a scene for the current frame
-    theScene = colorGaborSceneCreate(spatialParams,backgroundParams,colorModulationParams);
+    theScene = colorSceneCreate(spatialParams,backgroundParams,colorModulationParams);
     
     % Compute the optical image for the current frame
     theOI = oiCompute(theOI, theScene);

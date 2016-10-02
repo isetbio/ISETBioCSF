@@ -17,11 +17,11 @@ function validationData = t_colorGaborConeCurrentEyeMovementsMovie(rParams)
 % specified IBIOColorDetect rwObject.
 %
 % See also:
-%   t_colorGaborScene
+%   t_colorGabor
 %	t_colorGaborConeIsomerizationsMovie
 %   t_colorGaborConeCurrentEyeMovementsResponseInstances
 %   responseParamsGenerate
-%   colorGaborSceneCreate 
+%   colorSceneCreate 
 %   colorDetectOpticalImageConstruct
 %   colorDetectConeMosaicConstruct
 %   colorDetectResponseInstanceArrayConstruct
@@ -94,7 +94,7 @@ for stimFrameIndex = 1:stimulusFramesNum
     end
     
     % Create a scene for the current frame
-    theScene = colorGaborSceneCreate(rParams.spatialParams,rParams.backgroundParams,colorModulationParamsTemp);
+    theScene = colorSceneCreate(rParams.spatialParams,rParams.backgroundParams,colorModulationParamsTemp);
     
     % Compute the optical image
     theOI = oiCompute(theOI, theScene);

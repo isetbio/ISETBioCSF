@@ -1,11 +1,11 @@
-function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(spatialParams,backgroundParams,colorModulationParams,gamutCheckFlag)
-% [gaborScene,gamutScaleFactor] = colorGaborSceneCreate(spatialParams,backgroundParams,colorModulationParams,[gamutCheckFlag])
+function [gaborScene, gamutScaleFactor] = colorSceneCreate(spatialParams,backgroundParams,colorModulationParams,gamutCheckFlag)
+% [gaborScene,gamutScaleFactor] = colorSceneCreate(spatialParams,backgroundParams,colorModulationParams,[gamutCheckFlag])
 % 
 % Creates a colored Gabor IBIO scene. The scene will produce a specified
 % set of L, M, and S contrasts on a specific monitor.
 %
 % Inputs:
-%   spatialParams     -  A struct that specifies the parameters for the Gabor to generate.
+%   spatialParams    -  A struct that specifies the parameters for the Gabor to generate.
 %                      See t_colorGaborResponseGenerationParams
 %   backgroundParams - A struct that specifies background and display parameters 
 %   colorModulationParams -  A struct that specifies the parameters for the color modulation.
@@ -16,9 +16,9 @@ function [gaborScene, gamutScaleFactor] = colorGaborSceneCreate(spatialParams,ba
 %                      case, the returned scene is empty.  When gamutCheckFlag is false
 %                      (default), the returned scale factor is 1.
 %
-% See also t_colorGaborResponseGenerationParams, t_colorGaborScene, imageHarmonic
+% See also t_colorGaborResponseGenerationParams, t_colorGabor, imageHarmonic
 %
-% 7/7/16 xd   adapted from t_colorGaborScene
+% 7/7/16 xd   adapted from t_colorGabor
 % 7/7/16 npc  added viewing distance param
 % 8/11/16 dhb add display factor adjustment
 % 9/2/16  dhb increase number of steps in inverse gamma call, to avoid

@@ -11,9 +11,9 @@ function [spotScene] = spotSceneCreate(spotSpatialParams,backgroundParams,spotSp
 %   spotSpectralParams -  A struct that specifies the spectral properties of
 %                      the spot
 %
-% See also t_colorGaborResponseGenerationParams, t_colorGaborScene, imageHarmonic
+% See also t_colorGaborResponseGenerationParams, t_colorGabor, imageHarmonic
 %
-% 7/7/16 xd   adapted from t_colorGaborScene
+% 7/7/16 xd   adapted from t_colorGabor
 % 7/7/16 npc  added viewing distance param
 % 8/11/16 dhb add display factor adjustment
 % 9/2/16  dhb increase number of steps in inverse gamma call, to avoid

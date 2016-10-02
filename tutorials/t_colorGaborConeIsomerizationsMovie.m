@@ -21,7 +21,7 @@ function validationData = t_colorGaborConeIsomerizationsMovie(rParams)
 % See also:  
 %	t_coneGaborConeCurrentEyeMovementsMovie
 %   responseParamsGenerate
-%   colorGaborSceneCreate
+%   colorSceneCreate
 %   colorGaborSceneSequenceCreate
 %
 % 7/8/16  dhb  Wrote it.
@@ -61,7 +61,7 @@ for ii = 1:rParams.temporalParams.nSampleTimes
     rParamsTemp = rParams;
     rParamsTemp.colorModulationParams.contrast = rParams.colorModulationParams.contrast*rParams.temporalParams.gaussianTemporalWindow(ii);
     fprintf('Computing scene %d of %d, time %0.3f, windowVal %0.3f\n',ii,rParamsTemp.temporalParams.nSampleTimes,rParamsTemp.temporalParams.sampleTimes(ii),rParamsTemp.temporalParams.gaussianTemporalWindow(ii));
-    gaborScene{ii} = colorGaborSceneCreate(rParamsTemp.spatialParams,rParams.backgroundParams,rParamsTemp.colorModulationParams);
+    gaborScene{ii} = colorSceneCreate(rParamsTemp.spatialParams,rParams.backgroundParams,rParamsTemp.colorModulationParams);
 end
 clearvars('rParamsTemp');
 
@@ -106,7 +106,7 @@ visualizeMosaicResponseSequence(rwObject,paramsList,theProgram, ...
 
 %% Plot cone contrasts as a function of time, as a check
 %
-% As with the contrats in t_colorGaborScene, these are very close to right,
+% As with the contrats in t_colorGabor, these are very close to right,
 % although not completely perfect.
 for ii = 1:rParams.temporalParams.nSampleTimes      
     LMSContrasts(:,ii) = mosaicUnsignedConeContrasts(gaborConeAbsorptions(:,:,ii),theMosaic);

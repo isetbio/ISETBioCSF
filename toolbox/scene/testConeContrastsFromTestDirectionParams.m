@@ -25,7 +25,7 @@ switch (testDirectionParams.type)
             colorModulationParamsTemp = rParams.colorModulationParams;
             colorModulationParamsTemp.coneContrasts = baseTestConeContrastDirs(:,angleIndex);
             colorModulationParamsTemp.contrast = 1;
-            [~,contrastScaleFactor(angleIndex)] = colorGaborSceneCreate(rParams.spatialParams,rParams.backgroundParams,colorModulationParamsTemp,true);
+            [~,contrastScaleFactor(angleIndex)] = colorSceneCreate(rParams.spatialParams,rParams.backgroundParams,colorModulationParamsTemp,true);
             testConeContrasts(:,angleIndex) = 0.98*contrastScaleFactor(angleIndex)*baseTestConeContrastDirs(:,angleIndex);
         end
 end
