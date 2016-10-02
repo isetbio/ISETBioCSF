@@ -1,5 +1,5 @@
-function validationData = t_colorGaborScene(rParams)
-% validationData = t_colorGaborScene(rParams)
+function validationData = t_colorGabor(rParams)
+% validationData = t_colorGabor(rParams)
 %
 % Illustrates the basic steps required to calculate cone isomerizations
 % for a static color Gabor modulation.
@@ -12,11 +12,11 @@ function validationData = t_colorGaborScene(rParams)
 %
 % If parameters structure is not passed, the routine will use the defaults
 % provided by
-%   colorGaborResponseParamsGenerate
+%   responseParamsGenerate
 % That function and its subfunctions also documents what the relavant parameters are.
 %
 % The code illustrated here is encapsulated into function
-%   colorGaborSceneCreate.
+%   colorSceneCreate.
 %
 % The returned validation structure allows this routine to be called from a
 % validation script driven by the UnitTest toolbox.
@@ -25,9 +25,9 @@ function validationData = t_colorGaborScene(rParams)
 % specified IBIOColorDetect rwObject.
 %
 % See also:
-%	t_colorGaborConeIsomerizationsMovie
-%   colorGaborResponseParamsGenerate
-%   colorGaborSceneCreate 
+%	t_coneIsomerrizationsMovie
+%   responseParamsGenerate
+%   colorSceneCreate 
 %
 % 7/6/16  dhb  Wrote it.
 
@@ -44,20 +44,20 @@ rng(1);
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
 % parameters used by a number of tutorials and functions in this project.
 if (nargin < 1 | isempty(rParams))
-    rParams = colorGaborResponseParamsGenerate;
+    rParams = responseParamsGenerate;
 end
 
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
+paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
 
 %% Make the grayscale gabor pattern and have a look
 %
 % The routine imageHarmonicParamsFromGaborParams massages the
-% gaborParams/colorModulationParams information into the form needed by
+% spatialParams/colorModulationParams information into the form needed by
 % isetbio's imageHarmonic function.
-gaborPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(rParams.gaborParams,rParams.colorModulationParams));
+gaborPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(rParams.spatialParams,rParams.colorModulationParams));
 
 % We can see it as a grayscale image
 vcNewGraphWin; imagesc(gaborPattern); colormap(gray); axis square
@@ -71,8 +71,8 @@ vcNewGraphWin; imagesc(gaborPattern); colormap(gray); axis square
 % and make sure they come out right as well.
 figure; hold on;
 set(gca,'FontSize',rParams.plotParams.axisFontSize);
-xDegs = linspace(-rParams.gaborParams.fieldOfViewDegs/2,rParams.gaborParams.fieldOfViewDegs/2,rParams.gaborParams.col);
-plot(xDegs,gaborPattern(rParams.gaborParams.row/2,:));
+xDegs = linspace(-rParams.spatialParams.fieldOfViewDegs/2,rParams.spatialParams.fieldOfViewDegs/2,rParams.spatialParams.col);
+plot(xDegs,gaborPattern(rParams.spatialParams.row/2,:));
 xlabel('Position (degrees)','FontSize',rParams.plotParams.labelFontSize);
 ylabel('Image Intensity','FontSize',rParams.plotParams.labelFontSize);
 
@@ -124,8 +124,8 @@ backgroundConeExcitations = M_XYZToCones*xyYToXYZ(rParams.backgroundParams.backg
 testConeExcitations = (rParams.colorModulationParams.coneContrasts .* backgroundConeExcitations);
 
 % Make the color gabor in LMS excitations
-gaborConeExcitationsBg = ones(rParams.gaborParams.row,rParams.gaborParams.col);
-gaborConeExcitations = zeros(rParams.gaborParams.row,rParams.gaborParams.col,3);
+gaborConeExcitationsBg = ones(rParams.spatialParams.row,rParams.spatialParams.col);
+gaborConeExcitations = zeros(rParams.spatialParams.row,rParams.spatialParams.col,3);
 for ii = 1:3
     gaborConeExcitations(:,:,ii) = gaborConeExcitationsBg*backgroundConeExcitations(ii) + ...
         gaborModulation*testConeExcitations(ii);
@@ -161,7 +161,7 @@ vcNewGraphWin; imagesc(gaborConeExcitations/max(gaborConeExcitations(:))); axis 
 % spectra we expect these differences to be small.  We could check this by
 % doing the calculations with different monitor descriptions.
 display = displayCreate(rParams.backgroundParams.monitorFile);
-display = displaySet(display,'viewingdistance', rParams.gaborParams.viewingDistance);
+display = displaySet(display,'viewingdistance', rParams.spatialParams.viewingDistance);
 
 % Get display channel spectra.  The S vector displayChannelS is PTB format
 % for specifying wavelength sampling: [startWl deltaWl nWlSamples],
@@ -230,7 +230,7 @@ title('Gamma correction','FontSize',rParams.plotParams.titleFontSize);
 % Finally, make the actual isetbio scene
 % This combines the image we build and the display properties.
 gaborScene = sceneFromFile(gaborRGB,'rgb',[],display);
-gaborScene = sceneSet(gaborScene, 'h fov', rParams.gaborParams.fieldOfViewDegs);
+gaborScene = sceneSet(gaborScene, 'h fov', rParams.spatialParams.fieldOfViewDegs);
 
 % Look at the scene image.  It is plausible for an L-M grating.  Remember that we
 % are looking at the stimuli on a monitor different from the display file
@@ -241,7 +241,7 @@ rwObject.write('colorGaborScene',h,paramsList,theProgram,'Type','figure');
 
 %% Create oi
 gaborOI = oiCreate('wvf human');
-gaborOI = oiSet(gaborOI,'h fov',rParams.gaborParams.fieldOfViewDegs);
+gaborOI = oiSet(gaborOI,'h fov',rParams.spatialParams.fieldOfViewDegs);
 
 % Set pupil diameter
 focalLength = oiGet(gaborOI,'distance');
@@ -291,7 +291,7 @@ vcAddAndSelectObject(gaborOINoLens); oiWindow;
 % Create a coneMosaic object here. When setting the fov, if only one value
 % is specified, it will automatically make a square cone mosaic.
 gaborConeMosaic = coneMosaic;
-gaborConeMosaic.setSizeToFOV(rParams.gaborParams.fieldOfViewDegs);
+gaborConeMosaic.setSizeToFOV(rParams.spatialParams.fieldOfViewDegs);
 
 % There is also an option of whether the cone current should be calculated
 % in the compute function. If set to true, it uses an os object inside the

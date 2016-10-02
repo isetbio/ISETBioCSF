@@ -18,7 +18,7 @@ function mosaicParams = mosaicParamsGenerate(varargin)
 % other parameters set elsewhere.
 %
 % See also
-%   colorGaborResponseParametersGenerate
+%   responseParametersGenerate
 
 mosaicParams.type = 'Mosaic';
 

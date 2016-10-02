@@ -51,23 +51,23 @@ p.parse(varargin{:});
 %% Get the parameters we need
 %
 % Start with default
-rParams = colorGaborResponseParamsGenerate;
+rParams = responseParamsGenerate;
 
 % Get stimulus parameters correct
 %
 % The stimulus was half-cosine windowed to contain 7.5 cycles.  We set
 % our half-cosine window to match that and also make the field of view
 % just a tad bigger.
-rParams.gaborParams.windowType = 'halfcos';
-rParams.gaborParams.cyclesPerDegree = p.Results.cyclesPerDegree;
-rParams.gaborParams.gaussianFWHMDegs = 3.75*(1/rParams.gaborParams.cyclesPerDegree);
-rParams.gaborParams.fieldOfViewDegs = 2.1*rParams.gaborParams.gaussianFWHMDegs;
+rParams.spatialParams.windowType = 'halfcos';
+rParams.spatialParams.cyclesPerDegree = p.Results.cyclesPerDegree;
+rParams.spatialParams.gaussianFWHMDegs = 3.75*(1/rParams.spatialParams.cyclesPerDegree);
+rParams.spatialParams.fieldOfViewDegs = 2.1*rParams.spatialParams.gaussianFWHMDegs;
 
 % Keep mosaic size in lock step with stimulus.  This is also forced before
 % the mosaic is created, but we need it here so that filenames are
 % consistent.  It is possible that we should not have a separate mosaic
 % size field, and just alwasy force it to match the scene.
-rParams.mosaicParams.fieldOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
+rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
 
 % Set background luminance
 %
@@ -130,12 +130,12 @@ nTrainingSamples = round(p.Results.trainingFraction*p.Results.nResponseSamples);
 
 %% Compute response instances, which serve as training samples
 if (p.Results.computeResponses)
-    t_colorGaborConeCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'visualizeResponses',false);
+    t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'visualizeResponses',false);
 end
 
 %% Read/write object
 rwObject = IBIOColorDetectReadWriteBasic;
-readProgram = 't_colorGaborConeCurrentEyeMovementsResponseInstances';
+readProgram = 't_coneCurrentEyeMovementsResponseInstances';
 writeProgram = mfilename;
 
 %% Read training samples for the no stimulus condition
@@ -143,7 +143,7 @@ fprintf('Reading no stimulus data ... ');
 colorModulationParamsTemp = rParams.colorModulationParams;
 colorModulationParamsTemp.coneContrasts = [0 0 0]';
 colorModulationParamsTemp.contrast = 0;
-paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
 noStimData = rwObject.read('responseInstances',paramsList,readProgram);
 ancillaryData = rwObject.read('ancillaryData',paramsList,readProgram);
 fprintf(' done\n');
@@ -161,7 +161,7 @@ for cc = 1:testDirectionParams.nContrastsPerDirection
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = testConeContrasts;
     colorModulationParamsTemp.contrast = testContrasts(cc);
-    paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
     stimData{cc} = rwObject.read('responseInstances',paramsList,readProgram);
     fprintf(' done\n');
     if (numel(stimData{cc}.responseInstanceArray) ~= testDirectionParams.trialsNum)

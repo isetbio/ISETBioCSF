@@ -1,5 +1,5 @@
-function validationData = t_colorGaborConeCurrentEyeMovementsResponseInstances(varargin)
-% validationData = t_colorGaborConeCurrentEyeMovementsResponseInstances(varargin)
+function validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
+% validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
 %
 % Show how to generate a number of response instances for a given stimulus
 % condition.  The default parameters are set up to generate just a single frame
@@ -10,14 +10,14 @@ function validationData = t_colorGaborConeCurrentEyeMovementsResponseInstances(v
 %   colorDetectResponseInstanceFastArrayConstruct
 % which does most of the hard work.  The basic principles underlying colorDetectResponseInstanceFastArrayConstruct
 % itself is demonstrated in tutorial
-%   t_colorGaborConeCurrentEyeMovementsMovie
+%   t_coneCurrentEyeMovementsMovie
 % but the actual routine has some tricks to make it go fast.  There is also
 % are routine
 %   colorDetectResponseInstanceArrayConstruct
 % that works more like the tutorial but is slower.
 %
 % This tutorial saves its output in a .mat file, which cah then read in by
-%   t_colorGaborDetectFindPerformance
+%   t_colorDetectFindPerformance
 % which shows how to use the data to find the thresholds.
 %
 % The returned validation structure allows this routine to be called from a
@@ -28,8 +28,8 @@ function validationData = t_colorGaborConeCurrentEyeMovementsResponseInstances(v
 %
 % See also:
 %   t_colorGaborRespnseGenerationParams
-%   t_colorGaborConeCurrentEyeMovementsMovie
-%	t_colorGaborDetectFindPerformance
+%   t_coneCurrentEyeMovementsMovie
+%	t_colorDetectFindPerformance
 %   colorDetectResponseInstanceArrayConstruct
 %   colorDetectResponseInstanceFastArrayConstruct
 %
@@ -85,7 +85,7 @@ validationData = [];
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
 % parameters used by a number of tutorials and functions in this project.
 if (isempty(rParams))
-    rParams = colorGaborResponseParamsGenerate;
+    rParams = responseParamsGenerate;
     
     % Override some defult parameters
     %
@@ -118,7 +118,7 @@ if (p.Results.compute)
     theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
     
     % Create the cone mosaic
-    rParams.mosaicParams.fieldOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
+    rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
     theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
     
     %% Define color direction cone contrasts as well as contrast scalars.
@@ -144,7 +144,7 @@ if (p.Results.compute)
     stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
         colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
     [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-        rParams.gaborParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
+        rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
     noStimData = struct(...
         'testContrast', colorModulationParamsTemp.contrast, ...
         'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
@@ -153,7 +153,7 @@ if (p.Results.compute)
         'noiseFreeIsomerizations',noiseFreeIsomerizations);
     
     % Write the no cone contrast data and some extra facts we need
-    paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
     rwObject.write('responseInstances',noStimData,paramsList,theProgram);
     
     % Save the other data we need for use by the classifier preprocessing subroutine
@@ -183,7 +183,7 @@ if (p.Results.compute)
         stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f',...
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
         [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-            rParams.gaborParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
+            rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
         stimData = struct(...
             'testContrast', colorModulationParamsTemp.contrast, ...
             'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
@@ -192,7 +192,7 @@ if (p.Results.compute)
             'noiseFreeIsomerizations',noiseFreeIsomerizations);
         
         % Save data for this color direction/contrast pair
-        paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+        paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
         rwObject.write('responseInstances',stimData,paramsList,theProgram);
     end
     fprintf('Finished generating responses in %2.2f minutes\n', toc/60);
@@ -219,7 +219,7 @@ if (p.Results.visualizeResponses)
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
         colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
-        paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+        paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
         stimData = rwObject.read('responseInstances',paramsList,theProgram);   
     end   
 end
@@ -267,7 +267,7 @@ if (p.Results.delete)
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
         colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
-        paramsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+        paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
         rwObject.delete('responseInstances',paramsList,theProgram);   
     end   
 end

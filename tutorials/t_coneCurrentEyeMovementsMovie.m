@@ -1,5 +1,5 @@
-function validationData = t_colorGaborConeCurrentEyeMovementsMovie(rParams)
-% validationData = t_coneGaborConeCurrentEyeMovementsMovie(rParams)
+function validationData = t_coneCurrentEyeMovementsMovie(rParams)
+% validationData = t_coneCurrentEyeMovementsMovie(rParams)
 %
 % Show how to generate a movie with the cone absoprtions and photocurrent
 % to a stimulus, with eye movements and optional CRT raster effects.
@@ -8,7 +8,7 @@ function validationData = t_colorGaborConeCurrentEyeMovementsMovie(rParams)
 % in the routine
 %   colorDetectResponseInstanceArrayConstruct
 % whose use is demonstrated in the tutorial
-%   t_colorGaborConeCurrentEyeMovementsResponseInstances.
+%   t_coneCurrentEyeMovementsResponseInstances.
 %
 % The returned validation structure allows this routine to be called from a
 % validation script driven by the UnitTest toolbox.
@@ -17,11 +17,11 @@ function validationData = t_colorGaborConeCurrentEyeMovementsMovie(rParams)
 % specified IBIOColorDetect rwObject.
 %
 % See also:
-%   t_colorGaborScene
-%	t_colorGaborConeIsomerizationsMovie
-%   t_colorGaborConeCurrentEyeMovementsResponseInstances
-%   colorGaborResponseParamsGenerate
-%   colorGaborSceneCreate 
+%   t_colorGabor
+%	t_coneIsomerrizationsMovie
+%   t_coneCurrentEyeMovementsResponseInstances
+%   responseParamsGenerate
+%   colorSceneCreate 
 %   colorDetectOpticalImageConstruct
 %   colorDetectConeMosaicConstruct
 %   colorDetectResponseInstanceArrayConstruct
@@ -43,7 +43,7 @@ rng(1);
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
 % parameters used by a number of tutorials and functions in this project.
 if (nargin < 1 | isempty(rParams))
-    rParams = colorGaborResponseParamsGenerate;
+    rParams = responseParamsGenerate;
     
     % Override some of the defaults
     rParams.mosaicParams.isomerizationNoise = true;
@@ -54,13 +54,13 @@ end
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-theParamsList = {rParams.gaborParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
+theParamsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
 
 %% Create the optics
 theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
 
 %% Create the cone mosaic
-rParams.mosaicParams.fieldOfViewDegs = rParams.gaborParams.fieldOfViewDegs;
+rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
 theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
 
 %% Create stimulus temporal window
@@ -94,7 +94,7 @@ for stimFrameIndex = 1:stimulusFramesNum
     end
     
     % Create a scene for the current frame
-    theScene = colorGaborSceneCreate(rParams.gaborParams,rParams.backgroundParams,colorModulationParamsTemp);
+    theScene = colorSceneCreate(rParams.spatialParams,rParams.backgroundParams,colorModulationParamsTemp);
     
     % Compute the optical image
     theOI = oiCompute(theOI, theScene);
