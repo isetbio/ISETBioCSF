@@ -1,5 +1,5 @@
 function dirname = paramsToResponseGenerationDirName(obj,params)
-% pdirname = paramsToResponseGenerationDirName(obj,params)
+% dirname = paramsToResponseGenerationDirName(obj,params)
 % 
 % Generate a directory names that captures the basic LMPlane instance generation
 % parameters.
