@@ -11,7 +11,10 @@ function visualizeSceneOrOpticalImageSequence(rwObject,parentParamsList,theProgr
 for iFrame = 1:numel(sceneOrOpticalImageSequence)
     % Get an RGB rendition of the scene or the optical image
     if (strcmp(sceneOrOpticalImage, 'scene'))
-        rgbFrame = sceneGet(sceneOrOpticalImageSequence{iFrame}, 'rgb image');
+        
+        rgbFrame = xyz2rgb(sceneGet(sceneOrOpticalImageSequence{iFrame}, 'xyz'));
+        %rgbFrame = sceneGet(sceneOrOpticalImageSequence{iFrame}, 'rgb image');
+        
         if (showLuminanceMap)
             luminanceFrame = sceneGet(sceneOrOpticalImageSequence{iFrame}, 'luminance');
         end
@@ -25,7 +28,10 @@ for iFrame = 1:numel(sceneOrOpticalImageSequence)
             yAxis = squeeze(spatialSupport(:,1,2));
         end
     elseif (strcmp(sceneOrOpticalImage, 'optical image'))
-        rgbFrame = oiGet(sceneOrOpticalImageSequence{iFrame}, 'rgb image');
+        
+        rgbFrame = xyz2rgb(oiGet(sceneOrOpticalImageSequence{iFrame}, 'xyz'));
+        %rgbFrame = oiGet(sceneOrOpticalImageSequence{iFrame}, 'rgb image');
+        
         if (showLuminanceMap)
             luminanceFrame = sceneGet(sceneOrOpticalImageSequence{iFrame}, 'luminance');
         end
@@ -49,7 +55,8 @@ for iFrame = 1:numel(sceneOrOpticalImageSequence)
 end
 
 %% Determine ranges
-rgbRange = [0 1];
+rgbImageSequence = rgbImageSequence / max(rgbImageSequence(:));
+
 if (showLuminanceMap)
     luminanceRange = mean(luminanceImageSequence(:)) * [0.9 1.1];
 end
@@ -86,7 +93,7 @@ for iFrame = 1:numel(sceneOrOpticalImageSequence)
     
     imagesc(xAxis, yAxis, squeeze(rgbImageSequence(:,:,:,iFrame)));
     axis 'image'
-    set(gca, 'XLim', [xAxis(1) xAxis(end)], 'YLim', [yAxis(1) yAxis(end)], 'CLim', rgbRange, 'FontSize', 14);
+    set(gca, 'XLim', [xAxis(1) xAxis(end)], 'YLim', [yAxis(1) yAxis(end)], 'CLim', [0 1], 'FontSize', 14);
     if (strcmp(sceneOrOpticalImage, 'scene'))
         xlabel('space (world cm)', 'FontSize', 16, 'FontWeight', 'bold');
         ylabel('space (world cm)', 'FontSize', 16, 'FontWeight', 'bold');
