@@ -85,7 +85,7 @@ end
 % Make these numbers in the struct small (trialNum = 2, deltaAngle = 180,
 % nContrastsPerDirection = 2) to run through a test quickly.
 if (isempty(LMPlaneInstanceParams))
-    LMPlaneInstanceParams = LMPlaneInstanceParamsGenerate;
+    LMPlaneInstanceParams = instanceParamsGenerate;
 end
 
 %% Parameters related to how we find thresholds from responses

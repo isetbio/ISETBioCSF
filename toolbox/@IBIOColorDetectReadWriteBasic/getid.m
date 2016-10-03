@@ -52,8 +52,8 @@ if (~isempty(p.Results.paramsList))
                 thisParentDir = obj.paramsToColorModulationDirName(thisParams);
             case 'Background'
                 thisParentDir = obj.paramsToBackgroundDirName(thisParams);
-            case 'LMPlaneInstance'
-                thisParentDir = obj.paramsToLMPlaneInstanceDirName(thisParams);
+            case 'Instance'
+                thisParentDir = obj.paramsToInstanceDirName(thisParams);
             case 'threshold'
                 thisParentDir = obj.paramsToThresholdDirName(thisParams);
             case 'psychoEllipsoid'

@@ -99,7 +99,7 @@ for ll = 1:length(p.Results.luminances)
         % Parameters that define the LM instances we'll generate here
         %
         % Use default LMPlane.
-        testDirectionParams = LMPlaneInstanceParamsGenerate;
+        testDirectionParams = instanceParamsGenerate;
         testDirectionParams.startAngle = 45;
         testDirectionParams.deltaAngle = 90;
         testDirectionParams.nAngles = 1;

@@ -93,7 +93,7 @@ end
 % Make these numbers small (trialNum = 2, deltaAngle = 180,
 % nContrastsPerDirection = 2) to run through a test quickly.
 if (isempty(testDirectionParams))
-    testDirectionParams = LMPlaneInstanceParamsGenerate;
+    testDirectionParams = instanceParamsGenerate;
 end
 
 %% Parameters related to how we find thresholds from responses

@@ -1,5 +1,5 @@
-function params = LMPlaneInstanceParamsGenerate(varargin)
-% params = LMPlaneInstanceParamsGenerate(varargin)
+function params = instanceParamsGenerate(varargin)
+% params = instanceParamsGenerate(varargin)
 %
 % Generate parameters to describe color directions, contrasts, etc for
 % studying performance in the LM plane.  This is an instance of something
@@ -20,7 +20,8 @@ function params = LMPlaneInstanceParamsGenerate(varargin)
 %   testConeContastsFromTestDirectionParams
 
 % Parameter struct type
-params.type = 'LMPlaneInstance';
+params.type = 'Instance';
+params.instanceType = 'LMPlane';
 
 % Define how many noisy data instances to generate
 params.trialsNum = 100;

@@ -5,7 +5,7 @@ function c_PoirsonAndWandellReplicate
 
 % Start with default parameters
 rParams = responseParamsGenerate;
-LMplaneDirectionParams = LMPlaneInstanceParamsGenerate;
+LMplaneDirectionParams = instanceParamsGenerate;
 thresholdParams = thresholdParamsGenerate;
 
 % Adapt spatial params to match P&W 1996

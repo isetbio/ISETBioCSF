@@ -105,7 +105,7 @@ end
 
 %% Parameters that define the LM instances we'll generate here
 if (isempty(testDirectionParams))
-    testDirectionParams = LMPlaneInstanceParamsGenerate;
+    testDirectionParams = instanceParamsGenerate;
 end
 
 %% Set up the rw object for this program

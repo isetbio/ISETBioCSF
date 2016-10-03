@@ -1,7 +1,7 @@
-function validationData = t_coneIsomerzationsMovieSpot(rParams)
-% validationData = t_coneIsomerzationsMovieSpot(rParams)
+function validationData = t_coneCurrentEyeMovementsMovieSpot(rParams)
+% validationData = t_coneCurrentEyeMovementsMovieSpot(rParams)
 %
-% This is a call into t_coneIsomerizationsMovie that demonstates its
+% This is a call into coneCurrentEyeMovementsMovie that demonstates its
 % ability to handle AO spots as well as Gabor modulations on monitors.
 
 %% Clear
@@ -19,12 +19,16 @@ rng(1);
 if (nargin < 1 | isempty(rParams))
     rParams = responseParamsGenerate('spatialType','spot','backgroundType','AO','modulationType','AO');
     
-    % Override some defaults to make more sense for our spot application
+    % Override some of the defaults
+    rParams.mosaicParams.isomerizationNoise = true;
+    rParams.mosaicParams.osNoise = true;
+    rParams.mosaicParams.osModel = 'Linear';
+    
     rParams.oiParams.pupilDiamMm = 7;
 end
 
 %% Call into t_coneIsomerizationsMovie with spot parameters
-validationData = t_coneIsomerizationsMovie(rParams);
+validationData = t_coneCurrentEyeMovementsMovie(rParams);
 
 %% Send back some validation data if requested
 if (nargout > 0)
