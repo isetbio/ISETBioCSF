@@ -121,20 +121,35 @@ if (p.Results.compute)
     rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
     theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
     
-    %% Define color direction cone contrasts as well as contrast scalars.
-    %
-    % Directions
-    testConeContrasts = testConeContrastsFromTestDirectionParams(rParams,testDirectionParams);
-    
-    % Contrasts
-    if (strcmp(testDirectionParams.contrastScale, 'linear'))
-        testContrasts = linspace(testDirectionParams.lowContrast, testDirectionParams.highContrast, testDirectionParams.nContrastsPerDirection);
-    else
-        testContrasts = logspace(log10(testDirectionParams.lowContrast), log10(testDirectionParams.highContrast), testDirectionParams.nContrastsPerDirection);
+    %% Define color modulation list
+    switch (testDirectionParams.instanceType)
+        case 'LMPlane'
+            % Directions
+            testConeContrasts = testConeContrastsFromTestDirectionParams(rParams,testDirectionParams);
+            
+            % Contrasts
+            if (strcmp(testDirectionParams.contrastScale, 'linear'))
+                testContrasts = linspace(testDirectionParams.lowContrast, testDirectionParams.highContrast, testDirectionParams.nContrastsPerDirection);
+            else
+                testContrasts = logspace(log10(testDirectionParams.lowContrast), log10(testDirectionParams.highContrast), testDirectionParams.nContrastsPerDirection);
+            end
+            
+        case 'contrasts'
+            % Contrasts
+            if (strcmp(testDirectionParams.contrastScale, 'linear'))
+                testContrasts = linspace(testDirectionParams.lowContrast, testDirectionParams.highContrast, testDirectionParams.nContrastsPerDirection);
+            else
+                testContrasts = logspace(log10(testDirectionParams.lowContrast), log10(testDirectionParams.highContrast), testDirectionParams.nContrastsPerDirection);
+            end
+            
+            % Set up parfor condition structs. Just dummy up a cone
+            % contrasts argument for this call, we won't use the returned
+            % contrasts for this case below.
+            testConeContrasts = NaN*zeros(3,1);
+            parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
+        otherwise
+            error('Unknown test instance type passed');
     end
-    
-    % Set up parfor condition structs
-    parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
     nParforConditions = length(parforConditionStructs);
     
     % Generate data for the no stimulus condition

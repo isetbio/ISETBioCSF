@@ -30,9 +30,14 @@ function params = instanceParamsGenerate(varargin)
 % See also
 %   testConeContastsFromTestDirectionParams
 
+% Parse input
+p = inputParser; p.KeepUnmatched = true;
+p.addParameter('instanceType','LMPlane',@ischar);
+p.parse(varargin{:});
+            
 % Parameter struct type
 params.type = 'Instance';
-params.instanceType = 'LMPlane';
+params.instanceType = p.Results.instanceType;
 
 switch (params.instanceType)
     case 'LMPlane'

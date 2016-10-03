@@ -1,7 +1,7 @@
 function validationData = t_coneCurrentEyeMovementsMovieSpot(rParams)
 % validationData = t_coneCurrentEyeMovementsMovieSpot(rParams)
 %
-% This is a call into coneCurrentEyeMovementsMovie that demonstates its
+% This is a call into t_coneCurrentEyeMovementsMovie that demonstates its
 % ability to handle AO spots as well as Gabor modulations on monitors.
 
 %% Clear
