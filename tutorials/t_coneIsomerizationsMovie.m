@@ -2,12 +2,16 @@ function validationData = t_coneIsomerrizationsMovie(rParams)
 % validationData = t_coneIsomerrizationsMovie(rParams)
 %
 % Illustrates the basic steps required to calculate cone isomerizations
-% for a Gaussian windowed temporal color Gabor modulation.
+% for a Gaussian windowed temporal color modulation.
 %
 % If parameters structure is not passed, the routine will use the defaults
 % provided by
 %   responseParamsGenerate
-% That functions subfunctions also documents what the relavant parameters are.
+% This will produce a Gabor pattern.
+% That function's subfunctions also document what the relavant parameters are.
+%
+% t_coneIsomerizationsMovieSpot calls into this one with parameters that
+% produce a demo for a spot.
 %
 % The returned validation structure allows this routine to be called from a
 % validation script driven by the UnitTest toolbox.
@@ -16,6 +20,7 @@ function validationData = t_coneIsomerrizationsMovie(rParams)
 % specified IBIOColorDetect rwObject.
 %
 % See also:  
+%   t_coneIsomerizationsMovieSpot
 %	t_coneCurrentEyeMovementsMovie
 %   responseParamsGenerate
 %   colorSceneCreate

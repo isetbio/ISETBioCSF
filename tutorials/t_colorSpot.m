@@ -161,11 +161,12 @@ spotScene = sceneSet(spotScene, 'h fov', rParams.spatialParams.backgroundSizeDeg
 
 %% Make an image with the background + spot spectral radiance at all locations
 radianceEnergySpot = zeros(rParams.spatialParams.row,rParams.spatialParams.col,nWls);
+% Background pixels are 1, spot pixels are 2
 for i = 1:rParams.spatialParams.row
     for j = 1:rParams.spatialParams.col
-        if spotPattern(i,j)== 0; % Background pixels are flagged "0"
+        if spotPattern(i,j)== 1; 
             radianceEnergySpot(i,j,:) = bgRadiance;
-        elseif spotPattern(i,j) == 1; % Stimulus pixels are flagged "1"
+        elseif spotPattern(i,j) == 2; % Stimulus pixels are flagged "1"
             radianceEnergySpot(i,j,:) = bgRadiance+spotRadiance;
         end
     end

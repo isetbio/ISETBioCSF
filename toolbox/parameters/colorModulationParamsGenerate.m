@@ -33,8 +33,12 @@ switch (colorModulationParams.modulationType )
         colorModulationParams.contrast = 1;
         colorModulationParams.coneContrasts = [0.05 -0.05 0]';
     case 'AO'
+        colorModulationParams.startWl = 550;
+        colorModulationParams.endWl = 830;
+        colorModulationParams.deltaWl = 10;
         colorModulationParams.spotWavelengthNm = 680;
         colorModulationParams.spotCornealIrradianceUW = 20;
+        colorModulationParams.contrast = 1;
     otherwise
         error('Unknown modulation type specified');
 end
