@@ -57,7 +57,7 @@ switch (spatialParams.spatialType)
         spatialParams.ph = 0;
         spatialParams.viewingDistance = 0.75;
     case 'spot'
-        spatialParams.spotSizeDegs = 1;
+        spatialParams.spotSizeDegs = 0.05;
         spatialParams.backgroundSizeDegs = 2;
         spatialParams.fieldOfViewDegs = 3;
         spatialParams.row = 128;

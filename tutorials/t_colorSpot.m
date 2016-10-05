@@ -82,7 +82,7 @@ nBgWavelengths = length(rParams.backgroundParams.backgroundWavelengthsNm);
 bgRadiance = zeros(nWls,1);
 for ww = 1:nBgWavelengths
     theWavelength = rParams.backgroundParams.backgroundWavelengthsNm(ww);
-    theCornealIrradiance = rParams.backgroundParams.backgroundCornealIrradianceUW(ww);
+    theCornealIrradiance = rParams.backgroundParams.backgroundCornealPowerUW(ww);
     
     % UW is really UW/cm2 because the area of the detector is 1 cm2.  This
     % conversion gives us radiance in UW/[sr-cm2] for the narrowband laser
@@ -104,7 +104,7 @@ nSpotWavelengths = length(rParams.colorModulationParams.spotWavelengthNm);
 spotRadiance = zeros(nWls,1);
 for ww = 1:nSpotWavelengths
     theWavelength = rParams.colorModulationParams.spotWavelengthNm(ww);
-    theCornealIrradiance = rParams.colorModulationParams.spotCornealIrradianceUW(ww);
+    theCornealIrradiance = rParams.colorModulationParams.spotCornealPowerUW(ww);
     
     % UW is really UW/cm2 because the area of the detector is 1 cm2.  This
     % conversion gives us radiance in UW/[sr-cm2] for the narrowband laser

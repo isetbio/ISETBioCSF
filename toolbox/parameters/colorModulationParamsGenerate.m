@@ -17,7 +17,7 @@ function colorModulationParams = colorModulationParamsGenerate(varargin)
 % If modulationType is 'AO', these are the parameters
 %   spotWavelengthNm - Vector of wavelengths of light superimposed
 %     in the background.
-%   spotCornealIrradianceUW - Vector of corneal irradiance for
+%   spotCornealPowerUW - Vector of corneal irradiance for
 %     spot at full power, less any light leakage, units of UW/cm2.
 
 % Parse input
@@ -37,7 +37,7 @@ switch (colorModulationParams.modulationType )
         colorModulationParams.endWl = 830;
         colorModulationParams.deltaWl = 10;
         colorModulationParams.spotWavelengthNm = 680;
-        colorModulationParams.spotCornealIrradianceUW = 20;
+        colorModulationParams.spotCornealPowerUW = 20;
         colorModulationParams.contrast = 1;
     otherwise
         error('Unknown modulation type specified');

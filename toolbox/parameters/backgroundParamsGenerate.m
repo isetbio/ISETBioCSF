@@ -17,7 +17,7 @@ function backgroundParams = backgroundParamsGenerate(varargin)
 % If backgroundType is 'AO', these are the parameters
 %   backgroundWavelengthsNm - Vector of wavelengths of light superimposed
 %     in the background.
-%   backgroundCornealIrradianceUW - Vector of corneal irradiance for each
+%   backgroundCornealPowerUW - Vector of corneal irradiance for each
 %     of the monochromatic lights in the background, units of UW/cm2.
 
 % Parse input
@@ -36,7 +36,7 @@ switch (backgroundParams.backgroundType)
         backgroundParams.lumFactor = 1;
     case 'AO'
         backgroundParams.backgroundWavelengthsNm = [830 790 680];
-        backgroundParams.backgroundCornealIrradianceUW = [20 10 0.02];
+        backgroundParams.backgroundCornealPowerUW = [20 10 0.02];
     otherwise
         error('Unknown background type specified');
 end

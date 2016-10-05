@@ -144,7 +144,7 @@ if (p.Results.compute)
     nParforConditions = length(parforConditionStructs);
     usePercentCorrect = zeros(size(testConeContrasts,2),1);
     useStdErr = zeros(size(testConeContrasts,2),1);
-   for kk = 1:nParforConditions
+    parfor kk = 1:nParforConditions
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;

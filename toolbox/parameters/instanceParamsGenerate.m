@@ -67,8 +67,8 @@ switch (params.instanceType)
         % Number of contrasts to run in each color direction
         % Choose between 'linear' and 'log'
         params.nContrastsPerDirection = 5;
-        params.lowContrast = 0.1;
-        params.highContrast = 1;
+        params.lowContrast = 0.001;
+        params.highContrast = 0.15;
         params.contrastScale = 'log';  
         
         if (params.scaleIntoMonitorGamut)

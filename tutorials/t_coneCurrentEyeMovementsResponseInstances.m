@@ -146,10 +146,10 @@ if (p.Results.compute)
             % contrasts argument for this call, we won't use the returned
             % contrasts for this case below.
             testConeContrasts = NaN*zeros(3,1);
-            parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
         otherwise
             error('Unknown test instance type passed');
     end
+    parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
     nParforConditions = length(parforConditionStructs);
     
     % Generate data for the no stimulus condition
@@ -188,7 +188,7 @@ if (p.Results.compute)
 
     % Loop over color directions
     tic;
-    for kk = 1:nParforConditions
+    parfor kk = 1:nParforConditions
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
