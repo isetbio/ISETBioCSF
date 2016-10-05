@@ -36,7 +36,7 @@ switch (backgroundParams.backgroundType)
         backgroundParams.lumFactor = 1;
     case 'AO'
         backgroundParams.backgroundWavelengthsNm = [830 790 680];
-        backgroundParams.backgroundCornealIrradianceUW = [20 10 1];
+        backgroundParams.backgroundCornealIrradianceUW = [20 10 0.02];
     otherwise
         error('Unknown background type specified');
 end

@@ -16,7 +16,7 @@ switch (params.modulationType)
             100*params.coneContrasts(3),...
             100*params.contrast);
     case 'AO'
-        dirname = sprintf('%d_%0.1f',params.spotWavelengthNm,params.spotCornealIrradianceUW);
+        dirname = sprintf('%d_%0.1f_con%0.5f',params.spotWavelengthNm,params.spotCornealIrradianceUW,100*params.contrast);
     otherwise
         error('Unknown background type specified');
 end

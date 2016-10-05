@@ -188,7 +188,7 @@ if (p.Results.compute)
 
     % Loop over color directions
     tic;
-    parfor kk = 1:nParforConditions
+    for kk = 1:nParforConditions
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;

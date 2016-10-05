@@ -4,7 +4,9 @@ function params = thresholdParamsGenerate(varargin)
 % Generate parameters that tell us how to find thresholds.
 %
 %   method - basic classifier method
-%     'svm'
+%     'svm' - Support vector machine
+%     'mlpt' - Maximum likelihood, signal/noise known exactly
+%     'mlpe' - Maximum likelihood, signal/noise learned from examples
 %   signalSource - What response signals to use
 %     'isomerizations'
 %     'photocurrents'

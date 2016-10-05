@@ -38,9 +38,7 @@ end
 
 %% Make the spatial pattern
 switch(spatialParams.spatialType)
-    case 'Gabor'
-        
-        
+    case 'Gabor'  
         % Check that color modulation/background type is one we understand for Gabors
         switch (colorModulationParams.modulationType)
             case 'monitor'
@@ -59,7 +57,7 @@ switch(spatialParams.spatialType)
         % for spots
         switch (colorModulationParams.modulationType)
             case 'monitor'
-                error('Cannot currently do a spot with AO color modulation/background parameters');
+                error('Cannot currently do a spot with monitor-based color modulation/background parameters');
             case 'AO'
             otherwise
                 error('Unknown color modulation/background type specified');
@@ -212,12 +210,20 @@ switch (colorModulationParams.modulationType)
         wls = (colorModulationParams.startWl:colorModulationParams.deltaWl:colorModulationParams.endWl)';
         nWls = length(wls);
         
+        % Get pupil area in cm2.  We use this to convert the power entering
+        % the eye to the corneal irradiance, because the total power is
+        % spread at the cornea by the AO system optics to be the size of
+        % the pupil that we enter into the calculations.
+        pupilDiamMm = 7;
+        pupilAreaMm2 = pi*(pupilDiamMm/2)^2;
+        pupilAreaCm2 = pupilAreaMm2*10^-2;
+        
         % Background
         nBgWavelengths = length(backgroundParams.backgroundWavelengthsNm);
         bgRadiance = zeros(nWls,1);
         for ww = 1:nBgWavelengths
             theWavelength = backgroundParams.backgroundWavelengthsNm(ww);
-            theCornealIrradiance = backgroundParams.backgroundCornealIrradianceUW(ww);
+            theCornealIrradiance = backgroundParams.backgroundCornealIrradianceUW(ww)/pupilAreaCm2;
             
             % UW is really UW/cm2 because the area of the detector is 1 cm2.  This
             % conversion gives us radiance in UW/[sr-cm2] for the narrowband laser
@@ -239,7 +245,7 @@ switch (colorModulationParams.modulationType)
         spotRadiance = zeros(nWls,1);
         for ww = 1:nSpotWavelengths
             theWavelength = colorModulationParams.spotWavelengthNm(ww);
-            theCornealIrradiance = colorModulationParams.spotCornealIrradianceUW(ww);
+            theCornealIrradiance = colorModulationParams.spotCornealIrradianceUW(ww)/pupilAreaCm2;
             
             % UW is really UW/cm2 because the area of the detector is 1 cm2.  This
             % conversion gives us radiance in UW/[sr-cm2] for the narrowband laser

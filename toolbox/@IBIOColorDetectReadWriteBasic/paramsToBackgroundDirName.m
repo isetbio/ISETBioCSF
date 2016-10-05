@@ -16,7 +16,7 @@ switch (params.backgroundType)
             params.leakageLum);
     case 'AO'
         for ii = 1:length(params.backgroundWavelengthsNm)
-            dirnameTmp = sprintf('%d_%0.1f',params.backgroundWavelengthsNm,params.backgroundCornealIrradianceUW);
+            dirnameTmp = sprintf('%d_%0.1f',params.backgroundWavelengthsNm(ii),params.backgroundCornealIrradianceUW(ii));
             if (ii == 1)
                 dirname = dirnameTmp;
             else
