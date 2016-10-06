@@ -75,11 +75,6 @@ if (p.Results.setRng)
     rng(1);
 end
 
-%% Initialize validation data to empty
-%
-% It only gets set if we compute.
-validationData = [];
-
 %% Get the parameters we need
 %
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
@@ -178,7 +173,7 @@ if (p.Results.compute)
         'parforConditionStructs', parforConditionStructs, ...
         'theMosaic', theMosaic, ...
         'rParams', rParams, ...
-        'LMPlaneInstanceParams', testDirectionParams);
+        'instanceParams', testDirectionParams);
     rwObject.write('ancillaryData',ancillaryData,paramsList,theProgram);
     
     %% Generate data for all the examined stimuli
@@ -213,7 +208,7 @@ if (p.Results.compute)
     fprintf('Finished generating responses in %2.2f minutes\n', toc/60);
     
     %% Validation data
-    if (nargin > 0)
+    if (nargout > 0)
         validationData = [];
     end
 end

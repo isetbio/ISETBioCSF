@@ -1,5 +1,5 @@
-function [theScene, gamutScaleFactor] = colorSceneCreate(spatialParams,backgroundParams,colorModulationParams,gamutCheckFlag)
-% [theScene,gamutScaleFactor] = colorSceneCreate(spatialParams,backgroundParams,colorModulationParams,[gamutCheckFlag])
+function [theScene, gamutScaleFactor] = colorSceneCreate(spatialParams,backgroundParams,colorModulationParams,oiParams,gamutCheckFlag)
+% [theScene,gamutScaleFactor] = colorSceneCreate(spatialParams,backgroundParams,colorModulationParams,oiParams,[gamutCheckFlag])
 %
 % Creates a colored Gabor IBIO scene. The scene will produce a specified
 % set of L, M, and S contrasts on a specific monitor.
@@ -8,16 +8,21 @@ function [theScene, gamutScaleFactor] = colorSceneCreate(spatialParams,backgroun
 %   spatialParams    -  A struct that specifies the parameters for the pattern to generate.
 %   backgroundParams - A struct that specifies background and display parameters
 %   colorModulationParams -  A struct that specifies the parameters for the color modulation.
+%   oiParams - A struct that describes the optics.  Here we need (sometimes) it to get
+%     the pupil diameter, which we use to back out from corneal irradiance to
+%     scene radiance.  Not all threads through this code need this, and it
+%     can be empty if it is not needed.
 %   gamutCheckFlag  -  If set, the routine returns the scale factor required to bring
-%                      the cone contrasts into the gamut of the monitor.  This
-%                      can be useful for setting up simulated experimental conditions.  In this
-%                      case, the returned scene is empty.  When gamutCheckFlag is false
-%                      (default), the returned scale factor is 1.
+%     the cone contrasts into the gamut of the monitor.  This
+%     can be useful for setting up simulated experimental
+%     conditions.  In this case, the returned scene is
+%     empty.  When gamutCheckFlag is false (default), the
+%     returned scale factor is 1.
 %
 % See also t_colorGabor, t_colorSpot, imageHarmonic, drawSpot
 
 %% Optional arg for when we are maximizing contrast
-if (nargin < 4 || isempty(gamutCheckFlag))
+if (nargin < 5 || isempty(gamutCheckFlag))
     gamutCheckFlag = false;
 end
 
@@ -210,66 +215,9 @@ switch (colorModulationParams.modulationType)
         wls = (colorModulationParams.startWl:colorModulationParams.deltaWl:colorModulationParams.endWl)';
         nWls = length(wls);
         
-        % Get pupil area in cm2.  We use this to convert the power entering
-        % the eye to the corneal irradiance, because the total power is
-        % spread at the cornea by the AO system optics to be the size of
-        % the pupil that we enter into the calculations.
-        pupilDiamMm = 7;
-        pupilAreaMm2 = pi*(pupilDiamMm/2)^2;
-        pupilAreaCm2 = pupilAreaMm2*10^-2;
-        
-        % Background
-        nBgWavelengths = length(backgroundParams.backgroundWavelengthsNm);
-        bgRadiance = zeros(nWls,1);
-        for ww = 1:nBgWavelengths
-            theWavelength = backgroundParams.backgroundWavelengthsNm(ww);
-            theCornealIrradiance = backgroundParams.backgroundCornealPowerUW(ww)/pupilAreaCm2;
-            
-            % UW is really UW/cm2 because the area of the detector is 1 cm2.  This
-            % conversion gives us radiance in UW/[sr-cm2] for the narrowband laser
-            % light.
-            bgRadianceRaw(ww) = CornIrradianceAndDegrees2ToRadiance(theCornealIrradiance,spatialParams.backgroundSizeDegs^2);
-            
-            % Convert to Watts/[sr-m2-nm] where we take the wavelength sampling
-            % into account so that in the end the calculation of cone responses
-            % will come out correctly.
-            index = find(theWavelength == wls);
-            if (length(index) ~= 1)
-                error('Something funky about wls');
-            end
-            bgRadiance(index) = (10^4)*(10^-6)*bgRadianceRaw(ww)/colorModulationParams.deltaWl;
-        end
-        
-        % Spot
-        nSpotWavelengths = length(colorModulationParams.spotWavelengthNm);
-        spotRadiance = zeros(nWls,1);
-        for ww = 1:nSpotWavelengths
-            theWavelength = colorModulationParams.spotWavelengthNm(ww);
-            theCornealIrradiance = colorModulationParams.spotCornealPowerUW(ww)/pupilAreaCm2;
-            
-            % UW is really UW/cm2 because the area of the detector is 1 cm2.  This
-            % conversion gives us radiance in UW/[sr-cm2] for the narrowband laser
-            % light.
-            spotRadianceRaw(ww) = CornIrradianceAndDegrees2ToRadiance(theCornealIrradiance,spatialParams.backgroundSizeDegs^2);
-            
-            % Convert to Watts/[sr-m2-nm] where we take the wavelength sampling
-            % into account so that in the end the calculation of cone responses
-            % will come out correctly.
-            index = find(theWavelength == wls);
-            if (length(index) ~= 1)
-                error('Something funky about wls');
-            end
-            spotRadiance(index) = (10^4)*(10^-6)*spotRadianceRaw(ww)/colorModulationParams.deltaWl;
-        end
-        
-        % Make an image with the background spectral radiance at all locations
-        radianceEnergyBg = zeros(spatialParams.row,spatialParams.col,nWls);
-        for i = 1:spatialParams.row
-            for j = 1:spatialParams.col
-                radianceEnergyBg(i,j,:) = bgRadiance;
-            end
-        end
-        radiancePhotonsBg = Energy2Quanta(wls,radianceEnergyBg);
+        % Get equivalent spectral radiance of background and spot increment (full on)
+        bgRadiance = AOMonochromaticCornealPowerToRadiance(wls,backgroundParams.backgroundWavelengthsNm,backgroundParams.backgroundCornealPowerUW,pupilDiamMm,spatialParams.backgroundSizeDegs^2);
+        spotRadiance = AOMonochromaticCornealPowerToRadiance(wls,colorModulationParams.spotWavelengthsNm,colorModulationParams.sCornealPowerUW,pupilDiamMm,spatialParams.backgroundSizeDegs^2);
         
         % Create an empty scene to use for the spot
         theScene = sceneCreate('empty');

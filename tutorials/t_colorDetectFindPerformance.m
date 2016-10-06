@@ -60,11 +60,6 @@ if (p.Results.setRng)
     rng(1);
 end
 
-%% Initialize validation data to empty
-%
-% It only gets set if we compute.
-validationData = [];
-
 %% Get the parameters we need
 %
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
@@ -129,7 +124,7 @@ if (p.Results.compute)
     % SHOULD ACTUALLY CHECK FOR EQUALITY HERE.  Should be able to use
     % RecursivelyCompareStructs to do so.
     rParamsCheck = ancillaryData.rParams;
-    LMPlaneInstanceParamsCheck = ancillaryData.LMPlaneInstanceParams;
+    LMPlaneInstanceParamsCheck = ancillaryData.instanceParams;
     fprintf('done\n');
     
     % Do SVM for each test contrast and color direction.
@@ -188,7 +183,7 @@ if (p.Results.compute)
     performanceData.testConeContrasts = testConeContrasts;
     performanceData.testContrasts = testContrasts;
     performanceData.rParams = rParams;
-    performanceData.LMPlaneInstanceParams = testDirectionParams;
+    performanceData.instanceParams = testDirectionParams;
     performanceData.thresholdParams = thresholdParams;
     clearvars('usePercentCorrect','useStdErr');
     
@@ -199,7 +194,7 @@ if (p.Results.compute)
     fprintf('done\n');
     
     %% Validation data
-    if (nargin > 0)
+    if (nargout > 0)
         validationData = [];
     end
 end

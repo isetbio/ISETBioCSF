@@ -48,8 +48,11 @@ for stimFrameIndex = 1:stimulusFramesNum
     %     backgroundParams.backgroundxyY(3) = backgroundParams.leakageLum + backgroundParams.backgroundxyY(3)*rasterModulation(stimFrameIndex);
     % end
     
+    %% Get pupil size out of OI, which is sometimes needed by colorSceneCreate
+    oiParamsTemp.pupilDiamMm = 1000*opticsGet(oiGet(theOI,'optics'),'aperture diameter');
+    
     % Create a scene for the current frame
-    theScene = colorSceneCreate(spatialParams,backgroundParams,colorModulationParams);
+    theScene = colorSceneCreate(spatialParams,backgroundParams,colorModulationParams,oiParams);
     
     % Compute the optical image for the current frame
     theOI = oiCompute(theOI, theScene);

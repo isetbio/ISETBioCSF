@@ -94,7 +94,7 @@ for stimFrameIndex = 1:stimulusFramesNum
     end
     
     % Create a scene for the current frame
-    theScene = colorSceneCreate(rParams.spatialParams,rParams.backgroundParams,colorModulationParamsTemp);
+    theScene = colorSceneCreate(rParams.spatialParams,rParams.backgroundParams,colorModulationParamsTemp,rParams.oiParams);
     
     % Compute the optical image
     theOI = oiCompute(theOI, theScene);

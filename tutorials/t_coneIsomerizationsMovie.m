@@ -62,7 +62,7 @@ for ii = 1:rParams.temporalParams.nSampleTimes
     rParamsTemp = rParams;
     rParamsTemp.colorModulationParams.contrast = rParams.colorModulationParams.contrast*rParams.temporalParams.gaussianTemporalWindow(ii);
     fprintf('Computing scene %d of %d, time %0.3f, windowVal %0.3f\n',ii,rParamsTemp.temporalParams.nSampleTimes,rParamsTemp.temporalParams.sampleTimes(ii),rParamsTemp.temporalParams.gaussianTemporalWindow(ii));
-    gaborScene{ii} = colorSceneCreate(rParamsTemp.spatialParams,rParams.backgroundParams,rParamsTemp.colorModulationParams);
+    gaborScene{ii} = colorSceneCreate(rParamsTemp.spatialParams,rParams.backgroundParams,rParamsTemp.colorModulationParams,rParams.oiParams);
 end
 clearvars('rParamsTemp');
 

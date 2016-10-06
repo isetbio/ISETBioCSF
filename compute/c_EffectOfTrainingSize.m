@@ -156,14 +156,14 @@ for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
     if (p.Results.fitPsychometric)
         if (p.Results.computeMLPTThresholds)
             thresholdParams.method = 'mlpt';
-            effectOfTrainingSize.mlptThresholds(tt) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
+            effectOfTrainingSize.mlptThresholds(tt) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'instanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
                 'plotPsychometric',p.Results.plotPsychometric,'plotEllipse',false);
             close all;
         end
         
         if (p.Results.computeMLPEThresholds)      
             thresholdParams.method = 'mlpe';
-            effectOfTrainingSize.mlpeThresholds(tt) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
+            effectOfTrainingSize.mlpeThresholds(tt) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'instanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
                 'plotPsychometric',p.Results.plotPsychometric,'plotEllipse',false);
             close all;
         end
@@ -171,7 +171,7 @@ for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
         if (p.Results.computeSVMThresholds) 
             thresholdParams.method = 'svm';
             thresholdParams.PCAComponents = p.Results.nPCAComponents;
-            effectOfTrainingSize.svmThresholds(tt) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'LMPlaneInstanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
+            effectOfTrainingSize.svmThresholds(tt) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'instanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
                 'plotPsychometric',p.Results.plotPsychometric,'plotEllipse',false);
             close all;
         end

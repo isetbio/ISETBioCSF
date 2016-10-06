@@ -1,15 +1,17 @@
-function c_BanksEtAlReplicate(varargin)
-% c_BanksEtAlReplicate(varargin)
+function c_DavilaGeislerReplicate(varargin)
+% c_DavilaGeislerReplicate(varargin)
 %
-% Compute thresholds to replicate Banks et al, 1987, more or less.
+% Compute thresholds to replicate spatial summation calculations of Davila and Geisler, more or less.
 %
-% This looks at L+M detection thrsholds, which seems close enough for right now to
-% the isochromatic thresholds studied by Banks et al.
+% This looks at thresholds as a function of spot size.  Our stimuli are
+% monochromatic rather than monitor based, but to first order that should not make much difference
 %
 % Key/value pairs
 %   'nTrainingSamples' - value (default 500).  Number of training samples to cycle through.
-%   'cyclesPerDegree' - vector (default [3 5 10 20 40]). Spatial frequencoes of grating to be investigated.
-%   'luminances' - vector (default [3.4 34 340]).  Luminances in cd/m2 to be investigated.
+%   'spotDiametersMinutes' - vector (default [0.5 1 5 10 20 40]). Diameters of spots to be investigated.
+%   'backgroundSizeDegs' - value (default 2.1). Size of square background
+%   'wavelength' - value (default 550). Wavelength to use in calculations
+%   'luminances' - vector (default [10]).  Background luminances in cd/m2 to be investigated.
 %   'blur' - true/false (default true). Incorporate lens blur.
 %   'imagePixels' - value (default 400).  Size of image pixel array
 %   'computeResponses' - true/false (default true).  Compute responses.
@@ -21,8 +23,10 @@ function c_BanksEtAlReplicate(varargin)
 %% Parse input
 p = inputParser;
 p.addParameter('nTrainingSamples',500,@isnumeric);
-p.addParameter('cyclesPerDegree',[3 5 10 20 40 50],@isnumeric);
-p.addParameter('luminances',[3.4 34 340],@isnumeric);
+p.addParameter('spotDiametersMinutes',[0.5 1 5 10 20 40],@isnumeric);
+p.addParameter('backgroundSizeDegs',[2.1],@isnumeric);
+p.addParameter('wavelength',550,@isnumeric);
+p.addParameter('luminances',[10],@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
@@ -35,23 +39,21 @@ p.parse(varargin{:});
 %% Get the parameters we need
 %
 % Start with default
-rParams = responseParamsGenerate;
+rParams = responseParamsGenerate('spatialType','spot','backgroundType','AO','modulationType','AO');
 
 %% Loop over spatial frequency
 for ll = 1:length(p.Results.luminances)
-    for cc = 1:length(p.Results.cyclesPerDegree)
+    for cc = 1:length(p.Results.spotDiametersMinutes)
         
         % Get stimulus parameters correct
         %
-        % The stimulus was half-cosine windowed to contain 7.5 cycles.  We set
-        % our half-cosine window to match that and also make the field of view
-        % just a tad bigger.
-        rParams.spatialParams.windowType = 'halfcos';
-        rParams.spatialParams.cyclesPerDegree = p.Results.cyclesPerDegree(cc);
-        rParams.spatialParams.gaussianFWHMDegs = 3.75*(1/rParams.spatialParams.cyclesPerDegree);
-        rParams.spatialParams.fieldOfViewDegs = 2.1*rParams.spatialParams.gaussianFWHMDegs;
-        rParams.spatialParams.row = p.Results.imagePixels;
-        rParams.spatialParams.col = p.Results.imagePixels;
+        % Spatial 
+        rParams.spatialParams.spotSizeDegs = p.Results.spotDiametersMinutes(cc)/60;
+        rParams.spatialParams.backgroundSizeDegs = p.Results.backgroundSizeDegs;
+        spatialParams.fieldOfViewDegs = 1.1*p.Results.backgroundSizeDegs;
+        spatialParams.row = p.Results.imagePixels;
+        spatialParams.col = p.Results.imagePixels;
+        spatialParams.viewingDistance = 7.16;
         
         % Blur
         rParams.oiParams.blur = p.Results.blur;
@@ -68,15 +70,19 @@ for ll = 1:length(p.Results.luminances)
         % monitor we specify.  To change luminance, we specify a scale factor.
         % This is eventually applied both to the background luminance and to the
         % monitor channel spectra, so that we don't get unintersting out of gamut errors.
-        baseLum = 50;
-        theLum = p.Results.luminances(ll);
-        rParams.backgroundParams.backgroundxyY = [0.33 0.33 baseLum]';
-        rParams.backgroundParams.monitorFile = 'CRT-MODEL';
-        rParams.backgroundParams.leakageLum = 1.0;
-        rParams.backgroundParams.lumFactor = theLum/baseLum;
+        rParams.backgroundParams.backgroundWavelengthsNm = [p.Results.wavelength];
+        rParams.backgroundParams.backgroundCornealPowerUW = [1];
         
-        % Pupil size.  They used a 2mm artificial pupil
-        oiParams.pupilDiamMm = 2;
+        % Spot color parameters
+        colorModulationParams.startWl = p.Results.wavelength;
+        colorModulationParams.endWl = p.Results.wavelength;
+        colorModulationParams.deltaWl = 10;
+        colorModulationParams.spotWavelengthNm = p.Results.wavelength0;
+        colorModulationParams.spotCornealPowerUW = 20;
+        colorModulationParams.contrast = 1;
+        
+        % Pupil size.  They used a 3mm artificial pupil
+        oiParams.pupilDiamMm = 3;
         
         % Set duration equal to sampling interval to do just one frame.
         %
@@ -131,9 +137,9 @@ for ll = 1:length(p.Results.luminances)
         
         %% Fit psychometric functions
         if (p.Results.fitPsychometric)
-            banksEtAlReplicate.cyclesPerDegree(ll,cc) = p.Results.cyclesPerDegree(cc);
+            davilaGeislerReplicate.spotDiametersMinutes(ll,cc) = p.Results.spotDiametersMinutes(cc);
             thresholdParams.method = 'mlpt';
-            banksEtAlReplicate.mlptThresholds(ll,cc) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'instanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
+            davilaGeislerReplicate.mlptThresholds(ll,cc) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'instanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
                 'plotPsychometric',p.Results.plotPsychometric,'plotEllipse',false);
             close all;
         end
@@ -146,13 +152,13 @@ end
 if (p.Results.fitPsychometric)
     fprintf('Writing performance data ... ');
     nameParams = rParams.spatialParams;
-    nameParams.cyclesPerDegree = 0;
+    nameParams.spotDiametersMinutes = 0;
     nameParams.fieldOfViewDegs = 0;
     nameParams.gaussianFWHMDegs = 0;
     paramsList = {nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;
-    rwObject.write('banksEtAlReplicate',banksEtAlReplicate,paramsList,writeProgram);
+    rwObject.write('davilaGeislerReplicate',davilaGeislerReplicate,paramsList,writeProgram);
     fprintf('done\n');
 end
 
@@ -163,13 +169,13 @@ end
 if (p.Results.plotCSF)
     fprintf('Reading performance data ...');
     nameParams = rParams.spatialParams;
-    nameParams.cyclesPerDegree = 0;
+    nameParams.spotDiametersMinutes = 0;
     nameParams.fieldOfViewDegs = 0;
     nameParams.gaussianFWHMDegs = 0;
     paramsList = {nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;
-    banksEtAlReplicate = rwObject.read('banksEtAlReplicate',paramsList,writeProgram);
+    davilaGeislerReplicate = rwObject.read('davilaGeislerReplicate',paramsList,writeProgram);
     fprintf('done\n');
     
     hFig = figure; clf; hold on
@@ -181,7 +187,7 @@ if (p.Results.plotCSF)
     legendStr = cell(length(p.Results.luminances),1);
     for ll = 1:length(p.Results.luminances)
         theColorIndex = rem(ll,length(theColors)) + 1;
-        plot(banksEtAlReplicate.cyclesPerDegree(ll,:),1./[banksEtAlReplicate.mlptThresholds(ll,:).thresholdContrasts]*banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1), ...
+        plot(davilaGeislerReplicate.spotDiametersMinutes(ll,:),1./[davilaGeislerReplicate.mlptThresholds(ll,:).thresholdContrasts]*davilaGeislerReplicate.mlptThresholds(1).testConeContrasts(1), ...
             [theColors(theColorIndex) 'o-'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
         legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
     end
@@ -194,10 +200,10 @@ if (p.Results.plotCSF)
     box off; grid on
     if (p.Results.blur)
         title(sprintf('Computational Observer CSF - w/ blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
-        rwObject.write('banksEtAlReplicateWithBlur',hFig,paramsList,writeProgram,'Type','figure');
+        rwObject.write('davilaGeislerReplicateWithBlur',hFig,paramsList,writeProgram,'Type','figure');
     else
         title(sprintf('Computational Observer CSF - no blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
-        rwObject.write('banksEtAlReplicateNoBlur',hFig,paramsList,writeProgram,'Type','figure');
+        rwObject.write('davilaGeislerReplicateNoBlur',hFig,paramsList,writeProgram,'Type','figure');
     end
 end
 
