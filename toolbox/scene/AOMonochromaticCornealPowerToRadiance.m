@@ -30,7 +30,7 @@ for ww = 1:nBgWavelengths
     if (length(index) ~= 1)
         error('Something funky about wls');
     end
-    radiance(index) = (10^4)*(10^-6)*radianceRaw/colorModulationParams.deltaWl;
+    radiance(index) = (10^4)*(10^-6)*radianceRaw/(wls(2)-wls(1));
 end
         
         

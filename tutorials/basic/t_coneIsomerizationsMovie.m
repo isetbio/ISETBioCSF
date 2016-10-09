@@ -1,5 +1,5 @@
-function validationData = t_coneIsomerrizationsMovie(rParams)
-% validationData = t_coneIsomerrizationsMovie(rParams)
+function validationData = t_coneIsomerrizationsMovie(rParams,varargin)
+% validationData = t_coneIsomerrizationsMovie(rParams,varargin)
 %
 % Illustrates the basic steps required to calculate cone isomerizations
 % for a Gaussian windowed temporal color modulation.
@@ -25,13 +25,18 @@ function validationData = t_coneIsomerrizationsMovie(rParams)
 %   responseParamsGenerate
 %   colorSceneCreate
 %
-% 7/8/16  dhb  Wrote it.
+% Optional key/value pairs
+%  'generatePlots' - true/fale (default true).  Make plots?
+
+%% Parse vargin for options passed here
+p = inputParser;
+p.addParameter('generatePlots',true,@islogical);
+p.parse(varargin{:});
 
 %% Clear
 if (nargin == 0)
     ieInit; close all;
 end
-
 
 %% Fix random number generator so we can validate output exactly
 rng(1);
@@ -47,11 +52,13 @@ theProgram = mfilename;
 paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
 
 %% Plot the Gaussian temporal window, just to make sure it looks right
-gaussianFigure = figure; clf;
-plot(rParams.temporalParams.sampleTimes,rParams.temporalParams.gaussianTemporalWindow,'r');
-xlabel('Time (seconds)');
-ylabel('Window Amplitude');
-title('Stimulus Temporal Window');
+if (p.Results.generatePlots)
+    gaussianFigure = figure; clf;
+    plot(rParams.temporalParams.sampleTimes,rParams.temporalParams.gaussianTemporalWindow,'r');
+    xlabel('Time (seconds)');
+    ylabel('Window Amplitude');
+    title('Stimulus Temporal Window');
+end
 
 %% Loop over time and build a cell array of scenes
 gaborScene = cell(rParams.temporalParams.nSampleTimes,1);
@@ -67,9 +74,11 @@ end
 clearvars('rParamsTemp');
 
 % Make a movie of the stimulus sequence
-showLuminanceMap = false;
-visualizeSceneOrOpticalImageSequence(rwObject,paramsList,theProgram, ...
-    'scene', gaborScene, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborStimulusMovie');
+if (p.Results.generatePlots)
+    showLuminanceMap = false;
+    visualizeSceneOrOpticalImageSequence(rwObject,paramsList,theProgram, ...
+        'scene', gaborScene, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborStimulusMovie');
+end
 
 %% Create the OI object we'll use to compute the retinal images from the scenes
 %
@@ -83,9 +92,11 @@ for ii = 1:rParams.temporalParams.nSampleTimes
 end
 
 % Make a movie of the optical image sequence
+if (p.Results.generatePlots)
 showLuminanceMap = false;
 visualizeSceneOrOpticalImageSequence(rwObject,paramsList,theProgram, ...
     'optical image', theOI, rParams.temporalParams.sampleTimes, showLuminanceMap, 'gaborOpticalImageMovie');
+end
 
 %% Create the coneMosaic object we'll use to compute cone respones
 rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
@@ -101,9 +112,11 @@ for ii = 1:rParams.temporalParams.nSampleTimes
 end
 
 % Make a movie of the isomerizations
-eyeMovementSequence = [];
-visualizeMosaicResponseSequence(rwObject,paramsList,theProgram, ...
-    'isomerizations (R*/cone)', gaborConeAbsorptions, eyeMovementSequence, theMosaic.pattern, rParams.temporalParams.sampleTimes, [theMosaic.width theMosaic.height], theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, 'gaborIsomerizations');
+if (p.Results.generatePlots)
+    eyeMovementSequence = [];
+    visualizeMosaicResponseSequence(rwObject,paramsList,theProgram, ...
+        'isomerizations (R*/cone)', gaborConeAbsorptions, eyeMovementSequence, theMosaic.pattern, rParams.temporalParams.sampleTimes, [theMosaic.width theMosaic.height], theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, 'gaborIsomerizations');
+end
 
 %% Plot cone contrasts as a function of time, as a check
 %
@@ -112,13 +125,15 @@ visualizeMosaicResponseSequence(rwObject,paramsList,theProgram, ...
 for ii = 1:rParams.temporalParams.nSampleTimes      
     LMSContrasts(:,ii) = mosaicUnsignedConeContrasts(gaborConeAbsorptions(:,:,ii),theMosaic);
 end
-vcNewGraphWin; hold on;
-plot(rParams.temporalParams.sampleTimes,LMSContrasts(1,:)','r');
-plot(rParams.temporalParams.sampleTimes,LMSContrasts(2,:)','g');
-plot(rParams.temporalParams.sampleTimes,LMSContrasts(3,:)','b');
-xlabel('Time (seconds)');
-ylabel('Contrast');
-title('LMS Cone Contrasts');
+if (p.Results.generatePlots)
+    vcNewGraphWin; hold on;
+    plot(rParams.temporalParams.sampleTimes,LMSContrasts(1,:)','r');
+    plot(rParams.temporalParams.sampleTimes,LMSContrasts(2,:)','g');
+    plot(rParams.temporalParams.sampleTimes,LMSContrasts(3,:)','b');
+    xlabel('Time (seconds)');
+    ylabel('Contrast');
+    title('LMS Cone Contrasts');
+end
 
 %% Send back some validation data if requested
 if (nargout > 0)

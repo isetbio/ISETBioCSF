@@ -1,4 +1,4 @@
-function vScriptsList = tfeValidateListAllValidationDirs
+function vScriptsList = IBIOCDValidateListAllValidationDirs
 %
 % This encapsulates a vull list of our validation directories, so we only
 % need to update it in one place.
@@ -14,7 +14,6 @@ function vScriptsList = tfeValidateListAllValidationDirs
 rootDir = UnitTest.getPref('validationRootDir');
 
 vScriptsList = {...
-        {fullfile(rootDir, 'scripts', 'tfe')} ... 
-        {fullfile(rootDir, 'scripts', 'QCM')} ... 
+        {fullfile(rootDir, 'scripts', 'basic')} ... 
     };
 end

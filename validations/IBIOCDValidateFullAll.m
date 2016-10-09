@@ -1,5 +1,5 @@
-function tfeValidateFullAll(varargin)
-% tfeValidateFullAll(varargin)
+function IBIOCDValidateFullAll(varargin)
+% IBIOCDValidateFullAll(varargin)
 %
 % Full data check (no figures, no publish) of all validation functions
 %
@@ -16,9 +16,9 @@ function tfeValidateFullAll(varargin)
 %   'numericTolerance' - value (default 500*eps).  Tolerance to use for numeric checks.
 
 % Examples:
-%   tfeValidateFullAll('verbosity','high');
-%   tfeValidateFullAll('Numeric Tolerance',1000*eps);
-%   tfeValidateFullAll('generate plots',true);
+%   IBIOColorDetectValidateFullAll('verbosity','high');
+%   IBIOColorDetectValidateFullAll('Numeric Tolerance',1000*eps);
+%   IBIOColorDetectValidateFullAll('generate plots',true);
 
 %% Parse input and set settable prefs
 p = inputParser;
@@ -45,7 +45,7 @@ UnitTest.setPref('closeFigsOnInit', true);
 close all; 
 
 %% We will use preferences for the 'isetbioValidation' project
-thisProject = 'temporalFittingEngine';
+thisProject = 'IBIOColorDetect';
 UnitTest.usePreferencesForProject(thisProject, 'reset');
 
 %% Print current values of isetbioValidation prefs

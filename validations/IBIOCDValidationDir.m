@@ -1,6 +1,6 @@
-function validationDir = tfeValidationDir
+function validationDir = IBIOCDValidationDir
 %
-% Return the full path to the tfe project validtion dir, which should be
+% Return the full path to the IBIOColorDetect project validtion dir, which should be
 % where this function resides in the toolbox.
 
 fullValidationDir = mfilename('fullpath');

@@ -216,8 +216,8 @@ switch (colorModulationParams.modulationType)
         nWls = length(wls);
         
         % Get equivalent spectral radiance of background and spot increment (full on)
-        bgRadiance = AOMonochromaticCornealPowerToRadiance(wls,backgroundParams.backgroundWavelengthsNm,backgroundParams.backgroundCornealPowerUW,pupilDiamMm,spatialParams.backgroundSizeDegs^2);
-        spotRadiance = AOMonochromaticCornealPowerToRadiance(wls,colorModulationParams.spotWavelengthsNm,colorModulationParams.sCornealPowerUW,pupilDiamMm,spatialParams.backgroundSizeDegs^2);
+        bgRadiance = AOMonochromaticCornealPowerToRadiance(wls,backgroundParams.backgroundWavelengthsNm,backgroundParams.backgroundCornealPowerUW,oiParams.pupilDiamMm,spatialParams.backgroundSizeDegs^2);
+        spotRadiance = AOMonochromaticCornealPowerToRadiance(wls,colorModulationParams.spotWavelengthNm,colorModulationParams.spotCornealPowerUW,oiParams.pupilDiamMm,spatialParams.backgroundSizeDegs^2);
         
         % Create an empty scene to use for the spot
         theScene = sceneCreate('empty');
