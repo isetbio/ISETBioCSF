@@ -46,7 +46,7 @@ close all;
 
 %% We will use preferences for the 'isetbioValidation' project
 thisProject = 'IBIOColorDetect';
-UnitTest.usePreferencesForProject(thisProject, 'reset');
+UnitTest.usePreferencesForProject(thisProject);
 
 %% Print current values of isetbioValidation prefs
 UnitTest.listPrefs();

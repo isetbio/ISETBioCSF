@@ -39,7 +39,7 @@ function validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
 %   'setRngSeed' - true/false (default true).  Set the rng seed to a
 %        value so output is reproducible.
 %   'compute' - true/false (default true).  Do the computations.
-%   'visualizeResponses' - true/false (default false).  Produce response
+%   'generatePlots' - true/false (default false).  Produce response
 %        visualizations.  Set to false when running big jobs on clusters or
 %        in parfor loops, as plotting doesn't seem to play well with those
 %        conditions.
@@ -57,7 +57,7 @@ p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
 p.addParameter('setRng',true,@islogical);
 p.addParameter('compute',true,@islogical);
-p.addParameter('visualizeResponses',false,@islogical);
+p.addParameter('generatePlots',false,@islogical);
 p.addParameter('exportPDF',true,@islogical);
 p.addParameter('renderVideo',true,@islogical);
 p.addParameter('delete',false',@islogical);
@@ -183,6 +183,7 @@ if (p.Results.compute)
 
     % Loop over color directions
     tic;
+    stimDataForValidation = cell(nParforConditions,1);;
     parfor kk = 1:nParforConditions
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
@@ -201,6 +202,11 @@ if (p.Results.compute)
             'responseInstanceArray',responseInstanceArray, ...
             'noiseFreeIsomerizations',noiseFreeIsomerizations);
         
+        % Save some data for validation in first loop
+        if (kk == 1)
+            stimDataForValidation{kk} = stimData.responseInstanceArray(1);
+        end
+        
         % Save data for this color direction/contrast pair
         paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
         rwObject.write('responseInstances',stimData,paramsList,theProgram);
@@ -208,8 +214,14 @@ if (p.Results.compute)
     fprintf('Finished generating responses in %2.2f minutes\n', toc/60);
     
     %% Validation data
+    %
+    % Since we want to store some stimData and that isn't saved outside the
+    % parfor loop (and is in fact a bit hard to save outside the parfor
+    % loop)
     if (nargout > 0)
-        validationData = [];
+        validationData.ancillaryData = ancillaryData;
+        validationData.noStimData = noStimData.responseInstanceArray(1);
+        validationData.stimData = stimDataForValidation{1};
     end
 end
 
@@ -218,20 +230,20 @@ end
 % This is not yet implemented, but here is where the code would go.  And, a
 % very early version of the visualization is in the commented out code
 % immediately below
-if (p.Results.visualizeResponses)
-    noStimData = rwObject.read('responseInstances',paramsList,theProgram);
-    ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
-    parforConditionStructs = ancillaryData.parforConditionStructs;
-    nParforConditions = length(parforConditionStructs);
-
-    for kk = 1:nParforConditions 
-        thisConditionStruct = parforConditionStructs{kk};
-        colorModulationParamsTemp = rParams.colorModulationParams;
-        colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
-        colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
-        paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
-        stimData = rwObject.read('responseInstances',paramsList,theProgram);   
-    end   
+if (p.Results.generatePlots)
+    % noStimData = rwObject.read('responseInstances',paramsList,theProgram);
+    % ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
+    % parforConditionStructs = ancillaryData.parforConditionStructs;
+    % nParforConditions = length(parforConditionStructs);
+    % 
+    % for kk = 1:nParforConditions 
+    %     thisConditionStruct = parforConditionStructs{kk};
+    %     colorModulationParamsTemp = rParams.colorModulationParams;
+    %     colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
+    %     colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
+    %     paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+    %     stimData = rwObject.read('responseInstances',paramsList,theProgram);   
+    % end   
 end
 % % THIS IS BROKEN AND NEES TO BE UPDATED TO NEW DATA FORMAT AND rwObject
 % % LAND.
@@ -239,31 +251,31 @@ end
 % % Also, the time numbers on the videos do not seem to correspond to the
 % % stimulus peak at time 0, and the videos look screwy in the no noise
 % % condition.
-% if (p.Results.visualizeResponses)
-%     fprintf('\nVisualizing responses ...\n');
-%     for ii = 1:size(testConeContrasts,2)
-%         for jj = 1:numel(testContrasts)
-%             stimulusLabel = sprintf('LMS_%2.2f_%2.2f_%2.2f_Contrast_%2.2f', testConeContrasts(1,ii), testConeContrasts(2,ii), testConeContrasts(3,ii), testContrasts(jj));
-%             s = theStimData{ii, jj};
-%             
-%             % Visualize a few response instances only
-%             for iTrial = 1:2
-%                 figHandle = visualizeResponseInstance(conditionDir, s.responseInstanceArray(iTrial), stimulusLabel, theMosaic, iTrial, testDirectionParams.trialsNum, p.Results.renderVideo);
-%                 if (p.Results.exportPDF)
-%                     figFileNames{ii, jj, iTrial} = ...
-%                         fullfile(colorGaborDetectOutputDir(conditionDir),sprintf('%s_Trial%dOf%d.pdf', stimulusLabel, iTrial, testDirectionParams.trialsNum),'figures');
-%                     NicePlot.exportFigToPDF(figFileNames{ii, jj, iTrial}, figHandle, 300);
-%                 end
-%             end
-%         end
-%     end
-%     
-%     % Export summary PDF with all responses
-%     if (p.Results.exportPDF)
-%         summaryPDF = fullfile(colorGaborDetectOutputDir(conditionDir,'figures'), 'AllInstances.pdf');
-%         fprintf('Exporting a summary PDF with all response instances in %s\n', summaryPDF);
-%         NicePlot.combinePDFfilesInSinglePDF(figFileNames(:), summaryPDF);
-%     end
+% if (p.Results.generatePlots)
+    % fprintf('\nVisualizing responses ...\n');
+    % for ii = 1:size(testConeContrasts,2)
+    %     for jj = 1:numel(testContrasts)
+    %         stimulusLabel = sprintf('LMS_%2.2f_%2.2f_%2.2f_Contrast_%2.2f', testConeContrasts(1,ii), testConeContrasts(2,ii), testConeContrasts(3,ii), testContrasts(jj));
+    %         s = theStimData{ii, jj};
+    % 
+    %         % Visualize a few response instances only
+    %         for iTrial = 1:2
+    %             figHandle = visualizeResponseInstance(conditionDir, s.responseInstanceArray(iTrial), stimulusLabel, theMosaic, iTrial, testDirectionParams.trialsNum, p.Results.renderVideo);
+    %             if (p.Results.exportPDF)
+    %                 figFileNames{ii, jj, iTrial} = ...
+    %                     fullfile(colorGaborDetectOutputDir(conditionDir),sprintf('%s_Trial%dOf%d.pdf', stimulusLabel, iTrial, testDirectionParams.trialsNum),'figures');
+    %                 NicePlot.exportFigToPDF(figFileNames{ii, jj, iTrial}, figHandle, 300);
+    %             end
+    %         end
+    %     end
+    % end
+    % 
+    % % Export summary PDF with all responses
+    % if (p.Results.exportPDF)
+    %     summaryPDF = fullfile(colorGaborDetectOutputDir(conditionDir,'figures'), 'AllInstances.pdf');
+    %     fprintf('Exporting a summary PDF with all response instances in %s\n', summaryPDF);
+    %     NicePlot.combinePDFfilesInSinglePDF(figFileNames(:), summaryPDF);
+    % end
 % end
 
 %% Delete response instance files.

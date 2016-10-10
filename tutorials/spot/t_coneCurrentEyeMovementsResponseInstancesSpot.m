@@ -1,16 +1,40 @@
-function validationData = t_coneCurrentEyeMovementsResponseInstancesSpot(rParams)
-% validationData = t_coneCurrentEyeMovementsResponseInstancesSpot(rParams)
+function validationData = t_coneCurrentEyeMovementsResponseInstancesSpot(varargin)
+% validationData = t_coneCurrentEyeMovementsResponseInstancesSpot(varargin)
 %
 % This is a call into t_coneCurrentEyeMovementsResponseInstances that demonstates its
 % ability to handle AO spots as well as Gabor modulations on monitors.
 %
-% Optional key/value pairs
-%  'generatePlots' - true/fale (default true).  Make plots?
+% Key/value pairs
+%   'rParams' - structure (default empty). Value the is the rParams structure to use
+%   'contrastParams - structure (default empty). Value is the contrastParams structure to use.
+%   'setRngSeed' - true/false (default true).  Set the rng seed to a
+%        value so output is reproducible.
+%   'compute' - true/false (default true).  Do the computations.
+%   'generatePlots' - true/false (default false).  Produce response
+%        visualizations.  Set to false when running big jobs on clusters or
+%        in parfor loops, as plotting doesn't seem to play well with those
+%        conditions.
+%   'exportPDF' - true/false (default true).  If visualizing responses,
+%        export the PDF files.
+%   'renderVideo' - true/false (default true).  If visualizing responses, generate
+%        the videos.
+%   'delete' - true/false (default true).  Delete the response instance
+%        files.  Useful for cleaning up big output when we are done with
+%        it.  If this is true, output files are deleted at the end.
 
-%% Parse vargin for options passed here
+%% Parse input
 p = inputParser;
-p.addParameter('generatePlots',true,@islogical);
+p.addParameter('rParams',[],@isemptyorstruct);
+p.addParameter('contrastParams',[],@isemptyorstruct);
+p.addParameter('setRng',true,@islogical);
+p.addParameter('compute',true,@islogical);
+p.addParameter('generatePlots',false,@islogical);
+p.addParameter('exportPDF',true,@islogical);
+p.addParameter('renderVideo',true,@islogical);
+p.addParameter('delete',false',@islogical);
 p.parse(varargin{:});
+rParams = p.Results.rParams;
+contrastParams = p.Results.contrastParams;
 
 %% Clear
 if (nargin == 0)
@@ -24,7 +48,7 @@ rng(1);
 %
 % responseParamsGenerate returns a hierarchical struct of
 % parameters used by a number of tutorials and functions in this project.
-if (nargin < 1 | isempty(rParams))
+if (isempty(rParams))
     rParams = responseParamsGenerate('spatialType','spot','backgroundType','AO','modulationType','AO');
     
     % Override some defult parameters
@@ -46,7 +70,9 @@ if (nargin < 1 | isempty(rParams))
 end
 
 %% Call into t_coneCurrentEyeMovementsResponseInstances with spot parameters
-contrastParams = instanceParamsGenerate('instanceType','contrasts');
+if (isempty(contrastParams))
+    contrastParams = instanceParamsGenerate('instanceType','contrasts');
+end
 validationData = t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',contrastParams,'generatePlots',p.Results.generatePlots);
 
 

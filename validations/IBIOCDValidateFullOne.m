@@ -5,7 +5,7 @@ close all;
 
 %% We will use preferences for the 'isetbioValidation' project
 thisProject = 'IBIOColorDetect';
-UnitTest.usePreferencesForProject(thisProject, 'reset');
+UnitTest.usePreferencesForProject(thisProject);
 
 % Run time error behavior
 % valid options are: 'rethrowExceptionAndAbort', 'catchExceptionAndContinue'

@@ -52,7 +52,7 @@ for stimFrameIndex = 1:stimulusFramesNum
     oiParamsTemp.pupilDiamMm = 1000*opticsGet(oiGet(theOI,'optics'),'aperture diameter');
     
     % Create a scene for the current frame
-    theScene = colorSceneCreate(spatialParams,backgroundParams,colorModulationParams,oiParams);
+    theScene = colorSceneCreate(spatialParams,backgroundParams,colorModulationParams,oiParamsTemp);
     
     % Compute the optical image for the current frame
     theOI = oiCompute(theOI, theScene);
