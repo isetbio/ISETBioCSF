@@ -14,8 +14,8 @@ function ValidationFunction(runTimeParams)
     UnitTest.validationRecord('SIMPLE_MESSAGE', '***** v_IBIOCDConeCuurentEyeMovementsResponseInstances *****');
     
     %% Basic validation
-%     validationData1 = t_coneCurrentEyeMovementsResponseInstances('generatePlots',runTimeParams.generatePlots);
-%     UnitTest.validationData('validationData1',validationData1);
+    validationData1 = t_coneCurrentEyeMovementsResponseInstances('generatePlots',runTimeParams.generatePlots);
+    UnitTest.validationData('validationData1',validationData1);
     
     %% Spot version
     validationData2 = t_coneCurrentEyeMovementsResponseInstancesSpot('generatePlots',runTimeParams.generatePlots);
