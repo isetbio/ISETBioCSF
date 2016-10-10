@@ -3,6 +3,14 @@ function validationData = t_colorDetectFindPerformanceSpot(rParams)
 %
 % This is a call into t_colorDetectFindPerformance that demonstates its
 % ability to handle AO spots as well as Gabor modulations on monitors.
+%
+% Optional key/value pairs
+%  'generatePlots' - true/fale (default true).  Make plots?
+
+%% Parse vargin for options passed here
+p = inputParser;
+p.addParameter('generatePlots',true,@islogical);
+p.parse(varargin{:});
 
 %% Clear
 if (nargin == 0)
@@ -37,16 +45,10 @@ if (nargin < 1 | isempty(rParams))
     rParams.oiParams.pupilDiamMm = 7;
 end
 
-%% Call into t_coneIsomerizationsMovie with spot parameters
+%% Call into t_colorDetectFindPerformance with spot parameters
 contrastParams = instanceParamsGenerate('instanceType','contrasts');
 thresholdParams = thresholdParamsGenerate;
 thresholdParams.method = 'mlpt';
-validationData = t_colorDetectFindPerformance('rParams',rParams,'testDirectionParams',contrastParams,'thresholdParams',thresholdParams,'plotPsychometric',true);
+validationData = t_colorDetectFindPerformance('rParams',rParams,'testDirectionParams',contrastParams,'thresholdParams',thresholdParams,'plotPsychometric',true,'generatePlots',p.Results.generatePlots);
 
-%% Send back some validation data if requested
-if (nargout > 0)
-    validationData.maxIsomerizations = maxIsomerizations;
-    validationData.minIsomerizations = minIsomerizations;
-    validationData.contrasts = contrasts;
-end
 

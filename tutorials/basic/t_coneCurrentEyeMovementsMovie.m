@@ -1,5 +1,5 @@
-function validationData = t_coneCurrentEyeMovementsMovie(rParams)
-% validationData = t_coneCurrentEyeMovementsMovie(rParams)
+function validationData = t_coneCurrentEyeMovementsMovie(rParams,varargin)
+% validationData = t_coneCurrentEyeMovementsMovie(rParams,varargin)
 %
 % Show how to generate a movie with the cone absoprtions and photocurrent
 % to a stimulus, with eye movements and optional CRT raster effects.
@@ -27,13 +27,18 @@ function validationData = t_coneCurrentEyeMovementsMovie(rParams)
 %   colorDetectResponseInstanceArrayConstruct
 %   colorDetectResponseInstanceArrayFastConstruct
 %
-%  7/9/16  npc Wrote it.
+% Optional key/value pairs
+%  'generatePlots' - true/fale (default true).  Make plots?
+
+%% Parse vargin for options passed here
+p = inputParser;
+p.addParameter('generatePlots',true,@islogical);
+p.parse(varargin{:});
 
 %% Clear
 if (nargin == 0)
     ieInit; close all;
 end
-
 
 %% Fix random number generator so we can validate output exactly
 rng(1);
@@ -120,20 +125,25 @@ timeAxis = (1:size(photocurrentSequence,3))*rParams.mosaicParams.timeStepInSecon
 timeAxis = timeAxis - (timeAxis(end)-timeAxis(1))/2;
 
 %% Visualize and render video of the isomerizations
-visualizeMosaicResponseSequence(rwObject,theParamsList,theProgram, ...
-    'isomerizations (R*/cone)', coneIsomerizationSequence, eyeMovementSequence, ...
-    theMosaic.pattern, timeAxis, [theMosaic.width theMosaic.height], ...
-    theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, ...
-    'gaborIsomerizationsWithEyeMovements');
+if (p.Results.generatePlots)
+    visualizeMosaicResponseSequence(rwObject,theParamsList,theProgram, ...
+        'isomerizations (R*/cone)', coneIsomerizationSequence, eyeMovementSequence, ...
+        theMosaic.pattern, timeAxis, [theMosaic.width theMosaic.height], ...
+        theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, ...
+        'gaborIsomerizationsWithEyeMovements');
+end
 
 %% Visualize and render video of the photocurrents
-visualizeMosaicResponseSequence(rwObject,theParamsList,theProgram, ...
-    'photocurrent (pAmps)', photocurrentSequence, eyeMovementSequence, ...
-    theMosaic.pattern, timeAxis, [theMosaic.width theMosaic.height], ...
-    theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, ...
-    'gaborPhotocurrentsWithEyeMovements');
+if (p.Results.generatePlots)
+    visualizeMosaicResponseSequence(rwObject,theParamsList,theProgram, ...
+        'photocurrent (pAmps)', photocurrentSequence, eyeMovementSequence, ...
+        theMosaic.pattern, timeAxis, [theMosaic.width theMosaic.height], ...
+        theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, ...
+        'gaborPhotocurrentsWithEyeMovements');
+end
 
 %% Return validation if desired                           
 if (nargout > 0)
-    validationData = [];
+    validationData.coneIsomerizationSequence = coneIsomerizationSequence;
+    validationData.photocurrentSequence = photocurrentSequence;
 end

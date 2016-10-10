@@ -1,8 +1,16 @@
-function validationData = t_coneCurrentEyeMovementsMovieSpot(rParams)
-% validationData = t_coneCurrentEyeMovementsMovieSpot(rParams)
+function validationData = t_coneCurrentEyeMovementsMovieSpot(rParams,varargin)
+% validationData = t_coneCurrentEyeMovementsMovieSpot(rParams,varargin)
 %
 % This is a call into t_coneCurrentEyeMovementsMovie that demonstates its
 % ability to handle AO spots as well as Gabor modulations on monitors.
+%
+% Optional key/value pairs
+%  'generatePlots' - true/fale (default true).  Make plots?
+
+%% Parse vargin for options passed here
+p = inputParser;
+p.addParameter('generatePlots',true,@islogical);
+p.parse(varargin{:});
 
 %% Clear
 if (nargin == 0)
@@ -28,12 +36,5 @@ if (nargin < 1 | isempty(rParams))
 end
 
 %% Call into t_coneIsomerizationsMovie with spot parameters
-validationData = t_coneCurrentEyeMovementsMovie(rParams);
-
-%% Send back some validation data if requested
-if (nargout > 0)
-    validationData.maxIsomerizations = maxIsomerizations;
-    validationData.minIsomerizations = minIsomerizations;
-    validationData.contrasts = contrasts;
-end
+validationData = t_coneCurrentEyeMovementsMovie(rParams,'generatePlots',p.Results.generatePlots);
 
