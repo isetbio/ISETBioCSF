@@ -40,7 +40,7 @@ function validationFileToBeDeleted = selectValidationFile(thisProject)
 
 UnitTest.usePreferencesForProject(thisProject);
 
-validationFileToBeDeleted = UnitTest.selectScriptFromExistingOnes('prompt','Enter script no. to delete');
+validationFileToBeDeleted = UnitTest.selectScriptFromExistingOnes('prompt','Enter script no. to delete data for that script');
 idx = strfind(validationFileToBeDeleted,'/');
 validationFileToBeDeleted = validationFileToBeDeleted(idx(end)+1:end);
 validationFileToBeDeleted = strrep(validationFileToBeDeleted, 'v_', '');
