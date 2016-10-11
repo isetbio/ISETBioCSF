@@ -30,7 +30,7 @@ function validationData = t_colorGabor(rParams,varargin)
 %   colorSceneCreate
 %
 % Optional key/value pairs
-%  'generatePlots' - true/fale (default true).  Make plots?
+%  'generatePlots' - true/false (default true).  Make plots?
 
 %% Parse vargin for options passed here
 p = inputParser;

@@ -1,4 +1,4 @@
-1function IBCDValidateFullOne(varargin)
+function IBCDValidateFullOne(varargin)
 
 %% Close all figures so that we start with a clean slate
 close all;
