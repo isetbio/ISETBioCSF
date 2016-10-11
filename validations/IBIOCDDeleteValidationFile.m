@@ -29,7 +29,7 @@ else
     end
     
     for k = 1:numel(list)
-        fprintf('Deleting local %s/%s\n', list(k).remotePath, list(k).artifactId);
+        fprintf('Deleting %s/%s\n', list(k).remotePath, list(k).artifactId);
         deleted = rdtDeleteLocalArtifacts(client.configuration, list(k));
         deleted = rdtDeleteArtifacts(client.configuration, list(k));
     end
