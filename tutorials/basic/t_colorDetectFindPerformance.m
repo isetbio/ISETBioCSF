@@ -22,6 +22,8 @@ function validationData = t_colorDetectFindPerformance(varargin)
 %   'setRngSeed' - true/false (default true).  Set the rng seed to a
 %        value so output is reproducible.
 %   'compute' - true/false (default true).  Do the computations.
+%   'generatePlots' - true/false (default true).  Produce any plots at
+%      all? Other plot options only have an effect if this is true.
 %   'plotPsychometric' - true/false (default false).  Produce
 %       psychometric function output graphs.
 %   'plotSvmBoundary' - true/false (default false).  Plot classification boundary
@@ -40,6 +42,7 @@ p.addParameter('testDirectionParams',[],@isemptyorstruct);
 p.addParameter('thresholdParams',[],@isemptyorstruct);
 p.addParameter('setRng',true,@islogical);
 p.addParameter('compute',true,@islogical);
+p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',false,@islogical);
 p.addParameter('plotSvmBoundary',false,@islogical);
 p.addParameter('plotPCAAxis1',1,@isnumeric)
@@ -155,10 +158,10 @@ if (p.Results.compute)
         % illustrates the classifier.
         [usePercentCorrect(kk),useStdErr(kk),h] = ...
             classifyForOneDirectionAndContrast(noStimData,stimData,thresholdParams, ...
-            'plotSvmBoundary',p.Results.plotSvmBoundary,'plotPCAAxis1',p.Results.plotPCAAxis1,'plotPCAAxis2',p.Results.plotPCAAxis2);
+            'plotSvmBoundary',p.Results.generatePlots && p.Results.plotSvmBoundary,'plotPCAAxis1',p.Results.plotPCAAxis1,'plotPCAAxis2',p.Results.plotPCAAxis2);
         
         % Save classifier plot if we made one and then close the figure.
-        if (p.Results.plotSvmBoundary)
+        if (p.Results.generatePlots && p.Results.plotSvmBoundary)
             paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp, thresholdParams};
             rwObject.write(sprintf('svmBoundary_PCA%d_PCA%d',plotSvmPCAAxis1,plotSvmPCAAxis2), ...
                 h,paramsList,writeProgram,'Type','figure');
@@ -195,12 +198,12 @@ if (p.Results.compute)
     
     %% Validation data
     if (nargout > 0)
-        validationData = [];
+        validationData.performanceData = performanceData;
     end
 end
 
 %% Plot performances obtained in each color direction as raw psychometric functions
-if (p.Results.plotPsychometric) 
+if (p.Results.generatePlots && p.Results.plotPsychometric) 
     fprintf('Reading performance data ... ');
     paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, thresholdParams};
     performanceData = rwObject.read('performanceData',paramsList,writeProgram);
