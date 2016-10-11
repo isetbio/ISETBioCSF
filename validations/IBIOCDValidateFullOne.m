@@ -1,4 +1,4 @@
-function IBCDValidateFullOne(varargin)
+function IBIOCDValidateFullOne(varargin)
 
 %% Close all figures so that we start with a clean slate
 close all;
