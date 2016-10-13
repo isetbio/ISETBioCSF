@@ -12,13 +12,16 @@ function c_DavilaGeislerReplicate(varargin)
 %   'backgroundSizeDegs' - value (default 2.1). Size of square background
 %   'wavelength' - value (default 550). Wavelength to use in calculations
 %   'luminances' - vector (default [10]).  Background luminances in cd/m2 to be investigated.
+%   'durationMs' - value (default 100).  Stimulus duration in msec.
 %   'blur' - true/false (default true). Incorporate lens blur.
 %   'imagePixels' - value (default 400).  Size of image pixel array
 %   'computeResponses' - true/false (default true).  Compute responses.
 %   'findPerformance' - true/false (default true).  Find performance.
 %   'fitPsychometric' - true/false (default true).  Fit psychometric functions.
+%   'generatePlots' - true/false (default true).  Generate plots?  Other
+%     plot options only have an effect if this is true.
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
-%   'plotCSF' - true/false (default true).  Plot results.
+%   'plotSpatialSummation' - true/false (default true).  Plot results.
 
 %% Parse input
 p = inputParser;
@@ -27,13 +30,15 @@ p.addParameter('spotDiametersMinutes',[0.5 1 5 10 20 40],@isnumeric);
 p.addParameter('backgroundSizeDegs',[2.1],@isnumeric);
 p.addParameter('wavelength',550,@isnumeric);
 p.addParameter('luminances',[10],@isnumeric);
+p.addParameter('durationMs',100,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
+p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',true,@islogical);
-p.addParameter('plotCSF',true,@islogical);
+p.addParameter('plotSpatialSummation',true,@islogical);
 p.parse(varargin{:});
 
 %% Get the parameters we need
@@ -43,12 +48,12 @@ rParams = responseParamsGenerate('spatialType','spot','backgroundType','AO','mod
 
 %% Loop over spatial frequency
 for ll = 1:length(p.Results.luminances)
-    for cc = 1:length(p.Results.spotDiametersMinutes)
+    for dd = 1:length(p.Results.spotDiametersMinutes)
         
         % Get stimulus parameters correct
         %
         % Spatial 
-        rParams.spatialParams.spotSizeDegs = p.Results.spotDiametersMinutes(cc)/60;
+        rParams.spatialParams.spotSizeDegs = p.Results.spotDiametersMinutes(dd)/60;
         rParams.spatialParams.backgroundSizeDegs = p.Results.backgroundSizeDegs;
         spatialParams.fieldOfViewDegs = 1.1*p.Results.backgroundSizeDegs;
         spatialParams.row = p.Results.imagePixels;
@@ -71,23 +76,42 @@ for ll = 1:length(p.Results.luminances)
         % This is eventually applied both to the background luminance and to the
         % monitor channel spectra, so that we don't get unintersting out of gamut errors.
         rParams.backgroundParams.backgroundWavelengthsNm = [p.Results.wavelength];
-        rParams.backgroundParams.backgroundCornealPowerUW = [1];
-        
-        % Spot color parameters
-        colorModulationParams.startWl = p.Results.wavelength;
-        colorModulationParams.endWl = p.Results.wavelength;
-        colorModulationParams.deltaWl = 10;
-        colorModulationParams.spotWavelengthNm = p.Results.wavelength0;
-        colorModulationParams.spotCornealPowerUW = 20;
-        colorModulationParams.contrast = 1;
         
         % Pupil size.  They used a 3mm artificial pupil
         oiParams.pupilDiamMm = 3;
         
+        % Scale radiance to produce desired background levels
+        deltaWl = 10;
+        S = [p.Results.wavelength deltaWl 2];
+        wls = SToWls(S);
+        load T_xyz1931
+        T_xyz = SplineCmf(S_xyz1931,683*T_xyz1931,S);
+        radiancePerUW = AOMonochromaticCornealPowerToRadiance(wls,rParams.backgroundParams.backgroundWavelengthsNm,1,oiParams.pupilDiamMm,rParams.spatialParams.backgroundSizeDegs^2);
+        xyzPerUW = T_xyz*radiancePerUW;
+        desiredLumCdM2 = p.Results.luminances(ll);
+        rParams.backgroundParams.backgroundCornealPowerUW = desiredLumCdM2/xyzPerUW(2);
+        
+        % Scale spot parameters into what we think a reasonable range is.
+        % In Davila & Geisler, they give thresholds in what they call
+        % threshold energy, which is spotLuminance*durationSecs*areaMinutes2.
+        %
+        % Just to get things into a reasonable scale, we'll find a
+        % luminance corresponding to a threshold energy of 10 for our
+        % smallest spot.
+        maxThresholdEnergy = 10;
+        minSpotAreaMin2 = pi*(min(p.Results.spotDiametersMinutes)/2)^2;
+        maxSpotLuminanceCdM2 = maxThresholdEnergy/((p.Results.durationMs/1000)*minSpotAreaMin2);
+        rParams.colorModulationParams.startWl = p.Results.wavelength;
+        rParams.colorModulationParams.endWl = p.Results.wavelength+deltaWl;
+        rParams.colorModulationParams.deltaWl = deltaWl;
+        rParams.colorModulationParams.spotWavelengthNm = p.Results.wavelength;
+        rParams.colorModulationParams.spotCornealPowerUW = maxSpotLuminanceCdM2/xyzPerUW(2);
+        rParams.colorModulationParams.contrast = 1;
+   
         % Set duration equal to sampling interval to do just one frame.
         %
         % Their intervals were 100 msec each.
-        rParams.temporalParams.simulationTimeStepSecs = 100/1000;
+        rParams.temporalParams.simulationTimeStepSecs = p.Results.durationMs/1000;
         rParams.temporalParams.stimulusDurationInSeconds = rParams.temporalParams.simulationTimeStepSecs;
         rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
         rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
@@ -102,45 +126,38 @@ for ll = 1:length(p.Results.luminances)
         rParams.mosaicParams.osNoise = true;
         rParams.mosaicParams.osModel = 'Linear';
         
-        % Parameters that define the LM instances we'll generate here
-        %
-        % Use default LMPlane.
-        testDirectionParams = instanceParamsGenerate;
-        testDirectionParams.startAngle = 45;
-        testDirectionParams.deltaAngle = 90;
-        testDirectionParams.nAngles = 1;
-        
+        % Parameters that define the contrasts we'll study here
+        testDirectionParams = instanceParamsGenerate('instanceType','contrasts');
+    
         % Number of contrasts to run in each color direction
-        testDirectionParams.nContrastsPerDirection = 20;
+        testDirectionParams.nContrastsPerDirection = 30;
         testDirectionParams.lowContrast = 0.0001;
-        testDirectionParams.highContrast = 0.1;
+        testDirectionParams.highContrast = 1;
         testDirectionParams.contrastScale = 'log';    % choose between 'linear' and 'log'
-        
+        testDirectionParams.trialsNum = p.Results.nTrainingSamples;
+
         % Parameters related to how we find thresholds from responses
         %
         % Use default
         thresholdParams = thresholdParamsGenerate;
-        
-        % Set number of trials
-        testDirectionParams.trialsNum = p.Results.nTrainingSamples;
-        
+
         %% Compute response instances
         if (p.Results.computeResponses)
-            t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'visualizeResponses',false);
+            t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',false);
         end
         
         %% Find performance, template max likeli
         thresholdParams.method = 'mlpt';
         if (p.Results.findPerformance)
-            t_colorDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
+            t_colorDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',true);
         end
         
         %% Fit psychometric functions
         if (p.Results.fitPsychometric)
-            davilaGeislerReplicate.spotDiametersMinutes(ll,cc) = p.Results.spotDiametersMinutes(cc);
+            davilaGeislerReplicate.spotDiametersMinutes(ll,dd) = p.Results.spotDiametersMinutes(dd);
             thresholdParams.method = 'mlpt';
-            davilaGeislerReplicate.mlptThresholds(ll,cc) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'instanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
-                'plotPsychometric',p.Results.plotPsychometric,'plotEllipse',false);
+            davilaGeislerReplicate.mlptThresholds(ll,dd) = t_fitPsychometricFunctions('rParams',rParams,'instanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
+                'generatePlots',p.Results.generatePlots && p.Results.plotPsychometric);
             close all;
         end
     end
@@ -154,7 +171,6 @@ if (p.Results.fitPsychometric)
     nameParams = rParams.spatialParams;
     nameParams.spotDiametersMinutes = 0;
     nameParams.fieldOfViewDegs = 0;
-    nameParams.gaussianFWHMDegs = 0;
     paramsList = {nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;
@@ -166,12 +182,11 @@ end
 %
 % The way the plot is coded counts on the test contrasts never changing
 % across the conditions, which we could explicitly check for here.
-if (p.Results.plotCSF)
+if (p.Results.generatePlots && p.Results.plotSpatialSummation)
     fprintf('Reading performance data ...');
     nameParams = rParams.spatialParams;
     nameParams.spotDiametersMinutes = 0;
     nameParams.fieldOfViewDegs = 0;
-    nameParams.gaussianFWHMDegs = 0;
     paramsList = {nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;

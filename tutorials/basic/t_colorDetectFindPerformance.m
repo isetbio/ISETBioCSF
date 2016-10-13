@@ -140,9 +140,12 @@ if (p.Results.compute)
     tic
     parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
     nParforConditions = length(parforConditionStructs);
+    parforRanSeeds = randi(1000000,nParforConditions,1)+1;
     usePercentCorrect = zeros(size(testConeContrasts,2),1);
     useStdErr = zeros(size(testConeContrasts,2),1);
+    rState = rng;
     parfor kk = 1:nParforConditions
+        rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
@@ -168,6 +171,7 @@ if (p.Results.compute)
             close(h);
         end
     end
+    rng(rState);
     fprintf('Classification took %2.2f minutes\n', toc/60);
     clearvars('theData','useData','classificationData','classes');
     

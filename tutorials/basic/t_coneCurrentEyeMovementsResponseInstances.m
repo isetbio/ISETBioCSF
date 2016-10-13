@@ -146,6 +146,7 @@ if (p.Results.compute)
     end
     parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
     nParforConditions = length(parforConditionStructs);
+    parforRanSeeds = randi(1000000,nParforConditions,1)+1;
     
     % Generate data for the no stimulus condition
     colorModulationParamsTemp = rParams.colorModulationParams;
@@ -181,8 +182,10 @@ if (p.Results.compute)
 
     % Loop over color directions
     tic;
-    stimDataForValidation = cell(nParforConditions,1);;
+    stimDataForValidation = cell(nParforConditions,1);
+    rState = rng;
     parfor kk = 1:nParforConditions
+        rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
@@ -209,6 +212,7 @@ if (p.Results.compute)
         paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
         rwObject.write('responseInstances',stimData,paramsList,theProgram);
     end
+    rng(rState);
     fprintf('Finished generating responses in %2.2f minutes\n', toc/60);
     
     %% Validation data

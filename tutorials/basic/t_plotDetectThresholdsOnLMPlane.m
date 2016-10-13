@@ -19,6 +19,9 @@ function validationData = t_plotDetectThresholdsOnLMPlane(varargin)
 %   'thresholdParams' - Value is the thresholdParams structure to use
 %   'setRngSeed' - true/false (default true).  Set the rng seed to a
 %        value so output is reproducible.
+%   'generatePlots' - true/false (default true).  Make plots.  This
+%        must be true for either plotPsyhometric or plotEllipse to have
+%        an effect.
 %   'plotPsychometric' - true/false (default true).  Produce
 %       psychometric function output graphs.
 %   'plotEllipse' - true/false (default true).  Plot a threshold ellipse in
@@ -32,8 +35,9 @@ p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('instanceParams',[],@isemptyorstruct);
 p.addParameter('thresholdParams',[],@isemptyorstruct);
 p.addParameter('setRng',true,@islogical);
-p.addParameter('plotPsychometric',false,@islogical);
-p.addParameter('plotEllipse',false,@islogical);
+p.addParameter('generatePlots',true,@islogical);
+p.addParameter('plotPsychometric',true,@islogical);
+p.addParameter('plotEllipse',true,@islogical);
 p.addParameter('delete',false',@islogical);
 p.parse(varargin{:});
 rParams = p.Results.rParams;
@@ -94,7 +98,7 @@ writeProgram = mfilename;
 
 %% Fit the psychometric functions to get thresholds
 psychoData = t_fitPsychometricFunctions('rParams',rParams,'instanceParams',instanceParams,'thresholdParams',thresholdParams, ...
-    'setRng',p.Results.setRng,'plotPsychometric',p.Results.plotPsychometric,'delete',p.Results.delete);
+    'setRng',p.Results.setRng,'generatePlots',p.Results.generatePlots && p.Results.plotPsychometric,'delete',p.Results.delete);
 testContrasts = psychoData.testContrasts;
 testConeContrasts = psychoData.testConeContrasts;
 thresholdContrasts = psychoData.thresholdContrasts;
@@ -152,7 +156,7 @@ if (nargout > 0)
 end
 
 %% Plot the threshold ellipse in the LM contrast plane
-if (p.Results.plotEllipse)
+if (p.Results.generatePlots && p.Results.plotEllipse)
     contrastLim = 0.02;
     hFig = figure; clf; hold on; set(gca,'FontSize',rParams.plotParams.axisFontSize);
     plot(thresholdConeContrasts(1,:),thresholdConeContrasts(2,:),'ro','MarkerFaceColor','r','MarkerSize',rParams.plotParams.markerSize);

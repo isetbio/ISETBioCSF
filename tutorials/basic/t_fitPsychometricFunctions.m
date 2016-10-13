@@ -11,7 +11,7 @@ function validationData = t_fitPsychometricFunctions(varargin)
 %   'thresholdParams' - Value is the thresholdParams structure to use
 %   'setRngSeed' - true/false (default true).  Set the rng seed to a
 %        value so output is reproducible.
-%   'plotPsychometric' - true/false (default true).  Produce
+%   'generatePlots' - true/false (default true).  Produce
 %       psychometric function output graphs.
 %   'delete' - true/false (default false).  Delete the output
 %        files.  Not yet implemented.
@@ -22,7 +22,7 @@ p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('instanceParams',[],@isemptyorstruct);
 p.addParameter('thresholdParams',[],@isemptyorstruct);
 p.addParameter('setRng',true,@islogical);
-p.addParameter('plotPsychometric',false,@islogical);
+p.addParameter('generatePlots',false,@islogical);
 p.addParameter('delete',false',@islogical);
 p.parse(varargin{:});
 rParams = p.Results.rParams;
@@ -132,7 +132,7 @@ if (nargout > 0)
 end
 
 %% Plot psychometric functions
-if (p.Results.plotPsychometric)
+if (p.Results.generatePlots)
     for ii = 1:size(performanceData.testConeContrasts,2)    
         % Make the plot for this test direction
         hFig = figure; hold on
