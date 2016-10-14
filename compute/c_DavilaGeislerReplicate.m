@@ -39,7 +39,7 @@ p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('minContrast',1e-6,@isnumeric);
 p.addParameter('maxContrast',1e-2,@isnumeric);
-p.addParameter('nContrats',30,@isnumeric);
+p.addParameter('nContrasts',30,@isnumeric);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
