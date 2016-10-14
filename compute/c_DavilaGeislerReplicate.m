@@ -16,6 +16,9 @@ function c_DavilaGeislerReplicate(varargin)
 %   'blur' - true/false (default true). Incorporate lens blur.
 %   'imagePixels' - value (default 400).  Size of image pixel array
 %   'computeResponses' - true/false (default true).  Compute responses.
+%   'minContrast' - value (default 1e-6). Minimum contrast to use
+%   'maxContrast' - value (default 1e-2). Max contrast to use
+%   'nContrasts' - value (default 30). Number of contrasts to use
 %   'findPerformance' - true/false (default true).  Find performance.
 %   'fitPsychometric' - true/false (default true).  Fit psychometric functions.
 %   'generatePlots' - true/false (default true).  Generate plots?  Other
@@ -34,6 +37,9 @@ p.addParameter('durationMs',100,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
+p.addParameter('minContrast',1e-6,@isnumeric);
+p.addParameter('maxContrast',1e-2,@isnumeric);
+p.addParameter('nContrats',30,@isnumeric);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
@@ -107,7 +113,7 @@ for ll = 1:length(p.Results.luminances)
         rParams.colorModulationParams.spotWavelengthNm = p.Results.wavelength;
         rParams.colorModulationParams.spotCornealPowerUW = maxSpotLuminanceCdM2/xyzPerUW(2);
         rParams.colorModulationParams.contrast = 1;
-   
+     
         % Set duration equal to sampling interval to do just one frame.
         %
         % Their intervals were 100 msec each.
@@ -130,9 +136,9 @@ for ll = 1:length(p.Results.luminances)
         testDirectionParams = instanceParamsGenerate('instanceType','contrasts');
     
         % Number of contrasts to run in each color direction
-        testDirectionParams.nContrastsPerDirection = 30;
-        testDirectionParams.lowContrast = 0.0001;
-        testDirectionParams.highContrast = 1;
+        testDirectionParams.nContrastsPerDirection = p.Results.nContrasts;
+        testDirectionParams.lowContrast = p.Results.minContrast;
+        testDirectionParams.highContrast = p.Results.maxContrast;
         testDirectionParams.contrastScale = 'log';    % choose between 'linear' and 'log'
         testDirectionParams.trialsNum = p.Results.nTrainingSamples;
 
@@ -193,6 +199,10 @@ if (p.Results.generatePlots && p.Results.plotSpatialSummation)
     davilaGeislerReplicate = rwObject.read('davilaGeislerReplicate',paramsList,writeProgram);
     fprintf('done\n');
     
+    % Some numbers we need
+    spotAreasMin2 = pi*((p.Results.spotDiametersMinutes/2).^2);
+    maxThresholdEnergies = maxSpotLuminanceCdM2*rParams.temporalParams.stimulusDurationInSeconds*spotAreasMin2;
+    
     hFig = figure; clf; hold on
     fontBump = 4;
     markerBump = -4;
@@ -202,15 +212,15 @@ if (p.Results.generatePlots && p.Results.plotSpatialSummation)
     legendStr = cell(length(p.Results.luminances),1);
     for ll = 1:length(p.Results.luminances)
         theColorIndex = rem(ll,length(theColors)) + 1;
-        plot(davilaGeislerReplicate.spotDiametersMinutes(ll,:),1./[davilaGeislerReplicate.mlptThresholds(ll,:).thresholdContrasts]*davilaGeislerReplicate.mlptThresholds(1).testConeContrasts(1), ...
+        plot(davilaGeislerReplicate.spotDiametersMinutes(ll,:),[davilaGeislerReplicate.mlptThresholds(ll,:).thresholdContrasts].*maxThresholdEnergies, ...
             [theColors(theColorIndex) 'o-'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
         legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
     end
     set(gca,'XScale','log');
     set(gca,'YScale','log');
-    xlabel('Log10 Spatial Frequency (cpd)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-    ylabel('Log10 Contrast Sensitivity', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-    xlim([1 100]); ylim([10 10000]);
+    xlabel('Log10 Spot Diameter (cpd)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+    ylabel('Log10 Threshold Energy', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+    xlim([1 100]); ylim([1e-4 1]);
     legend(legendStr,'Location','NorthEast','FontSize',rParams.plotParams.labelFontSize+fontBump);
     box off; grid on
     if (p.Results.blur)
