@@ -155,7 +155,7 @@ for ll = 1:length(p.Results.luminances)
         %% Find performance, template max likeli
         thresholdParams.method = 'mlpt';
         if (p.Results.findPerformance)
-            t_colorDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',true);
+            t_colorDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
         end
         
         %% Fit psychometric functions
