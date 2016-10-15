@@ -22,7 +22,7 @@ p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('instanceParams',[],@isemptyorstruct);
 p.addParameter('thresholdParams',[],@isemptyorstruct);
 p.addParameter('setRng',true,@islogical);
-p.addParameter('generatePlots',false,@islogical);
+p.addParameter('generatePlots',true,@islogical);
 p.addParameter('delete',false',@islogical);
 p.parse(varargin{:});
 rParams = p.Results.rParams;

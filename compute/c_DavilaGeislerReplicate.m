@@ -175,7 +175,8 @@ end
 if (p.Results.fitPsychometric)
     fprintf('Writing performance data ... ');
     nameParams = rParams.spatialParams;
-    nameParams.spotDiametersMinutes = 0;
+    nameParams.spotSizeDegs = 0;
+    nameParams.backgroundSizeDegs = 0;
     nameParams.fieldOfViewDegs = 0;
     paramsList = {nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
     rwObject = IBIOColorDetectReadWriteBasic;
@@ -191,7 +192,8 @@ end
 if (p.Results.generatePlots && p.Results.plotSpatialSummation)
     fprintf('Reading performance data ...');
     nameParams = rParams.spatialParams;
-    nameParams.spotDiametersMinutes = 0;
+    nameParams.spotSizeDegs = 0;
+    nameParams.backgroundSizeDegs = 0;
     nameParams.fieldOfViewDegs = 0;
     paramsList = {nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
     rwObject = IBIOColorDetectReadWriteBasic;
@@ -212,16 +214,16 @@ if (p.Results.generatePlots && p.Results.plotSpatialSummation)
     legendStr = cell(length(p.Results.luminances),1);
     for ll = 1:length(p.Results.luminances)
         theColorIndex = rem(ll,length(theColors)) + 1;
-        plot(davilaGeislerReplicate.spotDiametersMinutes(ll,:),[davilaGeislerReplicate.mlptThresholds(ll,:).thresholdContrasts].*maxThresholdEnergies, ...
+        plot(spotAreasMin2,[davilaGeislerReplicate.mlptThresholds(ll,:).thresholdContrasts].*maxThresholdEnergies, ...
             [theColors(theColorIndex) 'o-'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
         legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
     end
     set(gca,'XScale','log');
     set(gca,'YScale','log');
-    xlabel('Log10 Spot Diameter (cpd)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+    xlabel('Log10 Spot Area (sqaure arc minutes)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
     ylabel('Log10 Threshold Energy', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-    xlim([1 100]); ylim([1e-4 1]);
-    legend(legendStr,'Location','NorthEast','FontSize',rParams.plotParams.labelFontSize+fontBump);
+    xlim([1e-1 1e4]); ylim([1e-3 1]);
+    legend(legendStr,'Location','NorthWest','FontSize',rParams.plotParams.labelFontSize+fontBump);
     box off; grid on
     if (p.Results.blur)
         title(sprintf('Computational Observer CSF - w/ blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
