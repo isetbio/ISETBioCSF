@@ -29,7 +29,7 @@ function c_DavilaGeislerReplicate(varargin)
 %% Parse input
 p = inputParser;
 p.addParameter('nTrainingSamples',500,@isnumeric);
-p.addParameter('spotDiametersMinutes',[0.5 1 5 10 20 40],@isnumeric);
+p.addParameter('spotDiametersMinutes',[0.5 0.75 1 1.5 2 2.5 5 10 20 40],@isnumeric);
 p.addParameter('backgroundSizeDegs',[2.1],@isnumeric);
 p.addParameter('wavelength',550,@isnumeric);
 p.addParameter('luminances',[10],@isnumeric);
@@ -220,7 +220,7 @@ if (p.Results.generatePlots && p.Results.plotSpatialSummation)
     end
     set(gca,'XScale','log');
     set(gca,'YScale','log');
-    xlabel('Log10 Spot Area (sqaure arc minutes)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+    xlabel('Log10 Spot Area (square arc minutes)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
     ylabel('Log10 Threshold Energy', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
     xlim([1e-1 1e4]); ylim([1e-3 1]);
     legend(legendStr,'Location','NorthWest','FontSize',rParams.plotParams.labelFontSize+fontBump);
