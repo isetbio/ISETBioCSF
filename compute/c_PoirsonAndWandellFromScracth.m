@@ -1,8 +1,77 @@
-function c_PoirsonAndWandellReplicate
-% c_PoirsonAndWandellReplicate(varargin)
+function c_PoirsonAndWandellFromScractch
+% c_PoirsonAndWandellFromScratch(varargin)
 %
 % Compute color detection thresholds to replicate the Poirson & Wandell 1996
+                         
+    spatialParams = struct(...
+        'fieldOfViewDegs', 5.0, ...      In P&W 1996, in the constan cycle condition, this was 10 deg (Section 2.2, p 517)
+        'cyclesPerDegree', 2.0,...
+             'windowType', 'Gaussian', ...
+        'gaussianFWHMDegs', 1.9, ...
+        'viewingDistance', 0.75, ...
+                   'rows', 256, ...
+                   'cols', 256 ...
+        );
+    
+    contrast = 1.0;
+    gaborDisplayScene = generateGaborDisplayScene(spatialParams, contrast)
 
+
+    
+    % Generate the sequence of optical images representing the ramping of the stimulus
+    theOIsequence = oiSequenceGenerate(theScene, theOI, modulationFunction);
+    
+    % Generate the cone mosaic with eye movements for theOIsequence
+    theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, theOIsequence.length);
+
+    % Compute absorptions and photocurrents
+    [absorptionsCountSequence, absorptionsTimeAxis, photoCurrentSequence, photoCurrentTimeAxis] = ...
+            theConeMosaic.computeForOISequence(theOIsequence, oiTimeAxis, ...
+            'currentFlag', true, ...
+            'newNoise', true ...
+            );
+        
+end
+
+function gaborDisplayScene = generateGaborDisplayScene(spatialParams, contrast)
+
+    gaborPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams, contrast));
+
+    % Convert Gabor to a color modulation specified in cone space
+    gaborModulation = gaborPattern-1;
+
+    
+    % Convert background to cone excitations
+    backgroundConeExcitations = XYZToCones()*xyYToXYZ(backgroundxyY);
+
+    % Preallocate memory
+    gaborConeExcitations = zeros(spatialParams.rows, spatialParams.cols,3);
+    
+    % Compute cone excitations
+    for ii = 1:3
+        gaborConeExcitations(:,:,ii) = backgroundConeExcitations(ii) * (1 + gaborModulation * testConeContrasts(ii));
+    end
+
+end
+
+function M = XYZToCones
+    
+    % Here we'll use the Stockman-Sharpe 2-degree fundamentals and the proposed CIE corresponding XYZ functions
+    theXYZ = load('T_xyzCIEPhys2');
+    T_XYZ = 683*theXYZ.T_xyzCIEPhys2;
+    clear theXYZ
+
+    whichCones = 'cones_ss2';
+    theCones = load('T_cones_ss2')
+    eval(['T_cones = 683*theCones.T_' whichCones ';']);
+    eval(['S_cones = theCones.S_' whichCones ';']);
+    clear theCones
+
+    M = ((T_XYZ')\(T_cones'))';
+end
+
+
+function old
 % Start with default parameters
 rParams = responseParamsGenerate;
 testDirectionParams = instanceParamsGenerate;
