@@ -63,7 +63,7 @@ paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, r
 % The routine imageHarmonicParamsFromGaborParams massages the
 % spatialParams/colorModulationParams information into the form needed by
 % isetbio's imageHarmonic function.
-gaborPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(rParams.spatialParams,rParams.colorModulationParams));
+gaborPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(rParams.spatialParams,rParams.colorModulationParams.contrast));
 
 % We can see it as a grayscale image
 if (p.Results.generatePlots)
