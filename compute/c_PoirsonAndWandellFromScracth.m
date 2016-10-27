@@ -13,13 +13,26 @@ function c_PoirsonAndWandellFromScractch
                    'cols', 256 ...
         );
     
+    % In the constant cycle condition, the background was xyY= 0.38, 0.39, 536.2 cd/m2
+    % Also they say they placed a uniform field to the screen to increase the contrast resolutionso (page 517, Experimental Aparratus section)
+    chromaticParams = struct(...
+        'backgroundxyY', [0.38 0.39 536.2], ...
+        'testConeContrasts', [0.05 -0.05 0.0] ...
+        );
+    
+    contrast = 0.0;
+    backgroundScene = generateGaborDisplayScene(spatialParams, chromaticParams, contrast);
+    vcNewGraphWin; [~,h] = scenePlot(backgroundScene,'radiance image no grid');
+    pause
     contrast = 1.0;
-    gaborDisplayScene = generateGaborDisplayScene(spatialParams, contrast)
-
-
+    modulationScene = generateGaborDisplayScene(spatialParams, chromaticParams, contrast);
+    
+    vcNewGraphWin; [~,h] = scenePlot(modulationScene,'radiance image no grid');
+    pause
+    
     
     % Generate the sequence of optical images representing the ramping of the stimulus
-    theOIsequence = oiSequenceGenerate(theScene, theOI, modulationFunction);
+    theOIsequence = oiSequenceGenerate(backgroundScene, modulationScene, modulationFunction);
     
     % Generate the cone mosaic with eye movements for theOIsequence
     theConeMosaic = coneMosaicGenerate(mosaicSize, photonNoise, osNoise, integrationTime, osTimeStep, oiTimeAxis, theOIsequence.length);
@@ -33,162 +46,75 @@ function c_PoirsonAndWandellFromScractch
         
 end
 
-function gaborDisplayScene = generateGaborDisplayScene(spatialParams, contrast)
+function displayScene = generateGaborDisplayScene(spatialParams, colorParams, contrast)
 
-    gaborPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams, contrast));
-
-    % Convert Gabor to a color modulation specified in cone space
-    gaborModulation = gaborPattern-1;
-
+    % Genereate the rendering display
+    display = displayCreate('CRT-MODEL');
+    display = displaySet(display,'viewingdistance', 1.0);
     
-    % Convert background to cone excitations
-    backgroundConeExcitations = XYZToCones()*xyYToXYZ(backgroundxyY);
-
-    % Preallocate memory
-    gaborConeExcitations = zeros(spatialParams.rows, spatialParams.cols,3);
+    % Adjust display's SPDs so as to be able to generate the desired luminance
+    peakLuminanceBeforeAdjustment = displayGet(display, 'peak luminance');
+    spdMultiplierToGetDesiredLum = colorParams.backgroundxyY(3)/(0.5*peakLuminanceBeforeAdjustment);
+    display = displaySet(display,'spd',spdMultiplierToGetDesiredLum*displayGet(display,'spd'));
     
-    % Compute cone excitations
+    % Get the SPDs and their spectral sampling
+    displayWls = displayGet(display,'wave');
+    displaySpectralSampling = WlsToS(displayWls);
+    displaySPD = displayGet(display,'spd');
+    
+    
+    % Load cone fundamentals and XYZtoConeExcitationsMatrix
+    [XYZtoConeExcitationsMatrix, coneFundamentals, coneSpectralSampling] = XYZToCones();
+    
+    % Resample cone fundamentals to the spectral sampling of the display
+    coneFundamentals = SplineCmf(coneSpectralSampling, coneFundamentals, displaySpectralSampling);
+    
+    % Compute coneExcitationsToDisplayPrimaryMatrix
+    displayPrimaryToConeExcitations = coneFundamentals * displaySPD * displaySpectralSampling(2);
+    coneExcitationsToDisplayPrimaryMatrix = inv(displayPrimaryToConeExcitations);
+    
+    % Convert the background xyY to cone excitations
+    backgroundConeExcitations = XYZtoConeExcitationsMatrix * xyYToXYZ(colorParams.backgroundxyY');
+    
+    % Generate a Gabor spatial modulation pattern
+    gaborModulationPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams, contrast))-1;
+    
+    % Compute cone excitationImage using the gaborModulationPattern, the
+    % backgroundConeExcitations and the testConeContrasts
     for ii = 1:3
-        gaborConeExcitations(:,:,ii) = backgroundConeExcitations(ii) * (1 + gaborModulation * testConeContrasts(ii));
+        coneExcitationImage(:,:,ii) = backgroundConeExcitations(ii) * (1 + gaborModulationPattern * colorParams.testConeContrasts(ii));
     end
 
+    % Compute the RGB primary values
+    [coneExcitations,m,n] = ImageToCalFormat(coneExcitationImage);
+    displayRGBPrimaries = coneExcitationsToDisplayPrimaryMatrix * coneExcitations;
+    displayRGBPrimaryImage = CalFormatToImage(displayRGBPrimaries,m,n);
+    
+    % Check for out-of-gamut
+    if (any(displayRGBPrimaryImage(:) > 1))
+        fprintf(2,'Image above gamut\n');
+    end
+    if (any(displayRGBPrimaryImage(:) < 0))
+        fprintf(2,'Image below gamut\n');
+    end
+    
+    % Gamma correct the primary values
+    displayRGBsettingsImage = round(ieLUTLinear(displayRGBPrimaryImage,displayGet(display,'inverse gamma')));
+    
+    % Make a scene from the gaborRGBsettings values
+    displayScene = sceneFromFile(displayRGBsettingsImage,'rgb',[],display);
+    displayScene = sceneSet(displayScene, 'h fov', spatialParams.fieldOfViewDegs);
+    displayScene = sceneSet(displayScene, 'distance', spatialParams.viewingDistance);
+    sceneGet(displayScene, 'mean luminance')
 end
 
-function M = XYZToCones
-    
+function [M, coneFundamentals, coneSpectralSampling] = XYZToCones
     % Here we'll use the Stockman-Sharpe 2-degree fundamentals and the proposed CIE corresponding XYZ functions
+    theCones = load('T_cones_ss2');
     theXYZ = load('T_xyzCIEPhys2');
-    T_XYZ = 683*theXYZ.T_xyzCIEPhys2;
-    clear theXYZ
-
-    whichCones = 'cones_ss2';
-    theCones = load('T_cones_ss2')
-    eval(['T_cones = 683*theCones.T_' whichCones ';']);
-    eval(['S_cones = theCones.S_' whichCones ';']);
-    clear theCones
-
-    M = ((T_XYZ')\(T_cones'))';
+    
+    XYZcolorMatchingFunctions = 683 * theXYZ.T_xyzCIEPhys2;
+    coneFundamentals = 683 * theCones.T_cones_ss2;
+    coneSpectralSampling = theCones.S_cones_ss2;
+    M = ((XYZcolorMatchingFunctions')\(coneFundamentals'))';
 end
-
-
-function old
-% Start with default parameters
-rParams = responseParamsGenerate;
-testDirectionParams = instanceParamsGenerate;
-thresholdParams = thresholdParamsGenerate;
-
-% Adapt spatial params to match P&W 1996
-displayFlattenedStruct = true;
-rParams = adaptSpatialParamsBasedOnConstantCycleCondition(rParams, displayFlattenedStruct);
-
-% Modify cone mosaic params
-rParams = modifyConeMosaicParams(rParams, displayFlattenedStruct);
-
-% Adapt LMplane params to match P&W 1996
-testDirectionParams = adaptTestDirectionParamsBasedOnFig3A(testDirectionParams, displayFlattenedStruct);       
-
-% Generate the optics
-theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
-
-% Generate the cone mosaic
-theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
-
-t_coneCurrentEyeMovementsResponseInstances(...
-    'rParams',rParams,...
-    'testDirectionParams',testDirectionParams,...
-    'compute',true,...
-    'generatePlots',true);
- 
-end
-
-
-% ---- HELPER FUNCTIONS ----
-function rParams = modifyConeMosaicParams(rParams, displayFlattenedStruct)
-    % Adapt mosaic params 
-    rParams.mosaicParams = setExistingFieldsInStruct(rParams.mosaicParams, ...
-        {      'isomerizationNoise', true; ...
-                          'osNoise', true; ...
-                          'osModel', 'Linear'...
-        });
-    
-end
-
-function testDirectionParams = adaptTestDirectionParamsBasedOnFig3A(testDirectionParams, displayFlattenedStruct)
-
-    % Adapt to the Figure 3A params of P&W 1996 params
-    testDirectionParams = setExistingFieldsInStruct(testDirectionParams, ...
-        {              'startAngle',  45; ...
-                       'deltaAngle',  90; ...
-                          'nAngles',  1; ...
-            'nContrastsPerDirection', 20; ...        % Number of contrasts to run in each color direction
-                      'lowContrast',  0.0001; ...
-                     'highContrast',  0.1;
-                    'contrastScale', 'log' ...       % Choose between 'linear' and 'log'
-        });
-    
-    if (displayFlattenedStruct)
-        testDirectionParamsFlattened = UnitTest.displayNicelyFormattedStruct(testDirectionParams, 'testDirectionParams', '', 65) 
-    end
-end
-
-function rParams = adaptSpatialParamsBasedOnConstantCycleCondition(rParams, displayFlattenedStruct)
-    % Adapt to the Figure 3 params of P&W 1996 params
-    % - constant cycle condition:  Gaussian spatial window decreases as spatial frequency increases
-    % - SF = 2 cpd, 
-    % - width of the Gaussian window at half height = 1.9 deg
-    % viewing distance: 0.75 meters
-    rParams.spatialParams = setExistingFieldsInStruct(rParams.spatialParams, ...
-        {    'cyclesPerDegree', 2.0; ...
-            'gaussianFWHMDegs', 1.9; ...
-             'fieldOfViewDegs', 5.0; ...        % In P&W 1996, in the constan cycle condition, this was 10 deg (Section 2.2, p 517)
-             'viewingDistance', 0.75; ...
-                         'row', 256; ...        % stim height in pixels
-                         'col', 256 ...         % stim width in pixels
-        });
-
-    
-    % In the constant cycle condition, the background was xyY= 0.38, 0.39, 536.2 cd/m2
-    % Also they say they placed a uniform field to the screen to increase the contrast resolutionso (page 517, Experimental Aparratus section)
-    theLum = 536.2;
-    baseLum = 50;
-    rParams.backgroundParams = setExistingFieldsInStruct(rParams.backgroundParams, ...
-    	{   'backgroundxyY', [0.38 0.39 baseLum]; ... 
-                'lumFactor', theLum/baseLum;...
-        	  'monitorFile', 'CRT-MODEL'; ...
-               'leakageLum', 0.5 ...
-    	});
-    
-    % In the constant cycle condition the display (Barco CDCT6351) was refreshed at 87 Hz
-    CRTrefreshRateInHz = 87;
-    rParams.temporalParams = setExistingFieldsInStruct(rParams.temporalParams, ...
-        {                   'frameRate', CRTrefreshRateInHz; ...
-                   'windowTauInSeconds', 0.165; ...                     % 165 msec
-    'stimulusSamplingIntervalInSeconds', 1.0/CRTrefreshRateInHz; ...        % sample the stimulus once per CRT refresh cycle
-            'stimulusDurationInSeconds', 5*0.165;  ...      % 5 * window Tau
-                     'secondsToInclude', 1.0; ...           % analyze the cental +/- 0.5 seconds of the response
-               'secondsToIncludeOffset', 0.0; ...           % within the stimulus peak
-                        'eyesDoNotMove', true, ...          % let's assume no eye movements for now
-        });
-    
-    % Update computed temporal properties
-    [sampleTimes,gaussianTemporalWindow, rasterModulation] = gaussianTemporalWindowCreate(rParams.temporalParams);
-    rParams.temporalParams = setExistingFieldsInStruct(rParams.temporalParams, ...
-        {           'sampleTimes', sampleTimes; ...
-         'gaussianTemporalWindow', gaussianTemporalWindow; ...
-                   'nSampleTimes', length(sampleTimes) ...
-        });
-    
-    
-    % Adapt optical image params
-    rParams.oiParams = setExistingFieldsInStruct(rParams.oiParams, ...
-        {   'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs*1.5 ...  % make it's FOV  50% larger than the stimulus
-        });
-    
-    if (displayFlattenedStruct)
-        rParamsFlattened = UnitTest.displayNicelyFormattedStruct(rParams, 'rParams', '', 65) 
-    end
-    
-end
-
-
-
