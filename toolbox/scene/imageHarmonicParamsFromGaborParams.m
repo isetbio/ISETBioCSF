@@ -16,6 +16,11 @@ imageHarmonicParams.contrast = contrast;
 % routines.  This one is frequency
 cyclesPerImage = spatialParams.fieldOfViewDegs*spatialParams.cyclesPerDegree;
 imageHarmonicParams.freq = cyclesPerImage;
+
+if (isfield(spatialParams, 'spatialPhaseInDeg'))
+    imageHarmonicParams.ph = spatialParams.spatialPhaseInDeg/180*pi;
+end
+
 % 
 % % Set GaborFlag to specify window.  Different conventions about width for
 % % half-cosine and Gaussian, plus make it negative for half-cosine instead of Gaussian
