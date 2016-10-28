@@ -76,17 +76,24 @@ function c_PoirsonAndWandellFromScractch
     theOIsequence.visualize();
     
     % Generate the cone mosaic with eye movements for theOIsequence
-    theConeMosaic = coneMosaicGenerate(mosaicParams, theOIsequence);
+    [theConeMosaic, eyeMovementsNum] = coneMosaicGenerate(mosaicParams, theOIsequence);
 
-    
+    runParams = struct(...
+        'instancesNum', 1 ...
+    );
+   
+    % Compute the emPaths for each response instance
+    for instanceIndex = 1:runParams.instancesNum
+        emPaths(instanceIndex, :,:) = theConeMosaic.emGenSequence(eyeMovementsNum);
+    end
     
     % Compute absorptions and photocurrents
     [absorptionsCountSequence, absorptionsTimeAxis, photoCurrentSignals, photoCurrentTimeAxis] = ...
-            theConeMosaic.computeForOISequence(theOIsequence, ...
+            theConeMosaic.computeForOISequence(theOIsequence, emPaths, ...
             'currentFlag', true, ...
             'newNoise', true ...
             );
-
+    
     % Visualize oisequence with eye movement sequence
     theOIsequence.visualizeWithEyeMovementSequence(absorptionsTimeAxis);
     
@@ -101,8 +108,12 @@ end
 
 function plotResponseTimeSeries(timeAxis, signals, iL, iM, iS)
 
-    % Reshape
-    [signals, ~, ~] = RGB2XWFormat(signals);
+    instancesNum = size(signals,1);
+    
+    for instanceIndex = 1:instancesNum
+        % Reshape
+        [signals, ~, ~] = RGB2XWFormat(squeeze(signals(instanceIndex,:,:,:)));
+    end
     
     figure(); clf;
     plot(timeAxis*1000, squeeze(signals(iL,:)), 'r.');
@@ -113,7 +124,7 @@ function plotResponseTimeSeries(timeAxis, signals, iL, iM, iS)
     title(sprintf('%d L-cones, %d M-cones, %d S-cones', numel(iL), numel(iM), numel(iS)));
 end
 
-function theConeMosaic = coneMosaicGenerate(mosaicParams, theOIsequence)
+function [theConeMosaic, eyeMovementsNum] = coneMosaicGenerate(mosaicParams, theOIsequence)
     % Default human mosaic
     theConeMosaic = coneMosaic;
     
@@ -152,7 +163,6 @@ function theConeMosaic = coneMosaicGenerate(mosaicParams, theOIsequence)
         error('Less than 1 eye movement!!! \nStimulus sampling interval:%g Cone mosaic integration time: %g\n', stimulusSamplingInterval, theConeMosaic.integrationTime);
     else 
         fprintf('Optical image sequence contains %2.0f eye movements (%2.2f eye movements/oi)\n', eyeMovementsNum, eyeMovementsNumPerOpticalImage);
-        theConeMosaic.emGenSequence(eyeMovementsNum);
     end
 end
 
