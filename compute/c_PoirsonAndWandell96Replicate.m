@@ -1,9 +1,14 @@
-function c_PoirsonAndWandellFromScractch
-% c_PoirsonAndWandellFromScratch(varargin)
+function c_PoirsonAndWandell96Replicate
+% c_PoirsonAndWandell96Replicate
 %
 % Compute color detection thresholds to replicate the Poirson & Wandell 1996
          
     close all
+    
+    % Set up the rw object for this program
+    rwObject = IBIOColorDetectReadWriteBasic;
+    theProgram = mfilename;
+
     spatialParams = struct(...
         'fieldOfViewDegs', 5.0, ...      In P&W 1996, in the constant cycle condition, this was 10 deg (Section 2.2, p 517)
         'cyclesPerDegree', 2.0,...
