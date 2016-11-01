@@ -1,4 +1,4 @@
-function imageHarmonicParams = imageHarmonicParamsFromGaborParams(spatialParams,colorModulationParams)
+function imageHarmonicParams = imageHarmonicParamsFromGaborParams(spatialParams, colorModulationParams)
 % imageHarmonicParams = imageHarmonicParamsFromGaborParams(spatialParams,colorModulationParams)
 %
 % The imageHarmonic function in isetbio takes a parameters structure that
@@ -11,8 +11,11 @@ function imageHarmonicParams = imageHarmonicParamsFromGaborParams(spatialParams,
 imageHarmonicParams = spatialParams;
 
 % Pull contrast into the structure
-imageHarmonicParams.contrast = colorModulationParams.contrast;
-
+if (isstruct(colorModulationParams)) && (isfield(colorModulationParams, 'contrast'))
+    imageHarmonicParams.contrast = colorModulationParams.contrast;
+else
+    imageHarmonicParams.contrast = colorModulationParams;
+end
 % Computed parameters.  These convert numbers to a form used by underlying
 % routines.  This one is frequency
 cyclesPerImage = spatialParams.fieldOfViewDegs*spatialParams.cyclesPerDegree;
