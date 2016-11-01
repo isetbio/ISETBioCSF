@@ -10,9 +10,12 @@ function c_PoirsonAndWandell96Replicate
     theProgram = mfilename;
 
     spatialParams = struct(...
+                  'type', 'SPATIAL_PW96', ...
+            'spatialType', 'Gabor', ...
         'fieldOfViewDegs', 5.0, ...      In P&W 1996, in the constant cycle condition, this was 10 deg (Section 2.2, p 517)
         'cyclesPerDegree', 2.0,...
       'spatialPhaseInDeg', 0, ...
+       'orientationInDeg', 0, ...
              'windowType', 'Gaussian', ...
         'gaussianFWHMDegs', 1.9, ...
         'viewingDistance', 0.75, ...
@@ -22,18 +25,28 @@ function c_PoirsonAndWandell96Replicate
 
     CRTrefreshRate = 87;
     temporalParams = struct(...
-        'stimSamplingInterval', 1.0/CRTrefreshRate, ...
-                 'envelopeTau', 165/1000, ...
-               'envelopeWidth', 30.0/CRTrefreshRate, ... 
-                'envelopePeak', 0/1000 ...
+                             'type', 'TEMPORAL_PW96', ...
+                        'frameRate', CRTrefreshRate, ...
+'stimulusSamplingIntervalInSeconds', 1.0/CRTrefreshRate, ...
+        'stimulusDurationInSeconds', 60.0/CRTrefreshRate, ... 
+               'windowTauInSeconds', 165/1000, ...
+                       'windowPeak', 0/1000 ...
         );
     
+    % Define the stimulus temporal modulation function
+    temporalParams.stimTimeAxis = 0:temporalParams.stimulusSamplingIntervalInSeconds:temporalParams.stimulusDurationInSeconds;
+    temporalParams.stimTimeAxis =  temporalParams.stimTimeAxis - mean(temporalParams.stimTimeAxis);
+    % Compute modulation function
+    temporalParams.stimulusModulationFunction = exp(-0.5*((temporalParams.stimTimeAxis-temporalParams.windowPeak)/temporalParams.windowTauInSeconds).^2);
+    
     mosaicParams = struct(...
+                'type', 'MOSAIC_PW96', ...
                 'size', 0.1*spatialParams.fieldOfViewDegs,...         % nan for 1L, 1M, and 1S-cone only
      'integrationTime', 50/1000, ...        % 50 msec integration time
          'photonNoise', true, ...           % add Poisson noise
           'osTimeStep', 5/1000, ...         % 5 milliseconds
-             'osNoise', true ...            % outer-segment noise
+             'osNoise', true, ...           % outer-segment noise
+       'eyesDoNotMove', false ....          % normal eye movements
        );
     
     
@@ -41,6 +54,7 @@ function c_PoirsonAndWandell96Replicate
     % Also they say they placed a uniform field to the screen to increase the contrast resolutionso (page 517, Experimental Aparratus section)
     xyY =  [0.38 0.39 536.2];
     backgroundChromaticParams = struct(...
+                     'type', 'BACKGROUND_PW96', ...
             'backgroundxyY', xyY, ...
             'coneContrasts', [0.0 0.0 0.0] ...
         );
@@ -51,40 +65,45 @@ function c_PoirsonAndWandell96Replicate
     elevationAnglesTested = [0];
     
     % L+M+S, specifically: cL = 0.5, cM = 0.5, cS = 0.7071
-    azimuthsTested = [45]; 
-    elevationsTested = [45];
+    azimuthAnglesTested = [45]; 
+    elevationAnglesTested = [45];
     
     chromaticDirectionParams = {};
     for azimuthIndex = 1:numel(azimuthAnglesTested)
         % Get angle on LM plane
         azimuthAngle = azimuthAnglesTested(azimuthIndex);
         
-        for elevationsIndex = 1:numel(elevationsTested)
+        for elevationsIndex = 1:numel(elevationAnglesTested)
             % Get elevation angle from LM plane
             elevationAngle = elevationAnglesTested(elevationsIndex);
             
+             % Compute cone contrasts from azimuth and elevation
+            [cL, cM, cS] = sph2cart(azimuthAngle/180*pi, elevationAngle/180*pi, 1);
+        
+            % Normalize to unity RMS cone contrast (stimulus strength)
+            coneContrasts = [cL, cM, cS];
+            coneContrastUnitVector = coneContrasts / norm(coneContrasts);
+            
             chromaticDirectionParams{numel(chromaticDirectionParams)+1} = struct(...
+                              'type', 'CHROMATIC_DIRECTION_PW96', ...
                       'azimuthAngle', azimuthAngle, ...
                     'elevationAngle', elevationAngle, ...
-                      'instancesNum', 100, ...
-              'stimulusStrengthsNum', 5, ...
-               'minStimulusStrength', 0.01, ...
-               'maxStimulusStrength', 0.10, ...
-             'stimulusStrengthScale', 'linear');
+            'coneContrastUnitVector', coneContrastUnitVector, ...
+                      'instancesNum', 100, ...    % putting this here, because we may need different instances for different directions
+              'stimulusStrengthsNum', 5, ...      % putting this here, because we may need different strengths for different directions
+               'minStimulusStrength', 0.01, ...   % putting this here, because we may need different strengths for different directions
+               'maxStimulusStrength', 0.10, ...   % putting this here, because we may need different strengths for different directions
+             'stimulusStrengthScale', 'linear'... % putting this here, because we may need different strengths for different directions
+            );
         end  % elevationIndex
     end  % azimuthIndex
-
-    
-    % Define the stimulus temporal modulation function
-    stimTimeAxis = -temporalParams.envelopeWidth:temporalParams.stimSamplingInterval:temporalParams.envelopeWidth;
-    % monophasic modulation function
-    stimulusModulationFunction = exp(-0.5*((stimTimeAxis-temporalParams.envelopePeak)/temporalParams.envelopeTau).^2);
     
     % Generate the background scene
     [backgroundScene, ~] = generateGaborDisplayScene(spatialParams, backgroundChromaticParams, 0.0);
     
     % Generate custom optics
     oiParams = struct(...
+        'type', 'Optics', ...
         'fieldOfViewDegs', spatialParams.fieldOfViewDegs ...
         );
     theOI = oiGenerate(oiParams);
@@ -92,20 +111,15 @@ function c_PoirsonAndWandell96Replicate
     % Compute the background OI
     oiBackground = theOI;
     oiBackground = oiCompute(oiBackground, backgroundScene);
-
-    
+  
     % Loop over the examined chromatic directions
     for chromaticDirectionIndex = 1:numel(chromaticDirectionParams)  
-        % Compute cone contrasts from azimuth and elevation
-        [cL, cM, cS] = sph2cart(chromaticDirectionParams{chromaticDirectionIndex}.azimuthAngle/180*pi, chromaticDirectionParams{chromaticDirectionIndex}.elevationAngle/180*pi, 1);
         
-        % Normalize to unity RMS cone contrast (stimulus strength)
-        s = [cL, cM, cS];
-        s = s / norm(s);
+        instancesNum = chromaticDirectionParams{chromaticDirectionIndex}.instancesNum;
         
         stimulusChromaticParams =  struct(...
                         'backgroundxyY', backgroundChromaticParams.backgroundxyY, ...
-                        'coneContrasts', s);
+                        'coneContrasts', chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector);
         
         % Compute stimulus strengths to test
         if (strcmp(chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrengthScale, 'linear'))
@@ -123,9 +137,13 @@ function c_PoirsonAndWandell96Replicate
         else
             error('Unknown stimulus strength scale: ''%s''\n', chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrengthScale);
         end
-            
-        instancesNum = chromaticDirectionParams{chromaticDirectionIndex}.instancesNum;
+           
+        % Add null stimulus
+        if (chromaticDirectionIndex == 1)
+            nominalStimulusStrengths = [0 nominalStimulusStrengths];
+        end
         
+
         % Compute responses for all stimulus strengths
         for stimStrengthIndex = 1:numel(nominalStimulusStrengths)
             
@@ -138,8 +156,8 @@ function c_PoirsonAndWandell96Replicate
             oiModulated = oiCompute(oiModulated, modulatedScene);
     
             % Generate the sequence of optical images representing the ramping of the stimulus
-            theOIsequence = oiSequence(oiBackground, oiModulated, stimTimeAxis, stimulusModulationFunction, 'composition', 'blend');
-            %theOIsequence.visualize();
+            theOIsequence = oiSequence(oiBackground, oiModulated, temporalParams.stimTimeAxis, temporalParams.stimulusModulationFunction, 'composition', 'blend');
+            theOIsequence.visualize();
     
             if ((chromaticDirectionIndex == 1) && (stimStrengthIndex == 1))
                 % Generate the cone mosaic
@@ -151,11 +169,30 @@ function c_PoirsonAndWandell96Replicate
             for instanceIndex = 1:chromaticDirectionParams{chromaticDirectionIndex}.instancesNum
                 emPaths(instanceIndex, :,:) = theConeMosaic.emGenSequence(eyeMovementsNum);
             end
-    
+            if (mosaicParams.eyesDoNotMove)
+                emPaths = 0*emPaths;
+            end
+            
+            % Generate stimulus label
+            stimLabel = sprintf('AzimuthAngle=%2.1fDeg, ElevationAngle=%2.1fDeg, StimStrength=%2.3f', ...
+                chromaticDirectionParams{chromaticDirectionIndex}.azimuthAngle, ...
+                chromaticDirectionParams{chromaticDirectionIndex}.elevationAngle, ...
+                nominalStimulusStrengths(stimStrengthIndex));
+            % Generate response storange struct
+            stimData = struct(...
+                'stimLabel', stimLabel, ...
+                'stimConeContrasts', stimulusChromaticParams.coneContrasts, ...
+                'stimStrength', nominalStimulusStrengths(stimStrengthIndex), ...
+                'absorptionsCountSequence', [], ...
+                'absorptionsTimeAxis', [], ... 
+                'photoCurrentSignals', [], ... 
+                'photoCurrentTimeAxis', []);
+            
+            fprintf('%s\nComputing %d response instances for a %d x %d cone mosaic with %d eye movements scanning a %d-frame stimulus sequence.\n', ...
+                stimLabel, instancesNum, theConeMosaic.mosaicSize(1), theConeMosaic.mosaicSize(2), eyeMovementsNum, theOIsequence.length);
             % Compute absorptions and photocurrents for all response instances
-            fprintf('Computing %d response instances for a %d x %d cone mosaic with %d eye movements scanning a %d-frame stimulus sequence.\n', instancesNum, theConeMosaic.mosaicSize(1), theConeMosaic.mosaicSize(2), eyeMovementsNum, theOIsequence.length);
             tic
-            [absorptionsCountSequence, absorptionsTimeAxis, photoCurrentSignals, photoCurrentTimeAxis] = ...
+            [stimData.absorptionsCountSequence, stimData.absorptionsTimeAxis, stimData.photoCurrentSignals, stimData.photoCurrentTimeAxis] = ...
                     theConeMosaic.computeForOISequence(theOIsequence, ...
                     'emPaths', emPaths, ...
                     'currentFlag', true, ...
@@ -164,8 +201,9 @@ function c_PoirsonAndWandell96Replicate
             fprintf('Response computation took %2.2f minutes\n', toc/60);
     
             %
-            % Save responses for this stimStrengthIndex and chromaticDirectionIndex  here
-            %
+            % Save responses and parameters for this stimStrengthIndex and chromaticDirectionIndex
+            paramsList = {oiParams, mosaicParams, spatialParams, temporalParams, backgroundChromaticParams, chromaticDirectionParams{chromaticDirectionIndex}};
+            rwObject.write('ConeResponses', stimData, paramsList, theProgram, 'type', 'mat');
             
             % Visualize oisequence with eye movement sequence
             % theOIsequence.visualizeWithEyeMovementSequence(absorptionsTimeAxis);

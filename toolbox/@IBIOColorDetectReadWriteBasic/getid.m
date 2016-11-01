@@ -43,8 +43,9 @@ if (~exist(theParentDir,'dir') & p.Results.MakeDirectories)
     mkdir(theParentDir);
 end
 if (~isempty(p.Results.paramsList))
+    p.Results.paramsList
     for ii = 1:length(p.Results.paramsList)
-        thisParams = p.Results.paramsList{ii};
+        thisParams = p.Results.paramsList{ii}
         switch(thisParams.type)
             case 'ResponseGeneration'
                 thisParentDir = obj.paramsToResponseGenerationDirName(thisParams);
@@ -66,12 +67,31 @@ if (~isempty(p.Results.paramsList))
                 thisParentDir = obj.paramsToOiDirName(thisParams);
             case 'Mosaic'
                 thisParentDir = obj.paramsToMosaicDirName(thisParams);
+            
+            case 'CHROMATIC_DIRECTION_PW96'
+                fprintf(2, 'Params ''%s'', not implemented yet\n', thisParams.type);
+                thisParentDir ='/Users/nicolas/Documents/tmp';   
+            case 'TEMPORAL_PW96'
+                printf(2, 'Params ''%s'', not implemented yet\n', thisParams.type);
+                thisParentDir ='/Users/nicolas/Documents/tmp';   
+            case 'SPATIAL_PW96'
+                printf(2, 'Params ''%s'', not implemented yet\n', thisParams.type);
+                thisParentDir ='/Users/nicolas/Documents/tmp';   
+            case 'MOSAIC_PW96'
+                printf(2, 'Params ''%s'', not implemented yet\n', thisParams.type);
+                thisParentDir ='/Users/nicolas/Documents/tmp';  
+            case 'BACKGROUND_PW96'
+                printf(2, 'Params ''%s'', not implemented yet\n', thisParams.type);
+                thisParentDir ='/Users/nicolas/Documents/tmp';   
+                
             otherwise
                 error('Unkown parent parameters type');
         end
         theParentDir = fullfile(theParentDir,thisParentDir);
         if (~exist(theParentDir,'dir') & p.Results.MakeDirectories)
             mkdir(theParentDir);
+        else
+            fprintf(2,'Directory ''%s'' exists already\n', theParentDir);
         end
     end    
 end
