@@ -252,7 +252,6 @@ function c_PoirsonAndWandell96Replicate
             stimData.photoCurrentTimeAxis = stimData.photoCurrentTimeAxis(timeIndicesToKeep);
             stimData.photoCurrentSignals = stimData.photoCurrentSignals(:,:,:,timeIndicesToKeep);
             
-            %
             % Save responses and parameters for this stimStrengthIndex and chromaticDirectionIndex
             paramsList = {sessionParams, oiParams, mosaicParams, spatialParams, temporalParams, backgroundChromaticParams, ...
                           LMSsamplingParams{chromaticDirectionIndex}, chromaticDirectionParams{chromaticDirectionIndex}, responseSubSamplingParams};
@@ -272,34 +271,32 @@ function c_PoirsonAndWandell96Replicate
 
                 % Find center-most L cone (row,col) coord
                 [~,idxL] = min(sum(theConeMosaic.coneLocs(iL,:).^2,2));
-
                 % Find center-most M cone (row,col) coord
                 [~,idxM] = min(sum(theConeMosaic.coneLocs(iM,:).^2,2));
-
                 % Find center-most S cone (row,col) coord
                 [~,idxS] = min(sum(theConeMosaic.coneLocs(iS,:).^2,2));
             end
             
-          % Plot all response instances for the center-most L,M, and S cone
-          instancesToPlot = 1:instancesNum;
-          coneStride = 1e12;
-          plotAbsorptionsCountTimeSeries(...
+            % Plot all response instances for the center-most L,M, and S cone
+            instancesToPlot = 1:instancesNum;
+            coneStride = 1e12;
+            plotAbsorptionsCountTimeSeries(...
               stimData.absorptionsTimeAxis, ...
               stimData.absorptionsCountSequence(instancesToPlot,:,:,:), ...
               theConeMosaic.integrationTime, ...
               temporalParams.stimTimeAxis, temporalParams.stimulusModulationFunction, ...
               iL(idxL), iM(idxM), iS(idxS), coneStride, chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength);
          
-          % Plot some L,M, and S cone response for the first intance 
-          instancesToPlot = 1;
-          coneStride = 20;  % how many cones to skip over
-          plotAbsorptionsCountTimeSeries(...
+            % Plot some L,M, and S cone response for the first intance 
+            instancesToPlot = 1;
+            coneStride = 20;  % how many cones to skip over
+            plotAbsorptionsCountTimeSeries(...
               stimData.absorptionsTimeAxis, ...
               stimData.absorptionsCountSequence(instancesToPlot,:,:,:), ...
               theConeMosaic.integrationTime, ...
               temporalParams.stimTimeAxis, temporalParams.stimulusModulationFunction, ...
               iL, iM, iS,  coneStride, chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength);
-          clear 'tmp'
+            clear 'tmp'
         end % for contrastIndex
     end %  for chromaticDirectionIndex
     
