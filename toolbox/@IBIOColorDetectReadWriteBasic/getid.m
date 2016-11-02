@@ -43,55 +43,61 @@ if (~exist(theParentDir,'dir') & p.Results.MakeDirectories)
     mkdir(theParentDir);
 end
 if (~isempty(p.Results.paramsList))
-    p.Results.paramsList
     for ii = 1:length(p.Results.paramsList)
-        thisParams = p.Results.paramsList{ii}
+        thisParams = p.Results.paramsList{ii};
         switch(thisParams.type)
             case 'ResponseGeneration'
                 thisParentDir = obj.paramsToResponseGenerationDirName(thisParams);
+                
+            case 'Session'
+                thisParentDir = obj.paramsToSessionDirName(thisParams);
+                
             case 'ColorModulation'
+            case 'ColorModulation_v2'
                 thisParentDir = obj.paramsToColorModulationDirName(thisParams);
+                
             case 'Background'
+            case 'Background_v2'
                 thisParentDir = obj.paramsToBackgroundDirName(thisParams);
+                
             case 'Instance'
                 thisParentDir = obj.paramsToInstanceDirName(thisParams);
+               
+            case 'LMSsampling'
+                thisParentDir = obj.paramsToLMSsamplingDirName(thisParams);
+                
+            case 'ResponseSubsampling'
+                thisParentDir = obj.paramsToResponseSubsamplingDirName(thisParams);
+                
             case 'threshold'
                 thisParentDir = obj.paramsToThresholdDirName(thisParams);
             case 'psychoEllipsoid'
                 thisParentDir = obj.paramsToPsychoEllipsoidDirName(thisParams);
+                
             case 'Spatial'
+            case 'Spatial_v2'
                 thisParentDir = obj.paramsToSpatialDirName(thisParams);
+                
             case 'Temporal'
+            case 'Temporal_v2'
                 thisParentDir = obj.paramsToTemporalDirName(thisParams);
+                
             case 'Optics'
+            case 'Optics_v2'
                 thisParentDir = obj.paramsToOiDirName(thisParams);
+                
             case 'Mosaic'
+            case 'Mosaic_v2'
                 thisParentDir = obj.paramsToMosaicDirName(thisParams);
             
-            case 'CHROMATIC_DIRECTION_PW96'
-                fprintf(2, 'Params ''%s'', not implemented yet\n', thisParams.type);
-                thisParentDir ='/Users/nicolas/Documents/tmp';   
-            case 'TEMPORAL_PW96'
-                printf(2, 'Params ''%s'', not implemented yet\n', thisParams.type);
-                thisParentDir ='/Users/nicolas/Documents/tmp';   
-            case 'SPATIAL_PW96'
-                printf(2, 'Params ''%s'', not implemented yet\n', thisParams.type);
-                thisParentDir ='/Users/nicolas/Documents/tmp';   
-            case 'MOSAIC_PW96'
-                printf(2, 'Params ''%s'', not implemented yet\n', thisParams.type);
-                thisParentDir ='/Users/nicolas/Documents/tmp';  
-            case 'BACKGROUND_PW96'
-                printf(2, 'Params ''%s'', not implemented yet\n', thisParams.type);
-                thisParentDir ='/Users/nicolas/Documents/tmp';   
-                
             otherwise
-                error('Unkown parent parameters type');
+                error('Unkown parent parameters type: ''%s''.', thisParams.type);
         end
         theParentDir = fullfile(theParentDir,thisParentDir);
         if (~exist(theParentDir,'dir') & p.Results.MakeDirectories)
             mkdir(theParentDir);
         else
-            fprintf(2,'Directory ''%s'' exists already\n', theParentDir);
+            %fprintf(2,'Parent directory ''%s'' exists already\n', theParentDir);
         end
     end    
 end
@@ -107,12 +113,16 @@ switch (p.Results.Type)
 end
 if (~exist(theTypeDir,'dir') & p.Results.MakeDirectories)
     mkdir(theTypeDir);
+else
+    %fprintf(2,'Type directory ''%s'' exists already\n', theTypeDir);
 end
 
 %% Add in the name of reading or writing program
 filedir = fullfile(theTypeDir,theProgram);
 if (~exist(filedir,'dir') & p.Results.MakeDirectories)
     mkdir(filedir);
+else
+    %fprintf(2,'Program directory ''%s'' exists already\n', filedir);
 end
 
 %% Add in the filename
