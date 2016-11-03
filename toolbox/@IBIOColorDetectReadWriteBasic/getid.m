@@ -33,6 +33,7 @@ p.addRequired('theProgram',@ischar);
 p.addParameter('Type','mat',@ischar);
 p.addParameter('ArtifactParams',[],@isstruct);
 p.addParameter('FigureType','pdf',@ischar);
+p.addParameter('FigureHandle', []);
 p.addParameter('MovieType','m4v',@ischar);
 p.addParameter('MakeDirectories',true,@islogical);
 p.parse(name,paramsList,theProgram,varargin{:});
@@ -107,6 +108,7 @@ switch (p.Results.Type)
     case 'mat'
         theTypeDir = fullfile(theParentDir,'matfiles');
     case 'figure'
+    case 'NicePlotExport'
         theTypeDir = fullfile(theParentDir,'figures');
     case {'movie','movieFile'}
         theTypeDir = fullfile(theParentDir,'movies');
@@ -130,6 +132,7 @@ switch (p.Results.Type)
     case 'mat'
         filename = [name '.mat'];
     case 'figure'
+    case 'NicePlotExport'
         filename = [name '.' p.Results.FigureType];
     case {'movie','movieFile'}
         filename = [name '.' p.Results.MovieType];

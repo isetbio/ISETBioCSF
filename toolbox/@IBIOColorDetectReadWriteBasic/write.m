@@ -27,6 +27,7 @@ p.addRequired('theProgram',@ischar);
 p.addParameter('Type','mat',@ischar);
 p.addParameter('ArtifactParams',[],@isstruct);
 p.addParameter('FigureType','pdf',@ischar);
+p.addParameter('FigureHandle', []);
 p.addParameter('MovieType','m4v',@ischar);
 p.parse(name,data,paramsList,theProgram,varargin{:});
 
@@ -45,8 +46,7 @@ switch (p.Results.Type)
         theData = p.Results.data;
         save(fileid,'theData','-v7.3');
     case 'figure'
-        % The cd method seems to prevent an error when fileid gets very
-        % long.
+        % The cd method seems to prevent an error when fileid gets very long.
         curdir = pwd;
         cd(filedir);
         if (exist('FigureSave','file'))
@@ -54,6 +54,13 @@ switch (p.Results.Type)
         else
             saveas(data,filename,p.Results.FigureType);
         end
+        cd(curdir);
+    case 'NicePlotExport'
+        % The cd method seems to prevent an error when fileid gets very long.
+        curdir = pwd;
+        cd(filedir);
+        NicePlot.exportFigToPNG(filename, p.Results.FigureHandle, 300);
+        fprintf('Figure exported to %s/%s\n', pwd,filename);
         cd(curdir);
     case 'movieFile'
         unix(['mv ' p.Results.data ' ' fileid]);
