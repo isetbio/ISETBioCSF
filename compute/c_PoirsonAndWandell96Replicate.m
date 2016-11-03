@@ -17,10 +17,10 @@ function c_PoirsonAndWandell96Replicate
     spatialParams = struct(...
                   'type', 'Spatial_v2', ...
             'spatialType', 'Gabor', ...
-        'fieldOfViewDegs', 5.0, ...      In P&W 1996, in the constant cycle condition, this was 10 deg (Section 2.2, p 517)
+        'fieldOfViewDegs', 2.5, ...      In P&W 1996, in the constant cycle condition, this was 10 deg (Section 2.2, p 517)
         'cyclesPerDegree', 2.0,...
-      'spatialPhaseInDeg', 0, ...
-       'orientationInDeg', 0, ...
+      'spatialPhaseDegs', 0, ...
+       'orientationDegs', 0, ...
              'windowType', 'Gaussian', ...
         'gaussianFWHMDegs', 1.9, ...
         'viewingDistance', 0.75, ...
@@ -54,8 +54,8 @@ function c_PoirsonAndWandell96Replicate
     
     mosaicParams = struct(...
                 'type', 'Mosaic_v2', ...
-          'mosaicType', 'RECT', ...
-     'fieldOfViewDegs', nan, ... % 0.1*spatialParams.fieldOfViewDegs,...         % nan for 1L, 1M, and 1S-cone only
+          'mosaicType', 'HEX', ...
+     'fieldOfViewDegs', 0.1*spatialParams.fieldOfViewDegs,...         % nan for 1L, 1M, and 1S-cone only
     'eccentricityDegs', 0, ...  
  'spatialLMSDensities', [0.6 0.3 0.1], ...
  'integrationTimeSecs', 50/1000, ...        % 50 msec integration time
@@ -87,13 +87,15 @@ function c_PoirsonAndWandell96Replicate
     % Add sampling params for each of the LMS directions we want to explore
     LMSsamplingParams = {};
     
+    instancesNum = 50;
+    
     % the null stimulus (zero stimulus strength)
     LMSsamplingParams{numel(LMSsamplingParams)+1} = struct(...
                    'type', 'LMSsampling', ...
             'azimuthAngle', 0, ...                      % (x/y plane) (L/M modulation)
           'elevationAngle', 0.0, ...                    % z-axis (S-modulation)
     'stimulusStrengthAxis', 0, ...      
-            'instancesNum', 100 ...
+            'instancesNum', instancesNum ...
         );
     
     % -L+M direction, specifically: cL = -0.7071, cM = 0.7071, cS = 0.0
@@ -101,8 +103,8 @@ function c_PoirsonAndWandell96Replicate
                    'type', 'LMSsampling', ...
             'azimuthAngle', 135.0, ...                      % (x/y plane) (L/M modulation)
           'elevationAngle', 0.0, ...                        % z-axis (S-modulation)
-    'stimulusStrengthAxis', linspace(0.01, 0.1, 5), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
-            'instancesNum', 100 ...
+    'stimulusStrengthAxis', linspace(0.01, 0.1, 2), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
+            'instancesNum', instancesNum ...
         );
     
     % L+M+S, specifically: cL = 0.5, cM = 0.5, cS = 0.7071
@@ -110,8 +112,8 @@ function c_PoirsonAndWandell96Replicate
                     'type', 'LMSsampling', ...
             'azimuthAngle', 45.0, ...                       % (x/y plane) (L/M modulation)
           'elevationAngle', 45.0, ...                       % z-axis (S-modulation)
-    'stimulusStrengthAxis', linspace(0.01, 0.1, 5), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
-            'instancesNum', 100 ...
+    'stimulusStrengthAxis', linspace(0.01, 0.1, 2), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
+            'instancesNum', instancesNum ...
         );
     
     
@@ -222,6 +224,10 @@ function c_PoirsonAndWandell96Replicate
                 emPaths = 0*emPaths;
             end
             
+            % Params to define filepath for saved data
+            paramsList = {sessionParams, oiParams, mosaicParams, spatialParams, temporalParams, backgroundChromaticParams, ...
+                          LMSsamplingParams{chromaticDirectionIndex}, chromaticDirectionParams{chromaticDirectionIndex}, responseSubSamplingParams};
+                      
             fprintf('%s\nComputing %d response instances for a %d x %d cone mosaic with %d eye movements scanning a %d-frame stimulus sequence.\n', ...
                 stimLabel, instancesNum, theConeMosaic.mosaicSize(1), theConeMosaic.mosaicSize(2), eyeMovementsNum, theOIsequence.length);
             % Compute absorptions and photocurrents for all response instances
@@ -233,32 +239,57 @@ function c_PoirsonAndWandell96Replicate
                     'newNoise', true ...
                     );
             fprintf('Response computation took %2.2f minutes\n', toc/60);
-    
-            % Temporal response subsampling for absorptions
+            
+            % Determine needed temporal response component for the absorptions signal
             t = stimData.absorptionsTimeAxis + theConeMosaic.integrationTime/2 - temporalParams.rampPeak - responseSubSamplingParams.secondsToIncludeOffset;
-            timeIndicesToKeep = find(abs(t) <= responseSubSamplingParams.secondsToInclude/2);
-            if (isempty(timeIndicesToKeep))
-                [~,timeIndicesToKeep] = min(abs(t-responseSubSamplingParams.secondsToInclude/2));
+            absorptionsTimeIndicesToKeep = find(abs(t) <= responseSubSamplingParams.secondsToInclude/2);
+            if (isempty(absorptionsTimeIndicesToKeep))
+                [~,absorptionsTimeIndicesToKeep] = min(abs(t-responseSubSamplingParams.secondsToInclude/2));
             end
             
-            % remove unwanted portions of the absorption responses
-            stimData.absorptionsTimeAxis = stimData.absorptionsTimeAxis(timeIndicesToKeep);
-            stimData.absorptionsCountSequence = stimData.absorptionsCountSequence(:,:,:,timeIndicesToKeep);
-            
-            % Temporal response subsampling for photocurrents
+            % Determine needed temporal response component for the  photocurrents signal
             t = stimData.photoCurrentTimeAxis + theConeMosaic.integrationTime/2 - temporalParams.rampPeak -responseSubSamplingParams.secondsToIncludeOffset;
-            timeIndicesToKeep = find(abs(t) <= responseSubSamplingParams.secondsToInclude/2);
-            if (isempty(timeIndicesToKeep))
-                [~,timeIndicesToKeep] = min(abs(t-responseSubSamplingParams.secondsToInclude/2));
+            photocurrentsTimeIndicesToKeep = find(abs(t) <= responseSubSamplingParams.secondsToInclude/2);
+            if (isempty(photocurrentsTimeIndicesToKeep))
+                [~,photocurrentsTimeIndicesToKeep] = min(abs(t-responseSubSamplingParams.secondsToInclude/2));
             end
             
-            % remove unwanted portions of the photocurrent responses
-            stimData.photoCurrentTimeAxis = stimData.photoCurrentTimeAxis(timeIndicesToKeep);
-            stimData.photoCurrentSignals = stimData.photoCurrentSignals(:,:,:,timeIndicesToKeep);
+            if (1==2)
+            % Visualize mosaic mean activation at the time of peak modulation
+            if (strcmp(mosaicParams.mosaicType, 'HEX')) && ~isnan(mosaicParams.fieldOfViewDegs)  
+                % compute the mean (across all instances) absorption signal
+                meanAbsorptions = squeeze(mean(stimData.absorptionsCountSequence,1));
+                
+                for tIndex = 1:numel(absorptionsTimeIndicesToKeep)
+                    
+                    displayedActivation = squeeze(meanAbsorptions(:,:, absorptionsTimeIndicesToKeep(tIndex)));
+
+                    activationLUT = bone(1024);
+                    hFig = theConeMosaic.visualizeActivationMaps(...
+                        displayedActivation, ...                                           % the signal matrix
+                           'mapType', 'modulated hexagons', ...                                % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+                        'signalName', 'isomerizations (R*/cone/integration time)', ...      % colormap title (signal name and units)
+                          'colorMap', activationLUT, ...                                      % colormap to use for displaying activation level
+                        'figureSize', [1800 490] ...                                        % figure size in pixels
+                    );
+                
+                    % Export a PNG image    
+                    filename = sprintf('MosaicActivation_%2.3f', stimData.absorptionsTimeAxis(absorptionsTimeIndicesToKeep(tIndex)));
+                    rwObject.write(filename, stimData, paramsList, theProgram, ...
+                            'type', 'NicePlotExport', 'FigureHandle', hFig, 'FigureType', 'png');
+                end % tIndex
+            end
+            end
+            
+            % Remove unwanted portions of the absorption responses
+            stimData.absorptionsTimeAxis = stimData.absorptionsTimeAxis(absorptionsTimeIndicesToKeep);
+            stimData.absorptionsCountSequence = stimData.absorptionsCountSequence(:,:,:,absorptionsTimeIndicesToKeep);
+            
+            % Remove unwanted portions of the photocurrent responses
+            stimData.photoCurrentTimeAxis = stimData.photoCurrentTimeAxis(photocurrentsTimeIndicesToKeep);
+            stimData.photoCurrentSignals = stimData.photoCurrentSignals(:,:,:,photocurrentsTimeIndicesToKeep);
             
             % Save responses and parameters for this stimStrengthIndex and chromaticDirectionIndex
-            paramsList = {sessionParams, oiParams, mosaicParams, spatialParams, temporalParams, backgroundChromaticParams, ...
-                          LMSsamplingParams{chromaticDirectionIndex}, chromaticDirectionParams{chromaticDirectionIndex}, responseSubSamplingParams};
             rwObject.write('coneResponses', stimData, paramsList, theProgram, 'type', 'mat');
             
             % Save other data we need for use by the classifier preprocessing subroutine
@@ -267,6 +298,7 @@ function c_PoirsonAndWandell96Replicate
             % Visualize oisequence with eye movement sequence
             % theOIsequence.visualizeWithEyeMovementSequence(absorptionsTimeAxis);
     
+            % Plot responses
             if ((chromaticDirectionIndex == 1) && (stimStrengthIndex == 1))
                 % Find L, M, and S-cone indices for response plotting
                 iL = find(theConeMosaic.pattern == 2);
@@ -309,10 +341,11 @@ function c_PoirsonAndWandell96Replicate
             rwObject.write('AbsorptionsPhotocurrentsSingleConesAllInstances', stimData, paramsList, theProgram, ...
                 'type', 'NicePlotExport', 'FigureHandle', hFig, 'FigureType', 'png');
     
-            if (1==2)
+            if (1==1)
                 % Plot some L,M, and S cone absorption responses for the first few intances 
                 instancesToPlot = 1:3;
-                coneStride = 20;  % how many cones to skip over
+                coneStride = 25;  % how many cones to skip over
+                
                 hFig = plotResponseTimeSeries(...
                   'absorptions', ...
                   stimData.absorptionsTimeAxis, ...
@@ -326,11 +359,11 @@ function c_PoirsonAndWandell96Replicate
                % Plot some L,M, and S cone photocurrent responses for the first few intances
                 plotResponseTimeSeries(...
                   'photocurrents', ...
-                  stimData.absorptionsTimeAxis, ...
-                  stimData.absorptionsCountSequence(instancesToPlot,:,:,:), ...
+                  stimData.photoCurrentTimeAxis, ...
+                  stimData.photoCurrentSignals(instancesToPlot,:,:,:), ...
                   theConeMosaic.integrationTime, ...
                   temporalParams.stimTimeAxis, temporalParams.stimulusModulationFunction, ...
-                  iL(idxL), iM(idxM), iS(idxS),  coneStride, ...
+                  iL, iM, iS,  coneStride, ...
                   chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector, ...
                   chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength, hFig);
             
@@ -345,7 +378,8 @@ function c_PoirsonAndWandell96Replicate
 end
 
 function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries, integrationTime, stimTimeAxis, ...
-                stimulusModulationFunction, iL, iM, iS,  coneStride, coneContrastUnitVector, stimulusStrength, hFig0)   
+                stimulusModulationFunction, iL, iM, iS,  coneStride, coneContrastUnitVector, stimulusStrength, hFig0)
+            
     instancesPlotted = size(responseTimeSeries,1);
     timePointsPlotted = numel(timeAxis);
     
@@ -361,6 +395,7 @@ function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries,
     iL = iL(1:coneStride:end);
     iM = iM(1:coneStride:end);
     iS = iS(1:coneStride:end);
+    
     if (timePointsPlotted == 1)
         responseTimeSeriesByConeType{1} = reshape(responseTimeSeries(:,iL), [instancesPlotted*numel(iL) 1]);
         responseTimeSeriesByConeType{2} = reshape(responseTimeSeries(:,iM), [instancesPlotted*numel(iM) 1]);
@@ -400,14 +435,15 @@ function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries,
                 for tIndex = 1:numel(timeAxis)
                     quantaAtThisTimeBin = squeeze(responseTimeSeriesByConeType{coneType}(:,tIndex));
                     plot([timeAxis(tIndex) timeAxis(tIndex)+dt]*1000, [quantaAtThisTimeBin(:) quantaAtThisTimeBin(:)], '-', ...
-                        'LineWidth', 1.5, 'Color', [colors(coneType,:) barOpacity]);
+                        'LineWidth', 2.0, 'Color', [colors(coneType,:) barOpacity]);
                 end
             end % coneType
             
         case 'photocurrents'
             for coneType = 1:3
-                for instanceIndex = 1:instancesPlotted
-                    plot(timeAxis*1000, squeeze(responseTimeSeriesByConeType{coneType}(instanceIndex,:)), '-', 'LineWidth', 1.5, 'Color', [colors(coneType,:) barOpacity]);
+                signalsPlotted = size(responseTimeSeriesByConeType{coneType},1);
+                for signalIndex = 1:signalsPlotted
+                    plot(timeAxis*1000, squeeze(responseTimeSeriesByConeType{coneType}(signalIndex,:)), '-', 'LineWidth', 2.0, 'Color', [colors(coneType,:) barOpacity]);
                 end
             end % coneType
         otherwise
@@ -424,7 +460,12 @@ function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries,
         otherwise
             error('Unknown signal name: ''%s''.', signalName);
     end
-    set(gca, 'XLim', [min([stimTimeAxis(1) timeAxis(1)-min([integrationTime stimTimeAxis(2)-stimTimeAxis(1)])]) max([stimTimeAxis(end) timeAxis(end)+dt])]*1000, ...
+    
+    %
+    timeLimits = [min([stimTimeAxis(1) timeAxis(1)-min([integrationTime stimTimeAxis(2)-stimTimeAxis(1)])])  max([stimTimeAxis(end) timeAxis(end)+dt])];
+    timeLimits = [timeAxis(1)-min([integrationTime stimTimeAxis(2)-stimTimeAxis(1)])  timeAxis(end)+dt];
+    
+    set(gca, 'XLim', timeLimits*1000, ...
              'YLim', [minResponseTimeSeries maxResponseTimeSeries], ...
              'Color', plotBackgroundColor, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], ...
              'FontSize', 14);
@@ -443,7 +484,6 @@ function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries,
         ylabel('stimulus modulation', 'FontSize', 14);
     end
 
-    
     title(sprintf('LMS unit vector: <%0.2f, %0.2f, %0.2f>, stim. strength: %0.5f\n %d response instances from %d L-, %d M-, and %d S-cone(s)', ...
         coneContrastUnitVector(1), coneContrastUnitVector(2), coneContrastUnitVector(3), stimulusStrength, ...
         instancesPlotted, numel(iL), numel(iM), numel(iS)), 'Color', [1 1 1], 'FontSize',16, 'FontWeight', 'normal');
@@ -452,21 +492,37 @@ end
 
 
 function [theConeMosaic, eyeMovementsNum] = coneMosaicGenerate(mosaicParams, theOIsequence)
-    % Default human mosaic
-    theConeMosaic = coneMosaic;
-    
-    % Adjust size
-    if isnan(mosaicParams.fieldOfViewDegs)
-        % Generate a human cone mosaic with 1L, 1M and 1S cone
-        theConeMosaic.rows = 1;
-        theConeMosaic.cols = 3;
-        theConeMosaic.pattern = [2 3 4];
+
+    if (strcmp(mosaicParams.mosaicType, 'HEX')) && ~isnan(mosaicParams.fieldOfViewDegs)
+        % HEX mosaic
+        resamplingFactor = 6;
+        centerInMM = [0.0 0.0];                     % mosaic eccentricity
+        spatiallyVaryingConeDensity = false;        % constant spatial density (at the mosaic's eccentricity)
+
+        theConeMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, ...
+                       'center', centerInMM*1e-3, ...
+               'spatialDensity', [0 mosaicParams.spatialLMSDensities] ...
+            );
+        theConeMosaic.setSizeToFOVForHexMosaic(mosaicParams.fieldOfViewDegs);
+        theConeMosaic.visualizeGrid();
+        
     else
-        theConeMosaic.setSizeToFOV(mosaicParams.fieldOfViewDegs);
+        % RECT mosaic
+        theConeMosaic = coneMosaic;
+
+        % Adjust size
+        if isnan(mosaicParams.fieldOfViewDegs)
+            % Generate a human cone mosaic with 1L, 1M and 1S cone
+            theConeMosaic.rows = 1;
+            theConeMosaic.cols = 3;
+            theConeMosaic.pattern = [2 3 4];
+        else
+            theConeMosaic.setSizeToFOV(mosaicParams.fieldOfViewDegs);
+            % Set the LMS spatial densities
+            theConeMosaic.spatialDensity = [0 mosaicParams.spatialLMSDensities]';
+        end
     end
-    
-    % Set the LMS spatial densities
-    theConeMosaic.spatialDensity = [0 mosaicParams.spatialLMSDensities]';
+
     
     % Set the noise
     theConeMosaic.noiseFlag = mosaicParams.photonNoise;

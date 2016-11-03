@@ -17,12 +17,12 @@ imageHarmonicParams.contrast = contrast;
 cyclesPerImage = spatialParams.fieldOfViewDegs*spatialParams.cyclesPerDegree;
 imageHarmonicParams.freq = cyclesPerImage;
 
-if (isfield(spatialParams, 'spatialPhaseInDeg'))
-    imageHarmonicParams.ph = spatialParams.spatialPhaseInDeg/180*pi;
+if (isfield(spatialParams, 'spatialPhaseDegs'))
+    imageHarmonicParams.ph = spatialParams.spatialPhaseDegs/180*pi;
 end
 
-if (isfield(spatialParams, 'orientationInDeg'))
-    imageHarmonicParams.ang = spatialParams.orientationInDeg/180*pi;
+if (isfield(spatialParams, 'orientationDegs'))
+    imageHarmonicParams.ang = spatialParams.orientationDegs/180*pi;
 end
 
 % 
