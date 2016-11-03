@@ -34,15 +34,16 @@ function c_PoirsonAndWandell96Replicate
                          'type', 'Temporal_v2', ...
                     'frameRate', CRTrefreshRate, ...
  'stimulusSamplingIntervalSecs', 1.0/CRTrefreshRate, ...
-             'rampDurationSecs', 50.0 * 1.0/CRTrefreshRate, ... 
+             'rampDurationSecs', 1600/1000, ... 
                   'rampTauSecs', 165/1000, ...
-                     'rampPeak', 0/1000 ...
+                     'rampPeak', 0/1000, ... 
+      'stimTimeAxisOriginShift', -150/1000 ...   % allow this many milliseconds for the photocurrent response to stabilize
         );
     
     
     % Define the stimulus temporal modulation function
     temporalParams.stimTimeAxis = 0:temporalParams.stimulusSamplingIntervalSecs:temporalParams.rampDurationSecs;
-    temporalParams.stimTimeAxis =  temporalParams.stimTimeAxis - mean(temporalParams.stimTimeAxis);
+    temporalParams.stimTimeAxis = temporalParams.stimTimeAxisOriginShift + temporalParams.stimTimeAxis - mean(temporalParams.stimTimeAxis);
     % Compute modulation function
     temporalParams.stimulusModulationFunction = exp(-0.5*((temporalParams.stimTimeAxis-temporalParams.rampPeak)/temporalParams.rampTauSecs).^2);
     
@@ -54,7 +55,7 @@ function c_PoirsonAndWandell96Replicate
     mosaicParams = struct(...
                 'type', 'Mosaic_v2', ...
           'mosaicType', 'RECT', ...
-     'fieldOfViewDegs', 0.1*spatialParams.fieldOfViewDegs,...         % nan for 1L, 1M, and 1S-cone only
+     'fieldOfViewDegs', nan, ... % 0.1*spatialParams.fieldOfViewDegs,...         % nan for 1L, 1M, and 1S-cone only
     'eccentricityDegs', 0, ...  
  'spatialLMSDensities', [0.6 0.3 0.1], ...
  'integrationTimeSecs', 50/1000, ...        % 50 msec integration time
@@ -63,11 +64,14 @@ function c_PoirsonAndWandell96Replicate
              'osNoise', true, ...           % outer-segment noise
        'eyesDoNotMove', false ....          % normal eye movements
        );
-    
+   
+   % Response subSampling
+   secondsToInclude = 0;                                        % Only peak response
+   secondsToInclude = mosaicParams.integrationTimeSecs*24.0    % 24 x integrationTime
    responseSubSamplingParams = struct(...
                      'type', 'ResponseSubsampling', ...
-          'secondsToInclude', mosaicParams.integrationTimeSecs*0.0, ...    % temporal subsampling: only keep responses within this time period around 'temporalParams.rampPeak'
-    'secondsToIncludeOffset', 0 ...                                        % and this offset
+         'secondsToInclude', secondsToInclude, ...                % temporal subsampling: only keep responses within this time period around 
+   'secondsToIncludeOffset', 0 ...                                % 'temporalParams.rampPeak', and this offset
         );
    
     % In the constant cycle condition, the background was xyY= 0.38, 0.39, 536.2 cd/m2
@@ -172,8 +176,8 @@ function c_PoirsonAndWandell96Replicate
     
             % Generate the sequence of optical images representing the ramping of the stimulus
             theOIsequence = oiSequence(oiBackground, oiModulated, temporalParams.stimTimeAxis, temporalParams.stimulusModulationFunction, 'composition', 'blend');
-            theOIsequence.visualize();
-    
+            %theOIsequence.visualize('format', 'montage');
+            
             if ((chromaticDirectionIndex == 1) && (stimStrengthIndex == 1))
                 % Generate the cone mosaic
                 [theConeMosaic, eyeMovementsNum] = coneMosaicGenerate(mosaicParams, theOIsequence); 
@@ -277,85 +281,154 @@ function c_PoirsonAndWandell96Replicate
                 [~,idxS] = min(sum(theConeMosaic.coneLocs(iS,:).^2,2));
             end
             
-            % Plot all response instances for the center-most L,M, and S cone
+            % Plot all absorption response instances for the center-most L-, M-, and S-cone
             instancesToPlot = 1:instancesNum;
             coneStride = 1e12;
-            plotAbsorptionsCountTimeSeries(...
+            hFig = plotResponseTimeSeries(...
+              'absorptions', ...
               stimData.absorptionsTimeAxis, ...
               stimData.absorptionsCountSequence(instancesToPlot,:,:,:), ...
               theConeMosaic.integrationTime, ...
               temporalParams.stimTimeAxis, temporalParams.stimulusModulationFunction, ...
-              iL(idxL), iM(idxM), iS(idxS), coneStride, chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength);
+              iL(idxL), iM(idxM), iS(idxS), coneStride, ...
+              chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector, ...
+              chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength, []);
          
-            % Plot some L,M, and S cone response for the first intance 
-            instancesToPlot = 1;
-            coneStride = 20;  % how many cones to skip over
-            plotAbsorptionsCountTimeSeries(...
-              stimData.absorptionsTimeAxis, ...
-              stimData.absorptionsCountSequence(instancesToPlot,:,:,:), ...
+            % Plot all photocurrent response instances for the center-most L,M, and S-cone
+            plotResponseTimeSeries(...
+              'photocurrents', ...
+              stimData.photoCurrentTimeAxis, ...
+              stimData.photoCurrentSignals(instancesToPlot,:,:,:), ...
               theConeMosaic.integrationTime, ...
               temporalParams.stimTimeAxis, temporalParams.stimulusModulationFunction, ...
-              iL, iM, iS,  coneStride, chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength);
-            clear 'tmp'
+              iL(idxL), iM(idxM), iS(idxS), coneStride, ...
+              chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector, ...
+              chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength, hFig);
+          
+            % Export a PNG image    
+            rwObject.write('AbsorptionsPhotocurrentsSingleConesAllInstances', stimData, paramsList, theProgram, ...
+                'type', 'NicePlotExport', 'FigureHandle', hFig, 'FigureType', 'png');
+    
+            if (1==2)
+                % Plot some L,M, and S cone absorption responses for the first few intances 
+                instancesToPlot = 1:3;
+                coneStride = 20;  % how many cones to skip over
+                hFig = plotResponseTimeSeries(...
+                  'absorptions', ...
+                  stimData.absorptionsTimeAxis, ...
+                  stimData.absorptionsCountSequence(instancesToPlot,:,:,:), ...
+                  theConeMosaic.integrationTime, ...
+                  temporalParams.stimTimeAxis, temporalParams.stimulusModulationFunction, ...
+                  iL, iM, iS, coneStride, ...
+                  chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector, ...
+                  chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength, []);
+
+               % Plot some L,M, and S cone photocurrent responses for the first few intances
+                plotResponseTimeSeries(...
+                  'photocurrents', ...
+                  stimData.absorptionsTimeAxis, ...
+                  stimData.absorptionsCountSequence(instancesToPlot,:,:,:), ...
+                  theConeMosaic.integrationTime, ...
+                  temporalParams.stimTimeAxis, temporalParams.stimulusModulationFunction, ...
+                  iL(idxL), iM(idxM), iS(idxS),  coneStride, ...
+                  chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector, ...
+                  chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength, hFig);
+            
+             % Export a PNG image 
+             rwObject.write('AbsorptionsPhotocurrentsSelectConesSelectInstances', stimData, paramsList, theProgram, ...
+                 'type', 'NicePlotExport', 'FigureHandle', hFig, 'FigureType', 'png');
+            end
+            
         end % for contrastIndex
     end %  for chromaticDirectionIndex
     
 end
 
-function plotAbsorptionsCountTimeSeries(timeAxis, absorptions, integrationTime, stimTimeAxis, stimulusModulationFunction, iL, iM, iS,  coneStride, stimulusStrength)
-    
-    instancesPlotted = size(absorptions,1);
+function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries, integrationTime, stimTimeAxis, ...
+                stimulusModulationFunction, iL, iM, iS,  coneStride, coneContrastUnitVector, stimulusStrength, hFig0)   
+    instancesPlotted = size(responseTimeSeries,1);
     timePointsPlotted = numel(timeAxis);
     
-    minAbsorptions = min(absorptions(:));
-    maxAbsorptions = max(absorptions(:));
+    minResponseTimeSeries = min(responseTimeSeries(:));
+    maxResponseTimeSeries = max(responseTimeSeries(:));
+    
+    if (strcmp(signalName, 'photocurrents'))
+        minResponseTimeSeries = -70;
+        maxResponseTimeSeries = 0;
+    end
     
     % Extract cone responses by type
     iL = iL(1:coneStride:end);
     iM = iM(1:coneStride:end);
     iS = iS(1:coneStride:end);
     if (timePointsPlotted == 1)
-        absorptionsByConeType{1} = reshape(absorptions(:,iL), [instancesPlotted*numel(iL) 1]);
-        absorptionsByConeType{2} = reshape(absorptions(:,iM), [instancesPlotted*numel(iM) 1]);
-        absorptionsByConeType{3} = reshape(absorptions(:,iS), [instancesPlotted*numel(iS) 1]);
+        responseTimeSeriesByConeType{1} = reshape(responseTimeSeries(:,iL), [instancesPlotted*numel(iL) 1]);
+        responseTimeSeriesByConeType{2} = reshape(responseTimeSeries(:,iM), [instancesPlotted*numel(iM) 1]);
+        responseTimeSeriesByConeType{3} = reshape(responseTimeSeries(:,iS), [instancesPlotted*numel(iS) 1]);
     else
-        absorptions = permute(reshape(absorptions, [instancesPlotted size(absorptions,2)*size(absorptions,3) timePointsPlotted]), [1 3 2]);
-        absorptionsByConeType{1} = reshape(permute(absorptions(:,:,iL), [1 3 2]), [instancesPlotted*numel(iL) timePointsPlotted]);
-        absorptionsByConeType{2} = reshape(permute(absorptions(:,:,iM), [1 3 2]), [instancesPlotted*numel(iM) timePointsPlotted]);
-        absorptionsByConeType{3} = reshape(permute(absorptions(:,:,iS), [1 3 2]), [instancesPlotted*numel(iS) size(absorptions,2)]);
+        responseTimeSeries = permute(reshape(responseTimeSeries, [instancesPlotted size(responseTimeSeries,2)*size(responseTimeSeries,3) timePointsPlotted]), [1 3 2]);
+        responseTimeSeriesByConeType{1} = reshape(permute(responseTimeSeries(:,:,iL), [1 3 2]), [instancesPlotted*numel(iL) timePointsPlotted]);
+        responseTimeSeriesByConeType{2} = reshape(permute(responseTimeSeries(:,:,iM), [1 3 2]), [instancesPlotted*numel(iM) timePointsPlotted]);
+        responseTimeSeriesByConeType{3} = reshape(permute(responseTimeSeries(:,:,iS), [1 3 2]), [instancesPlotted*numel(iS) size(responseTimeSeries,2)]);
     end
     colors = [1 0 0; 0 1.0 0; 0 0.8 1];
     plotBackgroundColor = [0.1 0.1 0.1];
-    barOpacity = 0.1;
+    barOpacity = 0.2;
     
-    hFig = figure(); clf;
-    set(hFig, 'Color', [0 0 0], 'Position', [10 10 650 900]);
-    subplot('Position', [0.08 0.08 0.85 0.87]);
+    if (isempty(hFig0))
+        hFig = figure(); clf;
+        set(hFig, 'Color', [0 0 0], 'Position', [10 10 1500 900]);
+        subplot('Position', [0.06 0.06 0.42 0.87]);
+    else
+       figure(hFig0); 
+       hFig = hFig0;
+       subplot('Position', [0.54 0.06 0.42 0.87]);
+    end
     
     yyaxis left
     hold on
     % Identify stimulus presentation times
     for k = 1:numel(stimTimeAxis)
-        plot(stimTimeAxis(k)*[1 1]*1000, [minAbsorptions maxAbsorptions], 'k-', 'Color', [0.5 0.5 0.5]);
+        plot(stimTimeAxis(k)*[1 1]*1000, [minResponseTimeSeries maxResponseTimeSeries], 'k-', 'Color', [0.5 0.5 0.5]);
     end
         
     dt = integrationTime;
-    % Plot absorptions
-    for coneType = 1:3
-        for tIndex = 1:numel(timeAxis)
-            quantaAtThisTimeBin = squeeze(absorptionsByConeType{coneType}(:,tIndex));
-            plot([timeAxis(tIndex) timeAxis(tIndex)+dt]*1000, [quantaAtThisTimeBin(:) quantaAtThisTimeBin(:)], '-', 'LineWidth', 1.5, 'Color', [colors(coneType,:) barOpacity]);
-        end
+    % Plot responseTimeSeries
+    switch signalName
+        case 'absorptions'
+            for coneType = 1:3
+                for tIndex = 1:numel(timeAxis)
+                    quantaAtThisTimeBin = squeeze(responseTimeSeriesByConeType{coneType}(:,tIndex));
+                    plot([timeAxis(tIndex) timeAxis(tIndex)+dt]*1000, [quantaAtThisTimeBin(:) quantaAtThisTimeBin(:)], '-', ...
+                        'LineWidth', 1.5, 'Color', [colors(coneType,:) barOpacity]);
+                end
+            end % coneType
+            
+        case 'photocurrents'
+            for coneType = 1:3
+                for instanceIndex = 1:instancesPlotted
+                    plot(timeAxis*1000, squeeze(responseTimeSeriesByConeType{coneType}(instanceIndex,:)), '-', 'LineWidth', 1.5, 'Color', [colors(coneType,:) barOpacity]);
+                end
+            end % coneType
+        otherwise
+            error('Unknown signal name: ''%s''.', signalName);
     end
-    
     
     box on;
     xlabel('time (ms)', 'FontSize', 14);
-    ylabel(sprintf('# of absorptions per %2.1f ms',dt*1000), 'FontSize', 14);
-    set(gca, 'XLim', [min([stimTimeAxis(1) timeAxis(1)-min([integrationTime stimTimeAxis(2)-stimTimeAxis(1)])]) max([stimTimeAxis(end) timeAxis(end)+dt])]*1000, 'YLim', [minAbsorptions maxAbsorptions], ...
+    switch signalName
+        case 'absorptions'
+            ylabel(sprintf('# of absorptions per %2.1f ms',dt*1000), 'FontSize', 14);
+        case 'photocurrents'
+            ylabel(sprintf('photocurrent (pA)'), 'FontSize', 14);
+        otherwise
+            error('Unknown signal name: ''%s''.', signalName);
+    end
+    set(gca, 'XLim', [min([stimTimeAxis(1) timeAxis(1)-min([integrationTime stimTimeAxis(2)-stimTimeAxis(1)])]) max([stimTimeAxis(end) timeAxis(end)+dt])]*1000, ...
+             'YLim', [minResponseTimeSeries maxResponseTimeSeries], ...
              'Color', plotBackgroundColor, 'XColor', [0.8 0.8 0.8], 'YColor', [0.8 0.8 0.8], ...
-             'FontSize', 12);
-         
+             'FontSize', 14);
+       
     % Plot the stimulus modulation on the right time axis
     yyaxis right
     dt = stimTimeAxis(2)-stimTimeAxis(1);
@@ -365,10 +438,15 @@ function plotAbsorptionsCountTimeSeries(timeAxis, absorptions, integrationTime, 
             plot(stimTimeAxis(tIndex+1)*[1 1]*1000, [stimulusModulationFunction(tIndex) stimulusModulationFunction(tIndex+1)], '-', 'LineWidth', 1.5, 'Color', 'y');
         end
     end
-    set(gca, 'YColor', 'y', 'FontSize', 12);
-    ylabel('stimulus modulation', 'FontSize', 14);
-     
-    title(sprintf('[Stim. strength: %2.3f] Instances plotted: %d, Cones responses plotted: %d(L), %d(M), %d(S)', stimulusStrength, instancesPlotted, numel(iL), numel(iM), numel(iS)), 'Color', [1 1 1], 'FontSize',14);
+    set(gca, 'YColor', 'y', 'FontSize', 14);
+    if (~isempty(hFig0))
+        ylabel('stimulus modulation', 'FontSize', 14);
+    end
+
+    
+    title(sprintf('LMS unit vector: <%0.2f, %0.2f, %0.2f>, stim. strength: %0.5f\n %d response instances from %d L-, %d M-, and %d S-cone(s)', ...
+        coneContrastUnitVector(1), coneContrastUnitVector(2), coneContrastUnitVector(3), stimulusStrength, ...
+        instancesPlotted, numel(iL), numel(iM), numel(iS)), 'Color', [1 1 1], 'FontSize',16, 'FontWeight', 'normal');
     drawnow;
 end
 
