@@ -14,10 +14,13 @@ function c_PoirsonAndWandell96Replicate
           'sessionType', 'LMSplane' ...
     );
 
+    %In P&W 1996, in the constant cycle condition, this was 10 deg (Section 2.2, p 517)
+    PW96_fovDegs = 10;
+    
     spatialParams = struct(...
                   'type', 'Spatial_v2', ...
             'spatialType', 'Gabor', ...
-        'fieldOfViewDegs', 2.5, ...      In P&W 1996, in the constant cycle condition, this was 10 deg (Section 2.2, p 517)
+        'fieldOfViewDegs', PW96_fovDegs/10, ...     
         'cyclesPerDegree', 2.0,...
       'spatialPhaseDegs', 0, ...
        'orientationDegs', 0, ...
@@ -34,10 +37,10 @@ function c_PoirsonAndWandell96Replicate
                          'type', 'Temporal_v2', ...
                     'frameRate', CRTrefreshRate, ...
  'stimulusSamplingIntervalSecs', 1.0/CRTrefreshRate, ...
-             'rampDurationSecs', 1600/1000, ... 
+             'rampDurationSecs', 900/1000, ... 
                   'rampTauSecs', 165/1000, ...
                      'rampPeak', 0/1000, ... 
-      'stimTimeAxisOriginShift', -150/1000 ...   % allow this many milliseconds for the photocurrent response to stabilize
+      'stimTimeAxisOriginShift', -100/1000 ...   % allow this many milliseconds for the photocurrent response to stabilize
         );
     
     
@@ -55,23 +58,23 @@ function c_PoirsonAndWandell96Replicate
     mosaicParams = struct(...
                 'type', 'Mosaic_v2', ...
           'mosaicType', 'HEX', ...
-     'fieldOfViewDegs', 0.1*spatialParams.fieldOfViewDegs,...         % nan for 1L, 1M, and 1S-cone only
+     'fieldOfViewDegs', spatialParams.fieldOfViewDegs,...         % nan for 1L, 1M, and 1S-cone only
     'eccentricityDegs', 0, ...  
  'spatialLMSDensities', [0.6 0.3 0.1], ...
  'integrationTimeSecs', 50/1000, ...        % 50 msec integration time
-         'photonNoise', true, ...           % add Poisson noise
+         'photonNoise', false, ...           % add Poisson noise
       'osTimeStepSecs', 5/1000, ...         % 5 milliseconds
-             'osNoise', true, ...           % outer-segment noise
+             'osNoise', false, ...           % outer-segment noise
        'eyesDoNotMove', false ....          % normal eye movements
        );
    
    % Response subSampling
-   secondsToInclude = 0;                                        % Only peak response
-   secondsToInclude = mosaicParams.integrationTimeSecs*24.0    % 24 x integrationTime
+   secondsToInclude = 0;                                                % Only peak response
+   secondsToInclude = mosaicParams.integrationTimeSecs*13.0;            % 12 x integrationTime
    responseSubSamplingParams = struct(...
                      'type', 'ResponseSubsampling', ...
-         'secondsToInclude', secondsToInclude, ...                % temporal subsampling: only keep responses within this time period around 
-   'secondsToIncludeOffset', 0 ...                                % 'temporalParams.rampPeak', and this offset
+         'secondsToInclude', secondsToInclude, ...                      % temporal subsampling: only keep responses within this time period around 
+   'secondsToIncludeOffset', mosaicParams.integrationTimeSecs*0.5 ...   % 'temporalParams.rampPeak', and this offset
         );
    
     % In the constant cycle condition, the background was xyY= 0.38, 0.39, 536.2 cd/m2
@@ -87,8 +90,9 @@ function c_PoirsonAndWandell96Replicate
     % Add sampling params for each of the LMS directions we want to explore
     LMSsamplingParams = {};
     
-    instancesNum = 50;
+    instancesNum = 1;
     
+    if (1==2)
     % the null stimulus (zero stimulus strength)
     LMSsamplingParams{numel(LMSsamplingParams)+1} = struct(...
                    'type', 'LMSsampling', ...
@@ -98,23 +102,54 @@ function c_PoirsonAndWandell96Replicate
             'instancesNum', instancesNum ...
         );
     
-    % -L+M direction, specifically: cL = -0.7071, cM = 0.7071, cS = 0.0
+    % L direction, specifically: cL = 1, cM = 0, cS = 0.0
     LMSsamplingParams{numel(LMSsamplingParams)+1} = struct(...
                    'type', 'LMSsampling', ...
-            'azimuthAngle', 135.0, ...                      % (x/y plane) (L/M modulation)
+            'azimuthAngle', 0.0, ...                        % (x/y plane) (L/M modulation)
           'elevationAngle', 0.0, ...                        % z-axis (S-modulation)
-    'stimulusStrengthAxis', linspace(0.01, 0.1, 2), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
+    'stimulusStrengthAxis', linspace(0.01, 0.1, 10), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
             'instancesNum', instancesNum ...
         );
     
-    % L+M+S, specifically: cL = 0.5, cM = 0.5, cS = 0.7071
+    % L+M direction, specifically: cL = 0.7071, cM = 0.7071, cS = 0.0
     LMSsamplingParams{numel(LMSsamplingParams)+1} = struct(...
-                    'type', 'LMSsampling', ...
-            'azimuthAngle', 45.0, ...                       % (x/y plane) (L/M modulation)
-          'elevationAngle', 45.0, ...                       % z-axis (S-modulation)
-    'stimulusStrengthAxis', linspace(0.01, 0.1, 2), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
+                   'type', 'LMSsampling', ...
+            'azimuthAngle', 45.0, ...                        % (x/y plane) (L/M modulation)
+          'elevationAngle', 0.0, ...                        % z-axis (S-modulation)
+    'stimulusStrengthAxis', linspace(0.01, 0.1, 10), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
             'instancesNum', instancesNum ...
         );
+    
+    % M direction, specifically: cL = 0, cM = 1.0, cS = 0.0
+    LMSsamplingParams{numel(LMSsamplingParams)+1} = struct(...
+                   'type', 'LMSsampling', ...
+            'azimuthAngle', 90.0, ...                        % (x/y plane) (L/M modulation)
+          'elevationAngle', 0.0, ...                        % z-axis (S-modulation)
+    'stimulusStrengthAxis', linspace(0.01, 0.1, 10), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
+            'instancesNum', instancesNum ...
+        );
+    end
+    
+    
+    % -L+M direction, specifically: cL = -0.7071, cM = 0.7071, cS = 0.0
+    LMSsamplingParams{numel(LMSsamplingParams)+1} = struct(...
+                   'type', 'LMSsampling', ...
+            'azimuthAngle', 45.0, ...                      % (x/y plane) (L/M modulation)
+          'elevationAngle', 45.0, ...                        % z-axis (S-modulation)
+    'stimulusStrengthAxis', linspace(0.6, 0.6, 1), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
+            'instancesNum', instancesNum ...
+        );  
+    
+    if (1==2)
+    % S direction, specifically: cL = -0.0, cM = 0.0, cS = 1.0
+    LMSsamplingParams{numel(LMSsamplingParams)+1} = struct(...
+                   'type', 'LMSsampling', ...
+            'azimuthAngle', 0.0, ...                         % (x/y plane) (L/M modulation)
+          'elevationAngle', 90.0, ...                        % z-axis (S-modulation)
+    'stimulusStrengthAxis', linspace(0.01, 0.1, 10), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
+            'instancesNum', instancesNum ...
+        );  
+    end
     
     
     % Initialize the chromaticDirectionParams cell array
@@ -254,41 +289,64 @@ function c_PoirsonAndWandell96Replicate
                 [~,photocurrentsTimeIndicesToKeep] = min(abs(t-responseSubSamplingParams.secondsToInclude/2));
             end
             
-            if (1==2)
-            % Visualize mosaic mean activation at the time of peak modulation
-            if (strcmp(mosaicParams.mosaicType, 'HEX')) && ~isnan(mosaicParams.fieldOfViewDegs)  
-                % compute the mean (across all instances) absorption signal
-                meanAbsorptions = squeeze(mean(stimData.absorptionsCountSequence,1));
-                
-                for tIndex = 1:numel(absorptionsTimeIndicesToKeep)
+            showMosaic2Dactivations = true;
+            if (showMosaic2Dactivations)
+                % Visualize mosaic mean activation at the time of peak modulation
+                if (strcmp(mosaicParams.mosaicType, 'HEX')) && ~isnan(mosaicParams.fieldOfViewDegs)  
+                    % compute the mean (across all instances) absorption signal
                     
-                    displayedActivation = squeeze(meanAbsorptions(:,:, absorptionsTimeIndicesToKeep(tIndex)));
+                    meanAbsorptions = squeeze(mean(stimData.absorptionsCountSequence,1));
+                    meanPhotocurrents = squeeze(mean(stimData.photoCurrentSignals,1));
+                    
+                    activationLUT = jet(1024);
+                    for tIndex = 1:numel(absorptionsTimeIndicesToKeep)
+                        hFig = theConeMosaic.visualizeActivationMaps(...
+                            squeeze(meanAbsorptions(:,absorptionsTimeIndicesToKeep(tIndex))), ...                                           % the signal matrix
+                               'mapType', 'modulated hexagons', ...                                % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+                            'signalName', 'isomerizations (R*/cone/integration time)', ...      % colormap title (signal name and units)
+                            'signalRange', [min(meanAbsorptions(:)) max(meanAbsorptions(:))], ...
+                              'colorMap', activationLUT, ...                                      % colormap to use for displaying activation level
+                            'figureSize', [1800 490] ...                                        % figure size in pixels
+                        );
 
+                        % Export a PNG image    
+                        filename = sprintf('MosaicAbsorptions_%2.3f', stimData.absorptionsTimeAxis(absorptionsTimeIndicesToKeep(tIndex)));
+                        rwObject.write(filename, stimData, paramsList, theProgram, ...
+                                'type', 'NicePlotExport', 'FigureHandle', hFig, 'FigureType', 'png');
+                    end % tIndex
+                    
                     activationLUT = bone(1024);
-                    hFig = theConeMosaic.visualizeActivationMaps(...
-                        displayedActivation, ...                                           % the signal matrix
-                           'mapType', 'modulated hexagons', ...                                % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
-                        'signalName', 'isomerizations (R*/cone/integration time)', ...      % colormap title (signal name and units)
-                          'colorMap', activationLUT, ...                                      % colormap to use for displaying activation level
-                        'figureSize', [1800 490] ...                                        % figure size in pixels
-                    );
-                
-                    % Export a PNG image    
-                    filename = sprintf('MosaicActivation_%2.3f', stimData.absorptionsTimeAxis(absorptionsTimeIndicesToKeep(tIndex)));
-                    rwObject.write(filename, stimData, paramsList, theProgram, ...
-                            'type', 'NicePlotExport', 'FigureHandle', hFig, 'FigureType', 'png');
-                end % tIndex
-            end
+                    for tIndex = 1:numel(photocurrentsTimeIndicesToKeep)
+                        hFig = theConeMosaic.visualizeActivationMaps(...
+                            squeeze(meanPhotocurrents(:,photocurrentsTimeIndicesToKeep(tIndex))), ...                                           % the signal matrix
+                               'mapType', 'modulated hexagons', ...                                % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+                            'signalName', 'photocurrent (pAmps)', ...      % colormap title (signal name and units)
+                            'signalRange', [min(meanPhotocurrents(:)) max(meanPhotocurrents(:))], ...
+                              'colorMap', activationLUT, ...                                      % colormap to use for displaying activation level
+                            'figureSize', [1800 490] ...                                        % figure size in pixels
+                        );
+
+                        % Export a PNG image    
+                        filename = sprintf('MosaicPhotocurrents_%2.3f', stimData.photoCurrentTimeAxis(photocurrentsTimeIndicesToKeep(tIndex)));
+                        rwObject.write(filename, stimData, paramsList, theProgram, ...
+                                'type', 'NicePlotExport', 'FigureHandle', hFig, 'FigureType', 'png');
+                    end % tIndex
+                    
+                end
             end
             
             % Remove unwanted portions of the absorption responses
             stimData.absorptionsTimeAxis = stimData.absorptionsTimeAxis(absorptionsTimeIndicesToKeep);
-            stimData.absorptionsCountSequence = stimData.absorptionsCountSequence(:,:,:,absorptionsTimeIndicesToKeep);
             
             % Remove unwanted portions of the photocurrent responses
             stimData.photoCurrentTimeAxis = stimData.photoCurrentTimeAxis(photocurrentsTimeIndicesToKeep);
-            stimData.photoCurrentSignals = stimData.photoCurrentSignals(:,:,:,photocurrentsTimeIndicesToKeep);
-            
+            if (isa(theConeMosaic, 'coneMosaicHex'))
+                stimData.absorptionsCountSequence = stimData.absorptionsCountSequence(:,:,absorptionsTimeIndicesToKeep);
+                stimData.photoCurrentSignals = stimData.photoCurrentSignals(:,:,photocurrentsTimeIndicesToKeep);
+            else
+                stimData.absorptionsCountSequence = stimData.absorptionsCountSequence(:,:,:,absorptionsTimeIndicesToKeep);
+                stimData.photoCurrentSignals = stimData.photoCurrentSignals(:,:,:,photocurrentsTimeIndicesToKeep);
+            end
             % Save responses and parameters for this stimStrengthIndex and chromaticDirectionIndex
             rwObject.write('coneResponses', stimData, paramsList, theProgram, 'type', 'mat');
             
@@ -300,17 +358,39 @@ function c_PoirsonAndWandell96Replicate
     
             % Plot responses
             if ((chromaticDirectionIndex == 1) && (stimStrengthIndex == 1))
+                
                 % Find L, M, and S-cone indices for response plotting
                 iL = find(theConeMosaic.pattern == 2);
                 iM = find(theConeMosaic.pattern == 3);
                 iS = find(theConeMosaic.pattern == 4);
-
+                 
                 % Find center-most L cone (row,col) coord
                 [~,idxL] = min(sum(theConeMosaic.coneLocs(iL,:).^2,2));
                 % Find center-most M cone (row,col) coord
                 [~,idxM] = min(sum(theConeMosaic.coneLocs(iM,:).^2,2));
                 % Find center-most S cone (row,col) coord
                 [~,idxS] = min(sum(theConeMosaic.coneLocs(iS,:).^2,2));
+                  
+                % Find indices for responses for the center-most L,M and S-cone
+                % This works also with a hex mosaic, which returns 
+                % responses for only the non-null cones
+                nonNullConeIndices = find(theConeMosaic.pattern > 1);
+                lconeToPLot = find(nonNullConeIndices == iL(idxL));
+                mconeToPLot = find(nonNullConeIndices == iM(idxM));
+                sconeToPLot = find(nonNullConeIndices == iS(idxS));
+              
+                % Find indices for L,M,S cone responses
+                % This works also with a hex mosaic, which returns 
+                % responses for only the non-null cones
+                iL = find(theConeMosaic.pattern(nonNullConeIndices) == 2);
+                iM = find(theConeMosaic.pattern(nonNullConeIndices) == 3);
+                iS = find(theConeMosaic.pattern(nonNullConeIndices) == 4);
+            end
+            
+            % Plotting time limits
+            timeLimits = [stimData.absorptionsTimeAxis(1) stimData.absorptionsTimeAxis(end)];
+            if (timeLimits(2) == timeLimits(1))
+                timeLimits = timeLimits(1) + theConeMosaic.integrationTime*[-2 2];
             end
             
             % Plot all absorption response instances for the center-most L-, M-, and S-cone
@@ -321,8 +401,8 @@ function c_PoirsonAndWandell96Replicate
               stimData.absorptionsTimeAxis, ...
               stimData.absorptionsCountSequence(instancesToPlot,:,:,:), ...
               theConeMosaic.integrationTime, ...
-              temporalParams.stimTimeAxis, temporalParams.stimulusModulationFunction, ...
-              iL(idxL), iM(idxM), iS(idxS), coneStride, ...
+              temporalParams.stimTimeAxis, timeLimits, temporalParams.stimulusModulationFunction, ...
+              lconeToPLot, mconeToPLot, sconeToPLot, coneStride, ...
               chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector, ...
               chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength, []);
          
@@ -332,8 +412,8 @@ function c_PoirsonAndWandell96Replicate
               stimData.photoCurrentTimeAxis, ...
               stimData.photoCurrentSignals(instancesToPlot,:,:,:), ...
               theConeMosaic.integrationTime, ...
-              temporalParams.stimTimeAxis, temporalParams.stimulusModulationFunction, ...
-              iL(idxL), iM(idxM), iS(idxS), coneStride, ...
+              temporalParams.stimTimeAxis, timeLimits, temporalParams.stimulusModulationFunction, ...
+              lconeToPLot, mconeToPLot, sconeToPLot, coneStride, ...
               chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector, ...
               chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength, hFig);
           
@@ -343,15 +423,15 @@ function c_PoirsonAndWandell96Replicate
     
             if (1==1)
                 % Plot some L,M, and S cone absorption responses for the first few intances 
-                instancesToPlot = 1:3;
-                coneStride = 25;  % how many cones to skip over
+                instancesToPlot = 1:1;
+                coneStride = 50;  % how many cones to skip over
                 
                 hFig = plotResponseTimeSeries(...
                   'absorptions', ...
                   stimData.absorptionsTimeAxis, ...
                   stimData.absorptionsCountSequence(instancesToPlot,:,:,:), ...
                   theConeMosaic.integrationTime, ...
-                  temporalParams.stimTimeAxis, temporalParams.stimulusModulationFunction, ...
+                  temporalParams.stimTimeAxis, timeLimits, temporalParams.stimulusModulationFunction, ...
                   iL, iM, iS, coneStride, ...
                   chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector, ...
                   chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength, []);
@@ -362,7 +442,7 @@ function c_PoirsonAndWandell96Replicate
                   stimData.photoCurrentTimeAxis, ...
                   stimData.photoCurrentSignals(instancesToPlot,:,:,:), ...
                   theConeMosaic.integrationTime, ...
-                  temporalParams.stimTimeAxis, temporalParams.stimulusModulationFunction, ...
+                  temporalParams.stimTimeAxis, timeLimits, temporalParams.stimulusModulationFunction, ...
                   iL, iM, iS,  coneStride, ...
                   chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector, ...
                   chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength, hFig);
@@ -377,7 +457,7 @@ function c_PoirsonAndWandell96Replicate
     
 end
 
-function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries, integrationTime, stimTimeAxis, ...
+function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries, integrationTime, stimTimeAxis, timeLimits, ...
                 stimulusModulationFunction, iL, iM, iS,  coneStride, coneContrastUnitVector, stimulusStrength, hFig0)
             
     instancesPlotted = size(responseTimeSeries,1);
@@ -401,10 +481,13 @@ function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries,
         responseTimeSeriesByConeType{2} = reshape(responseTimeSeries(:,iM), [instancesPlotted*numel(iM) 1]);
         responseTimeSeriesByConeType{3} = reshape(responseTimeSeries(:,iS), [instancesPlotted*numel(iS) 1]);
     else
-        responseTimeSeries = permute(reshape(responseTimeSeries, [instancesPlotted size(responseTimeSeries,2)*size(responseTimeSeries,3) timePointsPlotted]), [1 3 2]);
+        if (ndims(responseTimeSeries) == 4)
+            responseTimeSeries = reshape(responseTimeSeries, [instancesPlotted size(responseTimeSeries,2)*size(responseTimeSeries,3) timePointsPlotted]);
+        end
+        responseTimeSeries = permute(responseTimeSeries, [1 3 2]);
         responseTimeSeriesByConeType{1} = reshape(permute(responseTimeSeries(:,:,iL), [1 3 2]), [instancesPlotted*numel(iL) timePointsPlotted]);
         responseTimeSeriesByConeType{2} = reshape(permute(responseTimeSeries(:,:,iM), [1 3 2]), [instancesPlotted*numel(iM) timePointsPlotted]);
-        responseTimeSeriesByConeType{3} = reshape(permute(responseTimeSeries(:,:,iS), [1 3 2]), [instancesPlotted*numel(iS) size(responseTimeSeries,2)]);
+        responseTimeSeriesByConeType{3} = reshape(permute(responseTimeSeries(:,:,iS), [1 3 2]), [instancesPlotted*numel(iS) timePointsPlotted]);
     end
     colors = [1 0 0; 0 1.0 0; 0 0.8 1];
     plotBackgroundColor = [0.1 0.1 0.1];
@@ -460,10 +543,6 @@ function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries,
         otherwise
             error('Unknown signal name: ''%s''.', signalName);
     end
-    
-    %
-    timeLimits = [min([stimTimeAxis(1) timeAxis(1)-min([integrationTime stimTimeAxis(2)-stimTimeAxis(1)])])  max([stimTimeAxis(end) timeAxis(end)+dt])];
-    timeLimits = [timeAxis(1)-min([integrationTime stimTimeAxis(2)-stimTimeAxis(1)])  timeAxis(end)+dt];
     
     set(gca, 'XLim', timeLimits*1000, ...
              'YLim', [minResponseTimeSeries maxResponseTimeSeries], ...
