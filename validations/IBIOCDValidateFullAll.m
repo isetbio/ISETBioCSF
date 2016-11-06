@@ -20,6 +20,13 @@ function IBIOCDValidateFullAll(varargin)
 %   IBIOColorDetectValidateFullAll('Numeric Tolerance',1000*eps);
 %   IBIOColorDetectValidateFullAll('generate plots',true);
 
+%% Close all figures so that we start with a clean slate
+close all; 
+
+%% We will use preferences for the 'isetbioValidation' project
+thisProject = 'IBIOColorDetect';
+UnitTest.usePreferencesForProject(thisProject);
+
 %% Parse input and set settable prefs
 p = inputParser;
 p.addParameter('verbosity','low',@ischar);
@@ -41,13 +48,6 @@ UnitTest.setPref('onRunTimeErrorBehavior', 'catchExceptionAndContinue');
 % Plot generation
 UnitTest.setPref('closeFigsOnInit', true);
               
-%% Close all figures so that we start with a clean slate
-close all; 
-
-%% We will use preferences for the 'isetbioValidation' project
-thisProject = 'IBIOColorDetect';
-UnitTest.usePreferencesForProject(thisProject);
-
 %% Print current values of isetbioValidation prefs
 UnitTest.listPrefs();
 
