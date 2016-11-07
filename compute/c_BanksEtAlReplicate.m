@@ -1,5 +1,5 @@
-function c_BanksEtAlReplicate(varargin)
-% c_BanksEtAlReplicate(varargin)
+function validationData = c_BanksEtAlReplicate(varargin)
+% validationData = c_BanksEtAlReplicate(varargin)
 %
 % Compute thresholds to replicate Banks et al, 1987, more or less.
 %
@@ -15,6 +15,7 @@ function c_BanksEtAlReplicate(varargin)
 %   'computeResponses' - true/false (default true).  Compute responses.
 %   'findPerformance' - true/false (default true).  Find performance.
 %   'fitPsychometric' - true/false (default true).  Fit psychometric functions.
+%   'generatePlots' - true/false (default true).  No plots are generated unless this is true.
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotCSF' - true/false (default true).  Plot results.
 
@@ -28,6 +29,7 @@ p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
+p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotCSF',true,@islogical);
 p.parse(varargin{:});
@@ -120,7 +122,7 @@ for ll = 1:length(p.Results.luminances)
         
         %% Compute response instances
         if (p.Results.computeResponses)
-            t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'visualizeResponses',false);
+            t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
         end
         
         %% Find performance, template max likeli
@@ -134,7 +136,7 @@ for ll = 1:length(p.Results.luminances)
             banksEtAlReplicate.cyclesPerDegree(ll,cc) = p.Results.cyclesPerDegree(cc);
             thresholdParams.method = 'mlpt';
             banksEtAlReplicate.mlptThresholds(ll,cc) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'instanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
-                'plotPsychometric',p.Results.plotPsychometric,'plotEllipse',false);
+                'plotPsychometric',p.Results.generatePlots & p.Results.plotPsychometric,'plotEllipse',false);
             close all;
         end
     end
@@ -156,22 +158,30 @@ if (p.Results.fitPsychometric)
     fprintf('done\n');
 end
 
+%% Get performance data
+fprintf('Reading performance data ...');
+nameParams = rParams.spatialParams;
+nameParams.cyclesPerDegree = 0;
+nameParams.fieldOfViewDegs = 0;
+nameParams.gaussianFWHMDegs = 0;
+paramsList = {nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+rwObject = IBIOColorDetectReadWriteBasic;
+writeProgram = mfilename;
+banksEtAlReplicate = rwObject.read('banksEtAlReplicate',paramsList,writeProgram);
+fprintf('done\n');
+
+%% Output validation data
+if (nargout > 0)
+    validationData.cyclesPerDegree = banksEtAlReplicate.cyclesPerDegree;
+    validationData.mlptThresholds = banksEtAlReplicate.mlptThresholds
+    validationData.luminances = p.Results.luminances;
+end
+
 %% Make a plot of estimated threshold versus training set size
 %
 % The way the plot is coded counts on the test contrasts never changing
 % across the conditions, which we could explicitly check for here.
-if (p.Results.plotCSF)
-    fprintf('Reading performance data ...');
-    nameParams = rParams.spatialParams;
-    nameParams.cyclesPerDegree = 0;
-    nameParams.fieldOfViewDegs = 0;
-    nameParams.gaussianFWHMDegs = 0;
-    paramsList = {nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
-    rwObject = IBIOColorDetectReadWriteBasic;
-    writeProgram = mfilename;
-    banksEtAlReplicate = rwObject.read('banksEtAlReplicate',paramsList,writeProgram);
-    fprintf('done\n');
-    
+if (p.Results.generatePlots & p.Results.plotCSF)  
     hFig = figure; clf; hold on
     fontBump = 4;
     markerBump = -4;
