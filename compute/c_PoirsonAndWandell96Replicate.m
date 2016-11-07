@@ -56,7 +56,7 @@ function c_PoirsonAndWandell96Replicate
     oiParams.fieldOfViewDegs = spatialParams.fieldOfViewDegs*1.2;
     
     % To save time, compute only once, then set this to false
-    recomputeConeMosaic = false
+    recomputeConeMosaic = true
     
     
     mosaicParams = struct(...
@@ -330,8 +330,8 @@ function c_PoirsonAndWandell96Replicate
                     absorptionsRange = [min(stimData.absorptionsCountSequence(:)) max(stimData.absorptionsCountSequence(:))];
                     photocurrentsRange = [min(stimData.photoCurrentSignals(:)) max(stimData.photoCurrentSignals(:))];   
                     
-                    zoomInFactorAbsorptions = 0.5;
-                    zoomInFactorPhotocurrents = 0.5;
+                    zoomInFactorAbsorptions = 0.6;
+                    zoomInFactorPhotocurrents = 0.6;
                     
                     activationLUT = jet(1024);
                     activationLUT = bone(1024);
@@ -345,7 +345,10 @@ function c_PoirsonAndWandell96Replicate
                         for tIndex = 1:numel(absorptionsTimeIndicesToKeep)
                             
                             % Compute zoom-in factor
-                            zoomInFactorAbsorptions = zoomInFactorAbsorptions * (1.0 + 0.1/numel(absorptionsTimeIndicesToKeep));
+                            if (visualizedInstanceIndex>1)
+                                zoomInFactorAbsorptions = zoomInFactorAbsorptions * (1.0 + 0.1/numel(absorptionsTimeIndicesToKeep));
+                            end
+                            
                             if (zoomInFactorAbsorptions > 1.0)
                                 zoomInFactorAbsorptions = 1.0;
                             end
@@ -375,7 +378,10 @@ function c_PoirsonAndWandell96Replicate
                         for tIndex = 1:numel(photocurrentsTimeIndicesToKeep)
                             
                             % compute zoom-in factor
-                            zoomInFactorPhotocurrents = zoomInFactorPhotocurrents * (1.0 + 0.1/numel(photocurrentsTimeIndicesToKeep));
+                            if (visualizedInstanceIndex > 1)
+                                zoomInFactorPhotocurrents = zoomInFactorPhotocurrents * (1.0 + 0.1/numel(photocurrentsTimeIndicesToKeep));
+                            end
+                            
                             if (zoomInFactorPhotocurrents > 1.0)
                                 zoomInFactorPhotocurrents = 1.0;
                             end
