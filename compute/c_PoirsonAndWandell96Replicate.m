@@ -279,7 +279,7 @@ function c_PoirsonAndWandell96Replicate
             if (exportMosaic2DActivationStillsAndVideo)
                 if (strcmp(mosaicParams.mosaicType, 'HEX')) && ~any(isnan(mosaicParams.fieldOfViewDegs))  
                     instancesToVisualize = 10;
-                    exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize, paramsList, theProgram);
+                    exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize, rwObject, paramsList, theProgram);
                 end
             end
             
@@ -292,7 +292,7 @@ function c_PoirsonAndWandell96Replicate
                 coneStride = 50;
                 exportResponseTraceStills(theConeMosaic, stimData, chromaticDirectionParams, coneStride, ...
                     lConeIndices, mConeIndices, sConeIndices, centerMostLconeIndex, centerMostMconeIndex, centerMostSconeIndex, ...
-                    paramsList, theProgram);
+                    rwObject, paramsList, theProgram);
             end
 
         end % for contrastIndex
@@ -300,7 +300,7 @@ function c_PoirsonAndWandell96Replicate
 end
 
 
-function exportResponseTraceStills(theConeMosaic, stimData, chromaticDirectionParams, coneStride, lConeIndices, mConeIndices, sConeIndices, centerMostLconeIndex, centerMostMconeIndex, centerMostSconeIndex, paramsList, theProgram)
+function exportResponseTraceStills(theConeMosaic, stimData, chromaticDirectionParams, coneStride, lConeIndices, mConeIndices, sConeIndices, centerMostLconeIndex, centerMostMconeIndex, centerMostSconeIndex, rwObject, paramsList, theProgram)
             
     % Plotting time limits
     timeLimits = [stimData.absorptionsTimeAxis(1) stimData.absorptionsTimeAxis(end)];
@@ -397,7 +397,7 @@ function [iL, iM, iS, lconeToPlot, mconeToPlot, sconeToPlot]  = retrieveConeIndi
     iS = find(theConeMosaic.pattern(nonNullConeIndices) == 4);
 end
                 
-function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize, paramsList, theProgram)
+function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize,  rwObject, paramsList, theProgram)
             
     videoAbsorptionsFilename = 'absorptionsVideo';
     videoAbsorptionsOBJ = VideoWriter(videoAbsorptionsFilename, 'MPEG-4'); % H264 format
