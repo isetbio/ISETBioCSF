@@ -56,7 +56,7 @@ function c_PoirsonAndWandell96Replicate
     oiParams.fieldOfViewDegs = spatialParams.fieldOfViewDegs*1.2;
     
     % To save time, compute only once, then set this to false
-    recomputeConeMosaic = true
+    recomputeConeMosaic = false
     
     
     mosaicParams = struct(...
@@ -95,7 +95,7 @@ function c_PoirsonAndWandell96Replicate
     
     % Define we sample sensitivity along different directions in the LMS space
     % How many response instances to generate
-    instancesNum = 10;
+    instancesNum = 8;
     
     % Add sampling params for each of the LMS directions we want to explore
     LMSsamplingParams = {};
@@ -346,7 +346,7 @@ function c_PoirsonAndWandell96Replicate
                             
                             % Compute zoom-in factor
                             if (visualizedInstanceIndex>1)
-                                zoomInFactorAbsorptions = zoomInFactorAbsorptions * (1.0 + 0.1/numel(absorptionsTimeIndicesToKeep));
+                                zoomInFactorAbsorptions = zoomInFactorAbsorptions * (1.0 + 0.15/numel(absorptionsTimeIndicesToKeep));
                             end
                             
                             if (zoomInFactorAbsorptions > 1.0)
@@ -379,7 +379,7 @@ function c_PoirsonAndWandell96Replicate
                             
                             % compute zoom-in factor
                             if (visualizedInstanceIndex > 1)
-                                zoomInFactorPhotocurrents = zoomInFactorPhotocurrents * (1.0 + 0.1/numel(photocurrentsTimeIndicesToKeep));
+                                zoomInFactorPhotocurrents = zoomInFactorPhotocurrents * (1.0 + 0.15/numel(photocurrentsTimeIndicesToKeep));
                             end
                             
                             if (zoomInFactorPhotocurrents > 1.0)
