@@ -62,7 +62,7 @@ function c_PoirsonAndWandell96Replicate
     mosaicParams = struct(...
                 'type', 'Mosaic_v2', ...
           'mosaicType', 'HEX', ...
-     'fieldOfViewDegs', PW96_fovDegs*[0.25 0.20],...         % nan for 1L, 1M, and 1S-cone only
+     'fieldOfViewDegs', PW96_fovDegs*[0.3 0.3],...         % nan for 1L, 1M, and 1S-cone only
     'eccentricityDegs', 0, ...  
  'spatialLMSDensities', [0.62 0.31 0.07], ...
  'integrationTimeSecs', 50/1000, ...            % 50 msec integration time
@@ -279,7 +279,8 @@ function c_PoirsonAndWandell96Replicate
             if (exportMosaic2DActivationStillsAndVideo)
                 if (strcmp(mosaicParams.mosaicType, 'HEX')) && ~any(isnan(mosaicParams.fieldOfViewDegs))  
                     instancesToVisualize = 10;
-                    exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize, rwObject, paramsList, theProgram);
+                    windowToVisualizeDegs = 3.0 * [1 0.8];
+                    exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize, windowToVisualizeDegs, rwObject, paramsList, theProgram);
                 end
             end
             
@@ -397,7 +398,7 @@ function [iL, iM, iS, lconeToPlot, mconeToPlot, sconeToPlot]  = retrieveConeIndi
     iS = find(theConeMosaic.pattern(nonNullConeIndices) == 4);
 end
                 
-function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize,  rwObject, paramsList, theProgram)
+function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize, windowToVisualizeDegs,  rwObject, paramsList, theProgram)
             
     videoAbsorptionsFilename = 'absorptionsVideo';
     videoAbsorptionsOBJ = VideoWriter(videoAbsorptionsFilename, 'MPEG-4'); % H264 format
@@ -415,12 +416,16 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
     absorptionsRange = [min(stimData.absorptionsCountSequence(:)) max(stimData.absorptionsCountSequence(:))];
     photocurrentsRange = [min(stimData.photoCurrentSignals(:)) max(stimData.photoCurrentSignals(:))];   
 
-    zoomInFactorAbsorptions = 0.6;
-    zoomInFactorPhotocurrents = 0.6;
+    zoomInFactorAbsorptions = 0.5;
+    zoomInFactorPhotocurrents = 0.5;
 
     activationLUT = jet(1024);
     activationLUT = bone(1024);
 
+    windowToVisualizeMicrons = windowToVisualizeDegs * theConeMosaic.width*1e6 / theConeMosaic.fov(1);
+    xRange = windowToVisualizeMicrons(1) * [-0.5 0.5] * 1e-6;
+    yRange = windowToVisualizeMicrons(2) * [-0.5 0.5] * 1e-6;
+    
     for visualizedInstanceIndex = 1:min([size(stimData.absorptionsCountSequence,1) instancesToVisualize])
 
         visualizedAbsorptions = squeeze(stimData.absorptionsCountSequence(visualizedInstanceIndex,:,:,:));
@@ -446,6 +451,8 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
                    'mapType', 'modulated disks', ...                                 % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
                 'signalName', 'isomerizations (R*/cone/integration time)', ...          % colormap title (signal name and units)
                 'signalRange', absorptionsRange, ...                                    % signal range
+                    'xRange', xRange, ...
+                    'yRange', yRange, ...
                   'colorMap', activationLUT, ...                                        % colormap to use for displaying activation level
         'separateLMSmosaics', false, ...
             'activationTime', stimData.absorptionsTimeAxis(tIndex), ...
@@ -485,6 +492,8 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
                    'mapType', 'modulated disks', ...         % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
                 'signalName', 'photocurrent (pAmps)', ...       % colormap title (signal name and units)
                 'signalRange', photocurrentsRange, ...          % signal range
+                    'xRange', xRange, ...
+                    'yRange', yRange, ...
                   'colorMap', activationLUT, ...                % colormap to use for displaying activation level
         'separateLMSmosaics', false, ...
             'activationTime', stimData.photoCurrentTimeAxis(tIndex), ...
