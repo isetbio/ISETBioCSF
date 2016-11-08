@@ -98,7 +98,7 @@ function c_PoirsonAndWandell96Replicate
     
     % Define we sample sensitivity along different directions in the LMS space
     % How many response instances to generate
-    instancesNum = 6;   
+    instancesNum = 15;   
     LMSsamplingParams = LMSsamplingParamsGenerate(instancesNum);
  
     % Generate chromaticDirectionParams
