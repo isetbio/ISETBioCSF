@@ -5,6 +5,9 @@ function c_PoirsonAndWandell96Replicate
          
     close all
     
+    % Whether to display all the params
+    paramsVerbosity = 0;
+    
     % Set up the rw object for this program
     rwObject = IBIOColorDetectReadWriteBasic;
     theProgram = mfilename;
@@ -95,35 +98,11 @@ function c_PoirsonAndWandell96Replicate
     
     % Define we sample sensitivity along different directions in the LMS space
     % How many response instances to generate
-    instancesNum = 8;   
+    instancesNum = 6;   
     LMSsamplingParams = LMSsamplingParamsGenerate(instancesNum);
  
-    
-    % Initialize the chromaticDirectionParams cell array
-    chromaticDirectionParams = cell(1,numel(LMSsamplingParams));
-    
-    % Populate the chromaticDirectionParams
-    for chromaticDirectionIndex = 1:numel(LMSsamplingParams)  
-        % Get angle on LM modulation plane
-        azimuthAngle = LMSsamplingParams{chromaticDirectionIndex}.azimuthAngle;
-        % Get angle along S-modulation axis
-        elevationAngle = LMSsamplingParams{chromaticDirectionIndex}.elevationAngle;
-            
-         % Compute cone contrasts from azimuth and elevation
-        [cL, cM, cS] = sph2cart(azimuthAngle/180*pi, elevationAngle/180*pi, 1);
-
-        % Normalize to unity RMS cone contrast (stimulus strength)
-        coneContrasts = [cL, cM, cS];
-        coneContrastUnitVector = coneContrasts / norm(coneContrasts);
-
-        % Form chromaticDirection params
-        chromaticDirectionParams{chromaticDirectionIndex} = struct(...
-                          'type', 'ColorModulation_v2', ...
-                        'device', 'Monitor', ...
-        'coneContrastUnitVector', coneContrastUnitVector, ...
-              'stimulusStrength', [] ...           % the current stimulus strength,  updated at runtime
-                );
-    end  % chromaticDirectionIndex
+    % Generate chromaticDirectionParams
+    chromaticDirectionParams = chromaticDirectionParamsGenerate(LMSsamplingParams);
     
     % Generate the background scene
     [backgroundScene, ~] = generateGaborDisplayScene(spatialParams, backgroundChromaticParams, 0.0);
@@ -212,9 +191,10 @@ function c_PoirsonAndWandell96Replicate
             );
             
             % Print all params
-            disp(UnitTest.displayNicelyFormattedStruct(ancillaryData, 'ancillaryData', '', 60));
+            if (paramsVerbosity > 0)
+                disp(UnitTest.displayNicelyFormattedStruct(ancillaryData, 'ancillaryData', '', 60));
+            end
             
-            fprintf('Computing emPaths\n');
             % Compute the emPaths for all response instances
             emPaths = zeros(instancesNum, eyeMovementsNum, 2);
             for instanceIndex = 1:instancesNum
@@ -401,7 +381,7 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
             
     videoAbsorptionsFilename = 'absorptionsVideo';
     videoAbsorptionsOBJ = VideoWriter(videoAbsorptionsFilename, 'MPEG-4'); % H264 format
-    videoAbsorptionsOBJ.FrameRate = 10; 
+    videoAbsorptionsOBJ.FrameRate = 30; 
     videoAbsorptionsOBJ.Quality = 100;
     videoAbsorptionsOBJ.open();
 
@@ -415,11 +395,11 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
     absorptionsRange = [min(stimData.absorptionsCountSequence(:)) max(stimData.absorptionsCountSequence(:))];
     photocurrentsRange = [min(stimData.photoCurrentSignals(:)) max(stimData.photoCurrentSignals(:))];   
 
-    aspectRatio = 1.1;
-    zoomInFactorAbsorptions = 1/aspectRatio;
-    zoomInFactorPhotocurrents = 1/aspectRatio;
+    aspectRatio = 1.0;
+    % Initial zoom-in
+    zoomInFactorAbsorptions = aspectRatio;
+    zoomInFactorPhotocurrents = aspectRatio;
 
-    activationLUT = jet(1024);
     activationLUT = bone(1024);
 
     for visualizedInstanceIndex = 1:min([size(stimData.absorptionsCountSequence,1) instancesToVisualize])
@@ -431,7 +411,7 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
         for tIndex = 1:absorptionSequenceLength
             % Compute zoom-in factor
             if (visualizedInstanceIndex>1)
-                zoomInFactorAbsorptions = zoomInFactorAbsorptions * (1.0 - 0.1/absorptionSequenceLength);
+                zoomInFactorAbsorptions = zoomInFactorAbsorptions * (1.0 - 0.1/absorptionSequenceLength)
             end
 
             if (zoomInFactorAbsorptions < 0.4)
@@ -444,16 +424,16 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
 
             hFig = theConeMosaic.visualizeActivationMaps(...
                 squeeze(visualizedAbsorptions(:,tIndex)), ...                                           % the signal matrix
-                   'mapType', 'modulated disks', ...                                  % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+                   'mapType', 'modulated disks', ...                                    % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
                 'signalName', 'isomerizations (R*/cone/integration time)', ...          % colormap title (signal name and units)
-                'signalRange', absorptionsRange, ...                                    % signal range
-                    'xRange', theConeMosaic.width/2*[-1 1], ...
-                    'yRange', theConeMosaic.height/2*[-1 1]*aspectRatio, ...
+               'signalRange', absorptionsRange, ...                                    % signal range
+                    'xRange', theConeMosaic.width/2 * [-1 1], ...
+                    'yRange', theConeMosaic.height/2 * [-1 1]*0.77, ...
+              'zoomInFactor', zoomInFactorAbsorptions, ...                              % dynamically changing zoom
                   'colorMap', activationLUT, ...                                        % colormap to use for displaying activation level
-        'separateLMSmosaics', false, ...
-            'activationTime', stimData.absorptionsTimeAxis(tIndex), ...
-   'visualizedInstanceIndex', visualizedInstanceIndex, ...
-              'zoomInFactor', zoomInFactorAbsorptions, ...
+        'separateLMSmosaics', false, ...                                                % when true, L-,M-, and S-cone submosaic activations are plotted separately
+            'activationTime', stimData.absorptionsTimeAxis(tIndex), ...                 % current response time
+   'visualizedInstanceIndex', visualizedInstanceIndex, ...                              % currently visualized instance
                 'figureSize', [1280 960] ...                                            % figure size in pixels
             );
 
@@ -465,7 +445,7 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
             videoAbsorptionsOBJ.writeVideo(getframe(hFig));
         end % tIndex
 
-        
+        if (1==2)
         % Photocurrents video
         visualizedPhotocurrents = squeeze(stimData.photoCurrentSignals(visualizedInstanceIndex,:,:,:));
         sz = ndims(visualizedPhotocurrents);
@@ -474,7 +454,7 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
         for tIndex = 1:photocurrentsSignalLength
             % compute zoom-in factor
             if (visualizedInstanceIndex > 1)
-                zoomInFactorPhotocurrents = zoomInFactorPhotocurrents * (1.0 - 0.2/photocurrentsSignalLength);
+                zoomInFactorPhotocurrents = zoomInFactorPhotocurrents * (1.0 - 0.1/photocurrentsSignalLength);
             end
 
             if (zoomInFactorPhotocurrents < 0.4)
@@ -485,26 +465,29 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
             end
             hFig2 = theConeMosaic.visualizeActivationMaps(...
                 squeeze(visualizedPhotocurrents(:,tIndex)), ...                                           % the signal matrix
-                   'mapType', 'modulated disks', ...         % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
-                'signalName', 'photocurrent (pAmps)', ...       % colormap title (signal name and units)
-               'signalRange', photocurrentsRange, ...          % signal range
-                    'xRange', theConeMosaic.width/2*[-1 1], ...
-                    'yRange', theConeMosaic.height/2*[-1 1]*aspectRatio, ...
-                  'colorMap', activationLUT, ...                % colormap to use for displaying activation level
-        'separateLMSmosaics', false, ...
-            'activationTime', stimData.photoCurrentTimeAxis(tIndex), ...
-              'zoomInFactor', zoomInFactorPhotocurrents, ...
-   'visualizedInstanceIndex', visualizedInstanceIndex, ...
-                'figureSize', [1280 960] ...                   % figure size in pixels
+                   'mapType', 'modulated disks', ...                        % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+                'signalName', 'photocurrent (pAmps)', ...                   % colormap title (signal name and units)
+               'signalRange', photocurrentsRange, ...                       % signal range
+                    'xRange', theConeMosaic.width/2 * [-1 1], ...
+                    'yRange', theConeMosaic.height/2 * [-1 1]*0.77, ...
+              'zoomInFactor', zoomInFactorPhotocurrents, ...                % dynamically changing zoom
+                  'colorMap', activationLUT, ...                            % colormap to use for displaying activation level
+        'separateLMSmosaics', false, ...                                    % when true, L-,M-, and S-cone submosaic activations are plotted separately
+            'activationTime', stimData.photoCurrentTimeAxis(tIndex), ...    % current response time
+   'visualizedInstanceIndex', visualizedInstanceIndex, ...                  % currently visualized instance
+                'figureSize', [1280 960] ...                                % figure size in pixels
             );
 
             % Export a PNG image    
             filename = sprintf('MosaicPhotocurrents_%2.3f', stimData.photoCurrentTimeAxis(tIndex));
+
             rwObject.write(filename, stimData, paramsList, theProgram, ...
                     'type', 'NicePlotExport', 'FigureHandle', hFig2, 'FigureType', 'png');
 
             videoPhotocurrentsOBJ.writeVideo(getframe(hFig2));
         end % tIndex
+        end
+        
     end % visualizedInstanceIndex
 
     videoAbsorptionsOBJ.close();
@@ -631,6 +614,35 @@ function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries,
     drawnow;
 end
 
+
+function chromaticDirectionParams = chromaticDirectionParamsGenerate(LMSsamplingParams)
+    
+    % Initialize the chromaticDirectionParams cell array
+    chromaticDirectionParams = cell(1,numel(LMSsamplingParams));
+    
+    % Populate the chromaticDirectionParams
+    for chromaticDirectionIndex = 1:numel(LMSsamplingParams)  
+        % Get angle on LM modulation plane
+        azimuthAngle = LMSsamplingParams{chromaticDirectionIndex}.azimuthAngle;
+        % Get angle along S-modulation axis
+        elevationAngle = LMSsamplingParams{chromaticDirectionIndex}.elevationAngle;
+            
+         % Compute cone contrasts from azimuth and elevation
+        [cL, cM, cS] = sph2cart(azimuthAngle/180*pi, elevationAngle/180*pi, 1);
+
+        % Normalize to unity RMS cone contrast (stimulus strength)
+        coneContrasts = [cL, cM, cS];
+        coneContrastUnitVector = coneContrasts / norm(coneContrasts);
+
+        % Form chromaticDirection params
+        chromaticDirectionParams{chromaticDirectionIndex} = struct(...
+                          'type', 'ColorModulation_v2', ...
+                        'device', 'Monitor', ...
+        'coneContrastUnitVector', coneContrastUnitVector, ...
+              'stimulusStrength', [] ...           % the current stimulus strength,  updated at runtime
+                );
+    end  % chromaticDirectionIndex
+end
 
 function LMSsamplingParams = LMSsamplingParamsGenerate(instancesNum)
     % Add sampling params for each of the LMS directions we want to explore
