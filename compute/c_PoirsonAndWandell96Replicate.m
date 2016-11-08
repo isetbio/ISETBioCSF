@@ -410,8 +410,8 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
         
         for tIndex = 1:absorptionSequenceLength
             % Compute zoom-in factor
-            if (visualizedInstanceIndex>1)
-                zoomInFactorAbsorptions = zoomInFactorAbsorptions * (1.0 - 0.1/absorptionSequenceLength)
+            if (visualizedInstanceIndex>3)
+                zoomInFactorAbsorptions = zoomInFactorAbsorptions * (1.0 - 0.05/absorptionSequenceLength);
             end
 
             if (zoomInFactorAbsorptions < 0.4)
@@ -428,7 +428,7 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
                 'signalName', 'isomerizations (R*/cone/integration time)', ...          % colormap title (signal name and units)
                'signalRange', absorptionsRange, ...                                    % signal range
                     'xRange', theConeMosaic.width/2 * [-1 1], ...
-                    'yRange', theConeMosaic.height/2 * [-1 1]*0.77, ...
+                    'yRange', theConeMosaic.height/2 * [-1 1]*0.78, ...
               'zoomInFactor', zoomInFactorAbsorptions, ...                              % dynamically changing zoom
                   'colorMap', activationLUT, ...                                        % colormap to use for displaying activation level
         'separateLMSmosaics', false, ...                                                % when true, L-,M-, and S-cone submosaic activations are plotted separately
@@ -444,8 +444,14 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
 
             videoAbsorptionsOBJ.writeVideo(getframe(hFig));
         end % tIndex
+        close(hFig);
+        
+        videoAbsorptionsOBJ.close();
+        % Export video to right directory
+        rwObject.write(videoAbsorptionsFilename, fullfile(pwd,sprintf('%s.mp4',videoAbsorptionsFilename)), ...
+        paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4');
+    
 
-        if (1==2)
         % Photocurrents video
         visualizedPhotocurrents = squeeze(stimData.photoCurrentSignals(visualizedInstanceIndex,:,:,:));
         sz = ndims(visualizedPhotocurrents);
@@ -453,8 +459,8 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
         
         for tIndex = 1:photocurrentsSignalLength
             % compute zoom-in factor
-            if (visualizedInstanceIndex > 1)
-                zoomInFactorPhotocurrents = zoomInFactorPhotocurrents * (1.0 - 0.1/photocurrentsSignalLength);
+            if (visualizedInstanceIndex > 3)
+                zoomInFactorPhotocurrents = zoomInFactorPhotocurrents * (1.0 - 0.05/photocurrentsSignalLength);
             end
 
             if (zoomInFactorPhotocurrents < 0.4)
@@ -469,7 +475,7 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
                 'signalName', 'photocurrent (pAmps)', ...                   % colormap title (signal name and units)
                'signalRange', photocurrentsRange, ...                       % signal range
                     'xRange', theConeMosaic.width/2 * [-1 1], ...
-                    'yRange', theConeMosaic.height/2 * [-1 1]*0.77, ...
+                    'yRange', theConeMosaic.height/2 * [-1 1]*0.78, ...
               'zoomInFactor', zoomInFactorPhotocurrents, ...                % dynamically changing zoom
                   'colorMap', activationLUT, ...                            % colormap to use for displaying activation level
         'separateLMSmosaics', false, ...                                    % when true, L-,M-, and S-cone submosaic activations are plotted separately
@@ -486,20 +492,14 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
 
             videoPhotocurrentsOBJ.writeVideo(getframe(hFig2));
         end % tIndex
-        end
         
     end % visualizedInstanceIndex
-
-    videoAbsorptionsOBJ.close();
-    % Export video to right directory
-    rwObject.write(videoAbsorptionsFilename, fullfile(pwd,sprintf('%s.mp4',videoAbsorptionsFilename)), paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4');
-
+    close(hFig2);
+    
     videoPhotocurrentsOBJ.close();
     % Export video to right directory 
-    rwObject.write(videoPhotocurrentsFilename, fullfile(pwd,sprintf('%s.mp4',videoPhotocurrentsFilename)), paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4');
-
-    close(hFig);
-    close(hFig2);
+    rwObject.write(videoPhotocurrentsFilename, fullfile(pwd,sprintf('%s.mp4',videoPhotocurrentsFilename)), ...
+        paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4');
 end
                 
 function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries, integrationTime, stimTimeAxis, timeLimits, ...
