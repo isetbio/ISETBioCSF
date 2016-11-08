@@ -71,7 +71,11 @@ function c_PoirsonAndWandell96ReplicateParfor
         stimulusStrengthAxis = LMSsamplingParams{chromaticDirectionIndex}.stimulusStrengthAxis;
         instancesNum = LMSsamplingParams{chromaticDirectionIndex}.instancesNum;
           
-        fprintf('Condition %d has %d examined strengths\n', conditionIndex, numel(stimulusStrengthAxis));
+        fprintf('Chromatic direction #%d/%d. Unit vector: <%0.4f %0.4f %0.4f> \n', ...
+                conditionIndex+1, numel(chromaticDirectionParams), ...
+                chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector(1), ...
+                chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector(2), ...
+                chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector(3));
         
         for stimStrengthIndex = 1:numel(stimulusStrengthAxis)
             % Update the current stimulus strength
@@ -79,11 +83,8 @@ function c_PoirsonAndWandell96ReplicateParfor
             
             % Compute modulated stimulus scene
             [modulatedScene, actualStimulusStrength] = generateGaborDisplayScene(spatialParams, chromaticParams, chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength);
-            fprintf('Stimulus %d/%d unit vector: [%2.1f %2.2f %2.2f], Strength (RMS cone contrast): specified = %2.3f, measured: %2.3f\n', ...
+            fprintf('\tStimulus strength %d/%d, RMS cone contrast: specified = %0.5f, measured: %0.5f\n', ...
                 stimStrengthIndex, numel(stimulusStrengthAxis), ...
-                chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector(1), ...
-                chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector(2), ...
-                chromaticDirectionParams{chromaticDirectionIndex}.coneContrastUnitVector(3), ...
                 stimulusStrengthAxis(stimStrengthIndex), actualStimulusStrength);
             
             % Compute modulated OI
@@ -151,7 +152,7 @@ function c_PoirsonAndWandell96ReplicateParfor
     parfor parforCondIndex = 1:parforConditionsNum
         
         t = getCurrentTask();
-        fprintf('<strong>Processor [%d] working on condition %d / %d\n</strong>', t.ID, parformCondIndex, parforConditionsNum);
+        fprintf('<strong>Processor [%d] working on condition %d / %d\n</strong>', t.ID, parforCondIndex, parforConditionsNum);
         
         % Get the data for the current condition
         theData = parforStructData{parforCondIndex};
