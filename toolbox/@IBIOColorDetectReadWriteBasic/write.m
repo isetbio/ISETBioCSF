@@ -63,6 +63,9 @@ switch (p.Results.Type)
         fprintf('Figure exported to %s/%s\n', pwd,filename);
         cd(curdir);
     case 'movieFile'
-        unix(['mv ' p.Results.data ' ' fileid]);
+        % This cp followed by em seems to prevent a permissions error when the dropbox
+        % location is pointed to via a softlink
+        unix(['cp ' p.Results.data ' ' fileid]);
+        unix(['rm ' p.Results.data]);
 end
 
