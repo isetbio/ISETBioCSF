@@ -53,12 +53,10 @@ if (~isempty(p.Results.paramsList))
             case 'Session'
                 thisParentDir = obj.paramsToSessionDirName(thisParams);
                 
-            case 'ColorModulation'
-            case 'ColorModulation_v2'
+            case {'ColorModulation' 'ColorModulation_v2'}
                 thisParentDir = obj.paramsToColorModulationDirName(thisParams);
                 
-            case 'Background'
-            case 'Background_v2'
+            case {'Background' 'Background_v2'}
                 thisParentDir = obj.paramsToBackgroundDirName(thisParams);
                 
             case 'Instance'
@@ -75,20 +73,16 @@ if (~isempty(p.Results.paramsList))
             case 'psychoEllipsoid'
                 thisParentDir = obj.paramsToPsychoEllipsoidDirName(thisParams);
                 
-            case 'Spatial'
-            case 'Spatial_v2'
+            case {'Spatial' 'Spatial_v2'}
                 thisParentDir = obj.paramsToSpatialDirName(thisParams);
                 
-            case 'Temporal'
-            case 'Temporal_v2'
+            case {'Temporal' 'Temporal_v2'}
                 thisParentDir = obj.paramsToTemporalDirName(thisParams);
                 
-            case 'Optics'
-            case 'Optics_v2'
+            case {'Optics' 'Optics_v2'}
                 thisParentDir = obj.paramsToOiDirName(thisParams);
                 
-            case 'Mosaic'
-            case 'Mosaic_v2'
+            case {'Mosaic' 'Mosaic_v2'}
                 thisParentDir = obj.paramsToMosaicDirName(thisParams);
             
             otherwise
