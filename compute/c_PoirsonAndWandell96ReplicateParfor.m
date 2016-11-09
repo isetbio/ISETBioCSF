@@ -416,7 +416,174 @@ function LMSsamplingParams = LMSsamplingParamsGenerate(instancesNum)
     end
     
 end
+
+function chromaticDirectionParams = chromaticDirectionParamsGenerate(LMSsamplingParams)
     
+    % Initialize the chromaticDirectionParams cell array
+    chromaticDirectionParams = cell(1,numel(LMSsamplingParams));
+    
+    % Populate the chromaticDirectionParams
+    for chromaticDirectionIndex = 1:numel(LMSsamplingParams)  
+        % Get angle on LM modulation plane
+        azimuthAngle = LMSsamplingParams{chromaticDirectionIndex}.azimuthAngle;
+        % Get angle along S-modulation axis
+        elevationAngle = LMSsamplingParams{chromaticDirectionIndex}.elevationAngle;
+            
+         % Compute cone contrasts from azimuth and elevation
+        [cL, cM, cS] = sph2cart(azimuthAngle/180*pi, elevationAngle/180*pi, 1);
+
+        % Normalize to unity RMS cone contrast (stimulus strength)
+        coneContrasts = [cL, cM, cS];
+        coneContrastUnitVector = coneContrasts / norm(coneContrasts);
+
+        % Form chromaticDirection params
+        chromaticDirectionParams{chromaticDirectionIndex} = struct(...
+                          'type', 'ColorModulation_v2', ...
+                        'device', 'Monitor', ...
+        'coneContrastUnitVector', coneContrastUnitVector, ...
+              'stimulusStrength', [] ...           % the current stimulus strength,  updated at runtime
+                );
+    end  % chromaticDirectionIndex
+end
+   
+function theConeMosaic = coneMosaicGenerate(mosaicParams)
+
+    if (strcmp(mosaicParams.conePacking, 'HEX')) && ~any(isnan(mosaicParams.fieldOfViewDegs))
+        % HEX mosaic
+        resamplingFactor = 6;
+        centerInMM = [0.0 0.0];                     % mosaic eccentricity
+        spatiallyVaryingConeDensity = true;        % constant spatial density (at the mosaic's eccentricity)
+
+        theConeMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, ...
+                       'center', centerInMM*1e-3, ...
+               'spatialDensity', [0 mosaicParams.spatialLMSDensities] ...
+            );
+        theConeMosaic.setSizeToFOVForHexMosaic(mosaicParams.fieldOfViewDegs);
+        theConeMosaic.visualizeGrid();
+        
+    else
+        % RECT mosaic
+        theConeMosaic = coneMosaic;
+
+        % Adjust size
+        if isnan(mosaicParams.fieldOfViewDegs)
+            % Generate a human cone mosaic with 1L, 1M and 1S cone
+            theConeMosaic.rows = 1;
+            theConeMosaic.cols = 3;
+            theConeMosaic.pattern = [2 3 4];
+        else
+            theConeMosaic.setSizeToFOV(mosaicParams.fieldOfViewDegs);
+            % Set the LMS spatial densities
+            theConeMosaic.spatialDensity = [0 mosaicParams.spatialLMSDensities]';
+        end
+    end
+
+    % Set the noise
+    theConeMosaic.noiseFlag = mosaicParams.photonNoise;
+
+    % Set the integrationTime
+    theConeMosaic.integrationTime = mosaicParams.integrationTimeSecs;
+    
+    % Generate the outer-segment object to be used by the coneMosaic
+    theOuterSegment = osLinear();
+    theOuterSegment.noiseFlag = mosaicParams.osNoise;
+    
+    % Set a custom timeStep, for @osLinear we do not need the default 0.1 msec
+    theOuterSegment.timeStep = mosaicParams.osTimeStepSecs;
+
+    % Couple the outersegment object to the cone mosaic object
+    theConeMosaic.os = theOuterSegment;
+end
+
+function eyeMovementsNum = computeEyeMovementsNum(integrationTime, theOIsequence)
+    % Generate eye movement sequence for all oi's
+    stimulusSamplingInterval = theOIsequence.oiTimeAxis(2)-theOIsequence.oiTimeAxis(1);
+    eyeMovementsNumPerOpticalImage = stimulusSamplingInterval/integrationTime;
+    eyeMovementsNum = round(eyeMovementsNumPerOpticalImage*theOIsequence.length);
+    
+    if (eyeMovementsNum < 1)
+        error('Less than 1 eye movement!!! \nStimulus sampling interval:%g ms Cone mosaic integration time: %g ms\n', 1000*stimulusSamplingInterval, 1000*theConeMosaic.integrationTime);
+    else 
+        fprintf('Optical image sequence contains %2.0f eye movements (%2.2f eye movements/oi)\n', eyeMovementsNum, eyeMovementsNumPerOpticalImage);
+    end 
+end
+
+function [displayScene, measuredStimulusStrength] = generateGaborDisplayScene(spatialParams, colorParams, nominalStimulusStrength)
+
+    % Genereate the rendering display
+    display = displayCreate('CRT-MODEL');
+    display = displaySet(display,'viewingdistance', 1.0);
+    
+    % Adjust display's SPDs so as to be able to generate the desired luminance
+    peakLuminanceBeforeAdjustment = displayGet(display, 'peak luminance');
+    spdMultiplierToGetDesiredLum = colorParams.backgroundxyY(3)/(0.5*peakLuminanceBeforeAdjustment);
+    display = displaySet(display,'spd',spdMultiplierToGetDesiredLum*displayGet(display,'spd'));
+    
+    % Get the SPDs and their spectral sampling
+    displayWls = displayGet(display,'wave');
+    displaySpectralSampling = WlsToS(displayWls);
+    displaySPD = displayGet(display,'spd');
+    
+    % Load cone fundamentals and XYZtoConeExcitationsMatrix
+    [XYZtoConeExcitationsMatrix, coneFundamentals, coneSpectralSampling] = XYZToCones();
+    
+    % Resample cone fundamentals to the spectral sampling of the display
+    coneFundamentals = SplineCmf(coneSpectralSampling, coneFundamentals, displaySpectralSampling);
+    
+    % Compute coneExcitationsToDisplayPrimaryMatrix
+    displayPrimaryToConeExcitations = coneFundamentals * displaySPD * displaySpectralSampling(2);
+    coneExcitationsToDisplayPrimaryMatrix = inv(displayPrimaryToConeExcitations);
+    
+    % Convert the background xyY to cone excitations
+    backgroundConeExcitations = XYZtoConeExcitationsMatrix * xyYToXYZ(colorParams.backgroundxyY');
+    
+    % Generate a Gabor spatial modulation pattern
+    gaborModulationPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams, nominalStimulusStrength))-1;
+    
+    % Compute cone excitationImage using the gaborModulationPattern, the
+    % backgroundConeExcitations and the coneContrasts
+    for ii = 1:3
+        coneExcitation = backgroundConeExcitations(ii) * (1 + gaborModulationPattern * colorParams.coneContrasts(ii));
+        minExc = min(coneExcitation(:));
+        maxExc = max(coneExcitation(:));
+        actualConeContrast(ii) = (maxExc-minExc)/(maxExc+minExc);
+        coneExcitationImage(:,:,ii) = coneExcitation;
+    end
+    measuredStimulusStrength = sqrt(sum(actualConeContrast.^2));
+    
+    % Compute the RGB primary values
+    [coneExcitations,m,n] = ImageToCalFormat(coneExcitationImage);
+    displayRGBPrimaries = coneExcitationsToDisplayPrimaryMatrix * coneExcitations;
+    displayRGBPrimaryImage = CalFormatToImage(displayRGBPrimaries,m,n);
+    
+    % Check for out-of-gamut
+    if (any(displayRGBPrimaryImage(:) > 1))
+        fprintf(2,'Image above gamut\n');
+    end
+    if (any(displayRGBPrimaryImage(:) < 0))
+        fprintf(2,'Image below gamut\n');
+    end
+    
+    % Gamma correct the primary values
+    displayRGBsettingsImage = round(ieLUTLinear(displayRGBPrimaryImage,displayGet(display,'inverse gamma')));
+    
+    % Make a scene from the gaborRGBsettings values
+    displayScene = sceneFromFile(displayRGBsettingsImage,'rgb',[],display);
+    displayScene = sceneSet(displayScene, 'h fov', spatialParams.fieldOfViewDegs);
+    displayScene = sceneSet(displayScene, 'distance', spatialParams.viewingDistance);
+end
+
+function [M, coneFundamentals, coneSpectralSampling] = XYZToCones
+    % Here we'll use the Stockman-Sharpe 2-degree fundamentals and the proposed CIE corresponding XYZ functions
+    theCones = load('T_cones_ss2');
+    theXYZ = load('T_xyzCIEPhys2');
+    
+    XYZcolorMatchingFunctions = 683 * theXYZ.T_xyzCIEPhys2;
+    coneFundamentals = 683 * theCones.T_cones_ss2;
+    coneSpectralSampling = theCones.S_cones_ss2;
+    M = ((XYZcolorMatchingFunctions')\(coneFundamentals'))';
+end
+
 function indicesToKeep = determineTimeIndicesToKeep(timeAxis, integrationTime, rampPeak, responseSubSamplingParams)
     t = timeAxis + integrationTime/2 - rampPeak - responseSubSamplingParams.secondsToIncludeOffset;
     indicesToKeep  = find(abs(t) <= responseSubSamplingParams.secondsToInclude/2);
@@ -755,171 +922,4 @@ function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries,
         coneContrastUnitVector(1), coneContrastUnitVector(2), coneContrastUnitVector(3), stimulusStrength, ...
         instancesPlotted, numel(iL), numel(iM), numel(iS)), 'Color', [1 1 1], 'FontSize',16, 'FontWeight', 'normal');
     drawnow;
-end
-
-function chromaticDirectionParams = chromaticDirectionParamsGenerate(LMSsamplingParams)
-    
-    % Initialize the chromaticDirectionParams cell array
-    chromaticDirectionParams = cell(1,numel(LMSsamplingParams));
-    
-    % Populate the chromaticDirectionParams
-    for chromaticDirectionIndex = 1:numel(LMSsamplingParams)  
-        % Get angle on LM modulation plane
-        azimuthAngle = LMSsamplingParams{chromaticDirectionIndex}.azimuthAngle;
-        % Get angle along S-modulation axis
-        elevationAngle = LMSsamplingParams{chromaticDirectionIndex}.elevationAngle;
-            
-         % Compute cone contrasts from azimuth and elevation
-        [cL, cM, cS] = sph2cart(azimuthAngle/180*pi, elevationAngle/180*pi, 1);
-
-        % Normalize to unity RMS cone contrast (stimulus strength)
-        coneContrasts = [cL, cM, cS];
-        coneContrastUnitVector = coneContrasts / norm(coneContrasts);
-
-        % Form chromaticDirection params
-        chromaticDirectionParams{chromaticDirectionIndex} = struct(...
-                          'type', 'ColorModulation_v2', ...
-                        'device', 'Monitor', ...
-        'coneContrastUnitVector', coneContrastUnitVector, ...
-              'stimulusStrength', [] ...           % the current stimulus strength,  updated at runtime
-                );
-    end  % chromaticDirectionIndex
-end
-   
-function theConeMosaic = coneMosaicGenerate(mosaicParams)
-
-    if (strcmp(mosaicParams.conePacking, 'HEX')) && ~any(isnan(mosaicParams.fieldOfViewDegs))
-        % HEX mosaic
-        resamplingFactor = 6;
-        centerInMM = [0.0 0.0];                     % mosaic eccentricity
-        spatiallyVaryingConeDensity = true;        % constant spatial density (at the mosaic's eccentricity)
-
-        theConeMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, ...
-                       'center', centerInMM*1e-3, ...
-               'spatialDensity', [0 mosaicParams.spatialLMSDensities] ...
-            );
-        theConeMosaic.setSizeToFOVForHexMosaic(mosaicParams.fieldOfViewDegs);
-        theConeMosaic.visualizeGrid();
-        
-    else
-        % RECT mosaic
-        theConeMosaic = coneMosaic;
-
-        % Adjust size
-        if isnan(mosaicParams.fieldOfViewDegs)
-            % Generate a human cone mosaic with 1L, 1M and 1S cone
-            theConeMosaic.rows = 1;
-            theConeMosaic.cols = 3;
-            theConeMosaic.pattern = [2 3 4];
-        else
-            theConeMosaic.setSizeToFOV(mosaicParams.fieldOfViewDegs);
-            % Set the LMS spatial densities
-            theConeMosaic.spatialDensity = [0 mosaicParams.spatialLMSDensities]';
-        end
-    end
-
-    % Set the noise
-    theConeMosaic.noiseFlag = mosaicParams.photonNoise;
-
-    % Set the integrationTime
-    theConeMosaic.integrationTime = mosaicParams.integrationTimeSecs;
-    
-    % Generate the outer-segment object to be used by the coneMosaic
-    theOuterSegment = osLinear();
-    theOuterSegment.noiseFlag = mosaicParams.osNoise;
-    
-    % Set a custom timeStep, for @osLinear we do not need the default 0.1 msec
-    theOuterSegment.timeStep = mosaicParams.osTimeStepSecs;
-
-    % Couple the outersegment object to the cone mosaic object
-    theConeMosaic.os = theOuterSegment;
-end
-
-function eyeMovementsNum = computeEyeMovementsNum(integrationTime, theOIsequence)
-    % Generate eye movement sequence for all oi's
-    stimulusSamplingInterval = theOIsequence.oiTimeAxis(2)-theOIsequence.oiTimeAxis(1);
-    eyeMovementsNumPerOpticalImage = stimulusSamplingInterval/integrationTime;
-    eyeMovementsNum = round(eyeMovementsNumPerOpticalImage*theOIsequence.length);
-    
-    if (eyeMovementsNum < 1)
-        error('Less than 1 eye movement!!! \nStimulus sampling interval:%g ms Cone mosaic integration time: %g ms\n', 1000*stimulusSamplingInterval, 1000*theConeMosaic.integrationTime);
-    else 
-        fprintf('Optical image sequence contains %2.0f eye movements (%2.2f eye movements/oi)\n', eyeMovementsNum, eyeMovementsNumPerOpticalImage);
-    end 
-end
-
-function [displayScene, measuredStimulusStrength] = generateGaborDisplayScene(spatialParams, colorParams, nominalStimulusStrength)
-
-    % Genereate the rendering display
-    display = displayCreate('CRT-MODEL');
-    display = displaySet(display,'viewingdistance', 1.0);
-    
-    % Adjust display's SPDs so as to be able to generate the desired luminance
-    peakLuminanceBeforeAdjustment = displayGet(display, 'peak luminance');
-    spdMultiplierToGetDesiredLum = colorParams.backgroundxyY(3)/(0.5*peakLuminanceBeforeAdjustment);
-    display = displaySet(display,'spd',spdMultiplierToGetDesiredLum*displayGet(display,'spd'));
-    
-    % Get the SPDs and their spectral sampling
-    displayWls = displayGet(display,'wave');
-    displaySpectralSampling = WlsToS(displayWls);
-    displaySPD = displayGet(display,'spd');
-    
-    % Load cone fundamentals and XYZtoConeExcitationsMatrix
-    [XYZtoConeExcitationsMatrix, coneFundamentals, coneSpectralSampling] = XYZToCones();
-    
-    % Resample cone fundamentals to the spectral sampling of the display
-    coneFundamentals = SplineCmf(coneSpectralSampling, coneFundamentals, displaySpectralSampling);
-    
-    % Compute coneExcitationsToDisplayPrimaryMatrix
-    displayPrimaryToConeExcitations = coneFundamentals * displaySPD * displaySpectralSampling(2);
-    coneExcitationsToDisplayPrimaryMatrix = inv(displayPrimaryToConeExcitations);
-    
-    % Convert the background xyY to cone excitations
-    backgroundConeExcitations = XYZtoConeExcitationsMatrix * xyYToXYZ(colorParams.backgroundxyY');
-    
-    % Generate a Gabor spatial modulation pattern
-    gaborModulationPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams, nominalStimulusStrength))-1;
-    
-    % Compute cone excitationImage using the gaborModulationPattern, the
-    % backgroundConeExcitations and the coneContrasts
-    for ii = 1:3
-        coneExcitation = backgroundConeExcitations(ii) * (1 + gaborModulationPattern * colorParams.coneContrasts(ii));
-        minExc = min(coneExcitation(:));
-        maxExc = max(coneExcitation(:));
-        actualConeContrast(ii) = (maxExc-minExc)/(maxExc+minExc);
-        coneExcitationImage(:,:,ii) = coneExcitation;
-    end
-    measuredStimulusStrength = sqrt(sum(actualConeContrast.^2));
-    
-    % Compute the RGB primary values
-    [coneExcitations,m,n] = ImageToCalFormat(coneExcitationImage);
-    displayRGBPrimaries = coneExcitationsToDisplayPrimaryMatrix * coneExcitations;
-    displayRGBPrimaryImage = CalFormatToImage(displayRGBPrimaries,m,n);
-    
-    % Check for out-of-gamut
-    if (any(displayRGBPrimaryImage(:) > 1))
-        fprintf(2,'Image above gamut\n');
-    end
-    if (any(displayRGBPrimaryImage(:) < 0))
-        fprintf(2,'Image below gamut\n');
-    end
-    
-    % Gamma correct the primary values
-    displayRGBsettingsImage = round(ieLUTLinear(displayRGBPrimaryImage,displayGet(display,'inverse gamma')));
-    
-    % Make a scene from the gaborRGBsettings values
-    displayScene = sceneFromFile(displayRGBsettingsImage,'rgb',[],display);
-    displayScene = sceneSet(displayScene, 'h fov', spatialParams.fieldOfViewDegs);
-    displayScene = sceneSet(displayScene, 'distance', spatialParams.viewingDistance);
-end
-
-function [M, coneFundamentals, coneSpectralSampling] = XYZToCones
-    % Here we'll use the Stockman-Sharpe 2-degree fundamentals and the proposed CIE corresponding XYZ functions
-    theCones = load('T_cones_ss2');
-    theXYZ = load('T_xyzCIEPhys2');
-    
-    XYZcolorMatchingFunctions = 683 * theXYZ.T_xyzCIEPhys2;
-    coneFundamentals = 683 * theCones.T_cones_ss2;
-    coneSpectralSampling = theCones.S_cones_ss2;
-    M = ((XYZcolorMatchingFunctions')\(coneFundamentals'))';
 end
