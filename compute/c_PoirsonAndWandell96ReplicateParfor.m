@@ -5,6 +5,9 @@ function c_PoirsonAndWandell96ReplicateParfor
          
     close all
     
+    % Specify number of parallel pool workers
+    parpoolWorkersNum = 2;
+    
     % Whether to display all the params
     paramsVerbosity = 0;
     
@@ -16,22 +19,21 @@ function c_PoirsonAndWandell96ReplicateParfor
     recomputeConeMosaic = false;
     
     % How many response instances to generate
-    instancesNum = 1000; 
+    instancesNum = 1; 
     
     % How much data to save for classification
-    temporalResponseToIncludeInUnitsOfIntegrationTime = 0;     % Only peak response
-    temporalResponseToIncludeInUnitsOfIntegrationTime = 17.0;  
+    %temporalResponseToIncludeInUnitsOfIntegrationTime = 0;     % Only peak response
+    temporalResponseToIncludeInUnitsOfIntegrationTime = 11.0; %  17.0;  
    
-    % Set up the rw object for this program
-    rwObject = IBIOColorDetectReadWriteBasic;
-    theProgram = mfilename;
-
     % Generate simulation params
     [sessionParams, spatialParams, temporalParams, ...
         LMSsamplingParams, chromaticDirectionParams, backgroundParams, ...
         oiParams, mosaicParams, responseSubSamplingParams] = runParamsGenerate(instancesNum, temporalResponseToIncludeInUnitsOfIntegrationTime);
     
- 
+    % Set up the rw object for this program
+    rwObject = IBIOColorDetectReadWriteBasic;
+    theProgram = mfilename;
+    
     % Generate the background scene
     [backgroundScene, ~] = generateGaborDisplayScene(spatialParams, backgroundParams, 0.0);
     
@@ -56,11 +58,11 @@ function c_PoirsonAndWandell96ReplicateParfor
     end
     
     % Retrieve cone indices of interest
-    activeConesNum = numel(find(theConeMosaic.pattern > 1));
-    [lConeIndices, mConeIndices, sConeIndices, centerMostLconeIndex, centerMostMconeIndex, centerMostSconeIndex] = ...
+    [lConeIndices, mConeIndices, sConeIndices, ...
+     centerMostLconeIndex, centerMostMconeIndex, centerMostSconeIndex] = ...
                     retrieveConeIndices(theConeMosaic);
          
-    % Load the 
+    % Load the parforDataStruct for all the examined conditions
     conditionIndex = 0;
     for chromaticDirectionIndex = 1:numel(chromaticDirectionParams) 
         % Load params for this chromaticDirection
@@ -140,22 +142,30 @@ function c_PoirsonAndWandell96ReplicateParfor
             dataStruct.rwObject = rwObject;
 
             conditionIndex = conditionIndex + 1;
-            parforStructData{conditionIndex} = dataStruct;
+            parforDataStruct{conditionIndex} = dataStruct;
         end % stimStrengthIndex
     end % chromaticDirectionIndex
     
-    parforConditionsNum = numel(parforStructData); 
-
-    fprintf('Staring parfor loop\n');
+    
+    % Delete an existing parpool if one exists and start fresh
+    poolobj = gcp('nocreate'); % 
+    if ~isempty(poolobj)
+        delete(poolobj);
+    end
+ 
+    % Start parpool
+    fprintf('Staring parfor loop with %d workers\n', parpoolWorkersNum);
+    parpool('local',parpoolWorkersNum);
     
     % Loop over all conditions
-    parfor parforCondIndex = 1:parforConditionsNum
+    parforConditionsNum = numel(parforDataStruct); 
+    for parforCondIndex = 1:parforConditionsNum
         
-        t = getCurrentTask();
-        fprintf('<strong>Processor [%d] working on condition %d / %d\n</strong>', t.ID, parforCondIndex, parforConditionsNum);
+    %    t = getCurrentTask();
+    %    fprintf('<strong>Processor [%d]: Generating %d response instances for condition %d / %d\n</strong>', t.ID, instancesNum, parforCondIndex, parforConditionsNum);
         
         % Get the data for the current condition
-        theData = parforStructData{parforCondIndex};
+        theData = parforDataStruct{parforCondIndex};
         
         % Print all params
         if (paramsVerbosity > 0)
@@ -165,14 +175,13 @@ function c_PoirsonAndWandell96ReplicateParfor
         % Compute the oiSequence
         theData.theOIsequence = oiSequence(oiBackground, theData.oiModulated, theData.ancillaryData.temporalParams.stimTimeAxis, ...
                                    theData.ancillaryData.temporalParams.stimulusModulationFunction, 'composition', 'blend');
-        %theData.theOIsequence.visualize('format', 'montage');
+        theData.theOIsequence.visualize('format', 'montage');
         
         % Initialize random number generator
         rng(theData.randomSeed);
         
         % Compute the emPaths for this condition
         eyeMovementsNo = computeEyeMovementsNum(theData.theConeMosaic.integrationTime, theData.theOIsequence);
-
         for instanceIndex = 1:instancesNum
             theData.theEMpaths(instanceIndex, :,:) = theData.theConeMosaic.emGenSequence(eyeMovementsNo);
         end
@@ -180,15 +189,8 @@ function c_PoirsonAndWandell96ReplicateParfor
             theData.theEMpaths(instanceIndex, :,:) = 0*theData.theEMpaths(instanceIndex, :,:);
         end
            
-        % Compute the responses
-        fprintf('%s\nComputing %d response instances for a %d x %d cone mosaic (active cones:%d) with %d eye movements scanning a %d-frame stimulus sequence.\n', ...
-                theData.stimLabel, instancesNum, theData.theConeMosaic.mosaicSize(1), theData.theConeMosaic.mosaicSize(2), activeConesNum, eyeMovementsNo, theData.theOIsequence.length);
-           
-        
-        tic
-        responseData = theData.responseData;
-        
         % Compute all responses instances for this condition
+        responseData = theData.responseData;
         [responseData.absorptionsCountSequence, ...
          responseData.absorptionsTimeAxis, ...
          responseData.photoCurrentSignals, ...
@@ -198,7 +200,6 @@ function c_PoirsonAndWandell96ReplicateParfor
                     'currentFlag', true, ...
                     'newNoise', true ...
                     );
-        fprintf('Response computation took %2.2f minutes\n', toc/60);
         
         % Determine portion of the absorptions signal to be kept
         absorptionsTimeIndicesToKeep = determineTimeIndicesToKeep(responseData.absorptionsTimeAxis, ...
@@ -231,7 +232,7 @@ function c_PoirsonAndWandell96ReplicateParfor
             
         % Export stills and video of 2D mosaic activation (absorptions + photocurrents) for some instances
         if (exportMosaic2DActivationStillsAndVideo)
-            if (strcmp(theData.ancillaryData.mosaicParams.mosaicType, 'HEX')) && ~any(isnan(theData.ancillaryData.mosaicParams.fieldOfViewDegs))  
+            if (strcmp(theData.ancillaryData.mosaicParams.conePacking, 'HEX')) && ~any(isnan(theData.ancillaryData.mosaicParams.fieldOfViewDegs))  
                 instancesToVisualize = 10;
                 exportHexMosaicActivationStillsAndVideos(responseData, theData.theConeMosaic, instancesToVisualize, theData.rwObject, theData.paramsList, theProgram);
             end
@@ -240,12 +241,13 @@ function c_PoirsonAndWandell96ReplicateParfor
         % Export stills of time traces (absorptions + photocurrents)
         if (exportLMSresponseTraceStills)
             coneStride = 50;
-            exportResponseTraceStills(theData.theConeMosaic, reponseData, ...
-                theData.ancillaryData.chromaticDirectionParams{chromaticDirectionIndex}, theData.ancillaryData.temporalParams, coneStride, ...
+            exportResponseTraceStills(theData.theConeMosaic, responseData, ...
+                theData.ancillaryData.chromaticDirectionParams, theData.ancillaryData.temporalParams, coneStride, ...
                 lConeIndices, mConeIndices, sConeIndices, centerMostLconeIndex, centerMostMconeIndex, centerMostSconeIndex, ...
                 theData.rwObject, theData.paramsList, theProgram);
         end 
     end % all conditions parfor
+    fprintf('All done !\n');
 end
 
 
@@ -304,7 +306,7 @@ function [sessionParams, spatialParams, temporalParams, ...
     
     mosaicParams = struct(...
                 'type', 'Mosaic_v2', ...
-          'mosaicType', 'HEX', ...
+         'conePacking', 'HEX', ...
      'fieldOfViewDegs', PW96_fovDegs*[0.3 0.3],...         % nan for 1L, 1M, and 1S-cone only
     'eccentricityDegs', 0, ...  
  'spatialLMSDensities', [0.62 0.31 0.07], ...
@@ -314,6 +316,9 @@ function [sessionParams, spatialParams, temporalParams, ...
              'osNoise', true, ...              % outer-segment noise
        'eyesDoNotMove', false ....              % normal eye movements
        );
+   
+  % mosaicParams.conePacking = 'RECT';
+  % mosaicParams.fieldOfViewDegs = PW96_fovDegs*[0.1 0.1];
    
    % Response subSampling (how many seconds to include)
    responseSubSamplingParams = struct(...
@@ -339,11 +344,21 @@ function [sessionParams, spatialParams, temporalParams, ...
     chromaticDirectionParams = chromaticDirectionParamsGenerate(LMSsamplingParams);
 end
     
-    
 function LMSsamplingParams = LMSsamplingParamsGenerate(instancesNum)
     % Add sampling params for each of the LMS directions we want to explore
     LMSsamplingParams = {};
     
+    if (1==1)
+        LMSsamplingParams{numel(LMSsamplingParams)+1} = struct(...
+                   'type', 'LMSsampling', ...
+            'azimuthAngle', 45, ...                         % (x/y plane) (L/M modulation)
+          'elevationAngle', 45, ...                        % z-axis (S-modulation)
+    'stimulusStrengthAxis', linspace(0.9, 0.9, 1), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
+            'instancesNum', instancesNum ...
+        );  
+    
+    else
+        
     % the null stimulus (zero stimulus strength)
     LMSsamplingParams{numel(LMSsamplingParams)+1} = struct(...
                    'type', 'LMSsampling', ...
@@ -398,17 +413,47 @@ function LMSsamplingParams = LMSsamplingParamsGenerate(instancesNum)
     'stimulusStrengthAxis', linspace(0.01, 0.7, 10), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
             'instancesNum', instancesNum ...
         );  
+    end
+    
 end
     
-
 function indicesToKeep = determineTimeIndicesToKeep(timeAxis, integrationTime, rampPeak, responseSubSamplingParams)
     t = timeAxis + integrationTime/2 - rampPeak - responseSubSamplingParams.secondsToIncludeOffset;
-    indicesToKeep  = find(abs(t) <= theData.ancillaryData.responseSubSamplingParams.secondsToInclude/2);
+    indicesToKeep  = find(abs(t) <= responseSubSamplingParams.secondsToInclude/2);
     if (isempty(indicesToKeep ))
        [~,indicesToKeep ] = min(abs(t-responseSubSamplingParams.secondsToInclude/2));
     end
 end
-        
+             
+function [iL, iM, iS, lconeToPlot, mconeToPlot, sconeToPlot]  = retrieveConeIndices(theConeMosaic)
+    % Find L, M, and S-cone indices for response plotting
+    iL = find(theConeMosaic.pattern == 2);
+    iM = find(theConeMosaic.pattern == 3);
+    iS = find(theConeMosaic.pattern == 4);
+
+    % Find center-most L cone (row,col) coord
+    [~,idxL] = min(sum(theConeMosaic.coneLocs(iL,:).^2,2));
+    % Find center-most M cone (row,col) coord
+    [~,idxM] = min(sum(theConeMosaic.coneLocs(iM,:).^2,2));
+    % Find center-most S cone (row,col) coord
+    [~,idxS] = min(sum(theConeMosaic.coneLocs(iS,:).^2,2));
+
+    % Find indices for responses for the center-most L,M and S-cone
+    % This works also with a hex mosaic, which returns 
+    % responses for only the non-null cones
+    nonNullConeIndices = find(theConeMosaic.pattern > 1);
+    lconeToPlot = find(nonNullConeIndices == iL(idxL));
+    mconeToPlot = find(nonNullConeIndices == iM(idxM));
+    sconeToPlot = find(nonNullConeIndices == iS(idxS));
+
+    % Find indices for L,M,S cone responses
+    % This works also with a hex mosaic, which returns 
+    % responses for only the non-null cones
+    iL = find(theConeMosaic.pattern(nonNullConeIndices) == 2);
+    iM = find(theConeMosaic.pattern(nonNullConeIndices) == 3);
+    iS = find(theConeMosaic.pattern(nonNullConeIndices) == 4);
+end
+   
 function exportResponseTraceStills(theConeMosaic, stimData, chromaticDirectionParams, temporalParams, coneStride, lConeIndices, mConeIndices, sConeIndices, centerMostLconeIndex, centerMostMconeIndex, centerMostSconeIndex, rwObject, paramsList, theProgram)
             
     % Plotting time limits
@@ -476,36 +521,7 @@ function exportResponseTraceStills(theConeMosaic, stimData, chromaticDirectionPa
          'type', 'NicePlotExport', 'FigureHandle', hFig, 'FigureType', 'png');
     end
 end
-            
-function [iL, iM, iS, lconeToPlot, mconeToPlot, sconeToPlot]  = retrieveConeIndices(theConeMosaic)
-    % Find L, M, and S-cone indices for response plotting
-    iL = find(theConeMosaic.pattern == 2);
-    iM = find(theConeMosaic.pattern == 3);
-    iS = find(theConeMosaic.pattern == 4);
-
-    % Find center-most L cone (row,col) coord
-    [~,idxL] = min(sum(theConeMosaic.coneLocs(iL,:).^2,2));
-    % Find center-most M cone (row,col) coord
-    [~,idxM] = min(sum(theConeMosaic.coneLocs(iM,:).^2,2));
-    % Find center-most S cone (row,col) coord
-    [~,idxS] = min(sum(theConeMosaic.coneLocs(iS,:).^2,2));
-
-    % Find indices for responses for the center-most L,M and S-cone
-    % This works also with a hex mosaic, which returns 
-    % responses for only the non-null cones
-    nonNullConeIndices = find(theConeMosaic.pattern > 1);
-    lconeToPlot = find(nonNullConeIndices == iL(idxL));
-    mconeToPlot = find(nonNullConeIndices == iM(idxM));
-    sconeToPlot = find(nonNullConeIndices == iS(idxS));
-
-    % Find indices for L,M,S cone responses
-    % This works also with a hex mosaic, which returns 
-    % responses for only the non-null cones
-    iL = find(theConeMosaic.pattern(nonNullConeIndices) == 2);
-    iM = find(theConeMosaic.pattern(nonNullConeIndices) == 3);
-    iS = find(theConeMosaic.pattern(nonNullConeIndices) == 4);
-end
-                
+      
 function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize,  rwObject, paramsList, theProgram)
             
     videoAbsorptionsFilename = 'absorptionsVideo';
@@ -575,12 +591,6 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
         end % tIndex
         close(hFig);
         
-        videoAbsorptionsOBJ.close();
-        % Export video to right directory
-        rwObject.write(videoAbsorptionsFilename, fullfile(pwd,sprintf('%s.mp4',videoAbsorptionsFilename)), ...
-        paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4');
-    
-
         % Photocurrents video
         visualizedPhotocurrents = squeeze(stimData.photoCurrentSignals(visualizedInstanceIndex,:,:,:));
         sz = ndims(visualizedPhotocurrents);
@@ -615,7 +625,6 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
 
             % Export a PNG image    
             filename = sprintf('MosaicPhotocurrents_%2.3f', stimData.photoCurrentTimeAxis(tIndex));
-
             rwObject.write(filename, stimData, paramsList, theProgram, ...
                     'type', 'NicePlotExport', 'FigureHandle', hFig2, 'FigureType', 'png');
 
@@ -625,8 +634,13 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
     end % visualizedInstanceIndex
     close(hFig2);
     
+    videoAbsorptionsOBJ.close();
     videoPhotocurrentsOBJ.close();
-    % Export video to right directory 
+    
+    % Export videos to right directory
+    rwObject.write(videoAbsorptionsFilename, fullfile(pwd,sprintf('%s.mp4',videoAbsorptionsFilename)), ...
+                    paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4');
+    
     rwObject.write(videoPhotocurrentsFilename, fullfile(pwd,sprintf('%s.mp4',videoPhotocurrentsFilename)), ...
         paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4');
 end
@@ -743,7 +757,6 @@ function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries,
     drawnow;
 end
 
-
 function chromaticDirectionParams = chromaticDirectionParamsGenerate(LMSsamplingParams)
     
     % Initialize the chromaticDirectionParams cell array
@@ -772,11 +785,10 @@ function chromaticDirectionParams = chromaticDirectionParamsGenerate(LMSsampling
                 );
     end  % chromaticDirectionIndex
 end
-
-    
+   
 function theConeMosaic = coneMosaicGenerate(mosaicParams)
 
-    if (strcmp(mosaicParams.mosaicType, 'HEX')) && ~any(isnan(mosaicParams.fieldOfViewDegs))
+    if (strcmp(mosaicParams.conePacking, 'HEX')) && ~any(isnan(mosaicParams.fieldOfViewDegs))
         % HEX mosaic
         resamplingFactor = 6;
         centerInMM = [0.0 0.0];                     % mosaic eccentricity
@@ -822,7 +834,6 @@ function theConeMosaic = coneMosaicGenerate(mosaicParams)
     % Couple the outersegment object to the cone mosaic object
     theConeMosaic.os = theOuterSegment;
 end
-
 
 function eyeMovementsNum = computeEyeMovementsNum(integrationTime, theOIsequence)
     % Generate eye movement sequence for all oi's
