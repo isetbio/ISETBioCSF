@@ -31,10 +31,12 @@ function validationData = t_colorGabor(rParams,varargin)
 %
 % Optional key/value pairs
 %  'generatePlots' - true/false (default true).  Make plots?
+%  'setRngSeed' - true/false (default true). When true, set the rng seed so noise is frozen.  
 
 %% Parse vargin for options passed here
 p = inputParser;
 p.addParameter('generatePlots',true,@islogical);
+p.addParameter('setRngSeed',true,@islogical);
 p.parse(varargin{:});
 
 %% Clear
@@ -43,7 +45,9 @@ if (nargin == 0)
 end
 
 %% Fix random number generator so we can validate output exactly
-rng(1);
+if (p.Results.setRngSeed)
+    rng(1);
+end
 
 %% Get the parameters we need
 %
