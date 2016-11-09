@@ -19,11 +19,11 @@ function c_PoirsonAndWandell96ReplicateParfor
     recomputeConeMosaic = true;
     
     % How many response instances to generate
-    instancesNum = 1; 
+    instancesNum = 1000; 
     
     % How much data to save for classification
     %temporalResponseToIncludeInUnitsOfIntegrationTime = 0;     % Only peak response
-    temporalResponseToIncludeInUnitsOfIntegrationTime = 11.0; %  17.0;  
+    temporalResponseToIncludeInUnitsOfIntegrationTime = 17.0;  
    
     % Generate simulation params
     [sessionParams, spatialParams, temporalParams, ...
@@ -159,10 +159,10 @@ function c_PoirsonAndWandell96ReplicateParfor
     
     % Loop over all conditions
     parforConditionsNum = numel(parforDataStruct); 
-    for parforCondIndex = 1:parforConditionsNum
+    parfor parforCondIndex = 1:parforConditionsNum
         
-    %    t = getCurrentTask();
-    %    fprintf('<strong>Processor [%d]: Generating %d response instances for condition %d / %d\n</strong>', t.ID, instancesNum, parforCondIndex, parforConditionsNum);
+        t = getCurrentTask();
+        fprintf('<strong>Processor [%d]: Generating %d response instances for condition %d / %d\n</strong>', t.ID, instancesNum, parforCondIndex, parforConditionsNum);
         
         % Get the data for the current condition
         theData = parforDataStruct{parforCondIndex};
@@ -318,7 +318,7 @@ function [sessionParams, spatialParams, temporalParams, ...
        );
    
   % mosaicParams.conePacking = 'RECT';
-   mosaicParams.fieldOfViewDegs = PW96_fovDegs*[0.1 0.1];
+  %mosaicParams.fieldOfViewDegs = PW96_fovDegs*[0.1 0.1];
    
    % Response subSampling (how many seconds to include)
    responseSubSamplingParams = struct(...
