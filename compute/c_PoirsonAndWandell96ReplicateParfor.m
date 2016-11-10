@@ -12,14 +12,14 @@ function c_PoirsonAndWandell96ReplicateParfor
     paramsVerbosity = 0;
     
     % Whether to save videos and stills
-    exportLMSresponseTraceStills = true;
-    exportMosaic2DActivationStillsAndVideo = true;
+    exportLMSresponseTraceStills = false;
+    exportMosaic2DActivationStillsAndVideo = false;
     
     % Set to true if cone mosaic does not exist
-    recomputeConeMosaic = true;
+    recomputeConeMosaic = false;
     
     % How many response instances to generate
-    instancesNum = 1000; 
+    instancesNum = 100; 
     
     % How much data to save for classification
     %temporalResponseToIncludeInUnitsOfIntegrationTime = 0;     % Only peak response
@@ -353,7 +353,7 @@ function LMSsamplingParams = LMSsamplingParamsGenerate(instancesNum)
                    'type', 'LMSsampling', ...
             'azimuthAngle', 45, ...                         % (x/y plane) (L/M modulation)
           'elevationAngle', 45, ...                        % z-axis (S-modulation)
-    'stimulusStrengthAxis', linspace(0.9, 0.9, 1), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
+    'stimulusStrengthAxis', linspace(0.1, 0.9, 9), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
             'instancesNum', instancesNum ...
         );  
     
