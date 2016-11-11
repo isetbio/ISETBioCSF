@@ -1,5 +1,5 @@
-function c_PoirsonAndWandell96Replicate
-% c_PoirsonAndWandell96Replicate
+function c_PoirsonAndWandell96VisualizeResponses
+% c_PoirsonAndWandell96VisualizeResponses
 %
 % Compute color detection thresholds to replicate the Poirson & Wandell 1996
          
