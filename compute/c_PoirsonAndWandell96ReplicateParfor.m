@@ -6,7 +6,7 @@ function c_PoirsonAndWandell96ReplicateParfor
     close all
     
     % Specify number of parallel pool workers
-    parpoolWorkersNum = 2;
+    parpoolWorkersNum = 5;
     
     % Whether to display all the params
     paramsVerbosity = 0;
@@ -19,7 +19,7 @@ function c_PoirsonAndWandell96ReplicateParfor
     recomputeConeMosaic = false;
     
     % How many response instances to generate
-    instancesNum = 100; 
+    instancesNum = 80; 
     
     % How much data to save for classification
     %temporalResponseToIncludeInUnitsOfIntegrationTime = 0;     % Only peak response
@@ -154,7 +154,7 @@ function c_PoirsonAndWandell96ReplicateParfor
     end
  
     % Start parpool
-    fprintf('Staring parfor loop with %d workers\n', parpoolWorkersNum);
+    fprintf('\nOpening a local parallel job with %d workers\n', parpoolWorkersNum);
     parpool('local',parpoolWorkersNum);
     
     % Loop over all conditions
@@ -162,7 +162,7 @@ function c_PoirsonAndWandell96ReplicateParfor
     parfor parforCondIndex = 1:parforConditionsNum
         
         t = getCurrentTask();
-        fprintf('<strong>Processor [%d]: Generating %d response instances for condition %d / %d\n</strong>', t.ID, instancesNum, parforCondIndex, parforConditionsNum);
+        fprintf('\tProcessor [%d]: Generating %d response instances for condition %d / %d\n', t.ID, instancesNum, parforCondIndex, parforConditionsNum);
         
         % Get the data for the current condition
         theData = parforDataStruct{parforCondIndex};
@@ -198,7 +198,8 @@ function c_PoirsonAndWandell96ReplicateParfor
                     theData.theConeMosaic.computeForOISequence(theData.theOIsequence, ...
                     'emPaths', theData.theEMpaths, ...
                     'currentFlag', true, ...
-                    'newNoise', true ...
+                    'newNoise', true, ...
+                    'workerID', t.ID ... 
                     );
         
         % Determine portion of the absorptions signal to be kept
@@ -311,9 +312,9 @@ function [sessionParams, spatialParams, temporalParams, ...
     'eccentricityDegs', 0, ...  
  'spatialLMSDensities', [0.62 0.31 0.07], ...
  'integrationTimeSecs', 50/1000, ...            % 50 msec integration time
-         'photonNoise', true, ...              % add Poisson noise
-      'osTimeStepSecs', 10/1000, ...             % 5 milliseconds
-             'osNoise', true, ...              % outer-segment noise
+         'photonNoise', true, ...               % add Poisson noise
+      'osTimeStepSecs', 10/1000, ...            % 10 milliseconds
+             'osNoise', true, ...               % outer-segment noise
        'eyesDoNotMove', false ....              % normal eye movements
        );
    
@@ -349,6 +350,7 @@ function LMSsamplingParams = LMSsamplingParamsGenerate(instancesNum)
     LMSsamplingParams = {};
     
     if (1==1)
+        % 9 strengths along the 45,45 direction
         LMSsamplingParams{numel(LMSsamplingParams)+1} = struct(...
                    'type', 'LMSsampling', ...
             'azimuthAngle', 45, ...                         % (x/y plane) (L/M modulation)
@@ -356,6 +358,15 @@ function LMSsamplingParams = LMSsamplingParamsGenerate(instancesNum)
     'stimulusStrengthAxis', linspace(0.1, 0.9, 9), ...     % linspace(min, max, nLevels) or logspace(log10(min), log10(max), nLevels)
             'instancesNum', instancesNum ...
         );  
+    
+        % the null stimulus (zero stimulus strength)
+        LMSsamplingParams{numel(LMSsamplingParams)+1} = struct(...
+                   'type', 'LMSsampling', ...
+            'azimuthAngle', 0, ...                      % (x/y plane) (L/M modulation)
+          'elevationAngle', 0.0, ...                    % z-axis (S-modulation)
+    'stimulusStrengthAxis', 0, ...      
+            'instancesNum', instancesNum ...
+        );
     
     else
         
@@ -504,7 +515,7 @@ function eyeMovementsNum = computeEyeMovementsNum(integrationTime, theOIsequence
     if (eyeMovementsNum < 1)
         error('Less than 1 eye movement!!! \nStimulus sampling interval:%g ms Cone mosaic integration time: %g ms\n', 1000*stimulusSamplingInterval, 1000*theConeMosaic.integrationTime);
     else 
-        fprintf('Optical image sequence contains %2.0f eye movements (%2.2f eye movements/oi)\n', eyeMovementsNum, eyeMovementsNumPerOpticalImage);
+        %fprintf('Optical image sequence contains %2.0f eye movements (%2.2f eye movements/oi)\n', eyeMovementsNum, eyeMovementsNumPerOpticalImage);
     end 
 end
 
