@@ -101,8 +101,7 @@ end
 switch (p.Results.Type)
     case 'mat'
         theTypeDir = fullfile(theParentDir,'matfiles');
-    case 'figure'
-    case 'NicePlotExport'
+    case {'figure', 'NicePlotExport'}
         theTypeDir = fullfile(theParentDir,'figures');
     case {'movie','movieFile'}
         theTypeDir = fullfile(theParentDir,'movies');
@@ -125,8 +124,7 @@ end
 switch (p.Results.Type)
     case 'mat'
         filename = [name '.mat'];
-    case 'figure'
-    case 'NicePlotExport'
+    case {'figure', 'NicePlotExport'}
         filename = [name '.' p.Results.FigureType];
     case {'movie','movieFile'}
         filename = [name '.' p.Results.MovieType];
