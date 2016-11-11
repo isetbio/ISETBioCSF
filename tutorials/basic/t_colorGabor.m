@@ -29,11 +29,13 @@ function validationData = t_colorGabor(rParams,varargin)
 % Optional key/value pairs
 %  'generatePlots' - true/false (default true).  Make plots?
 %  'setRngSeed' - true/false (default true). When true, set the rng seed so noise is frozen.
+%  'hexMosaic' - use a hexagonal mosaic, rather than a rectangular mosaic.
 
 %% Parse vargin for options passed here
 p = inputParser;
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('setRngSeed',true,@islogical);
+p.addParameter('hexMosaic',false,@islogical);
 p.parse(varargin{:});
 
 %% Clear
@@ -52,6 +54,9 @@ end
 % parameters used by a number of tutorials and functions in this project.
 if (nargin < 1 | isempty(rParams))
     rParams = responseParamsGenerate;
+    if (p.Results.hexMosaic)
+        rParams.mosaicParams.conePacking = 'hex';
+    end
 end
 
 %% Set up the rw object for this program
@@ -136,8 +141,26 @@ end
 %% Create and get noise free sensor using coneMosaic obj
 % Create a coneMosaic object here. When setting the fov, if only one value
 % is specified, it will automatically make a square cone mosaic.
-gaborConeMosaic = coneMosaic;
-gaborConeMosaic.setSizeToFOV(rParams.spatialParams.fieldOfViewDegs);
+%
+% You can generate either a hexagonal or a rectangular mosaic
+if (strcmp(rParams.mosaicParams.conePacking, 'hex')) && ~any(isnan(rParams.mosaicParams.fieldOfViewDegs))
+    % HEX mosaic
+    resamplingFactor = 3;
+    centerInMM = [0.0 0.0];                    % mosaic eccentricity
+    spatiallyVaryingConeDensity = true;        % constant spatial density (at the mosaic's eccentricity)
+    theConeMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, ...
+        'center', centerInMM*1e-3, ...
+        'spatialDensity', [0 rParams.mosaicParams.LMSRatio] ...
+        );
+    
+    rParams.spatialParams.fieldOfViewDegs = 1;
+    theConeMosaic.setSizeToFOVForHexMosaic(rParams.spatialParams.fieldOfViewDegs);
+    theConeMosaic.visualizeGrid();
+else
+    % RECT mosaic
+    gaborConeMosaic = coneMosaic;
+    gaborConeMosaic.setSizeToFOV(rParams.spatialParams.fieldOfViewDegs);
+end
 
 % There is also an option of whether the cone current should be calculated
 % in the compute function. If set to true, it uses an os object inside the

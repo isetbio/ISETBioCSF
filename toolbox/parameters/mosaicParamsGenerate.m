@@ -7,8 +7,8 @@ function mosaicParams = mosaicParamsGenerate(varargin)
 %  isomerizationNoise - Boolean, add isomerization Poisson noise?
 %  osModel - What model to use to compute photocurrent
 %  conePacking - Type of cone mosaic
-%    'RECT' - rectangular
-%    'HEX' - hexagonal-like
+%    'rect' - rectangular
+%    'hex' - hexagonal-like
 %
 % Other parameters that are needed for the mosaic are
 %  fieldOfViewDegs - Field of view computed
@@ -22,7 +22,7 @@ function mosaicParams = mosaicParamsGenerate(varargin)
 
 mosaicParams.type = 'Mosaic';
 
-mosaicParams.conePacking = 'RECT';
+mosaicParams.conePacking = 'rect';
 mosaicParams.macular = true;
 mosaicParams.LMSRatio = [0.62 0.31 0.07];
 mosaicParams.eccentricityDegs = 0;
