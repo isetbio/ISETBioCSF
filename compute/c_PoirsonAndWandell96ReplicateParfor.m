@@ -70,8 +70,10 @@ function c_PoirsonAndWandell96ReplicateParfor
         theConeMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
     end
     
-    % Load the parforDataStruct for all the examined conditions
-    conditionIndex = 0;
+    % Empty the joblist
+    jobDataStruct = {};
+    
+    % Load the jobDataStruct with all the examined conditions
     for chromaticDirectionIndex = 1:numel(chromaticDirectionParams) 
         % Load params for this chromaticDirection
         chromaticParams =  struct(...
@@ -150,26 +152,25 @@ function c_PoirsonAndWandell96ReplicateParfor
                 dataStruct = struct();
                 dataStruct.chromaticDirectionIndex = chromaticDirectionIndex;
                 dataStruct.stimStrengthIndex = stimStrengthIndex;
-                dataStruct.randomSeed = randi(1000000)+1;
+                dataStruct.randomSeed = randi(1000000)+1;          % random number seed for each job
                 dataStruct.theConeMosaic = theConeMosaic.copy();   % make a copy because the @coneMosaic is a handle
                 dataStruct.theEMpaths = [];
                 dataStruct.theOIsequence =  theOIsequence;
-                dataStruct.oiModulated = oiModulated;
                 dataStruct.paramsList = paramsList;
                 dataStruct.stimLabel = stimLabel;
                 dataStruct.responseData = responseData;
                 dataStruct.ancillaryData = ancillaryData;
                 dataStruct.rwObject = rwObject;
 
-                conditionIndex = conditionIndex + 1;
-                parforDataStruct{conditionIndex} = dataStruct;
+                % add entry to joblist
+                jobDataStruct{numel(jobDataStruct)+1} = dataStruct;
             end % for instanceBlockIndex
         end % stimStrengthIndex
     end % chromaticDirectionIndex
     
-    parforConditionsNum = numel(parforDataStruct); 
-    fprintf('\n\nTotal conditions: %d\n', parforConditionsNum);
-    
+    % Total number of jobs
+    jobsNum = numel(jobDataStruct); 
+
     % Delete an existing parpool if one exists and start fresh
     poolobj = gcp('nocreate'); 
     if ~isempty(poolobj)
@@ -177,20 +178,23 @@ function c_PoirsonAndWandell96ReplicateParfor
     end
  
     % Start parpool
-    fprintf('\nOpening a local parallel job with %d workers\n', parpoolWorkersNum);
+    fprintf('\nOpening a local parallel pool with %d workers to distribute %d compute jobs.\n', parpoolWorkersNum, jobsNum);
     parpool('local',parpoolWorkersNum);
     
-    % Loop over all conditions 
-    parfor parforCondIndex = 1:parforConditionsNum
+    % Loop over all jobs 
+    parfor jobIndex = 1:jobsNum
         
         % Get the data for the current condition
-        theData = parforDataStruct{parforCondIndex};
+        theData = jobDataStruct{jobIndex};
 
         % Print all params
         if (paramsVerbosity > 0)
             disp(UnitTest.displayNicelyFormattedStruct(theData.ancillaryData, 'ancillaryData', '', 60));
         end
             
+        % Save the ancillary data that we will need for use by the classifier preprocessing subroutine
+        theData.rwObject.write('ancillaryData', theData.ancillaryData, theData.paramsList, theProgram, 'type', 'mat');
+        
         % Initialize random number generator for this condition
         rng(theData.randomSeed);
         
@@ -212,8 +216,8 @@ function c_PoirsonAndWandell96ReplicateParfor
         workerID = t.ID;
         
         % Describe what the worker is doing
-        workerDescription = sprintf('Computing %d instances for cond %03d/%03d [LMS=%0.3f,%0.3f,%0.3f, R=%0.4f, Block=%03d/%03d]', ...
-            instancesBlockSize, parforCondIndex, parforConditionsNum, ...
+        workerDescription = sprintf('Computing %d instances for job %03d/%03d [LMS=%0.3f,%0.3f,%0.3f, R=%0.4f, Block=%03d/%03d]', ...
+            instancesBlockSize, jobIndex, jobsNum, ...
             responseData.stimConeContrastUnitVector(1), ...
             responseData.stimConeContrastUnitVector(2), ...
             responseData.stimConeContrastUnitVector(3), ...
@@ -257,12 +261,9 @@ function c_PoirsonAndWandell96ReplicateParfor
             responseData.photoCurrentSignals = responseData.photoCurrentSignals(:,:,:,photocurrentsTimeIndicesToKeep);
         end
 
-        % Save responses and parameters for this stimStrengthIndex and chromaticDirectionIndex
+        % Save the computed responseData
         responseDataFile = sprintf('coneResponsesBlock%dof%d', responseData.instanceBlockIndex,instancesBlocksNum);
-        rwObject.write(responseDataFile, responseData, theData.paramsList, theProgram, 'type', 'mat'); 
-
-        % Save other data we need for use by the classifier preprocessing subroutine
-        theData.rwObject.write('ancillaryData', theData.ancillaryData, theData.paramsList, theProgram, 'type', 'mat');
+        rwObject.write(responseDataFile, responseData, theData.paramsList, theProgram, 'type', 'mat');
     end % all conditions parfor
     fprintf('\nAll done !\n');
 end
