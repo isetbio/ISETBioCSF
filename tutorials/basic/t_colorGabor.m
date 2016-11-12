@@ -148,14 +148,14 @@ if (strcmp(rParams.mosaicParams.conePacking, 'hex')) && ~any(isnan(rParams.mosai
     resamplingFactor = 3;
     centerInMM = [0.0 0.0];                    % mosaic eccentricity
     spatiallyVaryingConeDensity = true;        % constant spatial density (at the mosaic's eccentricity)
-    theConeMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, ...
+    gaborConeMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, ...
         'center', centerInMM*1e-3, ...
         'spatialDensity', [0 rParams.mosaicParams.LMSRatio] ...
         );
     
     rParams.spatialParams.fieldOfViewDegs = 1;
-    theConeMosaic.setSizeToFOVForHexMosaic(rParams.spatialParams.fieldOfViewDegs);
-    theConeMosaic.visualizeGrid();
+    gaborConeMosaic.setSizeToFOVForHexMosaic(rParams.spatialParams.fieldOfViewDegs);
+    gaborConeMosaic.visualizeGrid();
 else
     % RECT mosaic
     gaborConeMosaic = coneMosaic;
