@@ -78,7 +78,7 @@ for ll = 1:length(p.Results.luminances)
         rParams.backgroundParams.lumFactor = theLum/baseLum;
         
         % Pupil size.  They used a 2mm artificial pupil
-        oiParams.pupilDiamMm = 2;
+        rParams.oiParams.pupilDiamMm = 2;
         
         % Set duration equal to sampling interval to do just one frame.
         %
