@@ -28,11 +28,15 @@ function validationData = t_coneCurrentEyeMovementsMovie(rParams,varargin)
 %   colorDetectResponseInstanceArrayFastConstruct
 %
 % Optional key/value pairs
-%  'generatePlots' - true/fale (default true).  Make plots?
+%  'isomerizationNoise' - true/false (default true).  Add isomerization noise?
+%  'generatePlots' - true/false (default true).  Make plots?
+%  'setRngSeed' - true/false (default true). When true, set the rng seed so noise is frozen.
 
 %% Parse vargin for options passed here
 p = inputParser;
+p.addParameter('isomerizationNoise',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
+p.addParameter('setRngSeed',true,@islogical);
 p.parse(varargin{:});
 
 %% Clear
@@ -41,7 +45,9 @@ if (nargin == 0)
 end
 
 %% Fix random number generator so we can validate output exactly
-rng(1);
+if (p.Results.setRngSeed)
+    rng(1);
+end;
 
 %% Get the parameters we need
 %
@@ -51,7 +57,7 @@ if (nargin < 1 | isempty(rParams))
     rParams = responseParamsGenerate;
     
     % Override some of the defaults
-    rParams.mosaicParams.isomerizationNoise = true;
+    rParams.mosaicParams.isomerizationNoise = p.Results.isomerizationNoise;
     rParams.mosaicParams.osNoise = true;
     rParams.mosaicParams.osModel = 'Linear';
 end
