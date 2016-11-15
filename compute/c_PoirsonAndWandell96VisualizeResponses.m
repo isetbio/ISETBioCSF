@@ -5,6 +5,11 @@ function c_PoirsonAndWandell96VisualizeResponses
          
     close all
     
+    % Export video (takes a long time).
+    exportMosaic2DActivationStillsAndVideo = true;
+    exportLMSresponseTraceStills = true;
+                
+    
     % Whether to display all the params
     paramsVerbosity = 0;
     
@@ -99,8 +104,8 @@ function c_PoirsonAndWandell96VisualizeResponses
     % Define we sample sensitivity along different directions in the LMS space
     % How many response instances to generate
     instancesBlocksNum = 1;
-    instancesBlockSize = 16;
-    instancesToVisualize = 16;
+    instancesBlockSize = 20;
+    instancesToVisualize = 20;
     
     LMSsamplingParams = LMSsamplingParamsGenerate(instancesBlocksNum, instancesBlockSize);
  
@@ -267,7 +272,6 @@ function c_PoirsonAndWandell96VisualizeResponses
                 % theOIsequence.visualizeWithEyeMovementSequence(absorptionsTimeAxis);
             
                 % Export stills and video of 2D mosaic activation (absorptions + photocurrents) for some instances
-                exportMosaic2DActivationStillsAndVideo = true;
                 if (exportMosaic2DActivationStillsAndVideo)
                     if (strcmp(mosaicParams.conePacking, 'hex')) && ~any(isnan(mosaicParams.fieldOfViewDegs))  
                         exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize, rwObject, paramsList, theProgram);
@@ -275,7 +279,7 @@ function c_PoirsonAndWandell96VisualizeResponses
                 end
             
                 % Export stills of time traces (absorptions + photocurrents)
-                exportLMSresponseTraceStills = true;
+                
                 if (exportLMSresponseTraceStills)
                     if ((chromaticDirectionIndex == 1) && (stimStrengthIndex == 1))
                         [lConeIndices, mConeIndices, sConeIndices, centerMostLconeIndex, centerMostMconeIndex, centerMostSconeIndex]  = retrieveConeIndices(theConeMosaic);
@@ -428,8 +432,8 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
                 zoomInFactorAbsorptions = zoomInFactorAbsorptions * (1.0 - zoomSpeed/absorptionSequenceLength);
             end
 
-            if (zoomInFactorAbsorptions < 0.4)
-                zoomInFactorAbsorptions = 0.4;
+            if (zoomInFactorAbsorptions < 0.3)
+                zoomInFactorAbsorptions = 0.3;
             end
 
             if (tIndex > 1) 
@@ -469,11 +473,11 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
         for tIndex = 1:photocurrentsSignalLength
             % compute zoom-in factor
             if (visualizedInstanceIndex > 3)
-                zoomInFactorPhotocurrents = zoomInFactorPhotocurrents * (1.0 - zoomSpeed/photocurrentsSignalLength);
+                zoomInFactorPhotocurrents = zoomInFactorPhotocurrents * (1.0 - 2*zoomSpeed/photocurrentsSignalLength);
             end
 
-            if (zoomInFactorPhotocurrents < 0.4)
-                zoomInFactorPhotocurrents = 0.4;
+            if (zoomInFactorPhotocurrents < 0.3)
+                zoomInFactorPhotocurrents = 0.3;
             end
             if (tIndex > 1) 
                 close(hFig2);
