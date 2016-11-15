@@ -1,5 +1,5 @@
-function dirname = paramsToResponseGenerationDirName(obj,temporalParams)
-% dirname = paramsToResponseGenerationDirName(obj,temporalParams)
+function dirname = paramsToTemporalDirName(obj,temporalParams)
+% dirname = paramsToTemporalDirName(obj,temporalParams)
 % 
 % Generate a directory names that captures the temporal parameters used to
 % generate the responses.
