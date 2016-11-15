@@ -17,7 +17,7 @@ function ValidationFunction(runTimeParams)
     rng('default');
     
     %% Basic validation
-    validationData1 = c_BanksEtAlReplicate('nTrainingSamples',100,'cyclesPerDegree',10,'luminances',340,'generatePlots',runTimeParams.generatePlots);
+    validationData1 = c_BanksEtAlReplicate('nTrainingSamples',100,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots);
     UnitTest.validationData('validationData1',validationData1);
     
 end
