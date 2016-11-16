@@ -1,4 +1,4 @@
-function c_PoirsonAndWandell96ReplicateParfor
+function c_PoirsonAndWandell96ReplicateParfor2
 % c_PoirsonAndWandell96Replicate
 %
 % Compute color detection thresholds to replicate the Poirson & Wandell 1996
@@ -33,7 +33,7 @@ function c_PoirsonAndWandell96ReplicateParfor
     instancesBlocksNum = ceil(totalResponseInstances / instancesBlockSize);
 
     % Number of parallel pool workers to be spawned (>1 for parallel jobs)
-    parpoolWorkersNum = 5;
+    parpoolWorkersNum = 8;
     
     % How much data to save for classification
     % temporalResponseToIncludeInUnitsOfIntegrationTime = 0;     % Only peak response
@@ -73,7 +73,7 @@ function c_PoirsonAndWandell96ReplicateParfor
     end
     
     % Empty the joblist
-    jobDataStruct = {};
+    conditionIndex = 0;
     
     % Load the jobDataStruct with all the examined conditions
     for chromaticDirectionIndex = 1:numel(chromaticDirectionParams) 
@@ -100,8 +100,10 @@ function c_PoirsonAndWandell96ReplicateParfor
             [modulatedScene, actualStimulusStrength] = generateGaborDisplayScene(...
                 spatialParams, chromaticParams, chromaticDirectionParams{chromaticDirectionIndex}.stimulusStrength);
             
-            fprintf('\tStimulus strength %d/%d, RMS cone contrast: specified = %0.5f, measured: %0.5f\n', ...
-                stimStrengthIndex, numel(stimulusStrengthAxis), ...
+            conditionIndex = conditionIndex + 1;
+             
+            fprintf('\t[%d] Stimulus strength %d/%d, RMS cone contrast: specified = %0.5f, measured: %0.5f\n', ...
+                 conditionIndex, stimStrengthIndex, numel(stimulusStrengthAxis), ...
                 stimulusStrengthAxis(stimStrengthIndex), actualStimulusStrength);
             
             % Compute modulated OI
@@ -148,6 +150,7 @@ function c_PoirsonAndWandell96ReplicateParfor
                                    ancillaryData.temporalParams.stimulusModulationFunction, 'composition', 'blend');
             %dataStruct.theOIsequence.visualize('format', 'montage');
             
+           
             fprintf('\t\t Adding %d response blocks, each with %d response instances\n', instancesBlocksNum, instancesBlockSize);
             for instanceBlockIndex = 1:instancesBlocksNum
                 
@@ -166,18 +169,20 @@ function c_PoirsonAndWandell96ReplicateParfor
                 dataStruct.rwObject = rwObject;
 
                 % add entry to joblist
-                jobDataStruct{numel(jobDataStruct)+1} = dataStruct;
+                jobDataStruct{conditionIndex, instanceBlockIndex} = dataStruct;
             end % for instanceBlockIndex
+            
         end % stimStrengthIndex
     end % chromaticDirectionIndex
     
     % Each worker has its own cone mosaic
+    theWorkerConeMosaic = cell(1, parpoolWorkersNum);
     for workerID = 1: parpoolWorkersNum
        theWorkerConeMosaic{workerID} = theConeMosaic.copy();
     end
     
     % Total number of jobs
-    jobsNum = numel(jobDataStruct); 
+    jobsNum = size(jobDataStruct,2); 
 
     if (parpoolWorkersNum > 1)
         % Delete an existing parpool if one exists and start fresh
@@ -188,97 +193,103 @@ function c_PoirsonAndWandell96ReplicateParfor
         parpool('local',parpoolWorkersNum);
     end
     
-    % Loop over all jobs 
-    parfor jobIndex = 1:jobsNum
+    % Loop over all conditions
+    conditionsNum = size(jobDataStruct,1);
+    for conditionIndex = 1:conditionsNum
         
-        if (parpoolWorkersNum > 1)
-            % Get the parallel pool worker ID
-            t = getCurrentTask();
-            workerID = t.ID;
-        else
-            workerID = 1;
-        end
+        % Parfor over all instance blocks
+        parfor jobIndex = 1:jobsNum
         
-        % Get the data for the current condition
-        theData = jobDataStruct{jobIndex};
+            if (parpoolWorkersNum > 1)
+                % Get the parallel pool worker ID
+                t = getCurrentTask();
+                workerID = t.ID;
+            else
+                workerID = 1;
+            end
+        
+            % Get the data for the current condition
+            theData = jobDataStruct{conditionIndex,jobIndex};
 
-        % Print all params
-        if (paramsVerbosity > 0)
-            disp(UnitTest.displayNicelyFormattedStruct(theData.ancillaryData, 'ancillaryData', '', 60));
-        end
-            
-        % Save the ancillary data that we will need for use by the classifier preprocessing subroutine
-        theData.rwObject.write('ancillaryData', theData.ancillaryData, theData.paramsList, theProgram, 'type', 'mat');
+            % Print all params
+            if (paramsVerbosity > 0)
+                disp(UnitTest.displayNicelyFormattedStruct(theData.ancillaryData, 'ancillaryData', '', 60));
+            end
+
+            % Save the ancillary data that we will need for use by the classifier preprocessing subroutine
+            theData.rwObject.write('ancillaryData', theData.ancillaryData, theData.paramsList, theProgram, 'type', 'mat');
+
+            % Initialize random number generator for this condition
+            rng(theData.randomSeed);
         
-        % Initialize random number generator for this condition
-        rng(theData.randomSeed);
-        
-        % Compute the emPaths for this condition
-        eyeMovementsNum = computeEyeMovementsNum(theWorkerConeMosaic{workerID}.integrationTime, theData.theOIsequence);
-        theData.theEMpaths = zeros(instancesBlockSize, eyeMovementsNum, 2);     
-        for instanceIndex = 1:instancesBlockSize
-            theData.theEMpaths(instanceIndex, :,:) = theWorkerConeMosaic{workerID}.emGenSequence(eyeMovementsNum);
-        end
-        if (theData.ancillaryData.mosaicParams.eyesDoNotMove)
-            theData.theEMpaths= 0*theData.theEMpaths;
-        end
+            % Compute the emPaths for this condition
+            eyeMovementsNum = computeEyeMovementsNum(theWorkerConeMosaic{workerID}.integrationTime, theData.theOIsequence);
+            theData.theEMpaths = zeros(instancesBlockSize, eyeMovementsNum, 2);     
+            for instanceIndex = 1:instancesBlockSize
+                theData.theEMpaths(instanceIndex, :,:) = theWorkerConeMosaic{workerID}.emGenSequence(eyeMovementsNum);
+            end
+            if (theData.ancillaryData.mosaicParams.eyesDoNotMove)
+                theData.theEMpaths= 0*theData.theEMpaths;
+            end
            
-        % Retrieve the responseData to be populated
-        responseData = theData.responseData;
+            % Retrieve the responseData to be populated
+            responseData = theData.responseData;
         
-        % Describe what the worker is doing
-        workerDescription = sprintf('Computing %d instances for job %03d/%03d [LMS=%0.3f,%0.3f,%0.3f, R=%0.4f, Block=%03d/%03d]', ...
-            instancesBlockSize, jobIndex, jobsNum, ...
-            responseData.stimConeContrastUnitVector(1), ...
-            responseData.stimConeContrastUnitVector(2), ...
-            responseData.stimConeContrastUnitVector(3), ...
-            responseData.stimStrength, ...
-            responseData.instanceBlockIndex, ...
-            responseData.instancesBlocksNum ...
-            );
+            % Describe what the worker is doing
+            workerDescription = sprintf('Computing %d instances for condition %03d/%03d [LMS=%0.3f,%0.3f,%0.3f, R=%0.4f, Block=%03d/%03d]', ...
+                instancesBlockSize, conditionIndex, conditionsNum, ...
+                responseData.stimConeContrastUnitVector(1), ...
+                responseData.stimConeContrastUnitVector(2), ...
+                responseData.stimConeContrastUnitVector(3), ...
+                responseData.stimStrength, ...
+                responseData.instanceBlockIndex, ...
+                responseData.instancesBlocksNum ...
+                );
         
-        [responseData.absorptionsCountSequence, ...
-         responseData.absorptionsTimeAxis, ...
-         responseData.photoCurrentSignals, ...
-         responseData.photoCurrentTimeAxis] = ...
-                    theWorkerConeMosaic{workerID}.computeForOISequence(theData.theOIsequence, ...
-                    'emPaths', theData.theEMpaths, ...
-                    'currentFlag', true, ...
-                    'newNoise', true, ...
-                    'workerID', workerID, ... 
-                    'workDescription',  workerDescription ...
-                    );
+            [responseData.absorptionsCountSequence, ...
+             responseData.absorptionsTimeAxis, ...
+             responseData.photoCurrentSignals, ...
+             responseData.photoCurrentTimeAxis] = ...
+                        theWorkerConeMosaic{workerID}.computeForOISequence(theData.theOIsequence, ...
+                        'emPaths', theData.theEMpaths, ...
+                        'currentFlag', true, ...
+                        'newNoise', true, ...
+                        'workerID', workerID, ... 
+                        'workDescription',  workerDescription ...
+                        );
         
-        % Determine portion of the absorptions signal to be kept
-        absorptionsTimeIndicesToKeep = determineTimeIndicesToKeep(responseData.absorptionsTimeAxis, ...
-                theWorkerConeMosaic{workerID}.integrationTime, theData.ancillaryData.temporalParams.rampPeak, ...
-                theData.ancillaryData.responseSubSamplingParams);
-        
-        % Determine portion of the photocurrents signal to be kept
-        photocurrentsTimeIndicesToKeep = determineTimeIndicesToKeep(responseData.photoCurrentTimeAxis, ...
-                theWorkerConeMosaic{workerID}.integrationTime, theData.ancillaryData.temporalParams.rampPeak, ...
-                theData.ancillaryData.responseSubSamplingParams);
-        
-        % Remove unwanted portions of the time axes
-        responseData.absorptionsTimeAxis = responseData.absorptionsTimeAxis(absorptionsTimeIndicesToKeep);
-        responseData.photoCurrentTimeAxis = responseData.photoCurrentTimeAxis(photocurrentsTimeIndicesToKeep);
-        
-        % Remove unwanted portions of the responses
-        if (isa(theWorkerConeMosaic{workerID}, 'coneMosaicHex'))
-            responseData.absorptionsCountSequence = responseData.absorptionsCountSequence(:,:,absorptionsTimeIndicesToKeep);
-            responseData.photoCurrentSignals = responseData.photoCurrentSignals(:,:,photocurrentsTimeIndicesToKeep);
-        else
-            responseData.absorptionsCountSequence = responseData.absorptionsCountSequence(:,:,:,absorptionsTimeIndicesToKeep);
-            responseData.photoCurrentSignals = responseData.photoCurrentSignals(:,:,:,photocurrentsTimeIndicesToKeep);
-        end
+            % Determine portion of the absorptions signal to be kept
+            absorptionsTimeIndicesToKeep = determineTimeIndicesToKeep(responseData.absorptionsTimeAxis, ...
+                    theWorkerConeMosaic{workerID}.integrationTime, theData.ancillaryData.temporalParams.rampPeak, ...
+                    theData.ancillaryData.responseSubSamplingParams);
 
-        % add the coneMosaic
-        responseData.coneMosaic = theConeMosaic;
+            % Determine portion of the photocurrents signal to be kept
+            photocurrentsTimeIndicesToKeep = determineTimeIndicesToKeep(responseData.photoCurrentTimeAxis, ...
+                    theWorkerConeMosaic{workerID}.integrationTime, theData.ancillaryData.temporalParams.rampPeak, ...
+                    theData.ancillaryData.responseSubSamplingParams);
+
+            % Remove unwanted portions of the time axes
+            responseData.absorptionsTimeAxis = responseData.absorptionsTimeAxis(absorptionsTimeIndicesToKeep);
+            responseData.photoCurrentTimeAxis = responseData.photoCurrentTimeAxis(photocurrentsTimeIndicesToKeep);
         
-        % Save the computed responseData
-        responseDataFile = sprintf('coneResponsesBlock%dof%d', responseData.instanceBlockIndex,instancesBlocksNum);
-        rwObject.write(responseDataFile, responseData, theData.paramsList, theProgram, 'type', 'mat');
-    end % all conditions parfor
+            % Remove unwanted portions of the responses
+            if (isa(theWorkerConeMosaic{workerID}, 'coneMosaicHex'))
+                responseData.absorptionsCountSequence = responseData.absorptionsCountSequence(:,:,absorptionsTimeIndicesToKeep);
+                responseData.photoCurrentSignals = responseData.photoCurrentSignals(:,:,photocurrentsTimeIndicesToKeep);
+            else
+                responseData.absorptionsCountSequence = responseData.absorptionsCountSequence(:,:,:,absorptionsTimeIndicesToKeep);
+                responseData.photoCurrentSignals = responseData.photoCurrentSignals(:,:,:,photocurrentsTimeIndicesToKeep);
+            end
+
+            % add the coneMosaic
+            responseData.coneMosaic = theConeMosaic;
+        
+            % Save the computed responseData
+            responseDataFile = sprintf('coneResponsesBlock%dof%d', responseData.instanceBlockIndex,instancesBlocksNum);
+            rwObject.write(responseDataFile, responseData, theData.paramsList, theProgram, 'type', 'mat');
+        end % parfor
+    end % conditionIndex
+    
     fprintf('\nAll done !\n');
 end
 
