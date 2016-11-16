@@ -10,6 +10,7 @@ function validationData = c_BanksEtAlReplicate(varargin)
 %   'nTrainingSamples' - value (default 500).  Number of training samples to cycle through.
 %   'cyclesPerDegree' - vector (default [3 5 10 20 40]). Spatial frequencoes of grating to be investigated.
 %   'luminances' - vector (default [3.4 34 340]).  Luminances in cd/m2 to be investigated.
+%   'pupilDiamMm' - value (default 2).  Pupil diameter in mm.
 %   'blur' - true/false (default true). Incorporate lens blur.
 %   'imagePixels' - value (default 400).  Size of image pixel array
 %   'computeResponses' - true/false (default true).  Compute responses.
@@ -24,6 +25,7 @@ p = inputParser;
 p.addParameter('nTrainingSamples',500,@isnumeric);
 p.addParameter('cyclesPerDegree',[3 5 10 20 40 50],@isnumeric);
 p.addParameter('luminances',[3.4 34 340],@isnumeric);
+p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
@@ -78,7 +80,7 @@ for ll = 1:length(p.Results.luminances)
         rParams.backgroundParams.lumFactor = theLum/baseLum;
         
         % Pupil size.  They used a 2mm artificial pupil
-        rParams.oiParams.pupilDiamMm = 2;
+        rParams.oiParams.pupilDiamMm = p.Results.pupilDiamMm;
         
         % Set duration equal to sampling interval to do just one frame.
         %
