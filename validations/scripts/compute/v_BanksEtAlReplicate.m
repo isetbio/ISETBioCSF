@@ -20,6 +20,9 @@ function ValidationFunction(runTimeParams)
     validationData1 = c_BanksEtAlReplicate('nTrainingSamples',100,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots);
     UnitTest.validationData('validationData1',validationData1);
     
+    validationData2 = c_BanksEtAlReplicate('nTrainingSamples',100,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,'generatePlots',runTimeParams.generatePlots);
+    UnitTest.validationData('validationData2',validationData2);
+    
 end
 
 
