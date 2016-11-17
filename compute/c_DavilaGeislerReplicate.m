@@ -12,6 +12,7 @@ function c_DavilaGeislerReplicate(varargin)
 %   'backgroundSizeDegs' - value (default 2.1). Size of square background
 %   'wavelength' - value (default 550). Wavelength to use in calculations
 %   'luminances' - vector (default [10]).  Background luminances in cd/m2 to be investigated.
+%   'pupilDiamMm' - value (default 3).  Pupil diameter in mm.
 %   'durationMs' - value (default 100).  Stimulus duration in msec.
 %   'blur' - true/false (default true). Incorporate lens blur.
 %   'imagePixels' - value (default 400).  Size of image pixel array
@@ -33,6 +34,7 @@ p.addParameter('spotDiametersMinutes',[0.5 0.75 1 1.5 2 2.5 5 10 20 40],@isnumer
 p.addParameter('backgroundSizeDegs',[2.1],@isnumeric);
 p.addParameter('wavelength',550,@isnumeric);
 p.addParameter('luminances',[10],@isnumeric);
+p.addParameter('pupilDiamMm',3,@isnumeric);
 p.addParameter('durationMs',100,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('imagePixels',400,@isnumeric);
@@ -84,7 +86,7 @@ for ll = 1:length(p.Results.luminances)
         rParams.backgroundParams.backgroundWavelengthsNm = [p.Results.wavelength];
         
         % Pupil size.  They used a 3mm artificial pupil
-        oiParams.pupilDiamMm = 3;
+        rParams.oiParams.pupilDiamMm = p.Results.pupilDiamMm;
         
         % Scale radiance to produce desired background levels
         deltaWl = 10;
@@ -92,7 +94,7 @@ for ll = 1:length(p.Results.luminances)
         wls = SToWls(S);
         load T_xyz1931
         T_xyz = SplineCmf(S_xyz1931,683*T_xyz1931,S);
-        radiancePerUW = AOMonochromaticCornealPowerToRadiance(wls,rParams.backgroundParams.backgroundWavelengthsNm,1,oiParams.pupilDiamMm,rParams.spatialParams.backgroundSizeDegs^2);
+        radiancePerUW = AOMonochromaticCornealPowerToRadiance(wls,rParams.backgroundParams.backgroundWavelengthsNm,1,rParams.oiParams.pupilDiamMm,rParams.spatialParams.backgroundSizeDegs^2);
         xyzPerUW = T_xyz*radiancePerUW;
         desiredLumCdM2 = p.Results.luminances(ll);
         rParams.backgroundParams.backgroundCornealPowerUW = desiredLumCdM2/xyzPerUW(2);
