@@ -31,7 +31,7 @@ function c_PoirsonAndWandell96VisualizeResponses
         'fieldOfViewDegs', PW96_fovDegs, ... 
         'cyclesPerDegree', 2.0,...
       'spatialPhaseDegs', 0, ...
-       'orientationDegs', 90, ...
+       'orientationDegs', 45, ...
              'windowType', 'Gaussian', ...
         'gaussianFWHMDegs', 1.9, ...
         'viewingDistance', 0.75, ...
@@ -408,9 +408,16 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
     videoPhotocurrentsOBJ.Quality = 100;
     videoPhotocurrentsOBJ.open();
 
+    % Find L, M, cone indices to determine signal range
+    [iL, iM, iS, lconeToPlot, mconeToPlot, sconeToPlot]  = retrieveConeIndices(theConeMosaic);
+    
+    lmConeIndices = [iL(:); iM(:)];
+    tmp = stimData.absorptionsCountSequence(:,lmConeIndices,:);
+    absorptionsRange = [min(tmp(:)) max(tmp(:))];
+    
     % Determine signal ranges
-    absorptionsRange = [min(stimData.absorptionsCountSequence(:)) max(stimData.absorptionsCountSequence(:))];
-    photocurrentsRange = [min(stimData.photoCurrentSignals(:)) max(stimData.photoCurrentSignals(:))];   
+    tmp = stimData.photoCurrentSignals(:,lmConeIndices,:);
+    photocurrentsRange = [min(tmp(:)) max(tmp(:))];   
 
     aspectRatio = 1.0;
     % Initial zoom-in
@@ -452,7 +459,7 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
         'separateLMSmosaics', false, ...                                                % when true, L-,M-, and S-cone submosaic activations are plotted separately
             'activationTime', stimData.absorptionsTimeAxis(tIndex), ...                 % current response time
    'visualizedInstanceIndex', visualizedInstanceIndex, ...                              % currently visualized instance
-                'figureSize', [1280 960]*0.8 ...                                            % figure size in pixels
+                'figureSize', [1350 960]*0.8 ...                                            % figure size in pixels
             );
 
             % Export a PNG image    
@@ -465,6 +472,7 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
         close(hFig);
        
 
+        if (1==2)
         % Photocurrents video
         visualizedPhotocurrents = squeeze(stimData.photoCurrentSignals(visualizedInstanceIndex,:,:,:));
         sz = ndims(visualizedPhotocurrents);
@@ -505,18 +513,16 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
 
             videoPhotocurrentsOBJ.writeVideo(getframe(hFig2));
         end % tIndex
+        end
         
     end % visualizedInstanceIndex
-    close(hFig2);
     
     % Close video writer objects
-    videoAbsorptionsOBJ.close();
-    videoPhotocurrentsOBJ.close();
-    
-    % Export videos to right directory 
+    videoAbsorptionsOBJ.close(); 
     rwObject.write(videoAbsorptionsFilename, fullfile(pwd,sprintf('%s.mp4',videoAbsorptionsFilename)), ...
         paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4');
     
+    videoPhotocurrentsOBJ.close();
     rwObject.write(videoPhotocurrentsFilename, fullfile(pwd,sprintf('%s.mp4',videoPhotocurrentsFilename)), ...
         paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4');
 end
