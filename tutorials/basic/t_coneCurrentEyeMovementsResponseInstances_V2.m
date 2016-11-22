@@ -164,12 +164,10 @@ if (p.Results.compute)
         'responseInstanceArray',responseInstanceArray, ...
         'noiseFreeIsomerizations',noiseFreeIsomerizations);
     
-    
     % Write the no cone contrast data and some extra facts we need
     paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
     rwObject.write('responseInstances',noStimData,paramsList,theProgram);
-    
-    
+      
     % Save the other data we need for use by the classifier preprocessing subroutine
     ancillaryData = struct(...
         'testConeContrasts', testConeContrasts, ...
@@ -182,36 +180,21 @@ if (p.Results.compute)
     %
     % It is possible that the parfor loop will not work for you, depending
     % on your Matlab configuration.  In this case, change it to a for loop.
-
-    % Make copies of the mosaic, one for each worker
-    poolobj = gcp('nocreate'); % If no pool, do not create new one.
-    if isempty(poolobj)
-    else
-        % Delete parallel pool so we can start fresh
-        delete(poolobj);
-    end
-    
-    % This may need to be set to a lower/higher value, depending on the size
-    % of the mosaic and the timeaxis to avoid running out of RAM
-    parallelPoolWorkersNum = 12;
-    poolobj = parpool(parallelPoolWorkersNum);
-    parallelPoolWorkersNum  = poolobj.NumWorkers;
-
-    theWorkerMosaic = cell(1, parallelPoolWorkersNum );
-    for workerID = 1: parallelPoolWorkersNum 
-       fprintf('Copying mosaic for worker %d\n', workerID);
-       theWorkerMosaic{workerID} = theMosaic.copy();
-    end
-    
+   
     % Loop over color directions
+    %
+    % Note tha as the mosaic handle object (and any other handle objects)
+    % enter the parfor loop, a copy local to each worker is created.  This
+    % is the behavior we want, so that the isomerizations calculations for
+    % each loop iteration don't step on each other.  Also note that any
+    % changes to the mosaic object inside the loop do not get propagted
+    % back out -- the mosaic object itself is the same at the end of the
+    % parfor as at the start.  This is also OK here, but might be confusing
+    % under other circumstances.
     tic;
     stimDataForValidation = cell(nParforConditions,1);
     rState = rng;
-    parfor kk = 1:nParforConditions
-
-        t = getCurrentTask();
-        workerID = t.ID;
-                
+    parfor kk = 1:nParforConditions          
         rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
@@ -222,7 +205,7 @@ if (p.Results.compute)
         stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f',...
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
         [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct_V2(stimulusLabel, testDirectionParams.trialsNum, ...
-            rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theWorkerMosaic{workerID} );
+            rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic );
         stimData = struct(...
             'testContrast', colorModulationParamsTemp.contrast, ...
             'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...

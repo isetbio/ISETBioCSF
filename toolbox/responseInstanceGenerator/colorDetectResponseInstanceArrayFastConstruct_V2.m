@@ -5,12 +5,11 @@ function [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseIn
 % simulationTimeStep, spatialParams, temporalParams, theOI, theMosaic.
 %
 % The noise free isomerizations response is returned for the first frame
-% in the temporal sequence.  It is for debugging and probably not of
-% general interest.
+% in the temporal sequence.  It is for debugging and probably not of general interest.
 %
 % This is a sped up version of colorDetectResponseInstanceArrayConstruct.
 %
-%  7/10/16  npc Wrote it.
+% 7/10/16  npc Wrote it.
 
 % Start computation time measurement
 tic
@@ -33,7 +32,7 @@ modulatedScene = colorSceneCreate(spatialParams, backgroundParams, ...
 oiBackground = theOI;
 oiBackground = oiCompute(oiBackground, backgroundScene);
 
-% Compyte the modulated OI
+% Compute the modulated OI
 oiModulated = theOI;
 oiModulated = oiCompute(oiModulated, modulatedScene);
 
