@@ -60,6 +60,9 @@ for ll = 1:length(p.Results.luminances)
         % Blur
         rParams.oiParams.blur = p.Results.blur;
         
+        % Pupil size.  They used a 2mm artificial pupil
+        rParams.oiParams.pupilDiamMm = p.Results.pupilDiamMm;
+        
         % Keep mosaic size in lock step with stimulus.  This is also forced before
         % the mosaic is created, but we need it here so that filenames are
         % consistent.  It is possible that we should not have a separate mosaic
@@ -78,9 +81,6 @@ for ll = 1:length(p.Results.luminances)
         rParams.backgroundParams.monitorFile = 'CRT-MODEL';
         rParams.backgroundParams.leakageLum = 1.0;
         rParams.backgroundParams.lumFactor = theLum/baseLum;
-        
-        % Pupil size.  They used a 2mm artificial pupil
-        rParams.oiParams.pupilDiamMm = p.Results.pupilDiamMm;
         
         % Set duration equal to sampling interval to do just one frame.
         %
