@@ -1,5 +1,5 @@
-function validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
-% validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
+function validationData = t_coneCurrentEyeMovementsResponseInstances_V2(varargin)
+% validationData = t_coneCurrentEyeMovementsResponseInstances_V2(varargin)
 %
 % Show how to generate a number of response instances for a given stimulus
 % condition.  The default parameters are set up to generate just a single frame
@@ -109,28 +109,8 @@ theProgram = mfilename;
 
 %% The computing happens here, if we are doing it
 if (p.Results.compute)
-    
     % Create the optics
     theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
-    
-    % ----------  NEW CODE ----------- 
-    % Get pupil size out of OI, which is sometimes needed by colorSceneCreate
-    oiParamsTemp.pupilDiamMm = 1000*opticsGet(oiGet(theOI,'optics'),'aperture diameter');
-    
-    % Create the background scene (zero contrast)
-    colorModulationParamsBackground = rParams.colorModulationParams;
-    colorModulationParamsBackground.coneContrasts = [0 0 0]';
-    colorModulationParamsBackground.contrast = 0;
-    backgroundScene = colorSceneCreate(rParams.spatialParams, rParams.backgroundParams, ...
-        colorModulationParamsBackground, oiParamsTemp);
-    
-    % Compute the background OI
-    oiBackground = theOI;
-    oiBackground = oiCompute(oiBackground, backgroundScene);
-    
-    % Generate the stimulus modulation function
-    [stimulusTimeAxis, stimulusModulationFunction, ~] = gaussianTemporalWindowCreate(rParams.temporalParams);
-     % ----------  NEW CODE ----------- 
     
     % Create the cone mosaic
     rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
@@ -167,78 +147,28 @@ if (p.Results.compute)
     parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
     nParforConditions = length(parforConditionStructs);
     parforRanSeeds = randi(1000000,nParforConditions,1)+1;
-    
+
     % Generate data for the no stimulus condition
+    colorModulationParamsTemp = rParams.colorModulationParams;
+    colorModulationParamsTemp.coneContrasts = [0 0 0]';
+    colorModulationParamsTemp.contrast = 0;
     stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
-        colorModulationParamsBackground.coneContrasts(1), ...
-        colorModulationParamsBackground.coneContrasts(2), ...
-        colorModulationParamsBackground.coneContrasts(3), ...
-        colorModulationParamsBackground.contrast);
-    
-    
-     % ----------  NEW CODE ----------- 
-     % Compute the oiSequence
-     oiModulated = oiBackground;
-     theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, ...
-                                stimulusModulationFunction, 'composition', 'blend');
-
-                            
-     % Generate eye movement paths for all instances        
-     eyeMovementsNum = computeEyeMovementsNum(theMosaic.integrationTime, theOIsequence);
-     theEMpaths = zeros(testDirectionParams.trialsNum, eyeMovementsNum, 2);     
-            
-     [isomerizations, isomerizationsTimeAxis, ...
-      photocurrents, photoCurrentTimeAxis] = ...
-         theMosaic.computeForOISequence(theOIsequence, ...
-                        'emPaths', theEMpaths, ...
-                        'currentFlag', true, ...
-                        'newNoise', true ...
-                        );
-      
-      % Remove unwanted portions of the responses
-      isomerizationsTimeIndicesToKeep = find(abs(isomerizationsTimeAxis-rParams.temporalParams.secondsToIncludeOffset) <= rParams.temporalParams.secondsToInclude/2);
-      photocurrentsTimeIndicesToKeep = find(abs(photoCurrentTimeAxis-rParams.temporalParams.secondsToIncludeOffset) <= rParams.temporalParams.secondsToInclude/2);
-
-      if (isa(theMosaic , 'coneMosaicHex'))
-         isomerizations = isomerizations(:,:,isomerizationsTimeIndicesToKeep);
-         photocurrents = photocurrents(:,:,photocurrentsTimeIndicesToKeep);
-      else
-         isomerizations = isomerizations(:,:,:,isomerizationsTimeIndicesToKeep);
-         photocurrents = photocurrents(:,:,:,photocurrentsTimeIndicesToKeep);
-      end
-              
-      % Bring the data to old format
-      for iTrial = 1:testDirectionParams.trialsNum
-        fprintf('Reformatting data form trial: %d\n', iTrial);
-        responseInstanceArray(iTrial) = struct(...
-            'theMosaicIsomerizations', single(isomerizations), ...
-            'theMosaicPhotoCurrents', single(photocurrents), ...
-            'theMosaicEyeMovements', theEMpaths(:,isomerizationsTimeIndicesToKeep,:), ...
-            'timeAxis', isomerizationsTimeAxis(isomerizationsTimeIndicesToKeep), ...
-            'photocurrentTimeAxis', photoCurrentTimeAxis(photocurrentsTimeIndicesToKeep) ...
-            );
-      end % iTrial
-      
-      % Compute the noise-free isomerizations indirectly, from the mean over all trials
-      % Relax, for now only ...
-      noiseFreeIsomerizations = squeeze(mean(isomerizations,1));
-      % ----------  NEW CODE ----------- 
-      
-    
+        colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
+    [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct_V2(stimulusLabel, testDirectionParams.trialsNum, ...
+        rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
+ 
     noStimData = struct(...
-        'testContrast', colorModulationParamsBackground.contrast, ...
-        'testConeContrasts', colorModulationParamsBackground.coneContrasts, ...
+        'testContrast', colorModulationParamsTemp.contrast, ...
+        'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
         'stimulusLabel', stimulusLabel, ...
         'responseInstanceArray',responseInstanceArray, ...
         'noiseFreeIsomerizations',noiseFreeIsomerizations);
     
-    % OK to here - Nicolas
-    disp('OK to here');
-    pause
     
     % Write the no cone contrast data and some extra facts we need
-    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsBackground};
+    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
     rwObject.write('responseInstances',noStimData,paramsList,theProgram);
+    
     
     % Save the other data we need for use by the classifier preprocessing subroutine
     ancillaryData = struct(...
@@ -248,17 +178,40 @@ if (p.Results.compute)
         'instanceParams', testDirectionParams);
     rwObject.write('ancillaryData',ancillaryData,paramsList,theProgram);
     
-    
     %% Generate data for all the examined stimuli
     %
     % It is possible that the parfor loop will not work for you, depending
     % on your Matlab configuration.  In this case, change it to a for loop.
 
+    % Make copies of the mosaic, one for each worker
+    poolobj = gcp('nocreate'); % If no pool, do not create new one.
+    if isempty(poolobj)
+    else
+        % Delete parallel pool so we can start fresh
+        delete(poolobj);
+    end
+    
+    % This may need to be set to a lower/higher value, depending on the size
+    % of the mosaic and the timeaxis to avoid running out of RAM
+    parallelPoolWorkersNum = 12;
+    poolobj = parpool(parallelPoolWorkersNum);
+    parallelPoolWorkersNum  = poolobj.NumWorkers;
+
+    theWorkerMosaic = cell(1, parallelPoolWorkersNum );
+    for workerID = 1: parallelPoolWorkersNum 
+       fprintf('Copying mosaic for worker %d\n', workerID);
+       theWorkerMosaic{workerID} = theMosaic.copy();
+    end
+    
     % Loop over color directions
     tic;
     stimDataForValidation = cell(nParforConditions,1);
     rState = rng;
     parfor kk = 1:nParforConditions
+
+        t = getCurrentTask();
+        workerID = t.ID;
+                
         rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
@@ -268,8 +221,8 @@ if (p.Results.compute)
         % Make noisy instances for each contrast
         stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f',...
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
-        [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-            rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
+        [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct_V2(stimulusLabel, testDirectionParams.trialsNum, ...
+            rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theWorkerMosaic{workerID} );
         stimData = struct(...
             'testContrast', colorModulationParamsTemp.contrast, ...
             'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
@@ -372,19 +325,3 @@ end
 end
 
 
-function eyeMovementsNum = computeEyeMovementsNum(integrationTime, theOIsequence)
-    % Generate eye movement sequence for all oi's
-    if (theOIsequence.length == 1)
-        eyeMovementsNum = 1;
-    else
-        stimulusSamplingInterval = theOIsequence.oiTimeAxis(2)-theOIsequence.oiTimeAxis(1);
-        eyeMovementsNumPerOpticalImage = stimulusSamplingInterval/integrationTime;
-        eyeMovementsNum = round(eyeMovementsNumPerOpticalImage*theOIsequence.length);
-    end
-    
-    if (eyeMovementsNum < 1)
-        error('Less than 1 eye movement!!! \nStimulus sampling interval:%g ms Cone mosaic integration time: %g ms\n', 1000*stimulusSamplingInterval, 1000*integrationTime);
-    else 
-        %fprintf('Optical image sequence contains %2.0f eye movements (%2.2f eye movements/oi)\n', eyeMovementsNum, eyeMovementsNumPerOpticalImage);
-    end 
-end
