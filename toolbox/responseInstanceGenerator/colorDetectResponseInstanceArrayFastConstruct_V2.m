@@ -44,17 +44,18 @@ theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, ...
                                 stimulusModulationFunction, 'composition', 'blend');
                             
 % Generate eye movement paths for all instances        
-eyeMovementsNum = computeEyeMovementsNum(theMosaic.integrationTime, theOIsequence);
+eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theMosaic.integrationTime);
 theEMpaths = zeros(nTrials, eyeMovementsNum, 2);     
 
-[isomerizations, isomerizationsTimeAxis, ...
-  photocurrents, photoCurrentTimeAxis] = ...
+[isomerizations, photocurrents] = ...
      theMosaic.computeForOISequence(theOIsequence, ...
                     'emPaths', theEMpaths, ...
                     'currentFlag', true, ...
                     'newNoise', true ...
                     );
-      
+isomerizationsTimeAxis = theMosaic.timeAxis + theOIsequence.timeAxis(1);
+photoCurrentTimeAxis = isomerizationsTimeAxis;
+ 
 % Remove unwanted portions of the responses
 isomerizationsTimeIndicesToKeep = find(abs(isomerizationsTimeAxis-temporalParams.secondsToIncludeOffset) <= temporalParams.secondsToInclude/2);
 photocurrentsTimeIndicesToKeep = find(abs(photoCurrentTimeAxis-temporalParams.secondsToIncludeOffset) <= temporalParams.secondsToInclude/2);
@@ -102,23 +103,4 @@ noiseFreeIsomerizations = squeeze(mean(isomerizations,1));
 
 fprintf('Response instance array generation (%d instances) took %2.3f minutes to compute.\n', nTrials, toc/60);
 
-end
-
-
-function eyeMovementsNum = computeEyeMovementsNum(integrationTime, theOIsequence)
-    % Generate eye movement sequence for all oi's
-    if (numel(theOIsequence.oiTimeAxis) == 1)
-        stimulusSamplingInterval  = integrationTime;
-    else
-        stimulusSamplingInterval = oiTimeAxis(2)-oiTimeAxis(1);
-    end
-    
-    eyeMovementsNumPerOpticalImage = stimulusSamplingInterval/integrationTime;
-    eyeMovementsNum = round(eyeMovementsNumPerOpticalImage*theOIsequence.length);
-    
-    if (eyeMovementsNum < 1)
-        error('Less than 1 eye movement!!! \nStimulus sampling interval:%g ms Cone mosaic integration time: %g ms\n', 1000*stimulusSamplingInterval, 1000*theConeMosaic.integrationTime);
-    else 
-        %fprintf('Optical image sequence contains %2.0f eye movements (%2.2f eye movements/oi)\n', eyeMovementsNum, eyeMovementsNumPerOpticalImage);
-    end 
 end

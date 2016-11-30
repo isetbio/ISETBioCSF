@@ -223,7 +223,7 @@ function c_PoirsonAndWandell96ReplicateParfor2
             rng(theData.randomSeed);
         
             % Compute the emPaths for this condition
-            eyeMovementsNum = computeEyeMovementsNum(theWorkerConeMosaic{workerID}.integrationTime, theData.theOIsequence);
+            eyeMovementsNum = theData.theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theWorkerConeMosaic{workerID}.integrationTime);
             theData.theEMpaths = zeros(instancesBlockSize, eyeMovementsNum, 2);     
             for instanceIndex = 1:instancesBlockSize
                 theData.theEMpaths(instanceIndex, :,:) = theWorkerConeMosaic{workerID}.emGenSequence(eyeMovementsNum);
@@ -556,18 +556,6 @@ function theConeMosaic = coneMosaicGenerate(mosaicParams)
     theConeMosaic.os = theOuterSegment;
 end
 
-function eyeMovementsNum = computeEyeMovementsNum(integrationTime, theOIsequence)
-    % Generate eye movement sequence for all oi's
-    stimulusSamplingInterval = theOIsequence.oiTimeAxis(2)-theOIsequence.oiTimeAxis(1);
-    eyeMovementsNumPerOpticalImage = stimulusSamplingInterval/integrationTime;
-    eyeMovementsNum = round(eyeMovementsNumPerOpticalImage*theOIsequence.length);
-    
-    if (eyeMovementsNum < 1)
-        error('Less than 1 eye movement!!! \nStimulus sampling interval:%g ms Cone mosaic integration time: %g ms\n', 1000*stimulusSamplingInterval, 1000*integrationTime);
-    else 
-        %fprintf('Optical image sequence contains %2.0f eye movements (%2.2f eye movements/oi)\n', eyeMovementsNum, eyeMovementsNumPerOpticalImage);
-    end 
-end
 
 function [displayScene, measuredStimulusStrength] = generateGaborDisplayScene(spatialParams, colorParams, nominalStimulusStrength)
 

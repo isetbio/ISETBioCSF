@@ -7,7 +7,8 @@ function c_PoirsonAndWandell96VisualizeResponses
     
     % Export video (takes a long time).
     exportMosaic2DActivationStillsAndVideo = true;
-    exportLMSresponseTraceStills = true;
+    exportPhotoCurrentsVideo = false;
+    exportLMSresponseTraceStills =  false;
                 
     
     % Whether to display all the params
@@ -170,7 +171,7 @@ function c_PoirsonAndWandell96VisualizeResponses
                 end
                 activeConesNum = numel(find(theConeMosaic.pattern > 1));
                 % Compute eye movements num
-                eyeMovementsNum = computeEyeMovementsNum(theConeMosaic.integrationTime, theOIsequence);
+                eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theConeMosaic.integrationTime);
             end
             
             % Generate stimulus label
@@ -225,12 +226,15 @@ function c_PoirsonAndWandell96VisualizeResponses
                 % Compute absorptions and photocurrents for all response instances
                 tic
                 stimData.instanceBlockIndex = instanceBlockIndex;
-                [stimData.absorptionsCountSequence, stimData.absorptionsTimeAxis, stimData.photoCurrentSignals, stimData.photoCurrentTimeAxis] = ...
+                [stimData.absorptionsCountSequence, stimData.photoCurrentSignals] = ...
                         theConeMosaic.computeForOISequence(theOIsequence, ...
                         'emPaths', emPaths, ...
                         'currentFlag', true, ...
                         'newNoise', true ...
                         );
+                
+                stimData.absorptionsTimeAxis = theConeMosaic.timeAxis + theOIsequence.timeAxis(1);
+                stimData.photoCurrentTimeAxis = stimData.absorptionsTimeAxis;
                 fprintf('Response computation took %2.2f minutes\n', toc/60);
             
                 if (instanceBlockIndex == 1)
@@ -256,10 +260,15 @@ function c_PoirsonAndWandell96VisualizeResponses
                 stimData.photoCurrentTimeAxis = stimData.photoCurrentTimeAxis(photocurrentsTimeIndicesToKeep);
                 if (isa(theConeMosaic, 'coneMosaicHex'))
                     stimData.absorptionsCountSequence = stimData.absorptionsCountSequence(:,:,absorptionsTimeIndicesToKeep);
-                    stimData.photoCurrentSignals = stimData.photoCurrentSignals(:,:,photocurrentsTimeIndicesToKeep);
+                    if (~isempty(stimData.photoCurrentSignals))
+                        stimData.photoCurrentSignals = stimData.photoCurrentSignals(:,:,photocurrentsTimeIndicesToKeep);
+                    end
                 else
                     stimData.absorptionsCountSequence = stimData.absorptionsCountSequence(:,:,:,absorptionsTimeIndicesToKeep);
                     stimData.photoCurrentSignals = stimData.photoCurrentSignals(:,:,:,photocurrentsTimeIndicesToKeep);
+                    if (~isempty(stimData.photoCurrentSignals))
+                        stimData.photoCurrentSignals = stimData.photoCurrentSignals(:,:,photocurrentsTimeIndicesToKeep);
+                    end
                 end
             
                 % Save responses and parameters for this stimStrengthIndex and chromaticDirectionIndex
@@ -269,12 +278,14 @@ function c_PoirsonAndWandell96VisualizeResponses
                 rwObject.write('ancillaryData', ancillaryData, paramsList, theProgram, 'type', 'mat');
     
                 % Visualize oisequence with eye movement sequence
-                % theOIsequence.visualizeWithEyeMovementSequence(absorptionsTimeAxis);
-            
+                if (instanceBlockIndex == 1)
+                    theOIsequence.visualizeWithEyeMovementSequence(stimData.absorptionsTimeAxis);
+                end
+                
                 % Export stills and video of 2D mosaic activation (absorptions + photocurrents) for some instances
                 if (exportMosaic2DActivationStillsAndVideo)
                     if (strcmp(mosaicParams.conePacking, 'hex')) && ~any(isnan(mosaicParams.fieldOfViewDegs))  
-                        exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize, rwObject, paramsList, theProgram);
+                        exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize, exportPhotoCurrentsVideo, rwObject, paramsList, theProgram);
                     end
                 end
             
@@ -306,8 +317,8 @@ function exportResponseTraceStills(theConeMosaic, stimData, chromaticDirectionPa
     end
 
     % Plot all absorption response instances for the center-most L-, M-, and S-cone
-    instancesNum = size(stimData.absorptionsCountSequence, 1);
-    instancesToPlot = 1:instancesNum;
+    instancesNum = size(stimData.absorptionsCountSequence, 1)
+    instancesToPlot = 1:instancesNum
     hFig = plotResponseTimeSeries(...
       'absorptions', ...
       stimData.absorptionsTimeAxis, ...
@@ -394,7 +405,7 @@ function [iL, iM, iS, lconeToPlot, mconeToPlot, sconeToPlot]  = retrieveConeIndi
     iS = find(theConeMosaic.pattern(nonNullConeIndices) == 4);
 end
                 
-function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize,  rwObject, paramsList, theProgram)
+function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize,  exportPhotocurrentsVideo, rwObject, paramsList, theProgram)
             
     videoAbsorptionsFilename = 'absorptionsVideo';
     videoAbsorptionsOBJ = VideoWriter(videoAbsorptionsFilename, 'MPEG-4'); % H264 format
@@ -402,12 +413,13 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
     videoAbsorptionsOBJ.Quality = 100;
     videoAbsorptionsOBJ.open();
 
-    videoPhotocurrentsFilename = 'photoCurrentsVideo';
-    videoPhotocurrentsOBJ = VideoWriter(videoPhotocurrentsFilename, 'MPEG-4'); % H264 format
-    videoPhotocurrentsOBJ.FrameRate = 30; 
-    videoPhotocurrentsOBJ.Quality = 100;
-    videoPhotocurrentsOBJ.open();
-
+    if (exportPhotocurrentsVideo)
+        videoPhotocurrentsFilename = 'photoCurrentsVideo';
+        videoPhotocurrentsOBJ = VideoWriter(videoPhotocurrentsFilename, 'MPEG-4'); % H264 format
+        videoPhotocurrentsOBJ.FrameRate = 30; 
+        videoPhotocurrentsOBJ.Quality = 100;
+        videoPhotocurrentsOBJ.open();
+    end
     % Find L, M, cone indices to determine signal range
     [iL, iM, iS, lconeToPlot, mconeToPlot, sconeToPlot]  = retrieveConeIndices(theConeMosaic);
     
@@ -416,9 +428,11 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
     absorptionsRange = [min(tmp(:)) max(tmp(:))];
     
     % Determine signal ranges
-    tmp = stimData.photoCurrentSignals(:,lmConeIndices,:);
-    photocurrentsRange = [min(tmp(:)) max(tmp(:))];   
-
+    if (exportPhotocurrentsVideo)
+        tmp = stimData.photoCurrentSignals(:,lmConeIndices,:);
+        photocurrentsRange = [min(tmp(:)) max(tmp(:))];   
+    end
+    
     aspectRatio = 1.0;
     % Initial zoom-in
     zoomInFactorAbsorptions = aspectRatio;
@@ -435,13 +449,12 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
         
         for tIndex = 1:absorptionSequenceLength
             % Compute zoom-in factor
-            if (visualizedInstanceIndex>3)
-                zoomInFactorAbsorptions = zoomInFactorAbsorptions * (1.0 - zoomSpeed/absorptionSequenceLength);
-            end
-
-            if (zoomInFactorAbsorptions < 0.3)
-                zoomInFactorAbsorptions = 0.3;
-            end
+             if (visualizedInstanceIndex>3)
+                 zoomInFactorAbsorptions = zoomInFactorAbsorptions * (1.0 - zoomSpeed/absorptionSequenceLength);
+             end 
+             if (zoomInFactorAbsorptions < 0.3)
+                 zoomInFactorAbsorptions = 0.3;
+             end
 
             if (tIndex > 1) 
                 close(hFig);
@@ -472,13 +485,13 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
         close(hFig);
        
 
-        if (1==2)
-        % Photocurrents video
-        visualizedPhotocurrents = squeeze(stimData.photoCurrentSignals(visualizedInstanceIndex,:,:,:));
-        sz = ndims(visualizedPhotocurrents);
-        photocurrentsSignalLength = size(visualizedPhotocurrents, sz(end));
+        if (exportPhotocurrentsVideo)
+            % Photocurrents video
+            visualizedPhotocurrents = squeeze(stimData.photoCurrentSignals(visualizedInstanceIndex,:,:,:));
+            sz = ndims(visualizedPhotocurrents);
+            photocurrentsSignalLength = size(visualizedPhotocurrents, sz(end));
         
-        for tIndex = 1:photocurrentsSignalLength
+            for tIndex = 1:photocurrentsSignalLength
             % compute zoom-in factor
             if (visualizedInstanceIndex > 3)
                 zoomInFactorPhotocurrents = zoomInFactorPhotocurrents * (1.0 - 2*zoomSpeed/photocurrentsSignalLength);
@@ -502,7 +515,7 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
         'separateLMSmosaics', false, ...                                    % when true, L-,M-, and S-cone submosaic activations are plotted separately
             'activationTime', stimData.photoCurrentTimeAxis(tIndex), ...    % current response time
    'visualizedInstanceIndex', visualizedInstanceIndex, ...                  % currently visualized instance
-                'figureSize', [1280 960]*0.8 ...                                % figure size in pixels
+                'figureSize', [1350 960]*0.8 ...                                % figure size in pixels
             );
 
             % Export a PNG image    
@@ -513,8 +526,7 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
 
             videoPhotocurrentsOBJ.writeVideo(getframe(hFig2));
         end % tIndex
-        end
-        
+        end % exportPhotocurrentsVideo
     end % visualizedInstanceIndex
     
     % Close video writer objects
@@ -522,9 +534,12 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
     rwObject.write(videoAbsorptionsFilename, fullfile(pwd,sprintf('%s.mp4',videoAbsorptionsFilename)), ...
         paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4');
     
-    videoPhotocurrentsOBJ.close();
-    rwObject.write(videoPhotocurrentsFilename, fullfile(pwd,sprintf('%s.mp4',videoPhotocurrentsFilename)), ...
-        paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4');
+    if (exportPhotocurrentsVideo)
+        videoPhotocurrentsOBJ.close();
+        rwObject.write(videoPhotocurrentsFilename, fullfile(pwd,sprintf('%s.mp4',videoPhotocurrentsFilename)), ...
+            paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4');
+    end
+    
 end
                 
 function hFig = plotResponseTimeSeries(signalName, timeAxis, responseTimeSeries, integrationTime, stimTimeAxis, timeLimits, ...
@@ -792,7 +807,7 @@ end
 
 function eyeMovementsNum = computeEyeMovementsNum(integrationTime, theOIsequence)
     % Generate eye movement sequence for all oi's
-    stimulusSamplingInterval = theOIsequence.oiTimeAxis(2)-theOIsequence.oiTimeAxis(1);
+    stimulusSamplingInterval = theOIsequence.timeAxis(2)-theOIsequence.timeAxis(1);
     eyeMovementsNumPerOpticalImage = stimulusSamplingInterval/integrationTime;
     eyeMovementsNum = round(eyeMovementsNumPerOpticalImage*theOIsequence.length);
     
