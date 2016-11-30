@@ -1,5 +1,5 @@
-function [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct_V2(stimulusLabel, nTrials, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
-% [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
+function [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = colorDetectResponseInstanceArrayFastConstruct_V2(stimulusLabel, nTrials, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
+% [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
 % 
 % Construct an array of nTrials response instances given the
 % simulationTimeStep, spatialParams, temporalParams, theOI, theMosaic.
@@ -43,9 +43,9 @@ oiModulated = oiCompute(oiModulated, modulatedScene);
 theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, ...
                                 stimulusModulationFunction, 'composition', 'blend');
                             
-% Generate eye movement paths for all instances        
+% Generate eye movement paths for all instances
 eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theMosaic.integrationTime);
-theEMpaths = zeros(nTrials, eyeMovementsNum, 2);     
+theEMpaths = colorDetectMultiTrialEMPathGenerate(theMosaic, nTrials, eyeMovementsNum, temporalParams.emPathType);
 
 [isomerizations, photocurrents] = ...
      theMosaic.computeForOISequence(theOIsequence, ...
@@ -97,9 +97,26 @@ for iTrial = 1:nTrials
     end
 end % iTrial
 
-% Compute the noise-free isomerizations indirectly, from the mean over all trials
-% Relax, for now only ...
-noiseFreeIsomerizations = squeeze(mean(isomerizations,1));
+% Compute the noise-free isomerizations & photocurrents using a emPath with zero eye movements
+theEMpaths = theEMpaths(1,:,:)*0;
+
+% Generate noise-free mosaic
+theNoiseFreeMosaic = theMosaic.copy();
+theNoiseFreeMosaic.noiseFlag = false;
+theNoiseFreeMosaic.os.noiseFlag = false;
+
+% Compute the noise-free responses
+[noiseFreeIsomerizations, noiseFreePhotocurrents] = ...
+     theNoiseFreeMosaic.computeForOISequence(theOIsequence, ...
+                    'emPaths', theEMpaths, ...
+                    'currentFlag', true, ...
+                    'newNoise', true ...
+                    );
+                
+noiseFreeIsomerizations = squeeze(noiseFreeIsomerizations);
+if (~isempty(noiseFreePhotocurrents))
+    noiseFreePhotocurrents = squeeze(noiseFreePhotocurrents);
+end
 
 fprintf('Response instance array generation (%d instances) took %2.3f minutes to compute.\n', nTrials, toc/60);
 

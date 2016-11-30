@@ -55,6 +55,7 @@ function validationData = t_coneCurrentEyeMovementsResponseInstances_V2(varargin
 p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
+p.addParameter('emPathType','',@ischar);
 p.addParameter('setRng',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('generatePlots',false,@islogical);
@@ -89,7 +90,6 @@ if (isempty(rParams))
     rParams.temporalParams.stimulusDurationInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.eyesDoNotMove = true;
     
     rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
@@ -97,6 +97,12 @@ if (isempty(rParams))
     rParams.mosaicParams.osNoise = true;
     rParams.mosaicParams.osModel = 'Linear';
 end
+
+% Set the emPathType
+if (~isempty(p.Results.emPathType))
+    rParams.temporalParams.emPathType = p.Results.emPathType;
+end
+
 
 %% Parameters that define the LM instances we'll generate here
 if (isempty(testDirectionParams))
@@ -154,7 +160,7 @@ if (p.Results.compute)
     colorModulationParamsTemp.contrast = 0;
     stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
         colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
-    [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct_V2(stimulusLabel, testDirectionParams.trialsNum, ...
+    [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = colorDetectResponseInstanceArrayFastConstruct_V2(stimulusLabel, testDirectionParams.trialsNum, ...
         rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
  
     noStimData = struct(...
@@ -162,7 +168,8 @@ if (p.Results.compute)
         'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
         'stimulusLabel', stimulusLabel, ...
         'responseInstanceArray',responseInstanceArray, ...
-        'noiseFreeIsomerizations',noiseFreeIsomerizations);
+        'noiseFreeIsomerizations',noiseFreeIsomerizations, ...
+        'noiseFreePhotocurrents', noiseFreePhotocurrents);
     
     % Write the no cone contrast data and some extra facts we need
     paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
@@ -204,14 +211,15 @@ if (p.Results.compute)
         % Make noisy instances for each contrast
         stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f',...
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
-        [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct_V2(stimulusLabel, testDirectionParams.trialsNum, ...
+        [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = colorDetectResponseInstanceArrayFastConstruct_V2(stimulusLabel, testDirectionParams.trialsNum, ...
             rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic );
         stimData = struct(...
             'testContrast', colorModulationParamsTemp.contrast, ...
             'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
             'stimulusLabel', stimulusLabel, ...
             'responseInstanceArray',responseInstanceArray, ...
-            'noiseFreeIsomerizations',noiseFreeIsomerizations);
+            'noiseFreeIsomerizations',noiseFreeIsomerizations, ...
+            'noiseFreePhotocurrents', noiseFreePhotocurrents);
         
         % Save some data for validation in first loop
         if (kk == 1)
