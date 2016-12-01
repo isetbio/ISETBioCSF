@@ -7,9 +7,15 @@ function c_PoirsonAndWandell96VisualizeResponses
     
     % Export video (takes a long time).
     exportMosaic2DActivationStillsAndVideo = true;
-    exportPhotoCurrentsVideo = false;
+    exportPhotoCurrentsVideo = true;
     exportLMSresponseTraceStills =  false;
                 
+    % To save time, compute only once, then set this to false
+    recomputeConeMosaic = true;
+    
+    % How to normalize responses
+    responseNormalization = 'None';  % use absolute range
+    responseNormalization = 'EquateMeansAcrossSubMosaics';   % normalize each submosaic's response with respect to the mean response (across instances) for that submosaic
     
     % Whether to display all the params
     paramsVerbosity = 0;
@@ -64,21 +70,17 @@ function c_PoirsonAndWandell96VisualizeResponses
     oiParams.type = 'Optics_v2';
     oiParams.fieldOfViewDegs = spatialParams.fieldOfViewDegs*1.2;
     
-    % To save time, compute only once, then set this to false
-    recomputeConeMosaic = false;
-    
-    
     mosaicParams = struct(...
                 'type', 'Mosaic_v2', ...
          'conePacking', 'hex', ...
      'fieldOfViewDegs', PW96_fovDegs*[0.3 0.3],...         % nan for 1L, 1M, and 1S-cone only
     'eccentricityDegs', 0, ...  
  'spatialLMSDensities', [0.62 0.31 0.07], ...
- 'integrationTimeSecs', 50/1000, ...            % 50 msec integration time
-         'photonNoise', true, ...              % add Poisson noise
-      'osTimeStepSecs', 10/1000, ...             % 5 milliseconds
-             'osNoise', true, ...              % outer-segment noise
-       'eyesDoNotMove', false ....              % normal eye movements
+ 'integrationTimeSecs', 10/1000, ...            % 10 msec integration time
+         'photonNoise', true, ...               % add Poisson noise
+      'osTimeStepSecs', 0.5/1000, ...           % 0.5 milliseconds
+             'osNoise', true, ...               % outer-segment noise
+          'emPathType', 'Dynamic' ...  'eyesDoNotMove', false ....              % normal eye movements
        );
    
    % Response subSampling (how many seconds to include)
@@ -215,12 +217,10 @@ function c_PoirsonAndWandell96VisualizeResponses
                     stimLabel, instancesBlockSize, instanceBlockIndex, instancesBlocksNum, theConeMosaic.mosaicSize(1), theConeMosaic.mosaicSize(2), activeConesNum, eyeMovementsNum, theOIsequence.length);
                 
                 % Compute the emPaths for all response instances of the  current instanceBlock
-                emPaths = zeros(instancesBlockSize, eyeMovementsNum, 2);
-                for instanceIndex = 1:instancesBlockSize
-                    emPaths(instanceIndex, :,:) = theConeMosaic.emGenSequence(eyeMovementsNum);
-                end
                 if (mosaicParams.eyesDoNotMove)
-                    emPaths = 0*emPaths;
+                    emPaths = colorDetectMultiTrialEMPathGenerate(theConeMosaic, instancesBlockSize, eyeMovementsNum, 'Zero');
+                else
+                    emPaths = colorDetectMultiTrialEMPathGenerate(theConeMosaic, instancesBlockSize, eyeMovementsNum, 'Dynamic');
                 end
                 
                 % Compute absorptions and photocurrents for all response instances
@@ -285,7 +285,7 @@ function c_PoirsonAndWandell96VisualizeResponses
                 % Export stills and video of 2D mosaic activation (absorptions + photocurrents) for some instances
                 if (exportMosaic2DActivationStillsAndVideo)
                     if (strcmp(mosaicParams.conePacking, 'hex')) && ~any(isnan(mosaicParams.fieldOfViewDegs))  
-                        exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize, exportPhotoCurrentsVideo, rwObject, paramsList, theProgram);
+                        exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize, responseNormalization, exportPhotoCurrentsVideo, rwObject, paramsList, theProgram);
                     end
                 end
             
@@ -372,7 +372,7 @@ function exportResponseTraceStills(theConeMosaic, stimData, chromaticDirectionPa
 
      % Export a PNG image 
      rwObject.write('AbsorptionsPhotocurrentsSelectConesSelectInstances', stimData, paramsList, theProgram, ...
-         'type', 'NicePlotExport', 'FigureHandle', hFig, 'FigureType', 'png');
+         'type', 'NicePlotExport', 'FigureHandle', hFig, 'FigureType', 'png', 'ShowFilePath', true);
     end
 end
             
@@ -405,7 +405,7 @@ function [iL, iM, iS, lconeToPlot, mconeToPlot, sconeToPlot]  = retrieveConeIndi
     iS = find(theConeMosaic.pattern(nonNullConeIndices) == 4);
 end
                 
-function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize,  exportPhotocurrentsVideo, rwObject, paramsList, theProgram)
+function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, instancesToVisualize, responseNormalization, exportPhotocurrentsVideo, rwObject, paramsList, theProgram)
             
     videoAbsorptionsFilename = 'absorptionsVideo';
     videoAbsorptionsOBJ = VideoWriter(videoAbsorptionsFilename, 'MPEG-4'); % H264 format
@@ -423,20 +423,39 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
     % Find L, M, cone indices to determine signal range
     [iL, iM, iS, lconeToPlot, mconeToPlot, sconeToPlot]  = retrieveConeIndices(theConeMosaic);
     
-    lmConeIndices = [iL(:); iM(:)];
-    tmp = stimData.absorptionsCountSequence(:,lmConeIndices,:);
-    absorptionsRange = [min(tmp(:)) max(tmp(:))];
+
+    if (strcmp(responseNormalization, 'None'))
+        ; % do nothing
+    elseif (strcmp(responseNormalization, 'EquateMeansAcrossSubMosaics'))
+        tmp = stimData.absorptionsCountSequence(:,iL(:),:);
+        stimData.absorptionsCountSequence(:,iL(:),:) = stimData.absorptionsCountSequence(:,iL(:),:) / mean(tmp(:));
+        tmp = stimData.absorptionsCountSequence(:,iM(:),:);
+        stimData.absorptionsCountSequence(:,iM(:),:) = stimData.absorptionsCountSequence(:,iM(:),:) / mean(tmp(:));
+        tmp = stimData.absorptionsCountSequence(:,iS(:),:);
+        stimData.absorptionsCountSequence(:,iS(:),:) = stimData.absorptionsCountSequence(:,iS(:),:) / mean(tmp(:));
+    end
+    absorptionsRange = [min(stimData.absorptionsCountSequence(:)) max(stimData.absorptionsCountSequence(:))];
     
     % Determine signal ranges
     if (exportPhotocurrentsVideo)
-        tmp = stimData.photoCurrentSignals(:,lmConeIndices,:);
-        photocurrentsRange = [min(tmp(:)) max(tmp(:))];   
+        if (strcmp(responseNormalization, 'None'))
+            ; % do nothing
+        elseif (strcmp(responseNormalization, 'EquateMeansAcrossSubMosaics'))
+            tmp = stimData.photoCurrentSignals(:,iL(:),:);
+            stimData.photoCurrentSignals(:,iL(:),:) = stimData.photoCurrentSignals(:,iL(:),:) / mean(tmp(:));
+            tmp = stimData.photoCurrentSignals(:,iM(:),:);
+            stimData.photoCurrentSignals(:,iM(:),:) = stimData.photoCurrentSignals(:,iM(:),:) / mean(tmp(:));
+            tmp = stimData.photoCurrentSignals(:,iS(:),:);
+            stimData.photoCurrentSignals(:,iS(:),:) = stimData.photoCurrentSignals(:,iS(:),:) / mean(tmp(:));
+        end
+        photocurrentsRange = [min(stimData.photoCurrentSignals(:)) stimData.photoCurrentSignals(tmp(:))];
     end
     
-    aspectRatio = 1.0;
+    pause
+    
     % Initial zoom-in
-    zoomInFactorAbsorptions = aspectRatio;
-    zoomInFactorPhotocurrents = aspectRatio;
+    zoomInFactorAbsorptions = 1;
+    zoomInFactorPhotocurrents = 1;
     zoomSpeed = 0.10;
     
     activationLUT = bone(1024);
@@ -462,11 +481,11 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
 
             hFig = theConeMosaic.visualizeActivationMaps(...
                 squeeze(visualizedAbsorptions(:,tIndex)), ...                                           % the signal matrix
-                   'mapType', 'modulated disks', ...                                    % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+                   'mapType', 'modulated hexagons', ...                                    % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
                 'signalName', 'isomerizations (R*/cone/integration time)', ...          % colormap title (signal name and units)
                'signalRange', absorptionsRange, ...                                    % signal range
                     'xRange', theConeMosaic.width/2 * [-1 1], ...
-                    'yRange', theConeMosaic.height/2 * [-1 1]*0.78, ...
+                    'yRange', theConeMosaic.height/2 * [-1 1]*0.70, ...
               'zoomInFactor', zoomInFactorAbsorptions, ...                              % dynamically changing zoom
                   'colorMap', activationLUT, ...                                        % colormap to use for displaying activation level
         'separateLMSmosaics', false, ...                                                % when true, L-,M-, and S-cone submosaic activations are plotted separately
@@ -492,52 +511,52 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
             photocurrentsSignalLength = size(visualizedPhotocurrents, sz(end));
         
             for tIndex = 1:photocurrentsSignalLength
-            % compute zoom-in factor
-            if (visualizedInstanceIndex > 3)
-                zoomInFactorPhotocurrents = zoomInFactorPhotocurrents * (1.0 - 2*zoomSpeed/photocurrentsSignalLength);
-            end
+                % compute zoom-in factor
+                if (visualizedInstanceIndex > 3)
+                    zoomInFactorPhotocurrents = zoomInFactorPhotocurrents * (1.0 - zoomSpeed/photocurrentsSignalLength);
+                end
 
-            if (zoomInFactorPhotocurrents < 0.3)
-                zoomInFactorPhotocurrents = 0.3;
-            end
-            if (tIndex > 1) 
-                close(hFig2);
-            end
-            hFig2 = theConeMosaic.visualizeActivationMaps(...
-                squeeze(visualizedPhotocurrents(:,tIndex)), ...                                           % the signal matrix
-                   'mapType', 'modulated disks', ...                        % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
-                'signalName', 'photocurrent (pAmps)', ...                   % colormap title (signal name and units)
-               'signalRange', photocurrentsRange, ...                       % signal range
-                    'xRange', theConeMosaic.width/2 * [-1 1], ...
-                    'yRange', theConeMosaic.height/2 * [-1 1]*0.78, ...
-              'zoomInFactor', zoomInFactorPhotocurrents, ...                % dynamically changing zoom
-                  'colorMap', activationLUT, ...                            % colormap to use for displaying activation level
-        'separateLMSmosaics', false, ...                                    % when true, L-,M-, and S-cone submosaic activations are plotted separately
-            'activationTime', stimData.photoCurrentTimeAxis(tIndex), ...    % current response time
-   'visualizedInstanceIndex', visualizedInstanceIndex, ...                  % currently visualized instance
-                'figureSize', [1350 960]*0.8 ...                                % figure size in pixels
-            );
+                if (zoomInFactorPhotocurrents < 0.3)
+                    zoomInFactorPhotocurrents = 0.3;
+                end
+                if (tIndex > 1) 
+                    close(hFig2);
+                end
+                hFig2 = theConeMosaic.visualizeActivationMaps(...
+                    squeeze(visualizedPhotocurrents(:,tIndex)), ...                                           % the signal matrix
+                       'mapType', 'modulated hexagons', ...                        % how to display cones: choose between 'density plot', 'modulated disks' and 'modulated hexagons'
+                    'signalName', 'photocurrent (pAmps)', ...                   % colormap title (signal name and units)
+                   'signalRange', photocurrentsRange, ...                       % signal range
+                        'xRange', theConeMosaic.width/2 * [-1 1], ...
+                        'yRange', theConeMosaic.height/2 * [-1 1]*0.70, ...
+                  'zoomInFactor', zoomInFactorPhotocurrents, ...                % dynamically changing zoom
+                      'colorMap', activationLUT, ...                            % colormap to use for displaying activation level
+            'separateLMSmosaics', false, ...                                    % when true, L-,M-, and S-cone submosaic activations are plotted separately
+                'activationTime', stimData.photoCurrentTimeAxis(tIndex), ...    % current response time
+       'visualizedInstanceIndex', visualizedInstanceIndex, ...                  % currently visualized instance
+                    'figureSize', [1350 960]*0.8 ...                                % figure size in pixels
+                );
 
-            % Export a PNG image    
-            filename = sprintf('MosaicPhotocurrents_%2.3f', stimData.photoCurrentTimeAxis(tIndex));
+                % Export a PNG image    
+                filename = sprintf('MosaicPhotocurrents_%2.3f', stimData.photoCurrentTimeAxis(tIndex));
 
-            rwObject.write(filename, stimData, paramsList, theProgram, ...
-                    'type', 'NicePlotExport', 'FigureHandle', hFig2, 'FigureType', 'png');
+                rwObject.write(filename, stimData, paramsList, theProgram, ...
+                        'type', 'NicePlotExport', 'FigureHandle', hFig2, 'FigureType', 'png');
 
-            videoPhotocurrentsOBJ.writeVideo(getframe(hFig2));
-        end % tIndex
+                videoPhotocurrentsOBJ.writeVideo(getframe(hFig2));
+            end % tIndex
         end % exportPhotocurrentsVideo
     end % visualizedInstanceIndex
     
     % Close video writer objects
     videoAbsorptionsOBJ.close(); 
     rwObject.write(videoAbsorptionsFilename, fullfile(pwd,sprintf('%s.mp4',videoAbsorptionsFilename)), ...
-        paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4');
+        paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4', 'ShowFilePath', true);
     
     if (exportPhotocurrentsVideo)
         videoPhotocurrentsOBJ.close();
         rwObject.write(videoPhotocurrentsFilename, fullfile(pwd,sprintf('%s.mp4',videoPhotocurrentsFilename)), ...
-            paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4');
+            paramsList,theProgram,'Type','movieFile', 'MovieType', 'mp4', 'ShowFilePath', true);
     end
     
 end

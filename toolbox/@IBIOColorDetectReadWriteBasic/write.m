@@ -29,6 +29,7 @@ p.addParameter('ArtifactParams',[],@isstruct);
 p.addParameter('FigureType','pdf',@ischar);
 p.addParameter('FigureHandle', []);
 p.addParameter('MovieType','m4v',@ischar);
+p.addParameter('ShowFilePath', false, @islogical);
 p.parse(name,data,paramsList,theProgram,varargin{:});
 
 % Sometimes, for compatibility, we don't actually have anything
@@ -40,7 +41,9 @@ end
 %% Get fileid
 [fileid,filedir,filename] = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:},'MakeDirectories',true);
 
-warndlg(sprintf('FileDir ''%s''.', filedir), sprintf('Filename: ''%s''', filename));
+if (p.Results.ShowFilePath)
+    warndlg(sprintf('FileDir ''%s''.', filedir), sprintf('Filename: ''%s''', filename));
+end
 
 %% Write the data
 switch (p.Results.Type)
