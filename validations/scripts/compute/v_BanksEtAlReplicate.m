@@ -18,12 +18,12 @@ function ValidationFunction(runTimeParams)
     
     %% Basic validation
     computeResponses  = true;
-    % Old responseInstanceGenerator
-    responseInstanceGeneratorVersion = '';
-    % New responseInstanceGenerator
-    responseInstanceGeneratorVersion = 'V2';
     
-    responseInstanceGeneratorVersion
+    % Choose to use the old responseInstanceGenerator or the new one
+    % Select the OLD responseInstanceGenerator
+    %responseInstanceGeneratorVersion = '';
+    % Select the NEW responseInstanceGenerator
+    responseInstanceGeneratorVersion = 'V2';
     
     validationData1 = c_BanksEtAlReplicate('responseInstanceGeneratorVersion', responseInstanceGeneratorVersion, 'compute', computeResponses, 'nTrainingSamples',100,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots);
     UnitTest.validationData('validationData1',validationData1);
