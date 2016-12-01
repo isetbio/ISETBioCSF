@@ -36,6 +36,10 @@ function validationData = t_coneCurrentEyeMovementsResponseInstances_V2(varargin
 % Key/value pairs
 %   'rParams' - Value the is the rParams structure to use
 %   'testDirectionParams - Value is the testDirectionParams structure to use
+%   'emPathType' - Value (one of: 'Zero', 'Frozen', 'Dynamic') determines whether we have:
+%                  zero eye movements across all trials, 
+%                  an emPath that is frozen across all trials,
+%                  or a dynamic emPath that changes across trials.
 %   'setRngSeed' - true/false (default true).  Set the rng seed to a
 %        value so output is reproducible.
 %   'compute' - true/false (default true).  Do the computations.
@@ -55,7 +59,7 @@ function validationData = t_coneCurrentEyeMovementsResponseInstances_V2(varargin
 p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
-p.addParameter('emPathType','',@ischar);
+p.addParameter('emPathType','Zero',@ischar);
 p.addParameter('setRng',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('generatePlots',false,@islogical);

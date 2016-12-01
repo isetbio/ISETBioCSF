@@ -97,8 +97,8 @@ for iTrial = 1:nTrials
     end
 end % iTrial
 
-% Compute the noise-free isomerizations & photocurrents using a emPath with zero eye movements
-theEMpaths = theEMpaths(1,:,:)*0;
+% Compute the noise-free isomerizations & photocurrents using the first emPath
+theEMpaths = theEMpaths(1,:,:);
 
 % Generate noise-free mosaic
 theNoiseFreeMosaic = theMosaic.copy();

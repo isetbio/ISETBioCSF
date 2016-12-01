@@ -29,3 +29,4 @@ mosaicParams.eccentricityDegs = 0;
 mosaicParams.isomerizationNoise = false;
 mosaicParams.osModel = 'Linear';
 mosaicParams.osNoise = true;
+mosaicParams.emPathType = 'Zero'; 
