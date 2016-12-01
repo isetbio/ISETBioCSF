@@ -113,6 +113,10 @@ end
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
 
+% Pretend we are the original program (just for validation purposes)
+theProgram = 't_coneCurrentEyeMovementsResponseInstances';
+fprintf(2, '%s pretending to be %s for validation purposes', mfilename, theProgram);
+
 %% The computing happens here, if we are doing it
 if (p.Results.compute)
     % Create the optics
@@ -121,6 +125,8 @@ if (p.Results.compute)
     % Create the cone mosaic
     rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
     theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
+    theMosaic.integrationTime
+    pause
     
     %% Define color modulation list
     switch (testDirectionParams.instanceType)

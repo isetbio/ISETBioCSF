@@ -34,6 +34,7 @@ p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotCSF',true,@islogical);
+p.addParameter('version','', @ischar);
 p.parse(varargin{:});
 
 %% Get the parameters we need
@@ -124,7 +125,13 @@ for ll = 1:length(p.Results.luminances)
         
         %% Compute response instances
         if (p.Results.computeResponses)
-            t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
+            if (isempty(p.Results.version))
+                t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
+            elseif (strcmp(p.Results.version, 'V2'))
+                t_coneCurrentEyeMovementsResponseInstances_V2('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
+            else
+                error('Unknown vertion: ''%s''.', p.Results.version);
+            end
         end
         
         %% Find performance, template max likeli

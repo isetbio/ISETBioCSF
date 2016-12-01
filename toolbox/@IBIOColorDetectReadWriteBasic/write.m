@@ -40,6 +40,8 @@ end
 %% Get fileid
 [fileid,filedir,filename] = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:},'MakeDirectories',true);
 
+warndlg(sprintf('FileDir ''%s''.', filedir), sprintf('Filename: ''%s''', filename));
+
 %% Write the data
 switch (p.Results.Type)
     case 'mat'
