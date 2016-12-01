@@ -128,6 +128,9 @@ for ll = 1:length(p.Results.luminances)
             if (isempty(p.Results.responseInstanceGeneratorVersion))
                 t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
             elseif (strcmp(p.Results.responseInstanceGeneratorVersion, 'V2'))
+                h = msgbox(sprintf('Using t_coneCurrentEyeMovementsResponseInstances_V2'), 'NEW INSTANCE GENERATOR !');
+                Speak('New instance generator! Hit OK to continue.');
+                uiwait(h);
                 t_coneCurrentEyeMovementsResponseInstances_V2('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
             else
                 error('Unknown vertion: ''%s''.', p.Results.responseInstanceGeneratorVersion);
