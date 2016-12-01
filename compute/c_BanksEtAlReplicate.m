@@ -146,7 +146,7 @@ for ll = 1:length(p.Results.luminances)
             thresholdParams.method = 'mlpt';
             banksEtAlReplicate.mlptThresholds(ll,cc) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'instanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
                 'plotPsychometric',p.Results.generatePlots & p.Results.plotPsychometric,'plotEllipse',false);
-            close all;
+            %close all;
         end
     end
 end
