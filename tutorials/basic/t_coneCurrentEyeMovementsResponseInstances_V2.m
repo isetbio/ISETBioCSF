@@ -125,8 +125,6 @@ if (p.Results.compute)
     % Create the cone mosaic
     rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
     theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
-    theMosaic.integrationTime
-    pause
     
     %% Define color modulation list
     switch (testDirectionParams.instanceType)

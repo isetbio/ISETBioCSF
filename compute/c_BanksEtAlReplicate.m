@@ -34,7 +34,7 @@ p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotCSF',true,@islogical);
-p.addParameter('version','', @ischar);
+p.addParameter('responseInstanceGeneratorVersion','', @ischar);
 p.parse(varargin{:});
 
 %% Get the parameters we need
@@ -125,12 +125,12 @@ for ll = 1:length(p.Results.luminances)
         
         %% Compute response instances
         if (p.Results.computeResponses)
-            if (isempty(p.Results.version))
+            if (isempty(p.Results.responseInstanceGeneratorVersion))
                 t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
-            elseif (strcmp(p.Results.version, 'V2'))
+            elseif (strcmp(p.Results.responseInstanceGeneratorVersion, 'V2'))
                 t_coneCurrentEyeMovementsResponseInstances_V2('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
             else
-                error('Unknown vertion: ''%s''.', p.Results.version);
+                error('Unknown vertion: ''%s''.', p.Results.responseInstanceGeneratorVersion);
             end
         end
         

@@ -121,8 +121,11 @@ for iTrial = 1:nTrials
     % mosaicParams.osNoise flag, which is then used to set the os noise
     % flag at mosaic initialization time.
     coneIsomerizationRate = coneIsomerizationSequence/theMosaic.integrationTime;
-    photocurrentSequence = theMosaic.os.compute(coneIsomerizationRate,theMosaic.pattern);
-   
+    
+    % We do not compute photocurrents so set it to isomerizations - Nicolas
+    %photocurrentSequence = theMosaic.os.compute(coneIsomerizationRate,theMosaic.pattern);
+    photocurrentSequence = coneIsomerizationSequence; %theMosaic.os.compute(coneIsomerizationRate,theMosaic.pattern);
+    
     % Accumulate data in cell array of structs.
     if (iTrial == 1)
         % Only include the central response
