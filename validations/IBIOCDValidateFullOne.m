@@ -43,6 +43,6 @@ UnitTest.setPref('closeFigsOnInit', true);
 singleScriptToValidate = UnitTest.selectScriptFromExistingOnes();
 
 %% Validate
-UnitTest.runValidationSession({{singleScriptToValidate, []}}, 'FULL');
+UnitTest.runValidationSession({{singleScriptToValidate, []}}, 'FULLONLY');
 
 end
