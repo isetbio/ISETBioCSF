@@ -11,7 +11,7 @@ function c_PoirsonAndWandell96VisualizeResponses
     exportLMSresponseTraceStills =  false;
                 
     % To save time, compute only once, then set this to false
-    recomputeConeMosaic = true;
+    recomputeConeMosaic = false;
     
     % How to normalize responses
     responseNormalization = 'None';  % use absolute range
@@ -217,11 +217,8 @@ function c_PoirsonAndWandell96VisualizeResponses
                     stimLabel, instancesBlockSize, instanceBlockIndex, instancesBlocksNum, theConeMosaic.mosaicSize(1), theConeMosaic.mosaicSize(2), activeConesNum, eyeMovementsNum, theOIsequence.length);
                 
                 % Compute the emPaths for all response instances of the  current instanceBlock
-                if (mosaicParams.eyesDoNotMove)
-                    emPaths = colorDetectMultiTrialEMPathGenerate(theConeMosaic, instancesBlockSize, eyeMovementsNum, 'Zero');
-                else
-                    emPaths = colorDetectMultiTrialEMPathGenerate(theConeMosaic, instancesBlockSize, eyeMovementsNum, 'Dynamic');
-                end
+                emPaths = colorDetectMultiTrialEMPathGenerate(theConeMosaic, instancesBlockSize, eyeMovementsNum, mosaicParams.emPathType);
+
                 
                 % Compute absorptions and photocurrents for all response instances
                 tic
@@ -448,10 +445,8 @@ function exportHexMosaicActivationStillsAndVideos(stimData, theConeMosaic, insta
             tmp = stimData.photoCurrentSignals(:,iS(:),:);
             stimData.photoCurrentSignals(:,iS(:),:) = stimData.photoCurrentSignals(:,iS(:),:) / mean(tmp(:));
         end
-        photocurrentsRange = [min(stimData.photoCurrentSignals(:)) stimData.photoCurrentSignals(tmp(:))];
+        photocurrentsRange = [min(stimData.photoCurrentSignals(:)) max(stimData.photoCurrentSignals(:))];
     end
-    
-    pause
     
     % Initial zoom-in
     zoomInFactorAbsorptions = 1;
