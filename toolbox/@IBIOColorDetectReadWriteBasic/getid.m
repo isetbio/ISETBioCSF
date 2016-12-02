@@ -36,6 +36,7 @@ p.addParameter('FigureType','pdf',@ischar);
 p.addParameter('FigureHandle', []);
 p.addParameter('MovieType','m4v',@ischar);
 p.addParameter('MakeDirectories',true,@islogical);
+p.addParameter('ShowFilePath', false,@islogical);
 p.parse(name,paramsList,theProgram,varargin{:});
 
 %% Get parent directory list and make sure the output tree is in place
