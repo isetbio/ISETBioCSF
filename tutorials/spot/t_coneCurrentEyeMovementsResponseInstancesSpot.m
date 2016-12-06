@@ -62,8 +62,8 @@ if (isempty(rParams))
     
     rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
-    rParams.mosaicParams.isomerizationNoise = true;
-    rParams.mosaicParams.osNoise = true;
+    rParams.mosaicParams.isomerizationNoise = 'random';        % select from {'random', 'frozen', 'none'}
+    rParams.mosaicParams.osNoise = 'random';        % select from {'random', 'frozen', 'none'}
     rParams.mosaicParams.osModel = 'Linear';
     
     rParams.oiParams.pupilDiamMm = 7;
