@@ -1,4 +1,4 @@
-function varargout = v_IBIOCD1ConeCuurentEyeMovementsResponseInstances(varargin)
+function varargout = v_IBIOCD1ConeCurrentEyeMovementsResponseInstances(varargin)
 % varargout = v_IBIOCD1ConeCuurentEyeMovementsResponseInstances(varargin)
 %
 % Works by running t_coneCurrentEyeMovementsResponseInstances with various arguments and comparing

@@ -104,7 +104,7 @@ for iTrial = 1:nTrials
         
         % Add noise
         if (theMosaic.noiseFlag)
-            theFrameEyeMovementPathIsomerizations = theMosaic.photonNoise(theFrameEyeMovementPathIsomerizations,'newNoise', true);
+            theFrameEyeMovementPathIsomerizations = theMosaic.photonNoise(theFrameEyeMovementPathIsomerizations);
         end
         
         % Accumulate isomerizations by adding current frame isomerizations in the current eye movement path
