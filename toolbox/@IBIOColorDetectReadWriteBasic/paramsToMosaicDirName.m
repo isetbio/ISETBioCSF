@@ -8,7 +8,7 @@ if (~strcmp(mosaicParams.type,'Mosaic')) && (~strcmp(mosaicParams.type,'Mosaic_v
 end
 
 if (strcmp(mosaicParams.type,'Mosaic'))
-    if (ischar(mosaicParams.osNoise) && strcmp(mosaicParams.osNoise, 'random')) || (mosaicParams.osNoise == true)
+    if strcmp(mosaicParams.osNoise, 'random') || strcmp(mosaicParams.osNoise, 'frozen')
         noiseBit = 1;
     elseif strcmp(mosaicParams.osNoise, 'none')
         noiseBit = 0;

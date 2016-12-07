@@ -7,8 +7,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 % Key/value pairs
 %   'rParams' - structure (default empty). Value the is the rParams structure to use
 %   'contrastParams - structure (default empty). Value is the contrastParams structure to use.
-%   'setRngSeed' - true/false (default true).  Set the rng seed to a
-%        value so output is reproducible.
+%   'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
 %   'compute' - true/false (default true).  Do the computations.
 %   'generatePlots' - true/false (default false).  Produce response
 %        visualizations.  Set to false when running big jobs on clusters or
@@ -26,7 +25,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('contrastParams',[],@isemptyorstruct);
-p.addParameter('setRng',true,@islogical);
+p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('generatePlots',false,@islogical);
 p.addParameter('exportPDF',true,@islogical);
@@ -40,9 +39,6 @@ contrastParams = p.Results.contrastParams;
 if (nargin == 0)
     ieInit; close all;
 end
-
-%% Fix random number generator so we can validate output exactly
-rng(1);
 
 %% Get the parameters we need
 %
@@ -69,6 +65,14 @@ if (isempty(rParams))
     rParams.oiParams.pupilDiamMm = 7;
 end
 
+% Fix random number generator so we can validate output exactly
+if (p.Results.freezeNoise)
+     fprintf(2, '\n%s: freezing all noise \n\n', mfilename);
+     rng(1);
+     rParams.mosaicParams.isomerizationNoise = 'frozen';
+     rParams.mosaicParams.osNoise = 'frozen';
+end
+ 
 %% Call into t_coneCurrentEyeMovementsResponseInstances with spot parameters
 if (isempty(contrastParams))
     contrastParams = instanceParamsGenerate('instanceType','contrasts');

@@ -14,7 +14,7 @@ function [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents]
 p = inputParser;
 p.addParameter('seed',1, @isnumeric);   
 p.parse(varargin{:});
-currentSeed = p.Results.seed
+currentSeed = p.Results.seed;
 
 % Start computation time measurement
 tic

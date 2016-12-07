@@ -40,8 +40,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %                  zero eye movements across all trials, 
 %                  an emPath that is frozen across all trials,
 %                  or a dynamic emPath that changes across trials.
-%   'setRngSeed' - true/false (default true).  Set the rng seed to a
-%        value so output is reproducible.
+%   'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
 %   'compute' - true/false (default true).  Do the computations.
 %   'generatePlots' - true/false (default false).  Produce response
 %        visualizations.  Set to false when running big jobs on clusters or
@@ -60,7 +59,7 @@ p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
 p.addParameter('emPathType','none',@ischar);
-p.addParameter('setRng',true,@islogical);
+p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('generatePlots',false,@islogical);
 p.addParameter('exportPDF',true,@islogical);
@@ -73,11 +72,6 @@ testDirectionParams = p.Results.testDirectionParams;
 %% Clear
 if (nargin == 0)
     ieInit; close all;
-end
-
-%% Fix random number generator so we can validate output exactly
-if (p.Results.setRng)
-    rng(1);
 end
 
 %% Get the parameters we need
@@ -102,11 +96,20 @@ if (isempty(rParams))
     rParams.mosaicParams.osModel = 'Linear';
 end
 
+
 % Set the emPathType
 if (~isempty(p.Results.emPathType))
     rParams.temporalParams.emPathType = p.Results.emPathType;
 end
+    
 
+% Fix random number generator so we can validate output exactly
+if (p.Results.freezeNoise)
+     fprintf(2, '\n%s: freezing all noise \n\n', mfilename);
+     rng(1);
+     rParams.mosaicParams.isomerizationNoise = 'frozen';
+     rParams.mosaicParams.osNoise = 'frozen';
+end
 
 %% Parameters that define the LM instances we'll generate here
 if (isempty(testDirectionParams))
@@ -165,7 +168,7 @@ if (p.Results.compute)
     stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
         colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
     [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, ...
-        rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
+        rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic, 'seed', 1);
  
     noStimData = struct(...
         'testContrast', colorModulationParamsTemp.contrast, ...
@@ -204,9 +207,9 @@ if (p.Results.compute)
     % under other circumstances.
     tic;
     stimDataForValidation = cell(nParforConditions,1);
-    rState = rng;
+    %rState = rng;
     parfor kk = 1:nParforConditions          
-        rng(parforRanSeeds(kk));
+        %rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
@@ -217,7 +220,7 @@ if (p.Results.compute)
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
         [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = ...
             colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, ...
-                rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
+                rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic, 'seed', parforRanSeeds(kk));
         stimData = struct(...
             'testContrast', colorModulationParamsTemp.contrast, ...
             'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
@@ -235,7 +238,7 @@ if (p.Results.compute)
         paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
         rwObject.write('responseInstances',stimData,paramsList,theProgram);
     end
-    rng(rState);
+    %rng(rState);
     fprintf('Finished generating responses in %2.2f minutes\n', toc/60);
     
     %% Validation data
