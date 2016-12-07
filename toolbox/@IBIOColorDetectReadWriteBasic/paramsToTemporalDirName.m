@@ -13,11 +13,11 @@ if (strcmp(temporalParams.type,'Temporal'))
     if (isfield(temporalParams, 'emPathType'))
         
     switch (temporalParams.emPathType)
-        case 'Zero'
+        case 'none'
             nemNumber = 1;
-        case 'Dynamic'
+        case 'random'
             nemNumber = 0;
-        case 'Frozen'
+        case 'frozen'
             nemNumber = 2;
     end
     else

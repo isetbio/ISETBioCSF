@@ -21,7 +21,7 @@ temporalParams.stimulusSamplingIntervalInSeconds = 1/temporalParams.frameRate;
 temporalParams.secondsToInclude = 0.050;
 temporalParams.secondsToIncludeOffset = 0;
 temporalParams.eyesDoNotMove = true;
-%temporalParams.emPathType = 'Zero';           % BUT THIS SHOULD PROBABLY BE A MOSAICPARAM        
+temporalParams.emPathType = 'none';           % BUT THIS SHOULD PROBABLY BE A MOSAICPARAM        
 temporalParams.simulationTimeStepSecs = 5/1000; 
 
 % Optional CRT raster effects.

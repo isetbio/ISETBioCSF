@@ -100,8 +100,8 @@ theEMpaths = theEMpaths(1,:,:);
 
 % Generate noise-free mosaic
 theNoiseFreeMosaic = theMosaic.copy();
-theNoiseFreeMosaic.noiseFlag = false;
-theNoiseFreeMosaic.os.noiseFlag = false;
+theNoiseFreeMosaic.noiseFlag = 'none';
+theNoiseFreeMosaic.os.noiseFlag = 'none';
 
 % Compute the noise-free responses
 [noiseFreeIsomerizations, noiseFreePhotocurrents] = ...

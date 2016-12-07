@@ -59,7 +59,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
-p.addParameter('emPathType','Zero',@ischar);
+p.addParameter('emPathType','none',@ischar);
 p.addParameter('setRng',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('generatePlots',false,@islogical);
