@@ -295,6 +295,9 @@ if (p.Results.generatePlots)
             margin = 0.1*maxNoiseFreeIsomerization;
             maxNoiseFreeIsomerization = maxNoiseFreeIsomerization + margin;
             minNoiseFreeIsomerization = minNoiseFreeIsomerization - margin;
+            if (minNoiseFreeIsomerization < 0)
+                minNoiseFreeIsomerization = 0;
+            end
          end
          
          noiseFreeAbsorptions = (stimData.noiseFreeIsomerizations-minNoiseFreeIsomerization)/(maxNoiseFreeIsomerization-minNoiseFreeIsomerization);

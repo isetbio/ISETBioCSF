@@ -83,6 +83,6 @@ end
 if (isempty(contrastParams))
     contrastParams = instanceParamsGenerate('instanceType','contrasts');
 end
-[validationData, extraData] = t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',contrastParams, 'freezeNoise', freezeNoise, 'generatePlots',p.Results.generatePlots);
+[validationData, extraData] = t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',contrastParams, 'freezeNoise', p.Results.freezeNoise, 'generatePlots',p.Results.generatePlots);
 
 
