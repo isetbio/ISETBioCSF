@@ -102,7 +102,6 @@ if (~isempty(p.Results.emPathType))
     rParams.temporalParams.emPathType = p.Results.emPathType;
 end
     
-
 % Fix random number generator so we can validate output exactly
 if (p.Results.freezeNoise)
      fprintf(2, '\n%s: freezing all noise \n', mfilename);
@@ -194,6 +193,7 @@ if (p.Results.compute)
         'testContrasts', testContrasts, ...
         'rParams', rParams, ...
         'instanceParams', testDirectionParams);
+    ancillaryData.parforConditionStructs = parforConditionStructs;
     rwObject.write('ancillaryData',ancillaryData,paramsList,theProgram);
     
     %% Generate data for all the examined stimuli
@@ -222,7 +222,7 @@ if (p.Results.compute)
         colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
         
         % Make noisy instances for each contrast
-        stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f',...
+        stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.5f',...
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
         [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = ...
             colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, ...
@@ -266,20 +266,82 @@ end
 % very early version of the visualization is in the commented out code
 % immediately below
 if (p.Results.generatePlots)
-    % noStimData = rwObject.read('responseInstances',paramsList,theProgram);
-    % ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
-    % parforConditionStructs = ancillaryData.parforConditionStructs;
-    % nParforConditions = length(parforConditionStructs);
-    % 
-    % for kk = 1:nParforConditions 
-    %     thisConditionStruct = parforConditionStructs{kk};
-    %     colorModulationParamsTemp = rParams.colorModulationParams;
-    %     colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
-    %     colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
-    %     paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
-    %     stimData = rwObject.read('responseInstances',paramsList,theProgram);   
-    % end   
+
+    noStimData = rwObject.read('responseInstances',paramsList,theProgram);
+    ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
+    parforConditionStructs = ancillaryData.parforConditionStructs;
+
+    rParams = ancillaryData.rParams;
+    nParforConditions = length(parforConditionStructs); 
+    for kk = 1:nParforConditions 
+         thisConditionStruct = parforConditionStructs{kk};
+         colorModulationParamsTemp = rParams.colorModulationParams;
+         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
+         colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
+         paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+         stimData = rwObject.read('responseInstances',paramsList,theProgram);   
+         instancesNum = size(stimData.responseInstanceArray,1);
+         
+         hFig = figure(100); clf;
+         set(hFig, 'Position', [10 10 1400 800], 'Color', [1 1 1]);
+         
+         size(stimData.noiseFreeIsomerizations)
+         
+         % normalize submosaic responses with respect to their mean
+         responseNormalization = 'absoluteLevel';
+         if strcmp(responseNormalization, 'absoluteLevel')
+            maxNoiseFreeIsomerization = max(stimData.noiseFreeIsomerizations(:));
+            minNoiseFreeIsomerization = min(stimData.noiseFreeIsomerizations(:));
+            margin = 0.1*maxNoiseFreeIsomerization;
+            maxNoiseFreeIsomerization = maxNoiseFreeIsomerization + margin;
+            minNoiseFreeIsomerization = minNoiseFreeIsomerization - margin;
+         end
+         
+         noiseFreeAbsorptions = (stimData.noiseFreeIsomerizations-minNoiseFreeIsomerization)/(maxNoiseFreeIsomerization-minNoiseFreeIsomerization);
+                 
+         for instanceIndex = 1:instancesNum     
+             data = stimData.responseInstanceArray(instanceIndex);
+             absorptions = data.theMosaicIsomerizations;
+             photocurrents = data.theMosaicPhotoCurrents;
+             absorptionsTimeAxis = data.timeAxis;
+             photocurrentsTimeAxis = data.photocurrentTimeAxis;
+             
+             if (numel(absorptionsTimeAxis) == 1)
+                 absorptions = (absorptions-minNoiseFreeIsomerization)/(maxNoiseFreeIsomerization-minNoiseFreeIsomerization);
+                 
+                 subplot(1,2,1)
+                 imagesc(absorptions); axis 'image'
+                 set(gca, 'CLim', [0 1], 'FontSize', 14);
+                 title(sprintf('instance:%d/%d', instanceIndex, instancesNum));
+                 
+                 subplot(1,2,2)
+                 imagesc(noiseFreeAbsorptions); axis 'image'
+                 set(gca, 'CLim', [0 1], 'FontSize', 14);
+                 title(sprintf('cond: %d/%d %s', kk, nParforConditions, stimData.stimulusLabel));
+                 
+                 % Add colorbar
+                 originalPosition = get(gca, 'position');
+                 
+                 ticks = 0:0.2:1.0;
+                 delta = (maxNoiseFreeIsomerization-minNoiseFreeIsomerization)*0.2;
+                 tickLabels = minNoiseFreeIsomerization:delta:maxNoiseFreeIsomerization;
+                 hCbar = colorbar('Ticks', ticks, 'TickLabels', sprintf('%2.1f\n',tickLabels));
+                 hCbar.Orientation = 'vertical'; 
+                 hCbar.Label.String = sprintf('absorptions (R*/cone/%2.2fms)', theMosaic.integrationTime*1000);
+                 hCbar.FontSize = 14; 
+                 hCbar.FontName = 'Menlo'; 
+                 hCbar.Color = [0.2 0.2 0.2];
+                 % The addition changes the figure size, so undo this change
+                 newPosition = get(gca, 'position');
+                 set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
+        
+                 colormap(gray);
+                 drawnow;
+             end
+         end
+     end   
 end
+
 % % THIS IS BROKEN AND NEES TO BE UPDATED TO NEW DATA FORMAT AND rwObject
 % % LAND.
 % %
