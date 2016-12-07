@@ -1,5 +1,5 @@
-function validationData = t_coneCurrentEyeMovementsResponseInstancesSpot(varargin)
-% validationData = t_coneCurrentEyeMovementsResponseInstancesSpot(varargin)
+function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstancesSpot(varargin)
+% [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstancesSpot(varargin)
 %
 % This is a call into t_coneCurrentEyeMovementsResponseInstances that demonstates its
 % ability to handle AO spots as well as Gabor modulations on monitors.
@@ -62,8 +62,8 @@ if (isempty(rParams))
     
     rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
-    rParams.mosaicParams.isomerizationNoise = 'random';        % select from {'random', 'frozen', 'none'}
-    rParams.mosaicParams.osNoise = 'random';        % select from {'random', 'frozen', 'none'}
+    rParams.mosaicParams.isomerizationNoise = 'random';         % select from {'random', 'frozen', 'none'}
+    rParams.mosaicParams.osNoise = 'random';                    % select from {'random', 'frozen', 'none'}
     rParams.mosaicParams.osModel = 'Linear';
     
     rParams.oiParams.pupilDiamMm = 7;
@@ -73,6 +73,6 @@ end
 if (isempty(contrastParams))
     contrastParams = instanceParamsGenerate('instanceType','contrasts');
 end
-validationData = t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',contrastParams,'generatePlots',p.Results.generatePlots);
+[validationData, extraData] = t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',contrastParams,'generatePlots',p.Results.generatePlots);
 
 
