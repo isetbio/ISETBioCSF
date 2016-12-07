@@ -105,10 +105,16 @@ end
 
 % Fix random number generator so we can validate output exactly
 if (p.Results.freezeNoise)
-     fprintf(2, '\n%s: freezing all noise \n\n', mfilename);
+     fprintf(2, '\n%s: freezing all noise \n', mfilename);
      rng(1);
-     rParams.mosaicParams.isomerizationNoise = 'frozen';
-     rParams.mosaicParams.osNoise = 'frozen';
+     if (~strcmp(rParams.mosaicParams.isomerizationNoise, 'frozen'))
+         fprintf(2, '\tmosaicParams.isomerizationNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.isomerizationNoise);
+         rParams.mosaicParams.isomerizationNoise = 'frozen';
+     end
+     if (~strcmp(rParams.mosaicParams.osNoise, 'frozen'))
+         fprintf(2, '\tmosaicParams.osNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.osNoise);
+         rParams.mosaicParams.osNoise = 'frozen';
+     end
 end
 
 %% Parameters that define the LM instances we'll generate here
