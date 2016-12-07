@@ -26,7 +26,7 @@ function validationData = t_coneIsomerizationsMovie(rParams,varargin)
 %   colorSceneCreate
 %
 % Optional key/value pairs
-%  'isomerizationNoise' - true/false (default false).  Add isomerization noise?
+%  'isomerizationNoise' - % Select from {'random','frozen', or 'none'}.  Add isomerization noise?
 %  'generatePlots' - true/false (default true).  Make plots?
 %  'setRngSeed' - true/false (default true). When true, set the rng seed so noise is frozen.
 
@@ -42,11 +42,6 @@ if (nargin == 0)
     ieInit; close all;
 end
 
-%% Fix random number generator so we can validate output exactly
-if (p.Results.setRngSeed)
-    rng(1);
-end;
-
 %% Get the parameters we need
 if (nargin < 1 | isempty(rParams))
     rParams = responseParamsGenerate;
@@ -54,6 +49,20 @@ if (nargin < 1 | isempty(rParams))
     % Override some of the defaults
     rParams.mosaicParams.isomerizationNoise = p.Results.isomerizationNoise;
 end
+
+%% Fix random number generator so we can validate output exactly
+if (p.Results.setRngSeed)
+    fprintf(2, '\n%s: freezing all noise \n', mfilename);
+     rng(1);
+     if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
+         fprintf(2, '\tmosaicParams.isomerizationNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.isomerizationNoise);
+         rParams.mosaicParams.isomerizationNoise = 'frozen';
+     end
+     if (strcmp(rParams.mosaicParams.osNoise, 'random'))
+         fprintf(2, '\tmosaicParams.osNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.osNoise);
+         rParams.mosaicParams.osNoise = 'frozen';
+     end
+end;
 
 
 %% Set up the rw object for this program

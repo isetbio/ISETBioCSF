@@ -107,11 +107,11 @@ end
 if (p.Results.freezeNoise)
      fprintf(2, '\n%s: freezing all noise \n', mfilename);
      rng(1);
-     if (~strcmp(rParams.mosaicParams.isomerizationNoise, 'frozen'))
+     if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
          fprintf(2, '\tmosaicParams.isomerizationNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.isomerizationNoise);
          rParams.mosaicParams.isomerizationNoise = 'frozen';
      end
-     if (~strcmp(rParams.mosaicParams.osNoise, 'frozen'))
+     if (strcmp(rParams.mosaicParams.osNoise, 'random'))
          fprintf(2, '\tmosaicParams.osNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.osNoise);
          rParams.mosaicParams.osNoise = 'frozen';
      end
