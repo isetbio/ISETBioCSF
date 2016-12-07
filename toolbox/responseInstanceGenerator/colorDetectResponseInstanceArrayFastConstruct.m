@@ -1,4 +1,4 @@
-function [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
+function [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic, varargin)
 % [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
 % 
 % Construct an array of nTrials response instances given the
@@ -10,6 +10,11 @@ function [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents]
 % This is a sped up version of colorDetectResponseInstanceArrayConstruct.
 %
 % 7/10/16  npc Wrote it.
+
+p = inputParser;
+p.addParameter('seed',1, @isnumeric);   
+p.parse(varargin{:});
+currentSeed = p.Results.seed
 
 % Start computation time measurement
 tic
@@ -49,6 +54,7 @@ theEMpaths = colorDetectMultiTrialEMPathGenerate(theMosaic, nTrials, eyeMovement
 
 [isomerizations, photocurrents] = ...
      theMosaic.computeForOISequence(theOIsequence, ...
+                    'seed', currentSeed, ...
                     'emPaths', theEMpaths, ...
                     'currentFlag', true);
 isomerizationsTimeAxis = theMosaic.timeAxis + theOIsequence.timeAxis(1);

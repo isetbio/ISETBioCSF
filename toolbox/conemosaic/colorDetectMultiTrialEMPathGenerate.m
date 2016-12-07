@@ -10,6 +10,7 @@ switch (emPathType)
     case 'none'
         theEMpaths = zeros(nTrials, eyeMovementsPerTrial, 2);     
     case 'frozen'
+        % rng(seed);
         theFixedEMpath = theConeMosaic.emGenSequence(eyeMovementsPerTrial);
         theEMpaths = permute(repmat(theFixedEMpath, [1 1 nTrials]), [3 1 2]);
     case 'random'
