@@ -55,7 +55,6 @@ if (nargin < 1 | isempty(rParams))
     rParams.mosaicParams.isomerizationNoise = p.Results.isomerizationNoise;
 end
 
-
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;

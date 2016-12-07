@@ -165,7 +165,7 @@ end
 % There is also an option of whether the cone current should be calculated
 % in the compute function. If set to true, it uses an os object inside the
 % coneMosaic object. The default is the linearOS.  Here we don't need that.
-gaborConeMosaic.noiseFlag = false;
+gaborConeMosaic.noiseFlag = 'none';
 isomerizations = gaborConeMosaic.compute(gaborOI,'currentFlag',false);
 
 %% Take a look at the mosaic responses in the window
