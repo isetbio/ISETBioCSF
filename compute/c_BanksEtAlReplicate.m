@@ -96,8 +96,8 @@ for ll = 1:length(p.Results.luminances)
         % Set up mosaic parameters for just one stimulus time step
         rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
         rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
-        rParams.mosaicParams.isomerizationNoise = 'random';             % select from {'random', 'frozen', 'none'}
-        rParams.mosaicParams.osNoise = 'random';                        % select from {'random', 'frozen', 'none'}
+        rParams.mosaicParams.isomerizationNoise = 'frozen';             % select from {'random', 'frozen', 'none'}
+        rParams.mosaicParams.osNoise = 'frozen';                        % select from {'random', 'frozen', 'none'}
         rParams.mosaicParams.osModel = 'Linear';
         
         % Parameters that define the LM instances we'll generate here
