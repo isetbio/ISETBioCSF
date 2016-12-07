@@ -9,6 +9,9 @@ if (~strcmp(temporalParams.type,'Temporal')) && (~strcmp(temporalParams.type,'Te
 end
 
 if (strcmp(temporalParams.type,'Temporal'))
+    
+    if (isfield(temporalParams, 'emPathType'))
+        
     switch (temporalParams.emPathType)
         case 'Zero'
             nemNumber = 1;
@@ -16,6 +19,9 @@ if (strcmp(temporalParams.type,'Temporal'))
             nemNumber = 0;
         case 'Frozen'
             nemNumber = 2;
+    end
+    else
+        nemNumber = temporalParams.eyesDoNotMove;
     end
     
     dirname = sprintf('tau%0.3f_dur%0.2f_nem%d_use%0.0f_off%0.0f',...

@@ -1,5 +1,5 @@
-function validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
-% validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
+function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstances(varargin)
+% [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstances(varargin)
 %
 % Show how to generate a number of response instances for a given stimulus
 % condition.  The default parameters are set up to generate just a single frame
@@ -36,6 +36,10 @@ function validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
 % Key/value pairs
 %   'rParams' - Value the is the rParams structure to use
 %   'testDirectionParams - Value is the testDirectionParams structure to use
+%   'emPathType' - Value (one of: 'Zero', 'Frozen', 'Dynamic') determines whether we have:
+%                  zero eye movements across all trials, 
+%                  an emPath that is frozen across all trials,
+%                  or a dynamic emPath that changes across trials.
 %   'setRngSeed' - true/false (default true).  Set the rng seed to a
 %        value so output is reproducible.
 %   'compute' - true/false (default true).  Do the computations.
@@ -55,6 +59,7 @@ function validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
 p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
+p.addParameter('emPathType','Zero',@ischar);
 p.addParameter('setRng',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('generatePlots',false,@islogical);
@@ -89,14 +94,19 @@ if (isempty(rParams))
     rParams.temporalParams.stimulusDurationInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.eyesDoNotMove = true;
     
     rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
-    rParams.mosaicParams.isomerizationNoise = 'random'; % select from {'random', 'frozen', 'none'}
-    rParams.mosaicParams.osNoise = 'random';        % select from {'random', 'frozen', 'none'}
+    rParams.mosaicParams.isomerizationNoise = 'random';         % select from {'random', 'frozen', 'none'}
+    rParams.mosaicParams.osNoise = 'random';                    % select from {'random', 'frozen', 'none'}
     rParams.mosaicParams.osModel = 'Linear';
 end
+
+% Set the emPathType
+if (~isempty(p.Results.emPathType))
+    rParams.temporalParams.emPathType = p.Results.emPathType;
+end
+
 
 %% Parameters that define the LM instances we'll generate here
 if (isempty(testDirectionParams))
@@ -147,26 +157,28 @@ if (p.Results.compute)
     parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
     nParforConditions = length(parforConditionStructs);
     parforRanSeeds = randi(1000000,nParforConditions,1)+1;
-    
+
     % Generate data for the no stimulus condition
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = [0 0 0]';
     colorModulationParamsTemp.contrast = 0;
     stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
         colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
-    [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
+    [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, ...
         rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
+ 
     noStimData = struct(...
         'testContrast', colorModulationParamsTemp.contrast, ...
         'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
         'stimulusLabel', stimulusLabel, ...
         'responseInstanceArray',responseInstanceArray, ...
-        'noiseFreeIsomerizations',noiseFreeIsomerizations);
+        'noiseFreeIsomerizations',noiseFreeIsomerizations, ...
+        'noiseFreePhotocurrents', noiseFreePhotocurrents);
     
     % Write the no cone contrast data and some extra facts we need
     paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
     rwObject.write('responseInstances',noStimData,paramsList,theProgram);
-    
+      
     % Save the other data we need for use by the classifier preprocessing subroutine
     ancillaryData = struct(...
         'testConeContrasts', testConeContrasts, ...
@@ -179,12 +191,21 @@ if (p.Results.compute)
     %
     % It is possible that the parfor loop will not work for you, depending
     % on your Matlab configuration.  In this case, change it to a for loop.
-
+   
     % Loop over color directions
+    %
+    % Note tha as the mosaic handle object (and any other handle objects)
+    % enter the parfor loop, a copy local to each worker is created.  This
+    % is the behavior we want, so that the isomerizations calculations for
+    % each loop iteration don't step on each other.  Also note that any
+    % changes to the mosaic object inside the loop do not get propagted
+    % back out -- the mosaic object itself is the same at the end of the
+    % parfor as at the start.  This is also OK here, but might be confusing
+    % under other circumstances.
     tic;
     stimDataForValidation = cell(nParforConditions,1);
     rState = rng;
-    parfor kk = 1:nParforConditions
+    parfor kk = 1:nParforConditions          
         rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
@@ -194,14 +215,15 @@ if (p.Results.compute)
         % Make noisy instances for each contrast
         stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f',...
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
-        [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-            rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
+        [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, ...
+            rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic );
         stimData = struct(...
             'testContrast', colorModulationParamsTemp.contrast, ...
             'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
             'stimulusLabel', stimulusLabel, ...
             'responseInstanceArray',responseInstanceArray, ...
-            'noiseFreeIsomerizations',noiseFreeIsomerizations);
+            'noiseFreeIsomerizations',noiseFreeIsomerizations, ...
+            'noiseFreePhotocurrents', noiseFreePhotocurrents);
         
         % Save some data for validation in first loop
         if (kk == 1)
@@ -221,9 +243,10 @@ if (p.Results.compute)
     % parfor loop (and is in fact a bit hard to save outside the parfor
     % loop)
     if (nargout > 0)
-        validationData.ancillaryData = ancillaryData;
         validationData.noStimData = noStimData.responseInstanceArray(1);
         validationData.stimData = stimDataForValidation{1};
+        extraData.ancillaryData = ancillaryData;
+        extraData.p.Results = p.Results;
     end
 end
 
@@ -295,3 +318,6 @@ if (p.Results.delete)
         rwObject.delete('responseInstances',paramsList,theProgram);   
     end   
 end
+end
+
+

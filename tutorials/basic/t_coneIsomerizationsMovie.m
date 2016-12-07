@@ -1,5 +1,5 @@
-function validationData = t_coneIsomerrizationsMovie(rParams,varargin)
-% validationData = t_coneIsomerrizationsMovie(rParams,varargin)
+function validationData = t_coneIsomerizationsMovie(rParams,varargin)
+% validationData = t_coneIsomerizationsMovie(rParams,varargin)
 %
 % Illustrates the basic steps required to calculate cone isomerizations
 % for a Gaussian windowed temporal color modulation.
@@ -32,7 +32,7 @@ function validationData = t_coneIsomerrizationsMovie(rParams,varargin)
 
 %% Parse vargin for options passed here
 p = inputParser;
-p.addParameter('isomerizationNoise',false,@islogical);
+p.addParameter('isomerizationNoise','none', @(x)ismember(x, coneMosaic.validNoiseFlags));
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('setRngSeed',true,@islogical);
 p.parse(varargin{:});
@@ -55,6 +55,7 @@ if (nargin < 1 | isempty(rParams))
     rParams.mosaicParams.isomerizationNoise = p.Results.isomerizationNoise;
 end
 
+
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
@@ -68,6 +69,8 @@ if (p.Results.generatePlots)
     ylabel('Window Amplitude');
     title('Stimulus Temporal Window');
 end
+
+
 
 %% Loop over time and build a cell array of scenes
 gaborScene = cell(rParams.temporalParams.nSampleTimes,1);

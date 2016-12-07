@@ -19,18 +19,13 @@ function ValidationFunction(runTimeParams)
     %% Basic validation
     computeResponses  = true;
     
-    % Choose to use the old responseInstanceGenerator or the new one
-    % Select the OLD responseInstanceGenerator
-    responseInstanceGeneratorVersion = '';
-    % Select the NEW responseInstanceGenerator
-    %responseInstanceGeneratorVersion = 'V2';
-    
-    validationData1 = c_BanksEtAlReplicate('responseInstanceGeneratorVersion', responseInstanceGeneratorVersion, 'compute', computeResponses, 'nTrainingSamples',100,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots);
+    [validationData1, extraData1] = c_BanksEtAlReplicate('compute', computeResponses, 'nTrainingSamples',100,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots);
     UnitTest.validationData('validationData1',validationData1);
+    UnitTest.extraData('extraData1',extraData1);
     
-    validationData2 = c_BanksEtAlReplicate('responseInstanceGeneratorVersion', responseInstanceGeneratorVersion, 'compute', computeResponses, 'nTrainingSamples',100,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,'generatePlots',runTimeParams.generatePlots);
+    [validationData2, extraData2] = c_BanksEtAlReplicate('compute', computeResponses, 'nTrainingSamples',100,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,'generatePlots',runTimeParams.generatePlots);
     UnitTest.validationData('validationData2',validationData2);
-    
+    UnitTest.extraData('extraData2',extraData2);
 end
 
 

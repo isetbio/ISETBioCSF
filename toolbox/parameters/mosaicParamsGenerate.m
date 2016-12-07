@@ -29,4 +29,4 @@ mosaicParams.eccentricityDegs = 0;
 mosaicParams.isomerizationNoise = 'none';  % Select from {'random','frozen', or 'none'}.
 mosaicParams.osModel = 'Linear';
 mosaicParams.osNoise = 'random';    % Select from {'random','frozen', or 'none'}.
-mosaicParams.emPathType = 'Zero'; 
+%mosaicParams.emPathType = 'Zero'; 

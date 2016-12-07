@@ -1,5 +1,5 @@
-function validationData = c_BanksEtAlReplicate(varargin)
-% validationData = c_BanksEtAlReplicate(varargin)
+function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
+% [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %
 % Compute thresholds to replicate Banks et al, 1987, more or less.
 %
@@ -34,7 +34,6 @@ p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotCSF',true,@islogical);
-p.addParameter('responseInstanceGeneratorVersion','', @ischar);
 p.parse(varargin{:});
 
 %% Get the parameters we need
@@ -125,16 +124,7 @@ for ll = 1:length(p.Results.luminances)
         
         %% Compute response instances
         if (p.Results.computeResponses)
-            if (isempty(p.Results.responseInstanceGeneratorVersion))
-                t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
-            elseif (strcmp(p.Results.responseInstanceGeneratorVersion, 'V2'))
-                h = msgbox(sprintf('Using t_coneCurrentEyeMovementsResponseInstances_V2'), 'NEW INSTANCE GENERATOR !');
-                Speak('New instance generator! Hit OK to continue.');
-                uiwait(h);
-                t_coneCurrentEyeMovementsResponseInstances_V2('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
-            else
-                error('Unknown vertion: ''%s''.', p.Results.responseInstanceGeneratorVersion);
-            end
+           t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
         end
         
         %% Find performance, template max likeli
@@ -185,8 +175,10 @@ fprintf('done\n');
 %% Output validation data
 if (nargout > 0)
     validationData.cyclesPerDegree = banksEtAlReplicate.cyclesPerDegree;
-    validationData.mlptThresholds = banksEtAlReplicate.mlptThresholds
+    validationData.mlptThresholds = banksEtAlReplicate.mlptThresholds;
     validationData.luminances = p.Results.luminances;
+    extraData.paramsList = paramsList;
+    extraData.p.Results = p.Results;
 end
 
 %% Make a plot of estimated threshold versus training set size
