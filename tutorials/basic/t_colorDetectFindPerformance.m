@@ -101,7 +101,7 @@ end
 
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
-readProgram = 't_coneCurrentEyeMovementsResponseInstances_V2';
+readProgram = 't_coneCurrentEyeMovementsResponseInstances';
 writeProgram = mfilename;
 
 %% Compute if desired
