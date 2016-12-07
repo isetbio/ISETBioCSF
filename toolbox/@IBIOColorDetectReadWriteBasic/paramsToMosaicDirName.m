@@ -8,15 +8,21 @@ if (~strcmp(mosaicParams.type,'Mosaic')) && (~strcmp(mosaicParams.type,'Mosaic_v
 end
 
 if (strcmp(mosaicParams.type,'Mosaic'))
+    mosaicParams
+    if strcmp(mosaicParams.isomerizationNoise, 'random') || strcmp(mosaicParams.isomerizationNoise, 'frozen')
+        coneMosaicNoiseBit = 1;
+    elseif strcmp(mosaicParams.isomerizationNoise, 'none')
+        coneMosaicNoiseBit = 0;
+    end
     if strcmp(mosaicParams.osNoise, 'random') || strcmp(mosaicParams.osNoise, 'frozen')
-        noiseBit = 1;
+        osNoiseBit = 1;
     elseif strcmp(mosaicParams.osNoise, 'none')
-        noiseBit = 0;
+        osNoiseBit = 0;
     end
     dirname = sprintf('LMS%0.2f_%0.2f_%0.2f_mfv%0.1f_ecc%0.1f_%s_time%0.1f_in%d_osn%d',...
         mosaicParams.LMSRatio(1),mosaicParams.LMSRatio(2),mosaicParams.LMSRatio(3), ...
         mosaicParams.fieldOfViewDegs, mosaicParams.eccentricityDegs, mosaicParams.conePacking, ...
-        1000*mosaicParams.integrationTimeInSeconds,mosaicParams.isomerizationNoise,noiseBit);
+        1000*mosaicParams.integrationTimeInSeconds,coneMosaicNoiseBit,osNoiseBit);
 else
     if (isscalar(mosaicParams.fieldOfViewDegs))
         mosaicFOVdegs = mosaicParams.fieldOfViewDegs*[1 1];

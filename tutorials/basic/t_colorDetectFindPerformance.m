@@ -19,8 +19,7 @@ function validationData = t_colorDetectFindPerformance(varargin)
 % Key/value pairs
 %   'rParams' - Value the is the rParams structure to use
 %   'testDirectionParams' - Value is the testDirectionParams structure to use
-%   'setRngSeed' - true/false (default true).  Set the rng seed to a
-%        value so output is reproducible.
+%   'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible.
 %   'compute' - true/false (default true).  Do the computations.
 %   'generatePlots' - true/false (default true).  Produce any plots at
 %      all? Other plot options only have an effect if this is true.
@@ -40,7 +39,7 @@ p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
 p.addParameter('thresholdParams',[],@isemptyorstruct);
-p.addParameter('setRng',true,@islogical);
+p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',false,@islogical);
@@ -58,10 +57,6 @@ if (nargin == 0)
     ieInit; close all;
 end
 
-%% Fix random number generator so we can validate output exactly
-if (p.Results.setRng)
-    rng(1);
-end
 
 %% Get the parameters we need
 %
@@ -81,9 +76,24 @@ if (isempty(rParams))
     
     rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
     rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
-    rParams.mosaicParams.isomerizationNoise = true;
-    rParams.mosaicParams.osNoise = true;
+    rParams.mosaicParams.isomerizationNoise = 'random';
+    rParams.mosaicParams.osNoise = 'random';
     rParams.mosaicParams.osModel = 'Linear';
+end
+
+
+% Fix random number generator so we can validate output exactly
+if (p.Results.freezeNoise)
+     fprintf(2, '\n%s: freezing all noise \n', mfilename);
+     rng(1);
+     if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
+         fprintf(2, '\tmosaicParams.isomerizationNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.isomerizationNoise);
+         rParams.mosaicParams.isomerizationNoise = 'frozen';
+     end
+     if (strcmp(rParams.mosaicParams.osNoise, 'random'))
+         fprintf(2, '\tmosaicParams.osNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.osNoise);
+         rParams.mosaicParams.osNoise = 'frozen';
+     end
 end
 
 %% Parameters that define the LM instances we'll generate here
