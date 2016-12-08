@@ -16,14 +16,29 @@ function ValidationFunction(runTimeParams)
     %% Hello
     UnitTest.validationRecord('SIMPLE_MESSAGE', '***** v_IBIOCD1ConeCurentEyeMovementsResponseInstances *****');
     
-
+    %% Basic validation - no eye movements
+    [validationData1, extraData1] = t_coneCurrentEyeMovementsResponseInstances(...
+        'generatePlots', runTimeParams.generatePlots, ...
+        'freezeNoise', true);
+    UnitTest.validationData('validationData1',validationData1);
+    UnitTest.extraData('extraData1',extraData1);
+    
+    %% Spot version - no eye movements
+    [validationData2, extraData2] = t_coneCurrentEyeMovementsResponseInstancesSpot(...
+        'generatePlots', runTimeParams.generatePlots,  ...
+        'freezeNoise', true);
+    UnitTest.validationData('validationData2',validationData2);
+    UnitTest.extraData('extraData2',extraData2);
+    
     %% Photocurrent validation with frozen emPaths
+    %
+    % Use a mosaic that covers the central 1/3 of the stimulus to accelerate computation
     rParams = responseParamsGenerate;
     rParams.temporalParams.secondsToInclude = 0.5;
-    % Use a mosaic that covers the central 1/3 of the stimulus to accelerate computation
     rParams.mosaicParams.fieldOfViewDegs = 0.3*rParams.spatialParams.fieldOfViewDegs;
     rParams.mosaicParams.isomerizationNoise = 'frozen';
     rParams.mosaicParams.osNoise = 'frozen';
+    
     % Select a small number of contitions
     testDirectionParams = instanceParamsGenerate();
     testDirectionParams.nAngles = 1;
@@ -33,28 +48,15 @@ function ValidationFunction(runTimeParams)
     testDirectionParams.trialsNum = 20;
     
     [validationData3, extraData3] = t_coneCurrentEyeMovementsResponseInstances(...
-              'rParams', rParams, ...
-  'testDirectionParams', testDirectionParams, ...
-           'emPathType', 'frozen', ...
-        'generatePlots', runTimeParams.generatePlots, ... 
-          'freezeNoise', true);
-     UnitTest.validationData('validationData3',validationData3);
-     UnitTest.extraData('extraData3',extraData3);
-
-  
-    %% Basic validation - no eye movements
-    [validationData1, extraData1] = t_coneCurrentEyeMovementsResponseInstances(...
+        'rParams', rParams, ...
+        'testDirectionParams', testDirectionParams, ...
+        'emPathType', 'frozen', ...
         'generatePlots', runTimeParams.generatePlots, ...
-          'freezeNoise', true);
-    UnitTest.validationData('validationData1',validationData1);
-    UnitTest.extraData('extraData1',extraData1);
-     
-    %% Spot version - no eye movements
-    [validationData2, extraData2] = t_coneCurrentEyeMovementsResponseInstancesSpot(...
-        'generatePlots', runTimeParams.generatePlots,  ...
-          'freezeNoise', true);
-    UnitTest.validationData('validationData2',validationData2);
-    UnitTest.extraData('extraData2',extraData2);
+        'freezeNoise', true);
+    UnitTest.validationData('validationData3',validationData3);
+    UnitTest.extraData('extraData3',extraData3);
+
+
 end
 
 
