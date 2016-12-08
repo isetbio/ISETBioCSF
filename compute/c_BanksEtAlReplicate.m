@@ -31,7 +31,7 @@ p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
-p.addParameter('generatePlots',false,@islogical);
+p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotCSF',true,@islogical);
 p.parse(varargin{:});
