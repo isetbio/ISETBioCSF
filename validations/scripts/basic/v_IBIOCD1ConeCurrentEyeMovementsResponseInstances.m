@@ -20,7 +20,7 @@ function ValidationFunction(runTimeParams)
     %% Photocurrent validation with frozen emPaths
     rParams = responseParamsGenerate;
     rParams.temporalParams.secondsToInclude = 0.5;
-    % Use a mosaic that covers the central 1/4 of the stimulus to accelerate computation
+    % Use a mosaic that covers the central 1/3 of the stimulus to accelerate computation
     rParams.mosaicParams.fieldOfViewDegs = 0.3*rParams.spatialParams.fieldOfViewDegs;
     rParams.mosaicParams.isomerizationNoise = 'frozen';
     rParams.mosaicParams.osNoise = 'frozen';
