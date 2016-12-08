@@ -50,7 +50,7 @@ theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, ...
                             
 % Generate eye movement paths for all instances
 eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theMosaic.integrationTime);
-theEMpaths = colorDetectMultiTrialEMPathGenerate(theMosaic, nTrials, eyeMovementsNum, temporalParams.emPathType);
+theEMpaths = colorDetectMultiTrialEMPathGenerate(theMosaic, nTrials, eyeMovementsNum, temporalParams.emPathType, 'seed', currentSeed);
 
 [isomerizations, photocurrents] = ...
      theMosaic.computeForOISequence(theOIsequence, ...
@@ -104,17 +104,25 @@ end % iTrial
 % Compute the noise-free isomerizations & photocurrents using the first emPath
 theEMpaths = theEMpaths(1,:,:);
 
-% Generate noise-free mosaic
-theNoiseFreeMosaic = theMosaic.copy();
-theNoiseFreeMosaic.noiseFlag = 'none';
-theNoiseFreeMosaic.os.noiseFlag = 'none';
+% noise-free responses
+
+% Save original noise flags
+originalIsomerizationNoiseFlag = theMosaic.noiseFlag;
+originalPootocurrentNoiseFlag = theMosaic.os.noiseFlag;
+
+% Set noiseFlags to none
+theMosaic.noiseFlag = 'none';
+theMosaic.os.noiseFlag = 'none';
 
 % Compute the noise-free responses
 [noiseFreeIsomerizations, noiseFreePhotocurrents] = ...
-     theNoiseFreeMosaic.computeForOISequence(theOIsequence, ...
+     theMosaic.computeForOISequence(theOIsequence, ...
                     'emPaths', theEMpaths, ...
                     'currentFlag', true);
-                
+%Restore noiseFlags to none
+theMosaic.noiseFlag = originalIsomerizationNoiseFlag;
+theMosaic.os.noiseFlag = originalPootocurrentNoiseFlag;
+
 noiseFreeIsomerizations = squeeze(noiseFreeIsomerizations);
 if (~isempty(noiseFreePhotocurrents))
     noiseFreePhotocurrents = squeeze(noiseFreePhotocurrents);

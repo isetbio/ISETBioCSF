@@ -31,7 +31,7 @@ p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
-p.addParameter('generatePlots',true,@islogical);
+p.addParameter('generatePlots',false,@islogical);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotCSF',true,@islogical);
 p.parse(varargin{:});
@@ -85,17 +85,18 @@ for ll = 1:length(p.Results.luminances)
         % Set duration equal to sampling interval to do just one frame.
         %
         % Their intervals were 100 msec each.
-        rParams.temporalParams.simulationTimeStepSecs = 100/1000;
-        rParams.temporalParams.stimulusDurationInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-        rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-        rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
+        rParams.temporalParams.stimulusDurationInSeconds = 100/1000;
+        % Equate stimulusSamplingIntervalInSeconds to
+        % stimulusDurationInSeconds to generate 1 time point only
+        rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
+        rParams.temporalParams.secondsToInclude = rParams.temporalParams.stimulusDurationInSeconds;
         
         % Their main calculation was without eye movements
-        rParams.temporalParams.eyesDoNotMove = true;
+        rParams.temporalParams.emPathType = 'none';
         
-        % Set up mosaic parameters for just one stimulus time step
-        rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-        rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
+        % Set up mosaic parameters. Here we integrate for the entire
+        % stimulus duration (100/1000)
+        rParams.mosaicParams.integrationTimeInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
         rParams.mosaicParams.isomerizationNoise = 'frozen';             % select from {'random', 'frozen', 'none'}
         rParams.mosaicParams.osNoise = 'frozen';                        % select from {'random', 'frozen', 'none'}
         rParams.mosaicParams.osModel = 'Linear';

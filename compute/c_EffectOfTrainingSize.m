@@ -87,17 +87,15 @@ oiParams.pupilDiamMm = 2;
 % Set duration equal to sampling interval to do just one frame.
 %
 % Their intervals were 100 msec each.
-rParams.temporalParams.simulationTimeStepSecs = 100/1000;
-rParams.temporalParams.stimulusDurationInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
+rParams.temporalParams.stimulusDurationInSeconds = 100/1000;
+rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
+rParams.temporalParams.secondsToInclude = rParams.temporalParams.stimulusDurationInSeconds;
 
 % Their main calculation was without eye movements
-rParams.temporalParams.eyesDoNotMove = true;
+rParams.temporalParams.emPathType = 'none';
 
 % Set up mosaic parameters for just one stimulus time step
-rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
+rParams.mosaicParams.integrationTimeInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
 rParams.mosaicParams.isomerizationNoise = true;
 rParams.mosaicParams.osNoise = true;
 rParams.mosaicParams.osModel = 'Linear';

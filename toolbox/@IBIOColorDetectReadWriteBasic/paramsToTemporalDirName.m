@@ -11,16 +11,16 @@ end
 if (strcmp(temporalParams.type,'Temporal'))
     
     if (isfield(temporalParams, 'emPathType'))
-        
-    switch (temporalParams.emPathType)
-        case 'none'
-            nemNumber = 1;
-        case 'random'
-            nemNumber = 0;
-        case 'frozen'
-            nemNumber = 2;
-    end
+        switch (temporalParams.emPathType)
+            case 'none'
+                nemNumber = 1;
+            case 'random'
+                nemNumber = 0;
+            case 'frozen'
+                nemNumber = 2;
+        end
     else
+        error('temporalParams.eyesDoNotMove should not be used');
         nemNumber = temporalParams.eyesDoNotMove;
     end
     

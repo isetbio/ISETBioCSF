@@ -8,7 +8,6 @@ if (~strcmp(mosaicParams.type,'Mosaic')) && (~strcmp(mosaicParams.type,'Mosaic_v
 end
 
 if (strcmp(mosaicParams.type,'Mosaic'))
-    mosaicParams
     if strcmp(mosaicParams.isomerizationNoise, 'random') || strcmp(mosaicParams.isomerizationNoise, 'frozen')
         coneMosaicNoiseBit = 1;
     elseif strcmp(mosaicParams.isomerizationNoise, 'none')
