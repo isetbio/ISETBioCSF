@@ -162,6 +162,10 @@ else
     gaborConeMosaic.setSizeToFOV(rParams.spatialParams.fieldOfViewDegs);
 end
 
+% This used to be the default integration time, and we reset here to keep
+% the vaidation happy.
+gaborConeMosaic.integrationTime = 0.05;
+
 % There is also an option of whether the cone current should be calculated
 % in the compute function. If set to true, it uses an os object inside the
 % coneMosaic object. The default is the linearOS.  Here we don't need that.
