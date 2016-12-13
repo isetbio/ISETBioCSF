@@ -53,7 +53,7 @@ withValidations = tbToolboxRecord( ...
     'update', 'never');
 
 % Obtain or update the git repo and add subfolders to the Matlab path
-config = [withToolbox withTutorials with Compute withValidations];
+config = [withToolbox withTutorials withCompute withValidations];
 tbDeployToolboxes('config', config, 'toolboxRoot', projectBaseDir, 'runLocalHooks', false);
 
 %% Specify project-specific preferences
@@ -61,7 +61,7 @@ tbDeployToolboxes('config', config, 'toolboxRoot', projectBaseDir, 'runLocalHook
 % This currently include UnitTestToolbox/RemoteDataToolbox setup
 p = struct(...
     'projectName',           projectName, ...                                                                                 % The project's name (also the preferences group name)
-    'validationRootDir',     IBIOColorDetectValidationDir, ...                                                                % Directory location where the 'scripts' subdirectory resides.
+    'validationRootDir',     IBIOCDValidationDir, ...                                                                         % Directory location where the 'scripts' subdirectory resides.
     'alternateFastDataDir',  '',  ...                                                                                         % Alternate FAST (hash) data directory location. Specify '' to use the default location, i.e., $validationRootDir/data/fast
     'alternateFullDataDir',  '', ...                                                                                          % Alternate FULL data directory location. Specify '' to use the default location, i.e., $validationRootDir/data/full
     'useRemoteDataToolbox',  true, ...                                                                                        % If true use Remote Data Toolbox to fetch full validation data on demand.
