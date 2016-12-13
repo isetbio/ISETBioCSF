@@ -4,36 +4,15 @@ function dirname = paramsToTemporalDirName(obj,temporalParams)
 % Generate a directory names that captures the temporal parameters used to
 % generate the responses.
 
-if (~strcmp(temporalParams.type,'Temporal')) && (~strcmp(temporalParams.type,'Temporal_v2'))
+if (~strcmp(temporalParams.type,'Temporal'))
     error('Incorrect parameter type passed');
 end
 
-if (strcmp(temporalParams.type,'Temporal'))
-    
-    if (isfield(temporalParams, 'emPathType'))
-        switch (temporalParams.emPathType)
-            case 'none'
-                nemNumber = 1;
-            case 'random'
-                nemNumber = 0;
-            case 'frozen'
-                nemNumber = 2;
-        end
-    else
-        error('temporalParams.eyesDoNotMove should not be used');
-        nemNumber = temporalParams.eyesDoNotMove;
-    end
-    
-    dirname = sprintf('tau%0.3f_dur%0.2f_nem%d_use%0.0f_off%0.0f',...
-        temporalParams.windowTauInSeconds, ...
-        temporalParams.stimulusDurationInSeconds, ...
-        nemNumber, ...
-        temporalParams.secondsToInclude, ...
-        temporalParams.secondsToIncludeOffset);
-else
-    dirname = sprintf('[STIM_TEMPORAL]_rampDur%0.3f_rampTau%0.3f',...
-        temporalParams.rampDurationSecs, ...
-        temporalParams.rampTauSecs ...
-        );
+dirname = sprintf('[STIM_TEMPORAL]_rampDurationMilliSecs%0.0f_rampTauMilliSecs%0.0f_analyzedResponseDurationMilliSecs%0.0f_withOffsetMilliSecs%0.0f_eyeMovementPath%s',...
+    temporalParams.windowTauInSeconds*1000, ...
+    temporalParams.stimulusDurationInSeconds*1000, ...
+    temporalParams.secondsToInclude*1000, ...
+    temporalParams.secondsToIncludeOffset*1000, ...
+    sprintf('%s%s', upper(temporalParams.emPathType(1)), temporalParams.emPathType(2:end)));
 end
 

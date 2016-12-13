@@ -10,7 +10,6 @@ function temporalParams = temporalParamsGenerate(varargin)
 %   secondsToInclude - Portion of response movie to include for classification.
 %   secondsToIncludeOffset - Temporal offset of included window.
 %   emPathType - String, select from 'zero', 'frozen', 'dynamic'
-%   simulationTimeStepSecs - Time step used in temporal simulation
 
 temporalParams.type = 'Temporal';
 
@@ -20,7 +19,7 @@ temporalParams.stimulusDurationInSeconds = 5*temporalParams.windowTauInSeconds;
 temporalParams.stimulusSamplingIntervalInSeconds = 1/temporalParams.frameRate;
 temporalParams.secondsToInclude = 0.050;
 temporalParams.secondsToIncludeOffset = 0;
-temporalParams.emPathType = 'none';           % BUT THIS SHOULD PROBABLY BE A MOSAICPARAM        
+temporalParams.emPathType = 'none';
 
 % Optional CRT raster effects.
 % 

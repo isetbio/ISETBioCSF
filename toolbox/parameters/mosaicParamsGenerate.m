@@ -25,5 +25,4 @@ mosaicParams.integrationTimeInSeconds = 10/1000;
 mosaicParams.osTimeStepInSeconds = 0.1/1000;
 mosaicParams.isomerizationNoise = 'none';           % Type coneMosaic.validNoiseFlags to get valid values
 mosaicParams.osModel = 'Linear';
-mosaicParams.osNoise = 'random';                    % Type outerSegment.validNoiseFlags to get valid values
-mosaicParams.emPathType = 'none';                   % Select from {'random','frozen', or 'none'}.
+mosaicParams.osNoise = 'random';                    % Type outerSegment.validNoiseFlags to get valid values               

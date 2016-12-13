@@ -33,7 +33,7 @@ function spatialParams = spatialParamsGenerate(varargin)
 %   fieldOfViewDegs - Linear size of the full image, in degrees
 %   row - Row dimension of image in pixels.
 %   col - Col dimension of image in pixels
-%     Row and coloum dimensions should be equal.
+%   Row and colomn dimensions should be equal.
 
 % Parse input
 p = inputParser; p.KeepUnmatched = true;
