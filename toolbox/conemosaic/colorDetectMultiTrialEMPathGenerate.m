@@ -1,8 +1,7 @@
 function theEMpaths = colorDetectMultiTrialEMPathGenerate(theConeMosaic, nTrials, eyeMovementsPerTrial, emPathType, varargin)
 % theEMpaths = colorDetectEMPathGenerate(theConeMosaic, nTrials, eyeMovementsPerTrial, emPathType, varargin)
 %
-% Create an array of EMpaths, one for each of the nTrials, depending on
-% eyeMovementPath parameter
+% Create an array of EMpaths, one for each of the nTrials, depending on the emPathType parameter
 %
 %  11/30/16  npc Wrote it.
 %
