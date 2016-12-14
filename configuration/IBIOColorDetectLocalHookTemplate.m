@@ -109,7 +109,7 @@ setpref(projectName, 'outputBaseDir', outputBaseDir);
 end
 
 
-%% Remove any existing preferences and replace with given struct.
+%% Remove existing preferences and replace with given struct.
 function generatePreferenceGroup(p)
 if ispref(p.projectName)
     rmpref(p.projectName);
