@@ -46,6 +46,8 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %        visualizations.  Set to false when running big jobs on clusters or
 %        in parfor loops, as plotting doesn't seem to play well with those
 %        conditions.
+%   'visualizedResponseNormalization' - How to normalize visualized responses
+%        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
 %   'exportPDF' - true/false (default true).  If visualizing responses,
 %        export the PDF files.
 %   'renderVideo' - true/false (default true).  If visualizing responses, generate
@@ -65,6 +67,7 @@ p.addParameter('generatePlots',false,@islogical);
 p.addParameter('exportPDF',true,@islogical);
 p.addParameter('renderVideo',true,@islogical);
 p.addParameter('delete',false',@islogical);
+p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.parse(varargin{:});
 rParams = p.Results.rParams;
 testDirectionParams = p.Results.testDirectionParams;
@@ -253,10 +256,10 @@ if (p.Results.compute)
             s = struct();
             savedTrial = 1;
             s.theMosaicIsomerizations = squeeze(responseInstanceArray.theMosaicIsomerizations(savedTrial,:,:,:));
-            if (isempty(responseInstanceArray.theMosaicPhotoCurrents))
-                s.theMosaicPhotoCurrents = [];
+            if (isempty(responseInstanceArray.theMosaicPhotocurrents))
+                s.theMosaicPhotocurrents = [];
             else
-                s.theMosaicPhotoCurrents = squeeze(responseInstanceArray.theMosaicPhotoCurrents(savedTrial,:,:,:));
+                s.theMosaicPhotocurrents = squeeze(responseInstanceArray.theMosaicPhotocurrents(savedTrial,:,:,:));
             end
             s.theMosaicEyeMovements = squeeze(responseInstanceArray.theMosaicEyeMovements(savedTrial,:,:));
             s.timeAxis = responseInstanceArray.timeAxis;
@@ -279,10 +282,10 @@ if (p.Results.compute)
     if (nargout > 0)
         savedTrial = 1;
         noStimValidationData.theMosaicIsomerizations = squeeze(noStimData.responseInstanceArray.theMosaicIsomerizations(savedTrial,:,:,:));
-        if (isempty(noStimData.responseInstanceArray.theMosaicPhotoCurrents))
-            noStimValidationData.theMosaicPhotoCurrents = [];
+        if (isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
+            noStimValidationData.theMosaicPhotocurrents = [];
         else
-            noStimValidationData.theMosaicPhotoCurrents = squeeze(noStimData.responseInstanceArray.theMosaicPhotoCurrents(savedTrial,:,:,:));
+            noStimValidationData.theMosaicPhotocurrents = squeeze(noStimData.responseInstanceArray.theMosaicPhotocurrents(savedTrial,:,:,:));
         end
         noStimValidationData.theMosaicEyeMovements = squeeze(noStimData.responseInstanceArray.theMosaicEyeMovements(savedTrial,:,:));
         noStimValidationData.timeAxis = noStimData.responseInstanceArray.timeAxis;
@@ -298,10 +301,10 @@ end
 %% Visualize
 if (p.Results.generatePlots)
 
-    responseNormalization = 'LMSabsoluteResponseBased';
-    %responseNormalization = 'LMabsoluteResponseBased';
-    %responseNormalization = 'submosaicBasedZscore';
+    % How many istances to visualize
+    instancesToVisualize = 1:5;
     
+    % Load data
     paramsList = constantParamsList;
     paramsList{numel(paramsList)+1} = colorModulationParamsNull;    
     noStimData = rwObject.read('responseInstances',paramsList,theProgram);
@@ -319,7 +322,7 @@ if (p.Results.generatePlots)
          paramsList = constantParamsList;
          paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
          stimData = rwObject.read('responseInstances',paramsList,theProgram);
-         visualizeResponses(theMosaic, stimData, noStimData, responseNormalization, kk, nParforConditions);
+         visualizeResponses(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, instancesToVisualize);
     end
 end
 
@@ -345,7 +348,7 @@ end
 end
 
 
-function visualizeResponses(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum)
+function visualizeResponses(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum, instancesToVisualize)
          
     instancesNum = size(stimData.responseInstanceArray.theMosaicIsomerizations,1);
     if (instancesNum < 1)
@@ -389,15 +392,15 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
         [absorptions, minAbsorptions, maxAbsorptions] = coneIndicesBasedScaling(stimData.responseInstanceArray.theMosaicIsomerizations, coneDims, normalizationConeIndices, true);
         [noiseFreeIsomerizations, minNoiseFreeIsomerizations, maxNoiseFreeIsomerizations] = coneIndicesBasedScaling(stimData.noiseFreeIsomerizations, coneDims, normalizationConeIndices, false);
         if (~isempty(stimData.noiseFreePhotocurrents))
-            [photocurrents, minPhotocurrents, maxPhotocurrents] = coneIndicesBasedScaling(stimData.responseInstanceArray.theMosaicPhotoCurrents, coneDims, normalizationConeIndices, true);
-            [noiseFreePhotocurrents, minNoiseFreePhotocurrents, maxNoiseFreePhotocurrents] = coneIndicesBasedScaling(stimData.noiseFreePhotoCurrents, coneDims, normalizationConeIndices, false);
+            [photocurrents, minPhotocurrents, maxPhotocurrents] = coneIndicesBasedScaling(stimData.responseInstanceArray.theMosaicPhotocurrents, coneDims, normalizationConeIndices, true);
+            [noiseFreePhotocurrents, minNoiseFreePhotocurrents, maxNoiseFreePhotocurrents] = coneIndicesBasedScaling(stimData.noiseFreePhotocurrents, coneDims, normalizationConeIndices, false);
         end
     elseif strcmp(responseNormalization, 'submosaicBasedZscore')
          [absorptions, minAbsorptions, maxAbsorptions] = submosaicBasedZscore(stimData.responseInstanceArray.theMosaicIsomerizations, noStimData.responseInstanceArray.theMosaicIsomerizations, coneDims, submosaicConeIndices, true);
          [noiseFreeIsomerizations, minNoiseFreeIsomerizations, maxNoiseFreeIsomerizations] = submosaicBasedZscore(stimData.noiseFreeIsomerizations, noStimData.noiseFreeIsomerizations,coneDims, submosaicConeIndices, false);
          if (~isempty(stimData.noiseFreePhotocurrents))
-             [photocurrents, minPhotocurrents, maxPhotocurrents] = submosaicBasedZscore(stimData.responseInstanceArray.theMosaicPhotoCurrents, noStimData.responseInstanceArray.theMosaicPhotoCurrents, coneDims,  submosaicConeIndices, true);
-             [noiseFreePhotocurrents, minNoiseFreePhotocurrents, maxNoiseFreePhotocurrents] = submosaicBasedZscore(stimData.noiseFreePhotoCurrents, noStimData.noiseFreePhotoCurrents, coneDims,  submosaicConeIndices, false);
+             [photocurrents, minPhotocurrents, maxPhotocurrents] = submosaicBasedZscore(stimData.responseInstanceArray.theMosaicPhotocurrents, noStimData.responseInstanceArray.theMosaicPhotocurrents, coneDims,  submosaicConeIndices, true);
+             [noiseFreePhotocurrents, minNoiseFreePhotocurrents, maxNoiseFreePhotocurrents] = submosaicBasedZscore(stimData.noiseFreePhotocurrents, noStimData.noiseFreePhotocurrents, coneDims,  submosaicConeIndices, false);
          end
     else
         error('Unknown responseNormalization method: ''%s''.', responseNormalization);
@@ -415,7 +418,7 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
     hFig = figure(100+condIndex); clf;
     set(hFig, 'Position', [10 10 1400 800], 'Color', [1 1 1]);
 
-    for instanceIndex = 1:5 % instancesNum     
+    for instanceIndex = instancesToVisualize
          for tBin = 1: numel(absorptionsTimeAxis)  
             if (isempty(photocurrents))
                  subplot(1,2,1)

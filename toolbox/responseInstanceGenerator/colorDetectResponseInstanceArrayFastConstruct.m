@@ -74,7 +74,7 @@ end
 
 % Form the responseInstanceArray struct
 responseInstanceArray.theMosaicIsomerizations = single(isomerizations);
-responseInstanceArray.theMosaicPhotoCurrents = single(photocurrents);
+responseInstanceArray.theMosaicPhotocurrents = single(photocurrents);
 responseInstanceArray.theMosaicEyeMovements = theEMpaths(:,isomerizationsTimeIndicesToKeep,:);
 responseInstanceArray.timeAxis = isomerizationsTimeAxis(isomerizationsTimeIndicesToKeep);
 responseInstanceArray.photocurrentTimeAxis = photoCurrentTimeAxis(photocurrentsTimeIndicesToKeep);
