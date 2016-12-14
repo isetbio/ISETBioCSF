@@ -15,9 +15,6 @@ function validationData = t_colorGabor(rParams,varargin)
 %   responseParamsGenerate
 % That function and its subfunctions also documents what the relavant parameters are.
 %
-% The code illustrated here is encapsulated into function
-%   colorSceneCreate.
-%
 % The returned validation structure allows this routine to be called from a
 % validation script driven by the UnitTest toolbox.
 %
@@ -31,10 +28,14 @@ function validationData = t_colorGabor(rParams,varargin)
 %
 % Optional key/value pairs
 %  'generatePlots' - true/false (default true).  Make plots?
+%  'setRngSeed' - true/false (default true). When true, set the rng seed so noise is frozen.
+%  'hexMosaic' - use a hexagonal mosaic, rather than a rectangular mosaic.
 
 %% Parse vargin for options passed here
 p = inputParser;
 p.addParameter('generatePlots',true,@islogical);
+p.addParameter('setRngSeed',true,@islogical);
+p.addParameter('hexMosaic',false,@islogical);
 p.parse(varargin{:});
 
 %% Clear
@@ -43,7 +44,9 @@ if (nargin == 0)
 end
 
 %% Fix random number generator so we can validate output exactly
-rng(1);
+if (p.Results.setRngSeed)
+    rng(1);
+end
 
 %% Get the parameters we need
 %
@@ -51,6 +54,9 @@ rng(1);
 % parameters used by a number of tutorials and functions in this project.
 if (nargin < 1 | isempty(rParams))
     rParams = responseParamsGenerate;
+    if (p.Results.hexMosaic)
+        rParams.mosaicParams.conePacking = 'hex';
+    end
 end
 
 %% Set up the rw object for this program
@@ -58,193 +64,14 @@ rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
 paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
 
-%% Make the grayscale gabor pattern and have a look
-%
-% The routine imageHarmonicParamsFromGaborParams massages the
-% spatialParams/colorModulationParams information into the form needed by
-% isetbio's imageHarmonic function.
-gaborPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(rParams.spatialParams,rParams.colorModulationParams));
-
-% We can see it as a grayscale image
-if (p.Results.generatePlots)
-    vcNewGraphWin; imagesc(gaborPattern); colormap(gray); axis square
-end
-
-% And plot a slice through the center.
-%
-% This is useful for verifying that the spatial parameters produce the desired
-% result in degrees.  If you generate the Gabor for 0 cpd you can see the Gaussian
-% profile and verify that the FWHM is in fact the specified number of
-% degrees, and if you make the Gaussian window wide you can count cycles
-% and make sure they come out right as well.
-if (p.Results.generatePlots)
-    figure; hold on;
-    set(gca,'FontSize',rParams.plotParams.axisFontSize);
-    xDegs = linspace(-rParams.spatialParams.fieldOfViewDegs/2,rParams.spatialParams.fieldOfViewDegs/2,rParams.spatialParams.col);
-    plot(xDegs,gaborPattern(rParams.spatialParams.row/2,:));
-    xlabel('Position (degrees)','FontSize',rParams.plotParams.labelFontSize);
-    ylabel('Image Intensity','FontSize',rParams.plotParams.labelFontSize);
-end
-
-%% Convert Gabor to a color modulation specified in cone space
-%
-% First, make it a modulation around the mean
-% This is easy, because imageHarmoic generates the Gabor as a modulation
-% around 1.  Subtracting 1 gives us a modulation in the range -1 to 1.
-gaborModulation = gaborPattern-1;
-
-% Convert Gabor to a color modulation specified in cone space
-%
-% This requires a little colorimetry.
-%
-% Need to load cone fundamentals and XYZ color matching functions to do the
-% needed conversions.  Here we'll use the Stockman-Sharpe 2-degree
-% fundamentals and the proposed CIE corresponding XYZ functions.  These
-% have the advantage that they are an exact linear transformation away from
-% one another.
-%
-% This is the PTB style data, which I (DHB) know like the back of my hand.  There
-% is an Isetbio way to do this too, I'm sure.  The factor of 683 in front
-% of the XYZ color matching functions brings the luminance units into cd/m2
-% when radiance is in Watts/[m2-sr-nm], which are fairly standard units.
-whichXYZ = 'xyzCIEPhys2';
-theXYZ = load(['T_' whichXYZ]);
-eval(['T_XYZ = 683*theXYZ.T_' whichXYZ ';']);
-eval(['S_XYZ = theXYZ.S_' whichXYZ ';']);
-clear theXYZ
-
-whichCones = 'cones_ss2';
-theCones = load(['T_' whichCones]);
-eval(['T_cones = 683*theCones.T_' whichCones ';']);
-eval(['S_cones = theCones.S_' whichCones ';']);
-clear theCones
-
-% Tranform background into cone excitation coordinates. I always like to
-% check with a little plot that I didn't bungle the regression.
-M_XYZToCones = ((T_XYZ')\(T_cones'))';
-T_conesCheck = M_XYZToCones*T_XYZ;
-if (max(abs(T_conesCheck(:)-T_cones(:))) > 1e-3)
-    error('Cone fundamentals are not a close linear transform of XYZ CMFs');
-end
-
-% Convert background to cone excitations
-backgroundConeExcitations = M_XYZToCones*xyYToXYZ(rParams.backgroundParams.backgroundxyY);
-
-% Convert test cone contrasts to cone excitations
-testConeExcitations = (rParams.colorModulationParams.coneContrasts .* backgroundConeExcitations);
-
-% Make the color gabor in LMS excitations
-gaborConeExcitationsBg = ones(rParams.spatialParams.row,rParams.spatialParams.col);
-gaborConeExcitations = zeros(rParams.spatialParams.row,rParams.spatialParams.col,3);
-for ii = 1:3
-    gaborConeExcitations(:,:,ii) = gaborConeExcitationsBg*backgroundConeExcitations(ii) + ...
-        gaborModulation*testConeExcitations(ii);
-end
-
-% Check that contrasts come out right.  They will be a little
-% less than nominal values becuase it's a Gabor, not a sinusoid.
+%% Name the cone types for some printouts.
 coneTypes = {'L' 'M' 'S'};
-for ii = 1:3
-    gaborPlane = gaborConeExcitations(:,:,ii);
-    theMax = max(gaborPlane(:)); theMin = min(gaborPlane(:));
-    actualConeContrasts(ii) = (theMax-theMin)/(theMax+theMin);
-    fprintf('Actual absolute %s cone contrast: %0.3f, nominal: % 0.3f\n', coneTypes{ii}, ...
-        actualConeContrasts(ii),abs(rParams.colorModulationParams.coneContrasts(ii)));
-end
-
-%% And take a look at the LMS image.  This is just a straight rendering of
-% LMS and so won't look the right colors, but we can check that it is
-% qualitatively correct.
-if (p.Results.generatePlots)
-    vcNewGraphWin; imagesc(gaborConeExcitations/max(gaborConeExcitations(:))); axis square
-end
-
-%% Produce an isetbio scene
+  
+%% Create the isetbio scene for the gabor patch, using routine colorSceneCreate.
 %
-% This should represent a monitor image that produces the desired LMS
-% excitations.
-
-% We need a display.  We'll just use the description of a CRT that we have
-% handy.  In doing so, we are assuming that the differences between CRT's
-% used in different threshold experiments do not have a substantial effect
-% on the thresholds.  There will be a little effect because differences in
-% channel spectra will lead to differences in the retinal image because of
-% chromatic aberration, but given the general similarity of monitor channel
-% spectra we expect these differences to be small.  We could check this by
-% doing the calculations with different monitor descriptions.
-display = displayCreate(rParams.backgroundParams.monitorFile);
-display = displaySet(display,'viewingdistance', rParams.spatialParams.viewingDistance);
-
-% Get display channel spectra.  The S vector displayChannelS is PTB format
-% for specifying wavelength sampling: [startWl deltaWl nWlSamples],
-displayChannelWavelengths = displayGet(display,'wave');
-displayChannelS = WlsToS(displayChannelWavelengths);
-displayChannelSpectra = displayGet(display,'spd');
-
-% Spline XYZ and cones to same wavelength sampling as display
-T_conesForDisplay = SplineCmf(S_cones,T_cones,displayChannelWavelengths);
-T_XYZForDisplay = SplineCmf(S_XYZ,T_XYZ,displayChannelWavelengths);
-
-% Find the matrix that converts between linear channel weights (called
-% "primary" in PTB lingo) and LMS excitations, and its inverse.  Multiplication by
-% the deltaWl is to handle fact that in isetbio radiance is specified in
-% Watts/[m2-sr-nm].
-%
-% Also get matrices for going in and out of XYZ, and compute display max
-% luminance as a sanity check.
-M_PrimaryToConeExcitations = T_conesForDisplay*displayChannelSpectra*displayChannelS(2);
-M_ConeExcitationsToPrimary = inv(M_PrimaryToConeExcitations);
-
-M_PrimaryToXYZ = T_XYZForDisplay*displayChannelSpectra*displayChannelS(2);
-M_XYZToPrimary = inv(M_PrimaryToXYZ);
-displayMaxXYZ = M_PrimaryToXYZ*[1 1 1]';
-fprintf('Max luminace of the display is %0.1f cd/m2\n',displayMaxXYZ(2));
-
-% Convert the gaborConeExcitations image to RGB
-[gaborConeExcitationsCalFormat,m,n] = ImageToCalFormat(gaborConeExcitations);
-gaborPrimaryCalFormat = M_ConeExcitationsToPrimary*gaborConeExcitationsCalFormat;
-gaborPrimary = CalFormatToImage(gaborPrimaryCalFormat,m,n);
-
-% Check that the image is within the monitor gamut.  If the gabor
-% represents an actual stimulus produced with an actual monitor, things
-% should be OK if both are represented properly in this routine.
-maxPrimary = max(gaborPrimaryCalFormat(:));
-minPrimary = min(gaborPrimaryCalFormat(:));
-fprintf('Maximum linear RGB (primary) value is %0.2f, minimum %0.2f\n',maxPrimary,minPrimary);
-if (maxPrimary > 1 || minPrimary < 0)
-    error('RGB primary image is out of gamut.  You need to do something about this.');
-end
-
-% Gamma correct the primary values, so we can pop them into an isetbio
-% scene in some straightforward manner.
-nLevels = size(displayGet(display,'gamma'),1);
-gaborRGB = round(ieLUTLinear(gaborPrimary,displayGet(display,'inverse gamma')));
-
-% Make a plot of the gamma correction functions.  These should look
-% compressive, the inverse of the monitor gamma function.  In the display
-% file CRT-MODEL that we are using, the gamma was given as a power function
-% with an exponent of 2, just to model something typical.
-if (p.Results.generatePlots)
-    vcNewGraphWin; hold on
-    set(gca,'FontSize',10);
-    theColors = ['r' 'g' 'b'];
-    for ii = 1:3
-        tempPrimary = gaborPrimary(:,:,ii);
-        tempRGB = gaborRGB(:,:,ii);
-        plot(tempPrimary(:),tempRGB(:),['o' theColors(ii)],'MarkerFaceColor',theColors(ii));
-    end
-    xlim([0 1]);
-    ylim([0 nLevels]);
-    axis('square');
-    xlabel('Linear channel value','FontSize',rParams.plotParams.labelFontSize);
-    ylabel('Gamma corrected DAC settings','FontSize',rParams.plotParams.labelFontSize);
-    title('Gamma correction','FontSize',rParams.plotParams.titleFontSize);
-end
-
-% Finally, make the actual isetbio scene
-% This combines the image we build and the display properties.
-gaborScene = sceneFromFile(gaborRGB,'rgb',[],display);
-gaborScene = sceneSet(gaborScene, 'h fov', rParams.spatialParams.fieldOfViewDegs);
+% This routine does a lot of colorimetry to produce a scene on a monitor
+% that has the desired cone contrasts.
+gaborScene = colorSceneCreate(rParams.spatialParams,rParams.backgroundParams,rParams.colorModulationParams,rParams.oiParams);
 
 % Look at the scene image.  It is plausible for an L-M grating.  Remember that we
 % are looking at the stimuli on a monitor different from the display file
@@ -314,13 +141,35 @@ end
 %% Create and get noise free sensor using coneMosaic obj
 % Create a coneMosaic object here. When setting the fov, if only one value
 % is specified, it will automatically make a square cone mosaic.
-gaborConeMosaic = coneMosaic;
-gaborConeMosaic.setSizeToFOV(rParams.spatialParams.fieldOfViewDegs);
+%
+% You can generate either a hexagonal or a rectangular mosaic
+if (strcmp(rParams.mosaicParams.conePacking, 'hex')) && ~any(isnan(rParams.mosaicParams.fieldOfViewDegs))
+    % HEX mosaic
+    resamplingFactor = 3;
+    centerInMM = [0.0 0.0];                    % mosaic eccentricity
+    spatiallyVaryingConeDensity = true;        % constant spatial density (at the mosaic's eccentricity)
+    gaborConeMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, ...
+        'center', centerInMM*1e-3, ...
+        'spatialDensity', [0 rParams.mosaicParams.LMSRatio] ...
+        );
+    
+    rParams.spatialParams.fieldOfViewDegs = 1;
+    gaborConeMosaic.setSizeToFOVForHexMosaic(rParams.spatialParams.fieldOfViewDegs);
+    gaborConeMosaic.visualizeGrid();
+else
+    % RECT mosaic
+    gaborConeMosaic = coneMosaic;
+    gaborConeMosaic.setSizeToFOV(rParams.spatialParams.fieldOfViewDegs);
+end
+
+% This used to be the default integration time, and we reset here to keep
+% the vaidation happy.
+gaborConeMosaic.integrationTime = 0.05;
 
 % There is also an option of whether the cone current should be calculated
 % in the compute function. If set to true, it uses an os object inside the
 % coneMosaic object. The default is the linearOS.  Here we don't need that.
-gaborConeMosaic.noiseFlag = false;
+gaborConeMosaic.noiseFlag = 'none';
 isomerizations = gaborConeMosaic.compute(gaborOI,'currentFlag',false);
 
 %% Take a look at the mosaic responses in the window

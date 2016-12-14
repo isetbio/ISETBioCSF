@@ -14,44 +14,57 @@ function theMosaic = colorDetectConeMosaicConstruct(mosaicParams)
 %   mosaicParams.osModel - 'Linear','Biophys', which outer segment model
 %
 %  7/9/16  npc, dhb  Wrote it.
-%
+% 12/8/16  npc       Update it after linearized os model.
 
-% Create a coneMosaic object here, after a few sanity checks to eliminate
-% deprecated possibilities.
-if (~isfield(mosaicParams,'integrationTimeInSeconds'))
-    error('Must specify mosaic integration time');
-end
-if (isfield(mosaicParams, 'timeStepInSeconds'))
-    if (mosaicParams.timeStepInSeconds ~= mosaicParams.integrationTimeInSeconds)
-        error('Cannot have different sample and integration times anymore');
-    end
-else
-    error('Missing timeStepInSeconds');
-end
-theMosaic = coneMosaic('integrationTime', mosaicParams.integrationTimeInSeconds);
 
-% Set outer-segment params 
-theOS = osLinear();
-theOS.noiseFlag = mosaicParams.osNoise;
-% Set the outer-segment time step equal to the integration time.
-% This maybe ok for @osLinear, but definitely not for @osBiophys
-theOS.timeStep  = mosaicParams.timeStepInSeconds;
-theMosaic.os = theOS;
+% Construct a cone mosaic with rectangular cone packing
+theMosaic = coneMosaic();
+
+% Set the outer segment model
+if strcmp(mosaicParams.osModel, 'Linear')
+    theMosaic.os = osLinear();
+end
 
 % Set mosaic field of view.  In principle this would be as large as the
 % stimulus, but space and time considerations may lead to it being smaller.
 if (isfield(mosaicParams, 'fieldOfViewDegs'))
-    theMosaic.setSizeToFOV(mosaicParams.fieldOfViewDegs);
+    if (isa(theMosaic, 'coneMosaicHex'))
+        theMosaic.setSizeToFOVForHexMosaic(mosaicParams.fieldOfViewDegs)
+    else
+        theMosaic.setSizeToFOV(mosaicParams.fieldOfViewDegs);
+    end
 end
 
+% integration time
+if (isfield(mosaicParams, 'integrationTimeInSeconds'))
+    warningIntegrationTimeInSeconds = 25/1000;
+    if (mosaicParams.integrationTimeInSeconds > warningIntegrationTimeInSeconds)
+        fprintf(2, '\n\n=====================================================================\n');
+        fprintf(2, 'Setting coneMosaic.integrationTime to %2.3f\n', mosaicParams.integrationTimeInSeconds);
+        fprintf(2, 'Warning: Setting the coneMosaic.integrationTime > %2.3f is\n', warningIntegrationTimeInSeconds);
+        fprintf(2, 'NOT recommended if you are interested in photocurrent computations.\n');
+        fprintf(2, '=====================================================================\n');
+    end
+    theMosaic.integrationTime = mosaicParams.integrationTimeInSeconds;
+end
+
+% outer-segment time step
+if (isfield(mosaicParams, 'osTimeStep'))
+    if (mosaicParams.osTimeStepInSeconds > 1/1000)
+        error('Cannot set os.timeStepto %2.4f. It must be less t<= to 1/1000, and preferably <= 0.5/1000', mosaicParams.osTimeStepInSeconds);
+    end
+    theMosaic.os.timeStep = mosaicParams.osTimeStepInSeconds;
+end
+
+% isomerization noise
 if (isfield(mosaicParams, 'isomerizationNoise'))
     theMosaic.noiseFlag = mosaicParams.isomerizationNoise;
 end
 
+% Outer segment noise
 if (isfield(mosaicParams, 'osNoise'))
     theMosaic.os.noiseFlag = mosaicParams.osNoise;
 end
-
 
 % Relative number of LMS cones
 if (isfield(mosaicParams, 'LMSRatio'))

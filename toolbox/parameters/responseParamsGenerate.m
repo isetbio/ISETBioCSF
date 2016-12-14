@@ -55,8 +55,6 @@ params.oiParams.fieldOfViewDegs = params.spatialParams.fieldOfViewDegs;
 %% Properties of the cone mosaic
 params.mosaicParams = mosaicParamsGenerate(varargin{:});
 params.mosaicParams.fieldOfViewDegs = params.spatialParams.fieldOfViewDegs;
-params.mosaicParams.timeStepInSeconds = params.temporalParams.stimulusSamplingIntervalInSeconds;
-params.mosaicParams.integrationTimeInSeconds = params.mosaicParams.timeStepInSeconds;
 
 %% Parameters for plots
 params.plotParams = plotParamsGenerate(varargin{:});

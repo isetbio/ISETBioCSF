@@ -15,15 +15,15 @@ function [classificationData,classes] = classificationDataNoStimDataInitialize(n
 %   classificationDataStimDataInsert
 
 nTrials = numel(noStimData.responseInstanceArray);
-responseSize = numel(noStimData.responseInstanceArray(1).theMosaicPhotoCurrents(:));
+responseSize = numel(noStimData.responseInstanceArray(1).theMosaicIsomerizations(:));
 if (thresholdParams.nIntervals == 1)
     classificationData = zeros(2*nTrials, responseSize);
     classes = zeros(2*nTrials, 1);
     for iTrial = 1:nTrials
         if (strcmp(thresholdParams.signalSource,'photocurrents'))
-            classificationData(iTrial,:) = noStimData.responseInstanceArray(iTrial).theMosaicPhotoCurrents(:);
+            classificationData(iTrial,:) = reshape(noStimData.responseInstanceArray(iTrial).theMosaicPhotoCurrents(:), [1 responseSize]);
         else
-            classificationData(iTrial,:) = noStimData.responseInstanceArray(iTrial).theMosaicIsomerizations(:);
+            classificationData(iTrial,:) = reshape(noStimData.responseInstanceArray(iTrial).theMosaicIsomerizations(:), [1 responseSize]);
         end
         
         % Set up classes variable
@@ -35,11 +35,11 @@ elseif (thresholdParams.nIntervals == 2)
     classes = zeros(nTrials, 1);
     for iTrial = 1:nTrials/2
         if (strcmp(thresholdParams.signalSource,'photocurrents'))
-            classificationData(iTrial,1:responseSize) = noStimData.responseInstanceArray(iTrial).theMosaicPhotoCurrents(:);
-            classificationData(nTrials/2+iTrial,responseSize+1:end) = noStimData.responseInstanceArray(nTrials/2+iTrial).theMosaicPhotoCurrents(:);
+            classificationData(iTrial,1:responseSize) = reshape(noStimData.responseInstanceArray(iTrial).theMosaicPhotoCurrents(:), [1 responseSize]);
+            classificationData(nTrials/2+iTrial,responseSize+1:end) = reshape(noStimData.responseInstanceArray(nTrials/2+iTrial).theMosaicPhotoCurrents(:), [1 responseSize]);
         else
-            classificationData(iTrial,1:responseSize) = noStimData.responseInstanceArray(iTrial).theMosaicIsomerizations(:);
-            classificationData(nTrials/2+iTrial,responseSize+1:end) = noStimData.responseInstanceArray(nTrials/2+iTrial).theMosaicIsomerizations(:);
+            classificationData(iTrial,1:responseSize) = reshape(noStimData.responseInstanceArray(iTrial).theMosaicIsomerizations(:), [1 responseSize]);
+            classificationData(nTrials/2+iTrial,responseSize+1:end) = reshape(noStimData.responseInstanceArray(nTrials/2+iTrial).theMosaicIsomerizations(:), [1 responseSize]);
         end
         
         % Set up classes variable

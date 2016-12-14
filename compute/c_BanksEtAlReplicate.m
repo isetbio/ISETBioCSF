@@ -1,5 +1,5 @@
-function validationData = c_BanksEtAlReplicate(varargin)
-% validationData = c_BanksEtAlReplicate(varargin)
+function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
+% [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %
 % Compute thresholds to replicate Banks et al, 1987, more or less.
 %
@@ -10,6 +10,7 @@ function validationData = c_BanksEtAlReplicate(varargin)
 %   'nTrainingSamples' - value (default 500).  Number of training samples to cycle through.
 %   'cyclesPerDegree' - vector (default [3 5 10 20 40]). Spatial frequencoes of grating to be investigated.
 %   'luminances' - vector (default [3.4 34 340]).  Luminances in cd/m2 to be investigated.
+%   'pupilDiamMm' - value (default 2).  Pupil diameter in mm.
 %   'blur' - true/false (default true). Incorporate lens blur.
 %   'imagePixels' - value (default 400).  Size of image pixel array
 %   'computeResponses' - true/false (default true).  Compute responses.
@@ -24,6 +25,7 @@ p = inputParser;
 p.addParameter('nTrainingSamples',500,@isnumeric);
 p.addParameter('cyclesPerDegree',[3 5 10 20 40 50],@isnumeric);
 p.addParameter('luminances',[3.4 34 340],@isnumeric);
+p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
@@ -58,6 +60,9 @@ for ll = 1:length(p.Results.luminances)
         % Blur
         rParams.oiParams.blur = p.Results.blur;
         
+        % Pupil size.  They used a 2mm artificial pupil
+        rParams.oiParams.pupilDiamMm = p.Results.pupilDiamMm;
+        
         % Keep mosaic size in lock step with stimulus.  This is also forced before
         % the mosaic is created, but we need it here so that filenames are
         % consistent.  It is possible that we should not have a separate mosaic
@@ -77,25 +82,23 @@ for ll = 1:length(p.Results.luminances)
         rParams.backgroundParams.leakageLum = 1.0;
         rParams.backgroundParams.lumFactor = theLum/baseLum;
         
-        % Pupil size.  They used a 2mm artificial pupil
-        oiParams.pupilDiamMm = 2;
-        
         % Set duration equal to sampling interval to do just one frame.
         %
         % Their intervals were 100 msec each.
-        rParams.temporalParams.simulationTimeStepSecs = 100/1000;
-        rParams.temporalParams.stimulusDurationInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-        rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-        rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
+        rParams.temporalParams.stimulusDurationInSeconds = 100/1000;
+        % Equate stimulusSamplingIntervalInSeconds to
+        % stimulusDurationInSeconds to generate 1 time point only
+        rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
+        rParams.temporalParams.secondsToInclude = rParams.temporalParams.stimulusDurationInSeconds;
         
         % Their main calculation was without eye movements
-        rParams.temporalParams.eyesDoNotMove = true;
+        rParams.temporalParams.emPathType = 'none';
         
-        % Set up mosaic parameters for just one stimulus time step
-        rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-        rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
-        rParams.mosaicParams.isomerizationNoise = true;
-        rParams.mosaicParams.osNoise = true;
+        % Set up mosaic parameters. Here we integrate for the entire
+        % stimulus duration (100/1000)
+        rParams.mosaicParams.integrationTimeInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
+        rParams.mosaicParams.isomerizationNoise = 'frozen';             % select from {'random', 'frozen', 'none'}
+        rParams.mosaicParams.osNoise = 'frozen';                        % select from {'random', 'frozen', 'none'}
         rParams.mosaicParams.osModel = 'Linear';
         
         % Parameters that define the LM instances we'll generate here
@@ -122,7 +125,7 @@ for ll = 1:length(p.Results.luminances)
         
         %% Compute response instances
         if (p.Results.computeResponses)
-            t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
+           t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
         end
         
         %% Find performance, template max likeli
@@ -137,7 +140,7 @@ for ll = 1:length(p.Results.luminances)
             thresholdParams.method = 'mlpt';
             banksEtAlReplicate.mlptThresholds(ll,cc) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'instanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
                 'plotPsychometric',p.Results.generatePlots & p.Results.plotPsychometric,'plotEllipse',false);
-            close all;
+            %close all;
         end
     end
 end
@@ -173,8 +176,10 @@ fprintf('done\n');
 %% Output validation data
 if (nargout > 0)
     validationData.cyclesPerDegree = banksEtAlReplicate.cyclesPerDegree;
-    validationData.mlptThresholds = banksEtAlReplicate.mlptThresholds
+    validationData.mlptThresholds = banksEtAlReplicate.mlptThresholds;
     validationData.luminances = p.Results.luminances;
+    extraData.paramsList = paramsList;
+    extraData.p.Results = p.Results;
 end
 
 %% Make a plot of estimated threshold versus training set size

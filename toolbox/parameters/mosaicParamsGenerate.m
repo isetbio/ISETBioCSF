@@ -4,28 +4,26 @@ function mosaicParams = mosaicParamsGenerate(varargin)
 % Properties of the cone mosaic set here.
 %  macular - Boolean, include macular pigment (may not be implemeted yet)
 %  LMSRatio - Vector giving L, M, S cone ratio
-%  isomerizationNoise - Boolean, add isomerization Poisson noise?
 %  osModel - What model to use to compute photocurrent
-%  type - Type of cone mosaic
+%  conePacking - Type of cone mosaic
 %    'rect' - rectangular
 %    'hex' - hexagonal-like
 %
 % Other parameters that are needed for the mosaic are
 %  fieldOfViewDegs - Field of view computed
-%  timeStepInSeconds - Time step to compute responses on
-%  integrationTimeInSeconds - Cone integration time.  Generally the same as time step
-% These get set outside this routine as they are typically matched up to
-% other parameters set elsewhere.
 %
 % See also
 %   responseParametersGenerate
 
 mosaicParams.type = 'Mosaic';
 
+mosaicParams.conePacking = 'rect';
 mosaicParams.macular = true;
 mosaicParams.LMSRatio = [0.62 0.31 0.07];
 mosaicParams.eccentricityDegs = 0;
-mosaicParams.isomerizationNoise = false;
+mosaicParams.integrationTimeInSeconds = 10/1000;
+mosaicParams.osTimeStepInSeconds = 0.1/1000;
+mosaicParams.isomerizationNoise = 'none';           % Type coneMosaic.validNoiseFlags to get valid values
 mosaicParams.osModel = 'Linear';
-mosaicParams.osNoise = true;
-mosaicParams.mosaicType = 'rect';
+mosaicParams.osNoise = 'random';                    % Type outerSegment.validNoiseFlags to get valid values
+mosaicParams.emPathType = 'none';                   % Select from {'random','frozen', or 'none'}.

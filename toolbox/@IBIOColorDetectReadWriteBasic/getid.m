@@ -33,8 +33,10 @@ p.addRequired('theProgram',@ischar);
 p.addParameter('Type','mat',@ischar);
 p.addParameter('ArtifactParams',[],@isstruct);
 p.addParameter('FigureType','pdf',@ischar);
+p.addParameter('FigureHandle', []);
 p.addParameter('MovieType','m4v',@ischar);
 p.addParameter('MakeDirectories',true,@islogical);
+p.addParameter('ShowFilePath', false,@islogical);
 p.parse(name,paramsList,theProgram,varargin{:});
 
 %% Get parent directory list and make sure the output tree is in place
@@ -48,30 +50,50 @@ if (~isempty(p.Results.paramsList))
         switch(thisParams.type)
             case 'ResponseGeneration'
                 thisParentDir = obj.paramsToResponseGenerationDirName(thisParams);
-            case 'ColorModulation'
+                
+            case 'Session'
+                thisParentDir = obj.paramsToSessionDirName(thisParams);
+                
+            case {'ColorModulation' 'ColorModulation_v2'}
                 thisParentDir = obj.paramsToColorModulationDirName(thisParams);
-            case 'Background'
+                
+            case {'Background' 'Background_v2'}
                 thisParentDir = obj.paramsToBackgroundDirName(thisParams);
+                
             case 'Instance'
                 thisParentDir = obj.paramsToInstanceDirName(thisParams);
+               
+            case 'LMSsampling'
+                thisParentDir = obj.paramsToLMSsamplingDirName(thisParams);
+                
+            case 'ResponseSubsampling'
+                thisParentDir = obj.paramsToResponseSubsamplingDirName(thisParams);
+                
             case 'threshold'
                 thisParentDir = obj.paramsToThresholdDirName(thisParams);
             case 'psychoEllipsoid'
                 thisParentDir = obj.paramsToPsychoEllipsoidDirName(thisParams);
-            case 'Spatial'
+                
+            case {'Spatial' 'Spatial_v2'}
                 thisParentDir = obj.paramsToSpatialDirName(thisParams);
-            case 'Temporal'
+                
+            case {'Temporal' 'Temporal_v2'}
                 thisParentDir = obj.paramsToTemporalDirName(thisParams);
-            case 'Optics'
+                
+            case {'Optics' 'Optics_v2'}
                 thisParentDir = obj.paramsToOiDirName(thisParams);
-            case 'Mosaic'
+                
+            case {'Mosaic' 'Mosaic_v2'}
                 thisParentDir = obj.paramsToMosaicDirName(thisParams);
+            
             otherwise
-                error('Unkown parent parameters type');
+                error('Unkown parent parameters type: ''%s''.', thisParams.type);
         end
         theParentDir = fullfile(theParentDir,thisParentDir);
         if (~exist(theParentDir,'dir') & p.Results.MakeDirectories)
             mkdir(theParentDir);
+        else
+            %fprintf(2,'Parent directory ''%s'' exists already\n', theParentDir);
         end
     end    
 end
@@ -80,26 +102,30 @@ end
 switch (p.Results.Type)
     case 'mat'
         theTypeDir = fullfile(theParentDir,'matfiles');
-    case 'figure'
+    case {'figure', 'NicePlotExport'}
         theTypeDir = fullfile(theParentDir,'figures');
     case {'movie','movieFile'}
         theTypeDir = fullfile(theParentDir,'movies');
 end
 if (~exist(theTypeDir,'dir') & p.Results.MakeDirectories)
     mkdir(theTypeDir);
+else
+    %fprintf(2,'Type directory ''%s'' exists already\n', theTypeDir);
 end
 
 %% Add in the name of reading or writing program
 filedir = fullfile(theTypeDir,theProgram);
 if (~exist(filedir,'dir') & p.Results.MakeDirectories)
     mkdir(filedir);
+else
+    %fprintf(2,'Program directory ''%s'' exists already\n', filedir);
 end
 
 %% Add in the filename
 switch (p.Results.Type)
     case 'mat'
         filename = [name '.mat'];
-    case 'figure'
+    case {'figure', 'NicePlotExport'}
         filename = [name '.' p.Results.FigureType];
     case {'movie','movieFile'}
         filename = [name '.' p.Results.MovieType];

@@ -1,5 +1,5 @@
-function validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
-% validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
+function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstances(varargin)
+% [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstances(varargin)
 %
 % Show how to generate a number of response instances for a given stimulus
 % condition.  The default parameters are set up to generate just a single frame
@@ -36,8 +36,11 @@ function validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
 % Key/value pairs
 %   'rParams' - Value the is the rParams structure to use
 %   'testDirectionParams - Value is the testDirectionParams structure to use
-%   'setRngSeed' - true/false (default true).  Set the rng seed to a
-%        value so output is reproducible.
+%   'emPathType' - Value (one of: 'none', 'frozen', 'random') determines whether we have:
+%                  zero eye movements across all trials, 
+%                  an emPath that is frozen across all trials,
+%                  or a dynamic emPath that changes across trials.
+%   'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
 %   'compute' - true/false (default true).  Do the computations.
 %   'generatePlots' - true/false (default false).  Produce response
 %        visualizations.  Set to false when running big jobs on clusters or
@@ -55,7 +58,8 @@ function validationData = t_coneCurrentEyeMovementsResponseInstances(varargin)
 p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
-p.addParameter('setRng',true,@islogical);
+p.addParameter('emPathType','none',@ischar);
+p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('generatePlots',false,@islogical);
 p.addParameter('exportPDF',true,@islogical);
@@ -70,11 +74,6 @@ if (nargin == 0)
     ieInit; close all;
 end
 
-%% Fix random number generator so we can validate output exactly
-if (p.Results.setRng)
-    rng(1);
-end
-
 %% Get the parameters we need
 %
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
@@ -85,17 +84,34 @@ if (isempty(rParams))
     % Override some defult parameters
     %
     % Set duration equal to sampling interval to do just one frame.
-    rParams.temporalParams.simulationTimeStepSecs = 200/1000;
-    rParams.temporalParams.stimulusDurationInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.eyesDoNotMove = true;
+    rParams.temporalParams.stimulusDurationInSeconds = 200/1000;
+    rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
+    rParams.temporalParams.secondsToInclude = rParams.temporalParams.stimulusDurationInSeconds;
     
-    rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
-    rParams.mosaicParams.isomerizationNoise = true;
-    rParams.mosaicParams.osNoise = true;
+    rParams.mosaicParams.integrationTimeInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
+    rParams.mosaicParams.isomerizationNoise = 'random';         % Type coneMosaic.validNoiseFlags to get valid values
+    rParams.mosaicParams.osNoise = 'random';                    % Type outerSegment.validNoiseFlags to get valid values
     rParams.mosaicParams.osModel = 'Linear';
+end
+
+
+% Set the emPathType
+if (~isempty(p.Results.emPathType))
+    rParams.temporalParams.emPathType = p.Results.emPathType;
+end
+    
+% Fix random number generator so we can validate output exactly
+if (p.Results.freezeNoise)
+     fprintf(2, '\n%s: freezing all noise \n', mfilename);
+     rng(1);
+     if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
+         fprintf(2, '\tmosaicParams.isomerizationNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.isomerizationNoise);
+         rParams.mosaicParams.isomerizationNoise = 'frozen';
+     end
+     if (strcmp(rParams.mosaicParams.osNoise, 'random'))
+         fprintf(2, '\tmosaicParams.osNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.osNoise);
+         rParams.mosaicParams.osNoise = 'frozen';
+     end
 end
 
 %% Parameters that define the LM instances we'll generate here
@@ -113,9 +129,8 @@ if (p.Results.compute)
     theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
     
     % Create the cone mosaic
-    rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
     theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
-    
+
     %% Define color modulation list
     switch (testDirectionParams.instanceType)
         case 'LMPlane'
@@ -147,61 +162,75 @@ if (p.Results.compute)
     parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
     nParforConditions = length(parforConditionStructs);
     parforRanSeeds = randi(1000000,nParforConditions,1)+1;
-    
+
     % Generate data for the no stimulus condition
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = [0 0 0]';
     colorModulationParamsTemp.contrast = 0;
     stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
         colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
-    [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-        rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
+    [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, ...
+        rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic, 'seed', 1);
+ 
     noStimData = struct(...
         'testContrast', colorModulationParamsTemp.contrast, ...
         'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
         'stimulusLabel', stimulusLabel, ...
         'responseInstanceArray',responseInstanceArray, ...
-        'noiseFreeIsomerizations',noiseFreeIsomerizations);
+        'noiseFreeIsomerizations',noiseFreeIsomerizations, ...
+        'noiseFreePhotocurrents', noiseFreePhotocurrents);
     
     % Write the no cone contrast data and some extra facts we need
     paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
     rwObject.write('responseInstances',noStimData,paramsList,theProgram);
-    
+      
     % Save the other data we need for use by the classifier preprocessing subroutine
     ancillaryData = struct(...
         'testConeContrasts', testConeContrasts, ...
         'testContrasts', testContrasts, ...
         'rParams', rParams, ...
         'instanceParams', testDirectionParams);
+    ancillaryData.parforConditionStructs = parforConditionStructs;
     rwObject.write('ancillaryData',ancillaryData,paramsList,theProgram);
     
     %% Generate data for all the examined stimuli
     %
     % It is possible that the parfor loop will not work for you, depending
     % on your Matlab configuration.  In this case, change it to a for loop.
-
+   
     % Loop over color directions
+    %
+    % Note tha as the mosaic handle object (and any other handle objects)
+    % enter the parfor loop, a copy local to each worker is created.  This
+    % is the behavior we want, so that the isomerizations calculations for
+    % each loop iteration don't step on each other.  Also note that any
+    % changes to the mosaic object inside the loop do not get propagted
+    % back out -- the mosaic object itself is the same at the end of the
+    % parfor as at the start.  This is also OK here, but might be confusing
+    % under other circumstances.
     tic;
     stimDataForValidation = cell(nParforConditions,1);
-    rState = rng;
-    parfor kk = 1:nParforConditions
-        rng(parforRanSeeds(kk));
+    %rState = rng;
+    parfor kk = 1:nParforConditions          
+        %rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
         colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
         
         % Make noisy instances for each contrast
-        stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f',...
+        stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.5f',...
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
-        [responseInstanceArray,noiseFreeIsomerizations] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, rParams.temporalParams.simulationTimeStepSecs, ...
-            rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic);
+        [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = ...
+            colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, ...
+                rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic, 'seed', parforRanSeeds(kk));
         stimData = struct(...
             'testContrast', colorModulationParamsTemp.contrast, ...
             'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
             'stimulusLabel', stimulusLabel, ...
             'responseInstanceArray',responseInstanceArray, ...
-            'noiseFreeIsomerizations',noiseFreeIsomerizations);
+            'noiseFreeIsomerizations',noiseFreeIsomerizations, ...
+            'noiseFreePhotocurrents', noiseFreePhotocurrents);
         
         % Save some data for validation in first loop
         if (kk == 1)
@@ -212,7 +241,7 @@ if (p.Results.compute)
         paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
         rwObject.write('responseInstances',stimData,paramsList,theProgram);
     end
-    rng(rState);
+    %rng(rState);
     fprintf('Finished generating responses in %2.2f minutes\n', toc/60);
     
     %% Validation data
@@ -221,64 +250,148 @@ if (p.Results.compute)
     % parfor loop (and is in fact a bit hard to save outside the parfor
     % loop)
     if (nargout > 0)
-        validationData.ancillaryData = ancillaryData;
         validationData.noStimData = noStimData.responseInstanceArray(1);
         validationData.stimData = stimDataForValidation{1};
+        extraData.ancillaryData = ancillaryData;
+        extraData.p.Results = p.Results;
     end
 end
 
 %% Visualize
-%
-% This is not yet implemented, but here is where the code would go.  And, a
-% very early version of the visualization is in the commented out code
-% immediately below
 if (p.Results.generatePlots)
-    % noStimData = rwObject.read('responseInstances',paramsList,theProgram);
-    % ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
-    % parforConditionStructs = ancillaryData.parforConditionStructs;
-    % nParforConditions = length(parforConditionStructs);
-    % 
-    % for kk = 1:nParforConditions 
-    %     thisConditionStruct = parforConditionStructs{kk};
-    %     colorModulationParamsTemp = rParams.colorModulationParams;
-    %     colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
-    %     colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
-    %     paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
-    %     stimData = rwObject.read('responseInstances',paramsList,theProgram);   
-    % end   
+
+    noStimData = rwObject.read('responseInstances',paramsList,theProgram);
+    ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
+    parforConditionStructs = ancillaryData.parforConditionStructs;
+
+    rParams = ancillaryData.rParams;
+    nParforConditions = length(parforConditionStructs); 
+    for kk = 1:nParforConditions 
+         thisConditionStruct = parforConditionStructs{kk};
+         colorModulationParamsTemp = rParams.colorModulationParams;
+         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
+         colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
+         paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+         stimData = rwObject.read('responseInstances',paramsList,theProgram);   
+         instancesNum = size(stimData.responseInstanceArray,1);
+         
+         hFig = figure(100); clf;
+         set(hFig, 'Position', [10 10 1400 800], 'Color', [1 1 1]);
+         
+         % normalize submosaic responses with respect to their mean
+         responseNormalization = 'absoluteLevel';
+         if strcmp(responseNormalization, 'absoluteLevel')
+            LMconeIndices = find(theMosaic.pattern==2 | theMosaic.pattern==3);
+            tmp = reshape(stimData.noiseFreeIsomerizations, [theMosaic.rows*theMosaic.cols, size(stimData.noiseFreeIsomerizations,3)]);
+            tmp = tmp(LMconeIndices,:);
+            maxNoiseFreeIsomerization = max(tmp(:));
+            minNoiseFreeIsomerization = min(tmp(:));
+            margin = 0.1*(maxNoiseFreeIsomerization-minNoiseFreeIsomerization);
+            maxNoiseFreeIsomerization = maxNoiseFreeIsomerization + margin;
+            minNoiseFreeIsomerization = minNoiseFreeIsomerization - margin;
+            if (minNoiseFreeIsomerization < 0)
+                minNoiseFreeIsomerization = 0;
+            end
+            
+            if (~isempty(stimData.noiseFreePhotocurrents))
+                tmp = reshape(stimData.noiseFreePhotocurrents, [theMosaic.rows*theMosaic.cols, size(stimData.noiseFreePhotocurrents,3)]);
+                tmp = tmp(LMconeIndices,:);
+                maxNoiseFreePhotocurrents = max(tmp(:));
+                minNoiseFreePhotocurrents = min(tmp(:));
+                margin = 0.1*(maxNoiseFreePhotocurrents-minNoiseFreePhotocurrents);
+                maxNoiseFreePhotocurrents = maxNoiseFreePhotocurrents + margin;
+                minNoiseFreePhotocurrents = minNoiseFreePhotocurrents - margin;
+            end
+         end
+         
+         noiseFreeAbsorptions = (stimData.noiseFreeIsomerizations-minNoiseFreeIsomerization)/(maxNoiseFreeIsomerization-minNoiseFreeIsomerization);
+         if (~isempty(stimData.noiseFreePhotocurrents))
+            noiseFreePhotocurrents  = (stimData.noiseFreePhotocurrents-minNoiseFreePhotocurrents)/(maxNoiseFreePhotocurrents-minNoiseFreePhotocurrents);
+         end
+         
+         for instanceIndex = 1:instancesNum     
+             data = stimData.responseInstanceArray(instanceIndex);
+             absorptions = data.theMosaicIsomerizations;
+             photocurrents = data.theMosaicPhotoCurrents;
+             absorptionsTimeAxis = data.timeAxis;
+             photocurrentsTimeAxis = data.photocurrentTimeAxis;
+             
+             % Scale absorptions and photocurrents
+             absorptions = (absorptions-minNoiseFreeIsomerization)/(maxNoiseFreeIsomerization-minNoiseFreeIsomerization);
+             if (~isempty(photocurrents))
+                photocurrents  = (photocurrents-minNoiseFreePhotocurrents)/(maxNoiseFreePhotocurrents-minNoiseFreePhotocurrents);
+             end
+             
+             for tBin = 1: numel(absorptionsTimeAxis)  
+                if (isempty(photocurrents))
+                     subplot(1,2,1)
+                else
+                     subplot(2,2,1)
+                end
+                imagesc(squeeze(absorptions(:,:,tBin))); axis 'image'
+                set(gca, 'CLim', [0 1], 'FontSize', 14);
+                title(sprintf('ABSORPTIONS\ninstance:%d/%d (t: %2.1fms)', instanceIndex, instancesNum, absorptionsTimeAxis(tBin)*1000));
+                 
+                if (isempty(photocurrents))
+                    subplot(1,2,2)
+                else
+                    subplot(2,2,2)
+                end
+                imagesc(squeeze(noiseFreeAbsorptions(:,:,tBin))); axis 'image'
+                set(gca, 'CLim', [0 1], 'FontSize', 14);
+                title(sprintf('%s\n MEAN ABSORPTIONS\n cond: %d/%d  (t: %2.1fms)', stimData.stimulusLabel, kk, nParforConditions,  absorptionsTimeAxis(tBin)*1000));
+                 
+                % Add colorbar
+                originalPosition = get(gca, 'position');
+                 
+                ticks = 0:0.2:1.0;
+                delta = (maxNoiseFreeIsomerization-minNoiseFreeIsomerization)*0.2;
+                tickLabels = minNoiseFreeIsomerization:delta:maxNoiseFreeIsomerization;
+                hCbar = colorbar('Ticks', ticks, 'TickLabels', sprintf('%2.1f\n',tickLabels));
+                hCbar.Orientation = 'vertical'; 
+                hCbar.Label.String = sprintf('absorptions (R*/cone/%2.2fms)', theMosaic.integrationTime*1000);
+                hCbar.FontSize = 14; 
+                hCbar.FontName = 'Menlo'; 
+                hCbar.Color = [0.2 0.2 0.2];
+                % The addition changes the figure size, so undo this change
+                newPosition = get(gca, 'position');
+                set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
+        
+                 
+                if (~isempty(photocurrents))
+                    subplot(2,2,3)
+                    imagesc(squeeze(photocurrents(:,:,tBin))); axis 'image'
+                    set(gca, 'CLim', [0 1], 'FontSize', 14);
+                    title(sprintf('PHOTOCURRENTS\n instance:%d/%d (t: %2.1fms)', instanceIndex, instancesNum, photocurrentsTimeAxis(tBin)*1000));
+                
+                    subplot(2,2,4)
+                    imagesc(squeeze(noiseFreePhotocurrents(:,:,tBin))); axis 'image'
+                    set(gca, 'CLim', [0 1], 'FontSize', 14);
+                    title(sprintf('%s \n MEAN PHOTOCURRENTS\n cond: %d/%d  (t: %2.1fms)', stimData.stimulusLabel, kk, nParforConditions, photocurrentsTimeAxis(tBin)*1000));
+               
+                    % Add colorbar
+                    originalPosition = get(gca, 'position');
+                    ticks = 0:0.2:1.0;
+                    delta = (maxNoiseFreePhotocurrents-minNoiseFreePhotocurrents)*0.2;
+                    tickLabels = minNoiseFreePhotocurrents:delta:maxNoiseFreePhotocurrents;
+                    hCbar = colorbar('Ticks', ticks, 'TickLabels', sprintf('%2.1f\n',tickLabels));
+                    hCbar.Orientation = 'vertical'; 
+                    hCbar.Label.String = sprintf('photocurrents (pAmps)');
+                    hCbar.FontSize = 14; 
+                    hCbar.FontName = 'Menlo'; 
+                    hCbar.Color = [0.2 0.2 0.2];
+                    % The addition changes the figure size, so undo this change
+                    newPosition = get(gca, 'position');
+                    set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
+                end
+                colormap(gray);
+                drawnow;
+             end
+         end
+     end   
 end
-% % THIS IS BROKEN AND NEES TO BE UPDATED TO NEW DATA FORMAT AND rwObject
-% % LAND.
-% %
-% % Also, the time numbers on the videos do not seem to correspond to the
-% % stimulus peak at time 0, and the videos look screwy in the no noise
-% % condition.
-% if (p.Results.generatePlots)
-    % fprintf('\nVisualizing responses ...\n');
-    % for ii = 1:size(testConeContrasts,2)
-    %     for jj = 1:numel(testContrasts)
-    %         stimulusLabel = sprintf('LMS_%2.2f_%2.2f_%2.2f_Contrast_%2.2f', testConeContrasts(1,ii), testConeContrasts(2,ii), testConeContrasts(3,ii), testContrasts(jj));
-    %         s = theStimData{ii, jj};
-    % 
-    %         % Visualize a few response instances only
-    %         for iTrial = 1:2
-    %             figHandle = visualizeResponseInstance(conditionDir, s.responseInstanceArray(iTrial), stimulusLabel, theMosaic, iTrial, testDirectionParams.trialsNum, p.Results.renderVideo);
-    %             if (p.Results.exportPDF)
-    %                 figFileNames{ii, jj, iTrial} = ...
-    %                     fullfile(colorGaborDetectOutputDir(conditionDir),sprintf('%s_Trial%dOf%d.pdf', stimulusLabel, iTrial, testDirectionParams.trialsNum),'figures');
-    %                 NicePlot.exportFigToPDF(figFileNames{ii, jj, iTrial}, figHandle, 300);
-    %             end
-    %         end
-    %     end
-    % end
-    % 
-    % % Export summary PDF with all responses
-    % if (p.Results.exportPDF)
-    %     summaryPDF = fullfile(colorGaborDetectOutputDir(conditionDir,'figures'), 'AllInstances.pdf');
-    %     fprintf('Exporting a summary PDF with all response instances in %s\n', summaryPDF);
-    %     NicePlot.combinePDFfilesInSinglePDF(figFileNames(:), summaryPDF);
-    % end
-% end
+
+
 
 %% Delete response instance files.
 %
@@ -295,3 +408,6 @@ if (p.Results.delete)
         rwObject.delete('responseInstances',paramsList,theProgram);   
     end   
 end
+end
+
+

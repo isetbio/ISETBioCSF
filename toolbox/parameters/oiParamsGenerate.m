@@ -10,7 +10,6 @@ function oiParams = oiParamsGenerate(varargin)
 %
 % Other parameters that are needed for the mosaic are
 %  fieldOfViewDegs - Field of view computed
-%  timeStepInSeconds - Time step to compute responses on
 %  integrationTimeInSeconds - Cone integration time.  Generally the same as time step
 % These get set outside this routine as they are typically matched up to
 % other parameters set elsewhere.

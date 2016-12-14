@@ -1,25 +1,30 @@
-function imageHarmonicParams = imageHarmonicParamsFromGaborParams(spatialParams, colorModulationParams)
-% imageHarmonicParams = imageHarmonicParamsFromGaborParams(spatialParams,colorModulationParams)
+function imageHarmonicParams = imageHarmonicParamsFromGaborParams(spatialParams,contrast)
+% imageHarmonicParams = imageHarmonicParamsFromGaborParams(spatialParams,contrast)
 %
 % The imageHarmonic function in isetbio takes a parameters structure that
 % is a little different from how we'd like to specify scene parameters for
 % this project. This function produces a structure to be passed to
-% imageHarmonic based on the spatialParams and colorModulationParams structures
-% we are using here.
+% imageHarmonic based on the spatialParams and contrast.
 
 % Set up base parameters
 imageHarmonicParams = spatialParams;
 
 % Pull contrast into the structure
-if (isstruct(colorModulationParams)) && (isfield(colorModulationParams, 'contrast'))
-    imageHarmonicParams.contrast = colorModulationParams.contrast;
-else
-    imageHarmonicParams.contrast = colorModulationParams;
-end
+imageHarmonicParams.contrast = contrast;
+
 % Computed parameters.  These convert numbers to a form used by underlying
 % routines.  This one is frequency
 cyclesPerImage = spatialParams.fieldOfViewDegs*spatialParams.cyclesPerDegree;
 imageHarmonicParams.freq = cyclesPerImage;
+
+if (isfield(spatialParams, 'spatialPhaseDegs'))
+    imageHarmonicParams.ph = spatialParams.spatialPhaseDegs/180*pi;
+end
+
+if (isfield(spatialParams, 'orientationDegs'))
+    imageHarmonicParams.ang = spatialParams.orientationDegs/180*pi;
+end
+
 % 
 % % Set GaborFlag to specify window.  Different conventions about width for
 % % half-cosine and Gaussian, plus make it negative for half-cosine instead of Gaussian
