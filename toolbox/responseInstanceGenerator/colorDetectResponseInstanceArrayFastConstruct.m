@@ -72,40 +72,17 @@ else
      photocurrents = photocurrents(:,:,:,photocurrentsTimeIndicesToKeep);
 end
 
-% Bring the data to old format
-for iTrial = 1:nTrials
-    trialIsomerizations = single(squeeze(isomerizations(iTrial,:,:,:)));
-    if (isempty(photocurrents))
-        trialPhotocurrents = [];
-    else
-        trialPhotocurrents = single(squeeze(photocurrents(iTrial,:,:,:)));
-    end
-    if (iTrial == 1)
-        theFirstInstance = struct(...
-            'theMosaicIsomerizations', trialIsomerizations, ...
-            'theMosaicPhotoCurrents', trialPhotocurrents, ...
-            'theMosaicEyeMovements', squeeze(theEMpaths(iTrial,isomerizationsTimeIndicesToKeep,:)), ...
-            'timeAxis', isomerizationsTimeAxis(isomerizationsTimeIndicesToKeep), ...
-            'photocurrentTimeAxis', photoCurrentTimeAxis(photocurrentsTimeIndicesToKeep) ...
-        );
-        responseInstanceArray = repmat(theFirstInstance, nTrials, 1);
-        responseInstanceArray(1) = theFirstInstance;
-    else
-        responseInstanceArray(iTrial) = struct(...
-            'theMosaicIsomerizations', trialIsomerizations, ...
-            'theMosaicPhotoCurrents', trialPhotocurrents, ...
-            'theMosaicEyeMovements', squeeze(theEMpaths(iTrial,isomerizationsTimeIndicesToKeep,:)), ...
-            'timeAxis', isomerizationsTimeAxis(isomerizationsTimeIndicesToKeep), ...
-            'photocurrentTimeAxis', photoCurrentTimeAxis(photocurrentsTimeIndicesToKeep) ...
-         );
-    end
-end % iTrial
+% Form the responseInstanceArray struct
+responseInstanceArray.theMosaicIsomerizations = single(isomerizations);
+responseInstanceArray.theMosaicPhotoCurrents = single(photocurrents);
+responseInstanceArray.theMosaicEyeMovements = theEMpaths(:,isomerizationsTimeIndicesToKeep,:);
+responseInstanceArray.timeAxis = isomerizationsTimeAxis(isomerizationsTimeIndicesToKeep);
+responseInstanceArray.photocurrentTimeAxis = photoCurrentTimeAxis(photocurrentsTimeIndicesToKeep);
 
 % Compute the noise-free isomerizations & photocurrents using the first emPath
 theEMpaths = theEMpaths(1,:,:);
 
-% noise-free responses
-
+% Noise-free responses
 % Save original noise flags
 originalIsomerizationNoiseFlag = theMosaic.noiseFlag;
 originalPootocurrentNoiseFlag = theMosaic.os.noiseFlag;
@@ -119,7 +96,7 @@ theMosaic.os.noiseFlag = 'none';
      theMosaic.computeForOISequence(theOIsequence, ...
                     'emPaths', theEMpaths, ...
                     'currentFlag', true);
-%Restore noiseFlags to none
+% Restore noiseFlags to none
 theMosaic.noiseFlag = originalIsomerizationNoiseFlag;
 theMosaic.os.noiseFlag = originalPootocurrentNoiseFlag;
 

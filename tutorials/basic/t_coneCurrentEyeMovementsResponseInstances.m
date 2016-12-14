@@ -227,9 +227,8 @@ if (p.Results.compute)
     % under other circumstances.
     tic;
     stimDataForValidation = cell(nParforConditions,1);
-    %rState = rng;
-    parfor kk = 1:nParforConditions          
-        %rng(parforRanSeeds(kk));
+
+    parfor kk = 1:nParforConditions  
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
@@ -251,16 +250,25 @@ if (p.Results.compute)
         
         % Save some data for validation in first loop
         if (kk == 1)
-            stimDataForValidation{kk} = stimData.responseInstanceArray(1);
+            s = struct();
+            savedTrial = 1;
+            s.theMosaicIsomerizations = squeeze(responseInstanceArray.theMosaicIsomerizations(savedTrial,:,:,:));
+            if (isempty(responseInstanceArray.theMosaicPhotoCurrents))
+                s.theMosaicPhotoCurrents = [];
+            else
+                s.theMosaicPhotoCurrents = squeeze(responseInstanceArray.theMosaicPhotoCurrents(savedTrial,:,:,:));
+            end
+            s.theMosaicEyeMovements = squeeze(responseInstanceArray.theMosaicEyeMovements(savedTrial,:,:));
+            s.timeAxis = responseInstanceArray.timeAxis;
+            s.photocurrentTimeAxis = responseInstanceArray.photocurrentTimeAxis;
+            stimDataForValidation{kk} = s;
         end
         
         % Save data for this color direction/contrast pair
         paramsList = constantParamsList;
         paramsList{numel(paramsList)+1} = colorModulationParamsTemp;
-        %paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
         rwObject.write('responseInstances',stimData,paramsList,theProgram);
     end
-    %rng(rState);
     fprintf('Finished generating responses in %2.2f minutes\n', toc/60);
     
     %% Validation data
@@ -269,8 +277,19 @@ if (p.Results.compute)
     % parfor loop (and is in fact a bit hard to save outside the parfor
     % loop)
     if (nargout > 0)
-        validationData.noStimData = noStimData.responseInstanceArray(1);
-        validationData.stimData = stimDataForValidation{1};
+        savedTrial = 1;
+        noStimValidationData.theMosaicIsomerizations = squeeze(noStimData.responseInstanceArray.theMosaicIsomerizations(savedTrial,:,:,:));
+        if (isempty(noStimData.responseInstanceArray.theMosaicPhotoCurrents))
+            noStimValidationData.theMosaicPhotoCurrents = [];
+        else
+            noStimValidationData.theMosaicPhotoCurrents = squeeze(noStimData.responseInstanceArray.theMosaicPhotoCurrents(savedTrial,:,:,:));
+        end
+        noStimValidationData.theMosaicEyeMovements = squeeze(noStimData.responseInstanceArray.theMosaicEyeMovements(savedTrial,:,:));
+        noStimValidationData.timeAxis = noStimData.responseInstanceArray.timeAxis;
+        noStimValidationData.photocurrentTimeAxis = noStimData.responseInstanceArray.photocurrentTimeAxis;
+        
+        validationData.noStimData = noStimValidationData;
+        validationData.stimData = stimDataForValidation;
         extraData.ancillaryData = ancillaryData;
         extraData.p.Results = p.Results;
     end
@@ -279,14 +298,15 @@ end
 %% Visualize
 if (p.Results.generatePlots)
 
-    responseNormalization = 'absoluteLevel';
+    responseNormalization = 'LMSabsoluteResponseBased';
+    %responseNormalization = 'LMabsoluteResponseBased';
+    %responseNormalization = 'submosaicBasedZscore';
     
     paramsList = constantParamsList;
     paramsList{numel(paramsList)+1} = colorModulationParamsNull;    
     noStimData = rwObject.read('responseInstances',paramsList,theProgram);
-    visualizeResponses(theMosaic, noStimData, responseNormalization, 0, nParforConditions);
-    
     ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
+    
     rParams = ancillaryData.rParams;
     parforConditionStructs = ancillaryData.parforConditionStructs;
     nParforConditions = length(parforConditionStructs); 
@@ -299,7 +319,7 @@ if (p.Results.generatePlots)
          paramsList = constantParamsList;
          paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
          stimData = rwObject.read('responseInstances',paramsList,theProgram);
-         visualizeResponses(theMosaic, stimData, responseNormalization, kk, nParforConditions);
+         visualizeResponses(theMosaic, stimData, noStimData, responseNormalization, kk, nParforConditions);
     end
 end
 
@@ -325,72 +345,120 @@ end
 end
 
 
- function visualizeResponses(theMosaic, stimData, responseNormalization, condIndex, condsNum)
+function visualizeResponses(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum)
          
-     hFig = figure(100+condIndex); clf;
-     set(hFig, 'Position', [10 10 1400 800], 'Color', [1 1 1]);
+    instancesNum = size(stimData.responseInstanceArray.theMosaicIsomerizations,1);
+    if (instancesNum < 1)
+        return;
+    end
+    
+    for coneIndex = 2:4
+        submosaicConeIndices{coneIndex} = find(theMosaic.pattern==coneIndex);
+    end
 
-     % normalize submosaic responses with respect to their mean
-
-     if strcmp(responseNormalization, 'absoluteLevel')
-        LMconeIndices = find(theMosaic.pattern==2 | theMosaic.pattern==3);
-        tmp = reshape(stimData.noiseFreeIsomerizations, [theMosaic.rows*theMosaic.cols, size(stimData.noiseFreeIsomerizations,3)]);
-        tmp = tmp(LMconeIndices,:);
-        maxNoiseFreeIsomerization = max(tmp(:));
-        minNoiseFreeIsomerization = min(tmp(:));
-        margin = 0.1*(maxNoiseFreeIsomerization-minNoiseFreeIsomerization);
-        maxNoiseFreeIsomerization = maxNoiseFreeIsomerization + margin;
-        minNoiseFreeIsomerization = minNoiseFreeIsomerization - margin;
-        if (minNoiseFreeIsomerization < 0)
-            minNoiseFreeIsomerization = 0;
+    timeBins = numel(stimData.responseInstanceArray.timeAxis);
+    if (timeBins == 1)
+        if (isa(theMosaic, 'coneMosaicHex'))
+            coneDims = 2;
+        else
+            coneDims = [2 3];
         end
-
+    elseif (timeBins > 1)
+        if (isa(theMosaic, 'coneMosaicHex'))
+            coneDims = 2;
+        else
+            coneDims = [2 3];
+        end
+    else
+        error('timeBins = %d', timeBins)
+    end
+    
+    photocurrents = [];
+    if (strcmp(responseNormalization, 'LMSabsoluteResponseBased')) || (strcmp(responseNormalization, 'LMabsoluteResponseBased')) || (strcmp(responseNormalization, 'MabsoluteResponseBased')) 
+        % Max from L- and M-cone mosaics
+        if (strcmp(responseNormalization, 'LMSabsoluteResponseBased')) 
+            normalizationConeIndices = [submosaicConeIndices{2}; submosaicConeIndices{3}; submosaicConeIndices{4}];
+        elseif (strcmp(responseNormalization, 'LMabsoluteResponseBased')) 
+            normalizationConeIndices = [submosaicConeIndices{2}; submosaicConeIndices{3};];
+        elseif (strcmp(responseNormalization, 'MabsoluteResponseBased')) 
+            % Max from M-cone mosaic only
+            normalizationConeIndices = [submosaicConeIndices{3}];
+        else
+            error('unknown normalization: ''%s''.', responseNormalization);
+        end
+        [absorptions, minAbsorptions, maxAbsorptions] = coneIndicesBasedScaling(stimData.responseInstanceArray.theMosaicIsomerizations, coneDims, normalizationConeIndices, true);
+        [noiseFreeIsomerizations, minNoiseFreeIsomerizations, maxNoiseFreeIsomerizations] = coneIndicesBasedScaling(stimData.noiseFreeIsomerizations, coneDims, normalizationConeIndices, false);
         if (~isempty(stimData.noiseFreePhotocurrents))
-            tmp = reshape(stimData.noiseFreePhotocurrents, [theMosaic.rows*theMosaic.cols, size(stimData.noiseFreePhotocurrents,3)]);
-            tmp = tmp(LMconeIndices,:);
-            maxNoiseFreePhotocurrents = max(tmp(:));
-            minNoiseFreePhotocurrents = min(tmp(:));
-            margin = 0.1*(maxNoiseFreePhotocurrents-minNoiseFreePhotocurrents);
-            maxNoiseFreePhotocurrents = maxNoiseFreePhotocurrents + margin;
-            minNoiseFreePhotocurrents = minNoiseFreePhotocurrents - margin;
+            [photocurrents, minPhotocurrents, maxPhotocurrents] = coneIndicesBasedScaling(stimData.responseInstanceArray.theMosaicPhotoCurrents, coneDims, normalizationConeIndices, true);
+            [noiseFreePhotocurrents, minNoiseFreePhotocurrents, maxNoiseFreePhotocurrents] = coneIndicesBasedScaling(stimData.noiseFreePhotoCurrents, coneDims, normalizationConeIndices, false);
         end
-     end
-
-     noiseFreeAbsorptions = (stimData.noiseFreeIsomerizations-minNoiseFreeIsomerization)/(maxNoiseFreeIsomerization-minNoiseFreeIsomerization);
-     if (~isempty(stimData.noiseFreePhotocurrents))
-        noiseFreePhotocurrents  = (stimData.noiseFreePhotocurrents-minNoiseFreePhotocurrents)/(maxNoiseFreePhotocurrents-minNoiseFreePhotocurrents);
-     end
-
-     instancesNum = size(stimData.responseInstanceArray,1);
-     for instanceIndex = 1:1 % instancesNum     
-         data = stimData.responseInstanceArray(instanceIndex);
-         absorptions = data.theMosaicIsomerizations;
-         photocurrents = data.theMosaicPhotoCurrents;
-         absorptionsTimeAxis = data.timeAxis;
-         photocurrentsTimeAxis = data.photocurrentTimeAxis;
-
-         % Scale absorptions and photocurrents
-         absorptions = (absorptions-minNoiseFreeIsomerization)/(maxNoiseFreeIsomerization-minNoiseFreeIsomerization);
-         if (~isempty(photocurrents))
-            photocurrents  = (photocurrents-minNoiseFreePhotocurrents)/(maxNoiseFreePhotocurrents-minNoiseFreePhotocurrents);
+    elseif strcmp(responseNormalization, 'submosaicBasedZscore')
+         [absorptions, minAbsorptions, maxAbsorptions] = submosaicBasedZscore(stimData.responseInstanceArray.theMosaicIsomerizations, noStimData.responseInstanceArray.theMosaicIsomerizations, coneDims, submosaicConeIndices, true);
+         [noiseFreeIsomerizations, minNoiseFreeIsomerizations, maxNoiseFreeIsomerizations] = submosaicBasedZscore(stimData.noiseFreeIsomerizations, noStimData.noiseFreeIsomerizations,coneDims, submosaicConeIndices, false);
+         if (~isempty(stimData.noiseFreePhotocurrents))
+             [photocurrents, minPhotocurrents, maxPhotocurrents] = submosaicBasedZscore(stimData.responseInstanceArray.theMosaicPhotoCurrents, noStimData.responseInstanceArray.theMosaicPhotoCurrents, coneDims,  submosaicConeIndices, true);
+             [noiseFreePhotocurrents, minNoiseFreePhotocurrents, maxNoiseFreePhotocurrents] = submosaicBasedZscore(stimData.noiseFreePhotoCurrents, noStimData.noiseFreePhotoCurrents, coneDims,  submosaicConeIndices, false);
          end
+    else
+        error('Unknown responseNormalization method: ''%s''.', responseNormalization);
+    end
 
+     
+    if (isa(theMosaic, 'coneMosaicHex'))
+        fprintf(2, '\nConeHex visualization not implemented yet\n');
+        return;
+    end
+    
+    absorptionsTimeAxis = stimData.responseInstanceArray.timeAxis;
+    photocurrentsTimeAxis = stimData.responseInstanceArray.photocurrentTimeAxis;
+         
+    hFig = figure(100+condIndex); clf;
+    set(hFig, 'Position', [10 10 1400 800], 'Color', [1 1 1]);
+
+    for instanceIndex = 1:5 % instancesNum     
          for tBin = 1: numel(absorptionsTimeAxis)  
             if (isempty(photocurrents))
                  subplot(1,2,1)
             else
                  subplot(2,2,1)
             end
-            imagesc(squeeze(absorptions(:,:,tBin))); axis 'image'
-            set(gca, 'CLim', [0 1], 'FontSize', 14);
-            title(sprintf('ABSORPTIONS\ninstance:%d/%d (t: %2.1fms)', instanceIndex, instancesNum, absorptionsTimeAxis(tBin)*1000));
 
+            % Instance absorptions on the left
+            imagesc(squeeze(absorptions(instanceIndex, :,:,tBin))); axis 'image'
+            set(gca, 'CLim', [0 1], 'FontSize', 14);
+            title(sprintf('absorptions\ninstance:%d/%d (t: %2.1fms)', instanceIndex, instancesNum, absorptionsTimeAxis(tBin)*1000));
+
+            % Add colorbar
+            originalPosition = get(gca, 'position');
+
+            ticks = 0:0.2:1.0;
+            delta = (maxAbsorptions-minAbsorptions)*0.2;
+            if strcmp(responseNormalization, 'submosaicBasedZscore')
+                tickLabels = (minAbsorptions:delta:maxAbsorptions);
+                colorbarLabel = sprintf('absorptions z-score (%2.2fms)', theMosaic.integrationTime*1000);
+            else
+                tickLabels = (minAbsorptions:delta:maxAbsorptions);
+                colorbarLabel = sprintf('absorptions (R*/cone/%2.2fms)', theMosaic.integrationTime*1000);
+            end
+            hCbar = colorbar('Ticks', ticks, 'TickLabels', sprintf('%2.2f\n',tickLabels));
+            hCbar.Orientation = 'vertical'; 
+            hCbar.Label.String = colorbarLabel;
+            hCbar.FontSize = 14; 
+            hCbar.FontName = 'Menlo'; 
+            hCbar.Color = [0.2 0.2 0.2];
+            % The addition changes the figure size, so undo this change
+            newPosition = get(gca, 'position');
+            set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
+            
+            
             if (isempty(photocurrents))
                 subplot(1,2,2)
             else
                 subplot(2,2,2)
             end
-            imagesc(squeeze(noiseFreeAbsorptions(:,:,tBin))); axis 'image'
+            
+            % Noise-free isomerizations on the right
+            imagesc(squeeze(noiseFreeIsomerizations(:,:,tBin))); axis 'image'
             set(gca, 'CLim', [0 1], 'FontSize', 14);
             title(sprintf('%s\n MEAN ABSORPTIONS\n cond: %d/%d  (t: %2.1fms)', stimData.stimulusLabel, condIndex, condsNum,  absorptionsTimeAxis(tBin)*1000));
 
@@ -398,49 +466,169 @@ end
             originalPosition = get(gca, 'position');
 
             ticks = 0:0.2:1.0;
-            delta = (maxNoiseFreeIsomerization-minNoiseFreeIsomerization)*0.2;
-            tickLabels = minNoiseFreeIsomerization:delta:maxNoiseFreeIsomerization;
-            hCbar = colorbar('Ticks', ticks, 'TickLabels', sprintf('%2.1f\n',tickLabels));
+            delta = (maxNoiseFreeIsomerizations-minNoiseFreeIsomerizations)*0.2;
+            tickLabels = (minNoiseFreeIsomerizations:delta:maxNoiseFreeIsomerizations);
+            if strcmp(responseNormalization, 'submosaicBasedZscore')
+                colorbarLabel = sprintf('absorptions z-score (%2.2fms)', theMosaic.integrationTime*1000);
+            else
+                colorbarLabel = sprintf('absorptions (R*/cone/%2.2fms)', theMosaic.integrationTime*1000);
+            end
+            hCbar = colorbar('Ticks', ticks, 'TickLabels', sprintf('%2.2f\n',tickLabels));
             hCbar.Orientation = 'vertical'; 
-            hCbar.Label.String = sprintf('absorptions (R*/cone/%2.2fms)', theMosaic.integrationTime*1000);
+            hCbar.Label.String = colorbarLabel;
             hCbar.FontSize = 14; 
             hCbar.FontName = 'Menlo'; 
             hCbar.Color = [0.2 0.2 0.2];
             % The addition changes the figure size, so undo this change
             newPosition = get(gca, 'position');
             set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
-
+            
 
             if (~isempty(photocurrents))
                 subplot(2,2,3)
-                imagesc(squeeze(photocurrents(:,:,tBin))); axis 'image'
+                imagesc(squeeze(photocurrents(instanceIndex,:,:,tBin))); axis 'image'
                 set(gca, 'CLim', [0 1], 'FontSize', 14);
-                title(sprintf('PHOTOCURRENTS\n instance:%d/%d (t: %2.1fms)', instanceIndex, instancesNum, photocurrentsTimeAxis(tBin)*1000));
-
-                subplot(2,2,4)
-                imagesc(squeeze(noiseFreePhotocurrents(:,:,tBin))); axis 'image'
-                set(gca, 'CLim', [0 1], 'FontSize', 14);
-                title(sprintf('%s \n MEAN PHOTOCURRENTS\n cond: %d/%d  (t: %2.1fms)', stimData.stimulusLabel, condIndex, condsNum, photocurrentsTimeAxis(tBin)*1000));
+                title(sprintf('Photocurrents\n instance:%d/%d (t: %2.1fms)', instanceIndex, instancesNum, photocurrentsTimeAxis(tBin)*1000));
 
                 % Add colorbar
                 originalPosition = get(gca, 'position');
                 ticks = 0:0.2:1.0;
-                delta = (maxNoiseFreePhotocurrents-minNoiseFreePhotocurrents)*0.2;
-                tickLabels = minNoiseFreePhotocurrents:delta:maxNoiseFreePhotocurrents;
+                delta = (maxPhotocurrents-minPhotocurrents)*0.2;
+                if strcmp(responseNormalization, 'submosaicBasedZscore')
+                    tickLabels = minPhotocurrents:delta:maxPhotocurrents;
+                    colorbarLabel = sprintf('photocurrents z-score');
+                else
+                    tickLabels = minPhotocurrents:delta:maxPhotocurrents;
+                    colorbarLabel = sprintf('photocurrents (pAmps)');
+                end
                 hCbar = colorbar('Ticks', ticks, 'TickLabels', sprintf('%2.1f\n',tickLabels));
                 hCbar.Orientation = 'vertical'; 
-                hCbar.Label.String = sprintf('photocurrents (pAmps)');
+                hCbar.Label.String = colorbarLabel;
                 hCbar.FontSize = 14; 
                 hCbar.FontName = 'Menlo'; 
                 hCbar.Color = [0.2 0.2 0.2];
                 % The addition changes the figure size, so undo this change
                 newPosition = get(gca, 'position');
                 set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
+                
+                
+                subplot(2,2,4)
+                imagesc(squeeze(noiseFreePhotocurrents(:,:,tBin))); axis 'image'
+                set(gca, 'CLim', [0 1], 'FontSize', 14);
+                title(sprintf('%s \n MEAN PHOTOCURRENTS\n cond: %d/%d  (t: %2.1fms)', stimData.stimulusLabel, condIndex, condsNum, photocurrentsTimeAxis(tBin)*1000));
+                
+                % Add colorbar
+                originalPosition = get(gca, 'position');
+                ticks = 0:0.2:1.0;
+                delta = (maxNoiseFreePhotocurrents-minNoiseFreePhotocurrents)*0.2;
+                if strcmp(responseNormalization, 'submosaicBasedZscore')
+                    tickLabels = minNoiseFreePhotocurrents:delta:maxNoiseFreePhotocurrents;
+                    colorbarLabel = sprintf('photocurrents z-score');
+                else
+                    tickLabels = minNoiseFreePhotocurrents:delta:maxNoiseFreePhotocurrents;
+                    colorbarLabel = sprintf('photocurrents (pAmps)');
+                end
+                hCbar = colorbar('Ticks', ticks, 'TickLabels', sprintf('%2.1f\n',tickLabels));
+                hCbar.Orientation = 'vertical'; 
+                hCbar.Label.String = colorbarLabel;
+                hCbar.FontSize = 14; 
+                hCbar.FontName = 'Menlo'; 
+                hCbar.Color = [0.2 0.2 0.2];
+                % The addition changes the figure size, so undo this change
+                newPosition = get(gca, 'position');
+                set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
+                
             end
-            colormap(gray);
+            
+            colormap(bone(1024));
             drawnow;
          end
      end
- end 
+end 
     
 
+function [responseDataZscore, minZscore, maxZscore] = submosaicBasedZscore(responseData, noResponseData, coneDims, submosaicConeIndices, isInstanceData)
+    if (numel(coneDims) == 2)
+        originalResponseDataDims = size(responseData);
+        if (isInstanceData)
+            responseData = reshape(responseData, [size(responseData,1) size(responseData,2)*size(responseData,3) size(responseData,4)]);
+            noResponseData = reshape(noResponseData, [size(noResponseData,1) size(noResponseData,2)*size(noResponseData,3) size(noResponseData,4)]);
+        else
+            responseData = reshape(responseData, [size(responseData,1)*size(responseData,2) size(responseData,3)]);
+            noResponseData = reshape(noResponseData, [size(noResponseData,1)*size(noResponseData,2) size(noResponseData,3)]);
+        end
+    end
+    
+    responseDataZscore = responseData;
+    for coneIndex = 2:4
+        if (isInstanceData)
+            subMosaicResponseData = responseData(:, submosaicConeIndices{coneIndex},:);
+            subMosaicNoResponseData = noResponseData(:, submosaicConeIndices{coneIndex},:);
+        else
+            % noise-free data
+            subMosaicResponseData = responseData(submosaicConeIndices{coneIndex},:);
+            subMosaicNoResponseData = noResponseData(submosaicConeIndices{coneIndex},:);
+        end
+        
+        % subtract mean over all cones of a particular type (across all instances and time) for the noResponse data
+        meanSubMosaicNoResponse = mean(subMosaicNoResponseData(:));
+        subMosaicResponseData = (subMosaicResponseData - meanSubMosaicNoResponse);
+        
+        % divide by std over all cones of a particular type (across all instances and time) for the noResponse data
+        if (isInstanceData)
+            stdSubMosaicNoResponse = std(subMosaicNoResponseData(:)); 
+            subMosaicResponseData = subMosaicResponseData/stdSubMosaicNoResponse;
+        end
+        
+        if (isInstanceData)
+            responseDataZscore(:, submosaicConeIndices{coneIndex},:) = subMosaicResponseData;
+        else
+            % noise-free data
+            responseDataZscore(submosaicConeIndices{coneIndex},:) = subMosaicResponseData;
+        end
+    end % coneIndex
+
+    % Normalize
+    if (isInstanceData)
+        maxZscore = 1.0;
+        minZscore = -maxZscore;
+    else
+        maxZscore = max(abs(responseDataZscore(:)));
+        minZscore = -maxZscore;
+    end
+    responseDataZscore = (responseDataZscore-minZscore)/(maxZscore-minZscore);  
+    
+    % Back to original shape
+    if (numel(coneDims) == 2)
+        responseDataZscore = reshape(responseDataZscore, originalResponseDataDims);
+    end
+end
+ 
+ 
+ function [scaledResp, minResp, maxResp] = coneIndicesBasedScaling(responseData, coneDims, coneIndices, isInstanceData)
+    if (numel(coneDims) == 2)
+        originalResponseDataDims = size(responseData);
+        if (isInstanceData)
+            responseData = reshape(responseData, [size(responseData,1) size(responseData,2)*size(responseData,3) size(responseData,4)]);
+        else
+            responseData = reshape(responseData, [size(responseData,1)*size(responseData,2) size(responseData,3)]);
+        end
+    end
+    
+    if (isInstanceData)
+        subMosaicResponseData = responseData(:, coneIndices,:);
+    else
+        % noise-free data
+        subMosaicResponseData = responseData(coneIndices,:);
+    end
+        
+    maxResp = max(subMosaicResponseData(:));
+    minResp = min(subMosaicResponseData(:));
+    scaledResp = (responseData-minResp)/(maxResp-minResp);
+    
+    % Back to original shape
+    if (numel(coneDims) == 2)
+        scaledResp = reshape(scaledResp, originalResponseDataDims);
+    end
+ end
+ 
