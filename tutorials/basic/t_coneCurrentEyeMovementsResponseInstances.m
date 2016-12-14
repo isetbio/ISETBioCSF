@@ -416,20 +416,32 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
     photocurrentsTimeAxis = stimData.responseInstanceArray.photocurrentTimeAxis;
          
     hFig = figure(100+condIndex); clf;
-    set(hFig, 'Position', [10 10 1400 800], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 1100 1050], 'Color', [1 1 1], 'Name', stimData.stimulusLabel);
 
+    if (isempty(photocurrents))
+        subplotRows = 1;
+    else
+        subplotRows = 2;
+    end
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', subplotRows, ...
+           'colsNum', 2, ...
+           'heightMargin',   0.06, ...
+           'widthMargin',    0.13, ...
+           'leftMargin',     0.04, ...
+           'rightMargin',    0.08, ...
+           'bottomMargin',   0.03, ...
+           'topMargin',      0.03);
+       
+    
     for instanceIndex = instancesToVisualize
          for tBin = 1: numel(absorptionsTimeAxis)  
-            if (isempty(photocurrents))
-                 subplot(1,2,1)
-            else
-                 subplot(2,2,1)
-            end
-
+             
             % Instance absorptions on the left
+            subplot('Position', subplotPosVectors(1,1).v);
             imagesc(squeeze(absorptions(instanceIndex, :,:,tBin))); axis 'image'
             set(gca, 'CLim', [0 1], 'FontSize', 14);
-            title(sprintf('absorptions\ninstance:%d/%d (t: %2.1fms)', instanceIndex, instancesNum, absorptionsTimeAxis(tBin)*1000));
+            title(sprintf('absorptions\ninstance %d/%d (t: %2.1fms)', instanceIndex, instancesNum, absorptionsTimeAxis(tBin)*1000));
 
             % Add colorbar
             originalPosition = get(gca, 'position');
@@ -448,22 +460,18 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
             hCbar.Label.String = colorbarLabel;
             hCbar.FontSize = 14; 
             hCbar.FontName = 'Menlo'; 
+            hCbar.FontWeight = 'Bold'; 
             hCbar.Color = [0.2 0.2 0.2];
             % The addition changes the figure size, so undo this change
             newPosition = get(gca, 'position');
             set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
             
             
-            if (isempty(photocurrents))
-                subplot(1,2,2)
-            else
-                subplot(2,2,2)
-            end
-            
             % Noise-free isomerizations on the right
+            subplot('Position', subplotPosVectors(1,2).v);
             imagesc(squeeze(noiseFreeIsomerizations(:,:,tBin))); axis 'image'
             set(gca, 'CLim', [0 1], 'FontSize', 14);
-            title(sprintf('%s\n MEAN ABSORPTIONS\n cond: %d/%d  (t: %2.1fms)', stimData.stimulusLabel, condIndex, condsNum,  absorptionsTimeAxis(tBin)*1000));
+            title(sprintf('noise-free absorptions\n cond: %d/%d  (t: %2.1fms)', condIndex, condsNum,  absorptionsTimeAxis(tBin)*1000));
 
             % Add colorbar
             originalPosition = get(gca, 'position');
@@ -472,15 +480,16 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
             delta = (maxNoiseFreeIsomerizations-minNoiseFreeIsomerizations)*0.2;
             tickLabels = (minNoiseFreeIsomerizations:delta:maxNoiseFreeIsomerizations);
             if strcmp(responseNormalization, 'submosaicBasedZscore')
-                colorbarLabel = sprintf('absorptions z-score (%2.2fms)', theMosaic.integrationTime*1000);
+                colorbarLabel = sprintf('noise-free absorptions zscore (%2.2fms)', theMosaic.integrationTime*1000);
             else
-                colorbarLabel = sprintf('absorptions (R*/cone/%2.2fms)', theMosaic.integrationTime*1000);
+                colorbarLabel = sprintf('noise-free absorptions (R*/cone/%2.2fms)', theMosaic.integrationTime*1000);
             end
             hCbar = colorbar('Ticks', ticks, 'TickLabels', sprintf('%2.2f\n',tickLabels));
             hCbar.Orientation = 'vertical'; 
             hCbar.Label.String = colorbarLabel;
             hCbar.FontSize = 14; 
             hCbar.FontName = 'Menlo'; 
+            hCbar.FontWeight = 'Bold'; 
             hCbar.Color = [0.2 0.2 0.2];
             % The addition changes the figure size, so undo this change
             newPosition = get(gca, 'position');
@@ -488,10 +497,11 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
             
 
             if (~isempty(photocurrents))
-                subplot(2,2,3)
+                % Instance photocurrents on the left
+                subplot('Position', subplotPosVectors(2,1).v);
                 imagesc(squeeze(photocurrents(instanceIndex,:,:,tBin))); axis 'image'
                 set(gca, 'CLim', [0 1], 'FontSize', 14);
-                title(sprintf('Photocurrents\n instance:%d/%d (t: %2.1fms)', instanceIndex, instancesNum, photocurrentsTimeAxis(tBin)*1000));
+                title(sprintf('Photocurrents\n instance %d/%d (t: %2.1fms)', instanceIndex, instancesNum, photocurrentsTimeAxis(tBin)*1000));
 
                 % Add colorbar
                 originalPosition = get(gca, 'position');
@@ -509,16 +519,18 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
                 hCbar.Label.String = colorbarLabel;
                 hCbar.FontSize = 14; 
                 hCbar.FontName = 'Menlo'; 
+                hCbar.FontWeight = 'Bold'; 
                 hCbar.Color = [0.2 0.2 0.2];
                 % The addition changes the figure size, so undo this change
                 newPosition = get(gca, 'position');
                 set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
                 
                 
-                subplot(2,2,4)
+                % Mean photocurrents on the right
+                subplot('Position', subplotPosVectors(2,2).v);
                 imagesc(squeeze(noiseFreePhotocurrents(:,:,tBin))); axis 'image'
                 set(gca, 'CLim', [0 1], 'FontSize', 14);
-                title(sprintf('%s \n MEAN PHOTOCURRENTS\n cond: %d/%d  (t: %2.1fms)', stimData.stimulusLabel, condIndex, condsNum, photocurrentsTimeAxis(tBin)*1000));
+                title(sprintf('noise-free photocurrents \n cond: %d/%d  (t: %2.1fms)', condIndex, condsNum, photocurrentsTimeAxis(tBin)*1000));
                 
                 % Add colorbar
                 originalPosition = get(gca, 'position');
@@ -536,11 +548,11 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
                 hCbar.Label.String = colorbarLabel;
                 hCbar.FontSize = 14; 
                 hCbar.FontName = 'Menlo'; 
+                hCbar.FontWeight = 'Bold'; 
                 hCbar.Color = [0.2 0.2 0.2];
                 % The addition changes the figure size, so undo this change
                 newPosition = get(gca, 'position');
                 set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
-                
             end
             
             colormap(bone(1024));
