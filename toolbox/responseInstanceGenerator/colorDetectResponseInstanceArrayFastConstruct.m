@@ -13,6 +13,7 @@ function [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents]
 
 p = inputParser;
 p.addParameter('seed',1, @isnumeric);   
+p.addParameter('workerID', [], @isnumeric);
 p.parse(varargin{:});
 currentSeed = p.Results.seed;
 
@@ -47,7 +48,7 @@ oiModulated = oiCompute(oiModulated, modulatedScene);
 % Compute the oiSequence
 theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, ...
                                 stimulusModulationFunction, 'composition', 'blend');
-                            
+
 % Generate eye movement paths for all instances
 eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theMosaic.integrationTime);
 theEMpaths = colorDetectMultiTrialEMPathGenerate(theMosaic, nTrials, eyeMovementsNum, temporalParams.emPathType, 'seed', currentSeed);
@@ -56,7 +57,8 @@ theEMpaths = colorDetectMultiTrialEMPathGenerate(theMosaic, nTrials, eyeMovement
      theMosaic.computeForOISequence(theOIsequence, ...
                     'seed', currentSeed, ...
                     'emPaths', theEMpaths, ...
-                    'currentFlag', true);
+                    'currentFlag', true, ...
+                    'workerID', p.Results.workerID);
 isomerizationsTimeAxis = theMosaic.timeAxis + theOIsequence.timeAxis(1);
 photoCurrentTimeAxis = isomerizationsTimeAxis;
  
@@ -95,7 +97,8 @@ theMosaic.os.noiseFlag = 'none';
 [noiseFreeIsomerizations, noiseFreePhotocurrents] = ...
      theMosaic.computeForOISequence(theOIsequence, ...
                     'emPaths', theEMpaths, ...
-                    'currentFlag', true);
+                    'currentFlag', true, ...
+                    'workerID', p.Results.workerID);
 % Restore noiseFlags to none
 theMosaic.noiseFlag = originalIsomerizationNoiseFlag;
 theMosaic.os.noiseFlag = originalPootocurrentNoiseFlag;

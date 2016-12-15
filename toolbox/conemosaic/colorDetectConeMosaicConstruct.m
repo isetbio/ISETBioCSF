@@ -17,8 +17,20 @@ function theMosaic = colorDetectConeMosaicConstruct(mosaicParams)
 % 12/8/16  npc       Update it after linearized os model.
 
 
-% Construct a cone mosaic with rectangular cone packing
-theMosaic = coneMosaic();
+if (strcmp(mosaicParams.conePacking, 'hex'))
+    resamplingFactor = 6;
+    centerInMM = [0.0 0.0];                    % mosaic eccentricity in MM - this should obey mosaicParams.eccentricityDegs, but it does not do so yet
+    spatiallyVaryingConeDensity = true;        % constant spatial density (at the mosaic's eccentricity)
+
+    theMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, ...
+                       'center', centerInMM*1e-3, ...
+               'spatialDensity', [0 mosaicParams.LMSRatio]' ...
+            );
+else
+    % Construct a cone mosaic with rectangular cone packing
+    theMosaic = coneMosaic();
+    theMosaic.spatialDensity = [0 mosaicParams.LMSRatio]';
+end
 
 % Set the outer segment model
 if strcmp(mosaicParams.osModel, 'Linear')
@@ -30,6 +42,7 @@ end
 if (isfield(mosaicParams, 'fieldOfViewDegs'))
     if (isa(theMosaic, 'coneMosaicHex'))
         theMosaic.setSizeToFOVForHexMosaic(mosaicParams.fieldOfViewDegs)
+        theMosaic.visualizeGrid();
     else
         theMosaic.setSizeToFOV(mosaicParams.fieldOfViewDegs);
     end
@@ -64,13 +77,4 @@ end
 % Outer segment noise
 if (isfield(mosaicParams, 'osNoise'))
     theMosaic.os.noiseFlag = mosaicParams.osNoise;
-end
-
-% Relative number of LMS cones
-if (isfield(mosaicParams, 'LMSRatio'))
-    if (numel(mosaicParams.LMSRatio) == 3)
-        theMosaic.spatialDensity = [0 mosaicParams.LMSRatio(1) mosaicParams.LMSRatio(2) mosaicParams.LMSRatio(3)]';
-    else
-        theMosaic.spatialDensity = mosaicParams.LMSRatio(:);
-    end
 end

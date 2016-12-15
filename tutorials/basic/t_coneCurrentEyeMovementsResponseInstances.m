@@ -42,6 +42,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %                  or a dynamic emPath that changes across trials.
 %   'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
 %   'compute' - true/false (default true).  Do the computations.
+%   'computeMosaic' - true/false (default true). Compute a cone mosaic or load one (good for large hex mosaics which take a while to compute)
 %   'generatePlots' - true/false (default false).  Produce response
 %        visualizations.  Set to false when running big jobs on clusters or
 %        in parfor loops, as plotting doesn't seem to play well with those
@@ -63,11 +64,13 @@ p.addParameter('testDirectionParams',[],@isemptyorstruct);
 p.addParameter('emPathType','none',@ischar);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
+p.addParameter('computeMosaic', true, @islogical);
 p.addParameter('generatePlots',false,@islogical);
 p.addParameter('exportPDF',true,@islogical);
 p.addParameter('renderVideo',true,@islogical);
 p.addParameter('delete',false',@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
+p.addParameter('workerID', [], @isnumeric);
 p.parse(varargin{:});
 rParams = p.Results.rParams;
 testDirectionParams = p.Results.testDirectionParams;
@@ -125,7 +128,10 @@ end
 % The constant params list
 constantParamsList = {rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
 
-
+colorModulationParamsNull = rParams.colorModulationParams;
+colorModulationParamsNull.coneContrasts = [0 0 0]';
+colorModulationParamsNull.contrast = 0;
+    
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
@@ -135,8 +141,18 @@ if (p.Results.compute)
     % Create the optics
     theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
     
-    % Create the cone mosaic
-    theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
+    if (p.Results.computeMosaic)
+        % Create the cone mosaic
+        theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
+        % Save cone mosaic
+        coneParamsList = {rParams.mosaicParams};
+        rwObject.write('coneMosaic', theMosaic, coneParamsList, theProgram, 'type', 'mat');
+    else
+         % Load a previously saved cone mosaic
+         fprintf(2,'Loading a previously saved cone mosaic\n');
+         coneParamsList = {rParams.mosaicParams};
+         theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
+    end
     
     %% Define color modulation list
     switch (testDirectionParams.instanceType)
@@ -183,13 +199,10 @@ if (p.Results.compute)
     parforRanSeeds = randi(1000000,nParforConditions,1)+1;
 
     % Generate data for the no stimulus condition
-    colorModulationParamsNull = rParams.colorModulationParams;
-    colorModulationParamsNull.coneContrasts = [0 0 0]';
-    colorModulationParamsNull.contrast = 0;
     stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
         colorModulationParamsNull.coneContrasts(1), colorModulationParamsNull.coneContrasts(2), colorModulationParamsNull.coneContrasts(3), colorModulationParamsNull.contrast);
     [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, ...
-        rParams.spatialParams, rParams.backgroundParams, colorModulationParamsNull, rParams.temporalParams, theOI, theMosaic, 'seed', 1);
+        rParams.spatialParams, rParams.backgroundParams, colorModulationParamsNull, rParams.temporalParams, theOI, theMosaic, 'seed', 1, 'workerID', p.Results.workerID);
  
     noStimData = struct(...
         'testContrast', colorModulationParamsNull.contrast, ...
@@ -231,7 +244,15 @@ if (p.Results.compute)
     tic;
     stimDataForValidation = cell(nParforConditions,1);
 
-    parfor kk = 1:nParforConditions  
+    parfor kk = 1:nParforConditions
+        if (~isempty(p.Results.workerID))
+            % Get the parallel pool worker ID
+            t = getCurrentTask();
+            workerID = t.ID;
+        else
+            workerID = [];
+        end
+        
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
@@ -242,7 +263,7 @@ if (p.Results.compute)
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
         [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = ...
             colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, ...
-                rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic, 'seed', parforRanSeeds(kk));
+                rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic, 'seed', parforRanSeeds(kk), 'workerID', workerID);
         stimData = struct(...
             'testContrast', colorModulationParamsTemp.contrast, ...
             'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
@@ -304,7 +325,11 @@ if (p.Results.generatePlots)
     % How many istances to visualize
     instancesToVisualize = 1:5;
     
-    % Load data
+    % Load the mosaic
+    coneParamsList = {rParams.mosaicParams};
+    theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
+         
+    % Load the response and ancillary data
     paramsList = constantParamsList;
     paramsList{numel(paramsList)+1} = colorModulationParamsNull;    
     noStimData = rwObject.read('responseInstances',paramsList,theProgram);
@@ -355,8 +380,15 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
         return;
     end
     
-    for coneIndex = 2:4
-        submosaicConeIndices{coneIndex} = find(theMosaic.pattern==coneIndex);
+    if (isa(theMosaic, 'coneMosaicHex'))
+        nonNullCones = theMosaic.pattern(theMosaic.pattern>1);
+        for coneIndex = 2:4
+            submosaicConeIndices{coneIndex} = find(nonNullCones==coneIndex);
+        end
+    else
+        for coneIndex = 2:4
+            submosaicConeIndices{coneIndex} = find(theMosaic.pattern==coneIndex);
+        end
     end
 
     timeBins = numel(stimData.responseInstanceArray.timeAxis);
@@ -408,8 +440,26 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
 
      
     if (isa(theMosaic, 'coneMosaicHex'))
-        fprintf(2, '\nConeHex visualization not implemented yet\n');
-        return;
+        for instanceIndex = 1:instancesNum
+            if (instanceIndex==1)
+                tmp = theMosaic.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(instanceIndex,:,:)));
+                absorptionsHex = zeros(instancesNum, size(tmp,1), size(tmp,2), size(tmp,3), 'single');
+                absorptionsHex(instanceIndex,:,:,:) = tmp;
+                
+                tmp = theMosaic.reshapeHex2DmapToHex3Dmap(squeeze(photocurrents(instanceIndex,:,:)));
+                photocurrentsHex = zeros(instancesNum, size(tmp,1), size(tmp,2), size(tmp,3), 'single');
+                photocurrentsHex(instanceIndex,:,:,:) = tmp;
+            else
+                absorptionsHex(instanceIndex,:,:,:) = theMosaic.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(instanceIndex,:,:)));
+                photocurrentsHex(instanceIndex,:,:,:) = theMosaic.reshapeHex2DmapToHex3Dmap(squeeze(photocurrents(instanceIndex,:,:)));
+            end
+        end
+        
+        absorptions = absorptionsHex;
+        photocurrents = photocurrentsHex;
+        noiseFreeIsomerizations = theMosaic.reshapeHex2DmapToHex3Dmap(noiseFreeIsomerizations);
+        noiseFreePhotocurrents = theMosaic.reshapeHex2DmapToHex3Dmap(noiseFreePhotocurrents);
+        fprintf(2, '\nConeHex visualization not FULLY implemented yet!\n');
     end
     
     absorptionsTimeAxis = stimData.responseInstanceArray.timeAxis;

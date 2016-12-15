@@ -57,8 +57,6 @@ function ValidationFunction(runTimeParams)
         'freezeNoise', true);
     UnitTest.validationData('validationData3',validationData3);
     UnitTest.extraData('extraData3',extraData3);
-
-
 end
 
 

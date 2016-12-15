@@ -105,6 +105,7 @@ for ll = 1:length(p.Results.luminances)
         % Use default LMPlane.
         testDirectionParams = instanceParamsGenerate;
         testDirectionParams = modifyStructParams(testDirectionParams, ...
+            'trialsNum', p.Results.nTrainingSamples, ...
         	'startAngle', 45, ...
         	'deltaAngle', 90, ...
         	'nAngles', 1, ...
@@ -117,9 +118,6 @@ for ll = 1:length(p.Results.luminances)
         % Parameters related to how we find thresholds from responses
         % Use default
         thresholdParams = thresholdParamsGenerate;
-        
-        % Set number of trials
-        testDirectionParams.trialsNum = p.Results.nTrainingSamples;
         
         %% Compute response instances
         if (p.Results.computeResponses)
