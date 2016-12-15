@@ -29,6 +29,7 @@ p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
+p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
@@ -121,7 +122,12 @@ for ll = 1:length(p.Results.luminances)
         
         %% Compute response instances
         if (p.Results.computeResponses)
-           t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
+           t_coneCurrentEyeMovementsResponseInstances(...
+               'rParams',rParams,...
+               'testDirectionParams',testDirectionParams,...
+               'compute',true,...
+               'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
+               'generatePlots',p.Results.generatePlots);
         end
         
         %% Find performance, template max likeli

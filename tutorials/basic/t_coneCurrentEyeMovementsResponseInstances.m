@@ -682,15 +682,11 @@ function [responseDataZscore, minZscore, maxZscore] = submosaicBasedZscore(respo
         minZscore = -maxZscore; 
     end
     responseDataZscore = (responseDataZscore-minZscore)/(maxZscore-minZscore);
-    [min(responseDataZscore(:)) max(responseDataZscore(:))]
-    [minZscore maxZscore]
     
     % Back to original shape
     if (numel(coneDims) == 2)
         responseDataZscore = reshape(responseDataZscore, originalResponseDataDims);
     end
-    size(responseDataZscore)
-    
 end
  
  
