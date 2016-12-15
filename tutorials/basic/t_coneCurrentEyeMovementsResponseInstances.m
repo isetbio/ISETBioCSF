@@ -177,8 +177,7 @@ if (p.Results.compute)
             else
                 testContrasts = logspace(log10(testDirectionParams.lowContrast), log10(testDirectionParams.highContrast), testDirectionParams.nContrastsPerDirection);
             end
-            
-            
+                        
         case 'contrasts'
             % Contrasts
             if (strcmp(testDirectionParams.contrastScale, 'linear'))
@@ -199,6 +198,7 @@ if (p.Results.compute)
     parforRanSeeds = randi(1000000,nParforConditions,1)+1;
 
     % Generate data for the no stimulus condition
+    fprintf('Computing the null stimulus responses ...\n');
     stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
         colorModulationParamsNull.coneContrasts(1), colorModulationParamsNull.coneContrasts(2), colorModulationParamsNull.coneContrasts(3), colorModulationParamsNull.contrast);
     [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, ...
@@ -245,6 +245,7 @@ if (p.Results.compute)
     stimDataForValidation = cell(nParforConditions,1);
 
     parfor kk = 1:nParforConditions
+        fprintf('Computing responses for condition %d/%d ...\n', kk,nParforConditions);
         if (~isempty(p.Results.workerID))
             % Get the parallel pool worker ID
             t = getCurrentTask();
@@ -459,14 +460,16 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
         photocurrents = photocurrentsHex;
         noiseFreeIsomerizations = theMosaic.reshapeHex2DmapToHex3Dmap(noiseFreeIsomerizations);
         noiseFreePhotocurrents = theMosaic.reshapeHex2DmapToHex3Dmap(noiseFreePhotocurrents);
-        fprintf(2, '\nConeHex visualization not FULLY implemented yet!\n');
+        
+        activeConesActivations = find(theMosaic.pattern > 1);
+        [iRows,iCols] = ind2sub(size(theMosaic.pattern), activeConesActivations);
     end
     
     absorptionsTimeAxis = stimData.responseInstanceArray.timeAxis;
     photocurrentsTimeAxis = stimData.responseInstanceArray.photocurrentTimeAxis;
          
     hFig = figure(100+condIndex); clf;
-    set(hFig, 'Position', [10 10 1100 1050], 'Color', [1 1 1], 'Name', stimData.stimulusLabel);
+    set(hFig, 'Position', [10 10 1100 1050], 'Color', [0 0 0], 'Name', stimData.stimulusLabel);
 
     if (isempty(photocurrents))
         subplotRows = 1;
@@ -479,136 +482,153 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
            'heightMargin',   0.06, ...
            'widthMargin',    0.13, ...
            'leftMargin',     0.04, ...
-           'rightMargin',    0.08, ...
+           'rightMargin',    0.10, ...
            'bottomMargin',   0.03, ...
            'topMargin',      0.03);
        
+    
+    mosaicXaxis = (squeeze(theMosaic.patternSupport(1,:,1)) + theMosaic.center(1))*1e6;
+    mosaicYaxis = (squeeze(theMosaic.patternSupport(:,1,2)) + theMosaic.center(2))*1e6;
+    cMapLevels = 1024;
+    
+    if (isa(theMosaic, 'coneMosaicHex'))
+        mosaicXaxis = mosaicXaxis(iCols);
+        mosaicYaxis = mosaicYaxis(iRows);
+        isHexActivation = true;
+        iTheta = (0:60:360)/180*pi;
+        apertureOutline.x = 1.1*theMosaic.pigment.width/2.0 * cos(iTheta)*1e6;
+        apertureOutline.y = 1.1*theMosaic.pigment.height/2.0 * sin(iTheta)*1e6;
+    else
+        isHexActivation = false;
+    end
+    
+    g = max([1 round(mosaicXaxis/80)]);
+    
+    xTicks = theMosaic.center(1)*1e6 + g*(-75:25:75);
+    yTicks = theMosaic.center(2)*1e6 + g*(-75:25:75);
+    xTickLabels = sprintf('%2.0f um\n', xTicks);
+    yTickLabels = sprintf('%2.0f um\n', yTicks);
+           
+    colorbarTicks = 0:0.25:1.0;
     
     for instanceIndex = instancesToVisualize
          for tBin = 1: numel(absorptionsTimeAxis)  
              
             % Instance absorptions on the left
             subplot('Position', subplotPosVectors(1,1).v);
-            imagesc(squeeze(absorptions(instanceIndex, :,:,tBin))); axis 'image'
-            set(gca, 'CLim', [0 1], 'FontSize', 14);
-            title(sprintf('absorptions\ninstance %d/%d (t: %2.1fms)', instanceIndex, instancesNum, absorptionsTimeAxis(tBin)*1000));
-
-            % Add colorbar
-            originalPosition = get(gca, 'position');
-
-            ticks = 0:0.2:1.0;
-            delta = (maxAbsorptions-minAbsorptions)*0.2;
-            if strcmp(responseNormalization, 'submosaicBasedZscore')
-                tickLabels = (minAbsorptions:delta:maxAbsorptions);
-                colorbarLabel = sprintf('absorptions z-score (%2.2fms)', theMosaic.integrationTime*1000);
-            else
-                tickLabels = (minAbsorptions:delta:maxAbsorptions);
-                colorbarLabel = sprintf('absorptions (R*/cone/%2.2fms)', theMosaic.integrationTime*1000);
+            activation = squeeze(absorptions(instanceIndex, :,:,tBin));
+            if (isHexActivation)
+                activation = activation(activeConesActivations);
             end
-            hCbar = colorbar('Ticks', ticks, 'TickLabels', sprintf('%2.2f\n',tickLabels));
-            hCbar.Orientation = 'vertical'; 
-            hCbar.Label.String = colorbarLabel;
-            hCbar.FontSize = 14; 
-            hCbar.FontName = 'Menlo'; 
-            hCbar.FontWeight = 'Bold'; 
-            hCbar.Color = [0.2 0.2 0.2];
-            % The addition changes the figure size, so undo this change
-            newPosition = get(gca, 'position');
-            set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
-            
-            
+            renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, ...
+                responseNormalization, sprintf('absorptions (intTime: %2.2fms)',  theMosaic.integrationTime*1000), ...
+                sprintf('instance %d/%d (t: %2.1fms)', instanceIndex, instancesNum, absorptionsTimeAxis(tBin)*1000), ...
+                colorbarTicks, minAbsorptions + colorbarTicks*(maxAbsorptions-minAbsorptions),  ...
+                xTicks, yTicks, xTickLabels, yTickLabels);
+           
             % Noise-free isomerizations on the right
             subplot('Position', subplotPosVectors(1,2).v);
-            imagesc(squeeze(noiseFreeIsomerizations(:,:,tBin))); axis 'image'
-            set(gca, 'CLim', [0 1], 'FontSize', 14);
-            title(sprintf('noise-free absorptions\n cond: %d/%d  (t: %2.1fms)', condIndex, condsNum,  absorptionsTimeAxis(tBin)*1000));
-
-            % Add colorbar
-            originalPosition = get(gca, 'position');
-
-            ticks = 0:0.2:1.0;
-            delta = (maxNoiseFreeIsomerizations-minNoiseFreeIsomerizations)*0.2;
-            tickLabels = (minNoiseFreeIsomerizations:delta:maxNoiseFreeIsomerizations);
-            if strcmp(responseNormalization, 'submosaicBasedZscore')
-                colorbarLabel = sprintf('noise-free absorptions zscore (%2.2fms)', theMosaic.integrationTime*1000);
-            else
-                colorbarLabel = sprintf('noise-free absorptions (R*/cone/%2.2fms)', theMosaic.integrationTime*1000);
+            activation = squeeze(noiseFreeIsomerizations(:,:,tBin));
+            if (isHexActivation)
+                activation = activation(activeConesActivations);
             end
-            hCbar = colorbar('Ticks', ticks, 'TickLabels', sprintf('%2.2f\n',tickLabels));
-            hCbar.Orientation = 'vertical'; 
-            hCbar.Label.String = colorbarLabel;
-            hCbar.FontSize = 14; 
-            hCbar.FontName = 'Menlo'; 
-            hCbar.FontWeight = 'Bold'; 
-            hCbar.Color = [0.2 0.2 0.2];
-            % The addition changes the figure size, so undo this change
-            newPosition = get(gca, 'position');
-            set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
-            
+            renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, ...
+                responseNormalization, sprintf('noise-free absorptions (intTime: %2.2fms)',  theMosaic.integrationTime*1000), ...
+                sprintf('cond: %d/%d (t: %2.1fms)', condIndex, condsNum, absorptionsTimeAxis(tBin)*1000), ...
+                colorbarTicks, minNoiseFreeIsomerizations + colorbarTicks*(maxNoiseFreeIsomerizations-minNoiseFreeIsomerizations),  ...
+                xTicks, yTicks, xTickLabels, yTickLabels);
+ 
 
             if (~isempty(photocurrents))
                 % Instance photocurrents on the left
                 subplot('Position', subplotPosVectors(2,1).v);
-                imagesc(squeeze(photocurrents(instanceIndex,:,:,tBin))); axis 'image'
-                set(gca, 'CLim', [0 1], 'FontSize', 14);
-                title(sprintf('Photocurrents\n instance %d/%d (t: %2.1fms)', instanceIndex, instancesNum, photocurrentsTimeAxis(tBin)*1000));
+                activation = squeeze(photocurrents(instanceIndex, :,:,tBin));
+                if (isHexActivation)
+                    activation = activation(activeConesActivations);
+                end
+                renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, ...
+                    responseNormalization, 'photocurrents', ...
+                    sprintf('instance %d/%d (t: %2.1fms)', instanceIndex, instancesNum, photocurrentsTimeAxis(tBin)*1000), ...
+                    colorbarTicks, minPhotocurrents + colorbarTicks*(maxPhotocurrents-minPhotocurrents),  ...
+                    xTicks, yTicks, xTickLabels, yTickLabels);
 
-                % Add colorbar
-                originalPosition = get(gca, 'position');
-                ticks = 0:0.2:1.0;
-                delta = (maxPhotocurrents-minPhotocurrents)*0.2;
-                if strcmp(responseNormalization, 'submosaicBasedZscore')
-                    tickLabels = minPhotocurrents:delta:maxPhotocurrents;
-                    colorbarLabel = sprintf('photocurrents z-score');
-                else
-                    tickLabels = minPhotocurrents:delta:maxPhotocurrents;
-                    colorbarLabel = sprintf('photocurrents (pAmps)');
-                end
-                hCbar = colorbar('Ticks', ticks, 'TickLabels', sprintf('%2.1f\n',tickLabels));
-                hCbar.Orientation = 'vertical'; 
-                hCbar.Label.String = colorbarLabel;
-                hCbar.FontSize = 14; 
-                hCbar.FontName = 'Menlo'; 
-                hCbar.FontWeight = 'Bold'; 
-                hCbar.Color = [0.2 0.2 0.2];
-                % The addition changes the figure size, so undo this change
-                newPosition = get(gca, 'position');
-                set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
-                
-                
-                % Mean photocurrents on the right
+                % Noise-free photocurrents on the right
                 subplot('Position', subplotPosVectors(2,2).v);
-                imagesc(squeeze(noiseFreePhotocurrents(:,:,tBin))); axis 'image'
-                set(gca, 'CLim', [0 1], 'FontSize', 14);
-                title(sprintf('noise-free photocurrents \n cond: %d/%d  (t: %2.1fms)', condIndex, condsNum, photocurrentsTimeAxis(tBin)*1000));
-                
-                % Add colorbar
-                originalPosition = get(gca, 'position');
-                ticks = 0:0.2:1.0;
-                delta = (maxNoiseFreePhotocurrents-minNoiseFreePhotocurrents)*0.2;
-                if strcmp(responseNormalization, 'submosaicBasedZscore')
-                    tickLabels = minNoiseFreePhotocurrents:delta:maxNoiseFreePhotocurrents;
-                    colorbarLabel = sprintf('photocurrents z-score');
-                else
-                    tickLabels = minNoiseFreePhotocurrents:delta:maxNoiseFreePhotocurrents;
-                    colorbarLabel = sprintf('photocurrents (pAmps)');
+                activation = squeeze(noiseFreePhotocurrents(:,:,tBin));
+                if (isHexActivation)
+                    activation = activation(activeConesActivations);
                 end
-                hCbar = colorbar('Ticks', ticks, 'TickLabels', sprintf('%2.1f\n',tickLabels));
-                hCbar.Orientation = 'vertical'; 
-                hCbar.Label.String = colorbarLabel;
-                hCbar.FontSize = 14; 
-                hCbar.FontName = 'Menlo'; 
-                hCbar.FontWeight = 'Bold'; 
-                hCbar.Color = [0.2 0.2 0.2];
-                % The addition changes the figure size, so undo this change
-                newPosition = get(gca, 'position');
-                set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
+                renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, ...
+                    responseNormalization, 'noise-free photocurrents', ...
+                    sprintf('cond: %d/%d (t: %2.1fms)', condIndex, condsNum, photocurrentsTimeAxis(tBin)*1000), ...
+                    colorbarTicks, minNoiseFreePhotocurrents + colorbarTicks*(maxNoiseFreePhotocurrents-minNoiseFreePhotocurrents),  ...
+                    xTicks, yTicks, xTickLabels, yTickLabels);  
             end
             
-            colormap(bone(1024));
+            colormap(gray(cMapLevels));
             drawnow;
-         end
-     end
+         end % tBin
+    end % instanceIndex
+     
+    function renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, ...
+                responseNormalization, signalName, instanceLabel, ...
+                colorbarTicks, colorbarTickLabels, ...
+                xTicks, yTicks, xTickLabels, yTickLabels)
+            
+            if (isHexActivation)
+                edgeColor = 'none';
+                lineWidth = 1.0;
+                renderPatchArray(apertureOutline, mosaicXaxis, mosaicYaxis, activation, edgeColor, lineWidth);
+            else
+                imagesc(mosaicXaxis, mosaicYaxis, activation);
+            end
+            axis 'image'; axis 'xy'; box 'on';
+            set(gca, 'XTick', xTicks, 'YTick', [], 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels, 'XColor', [0.5 0.5 0.5], 'YColor', [0.5 0.5 0.5]);
+            set(gca, 'CLim', [0 1], 'FontSize', 14, 'Color', [0 0 0]);
+            title(sprintf('%s\n%s', signalName, instanceLabel), 'Color', [0.6 0.6 0.6]);
+
+            % Add colorbar
+            originalPosition = get(gca, 'position');
+
+            if strcmp(responseNormalization, 'submosaicBasedZscore')
+                colorbarLabel = sprintf('z-score');
+            else
+                colorbarLabel = sprintf('(R*/cone/integrationTIme)');
+            end
+            hCbar = colorbar('Ticks', colorbarTicks, 'TickLabels', sprintf('%2.3f\n',colorbarTickLabels));
+            hCbar.Orientation = 'vertical'; 
+            hCbar.Label.String = colorbarLabel;
+            hCbar.FontSize = 14; 
+            hCbar.FontName = 'Menlo'; 
+            hCbar.FontWeight = 'Bold'; 
+            hCbar.Color = [0.5 0.5 0.5];
+            % The addition changes the figure size, so undo this change
+            newPosition = get(gca, 'position');
+            set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
+    end
+
+    function renderPatchArray(pixelOutline, xCoords, yCoords, faceColorsNormalizedValues,  edgeColor, lineWidth)
+        verticesPerCone = numel(pixelOutline.x);
+        verticesList = zeros(verticesPerCone * numel(xCoords), 2);
+        facesList = [];
+        colors = [];
+        for coneIndex = 1:numel(xCoords)
+            idx = (coneIndex-1)*verticesPerCone + (1:verticesPerCone);
+            verticesList(idx,1) = pixelOutline.x(:) + xCoords(coneIndex);
+            verticesList(idx,2) = pixelOutline.y(:) + yCoords(coneIndex);
+            facesList = cat(1, facesList, idx);
+            colors = cat(1, colors, repmat(faceColorsNormalizedValues(coneIndex), [verticesPerCone 1]));
+        end
+
+        S.Vertices = verticesList;
+        S.Faces = facesList;
+        S.FaceVertexCData = colors;
+        S.FaceColor = 'flat';
+        S.EdgeColor = edgeColor;
+        S.LineWidth = lineWidth;
+        patch(S);
+    end
+
 end 
     
 
@@ -637,7 +657,7 @@ function [responseDataZscore, minZscore, maxZscore] = submosaicBasedZscore(respo
         
         % subtract mean over all cones of a particular type (across all instances and time) for the noResponse data
         meanSubMosaicNoResponse = mean(subMosaicNoResponseData(:));
-        subMosaicResponseData = (subMosaicResponseData - meanSubMosaicNoResponse);
+        subMosaicResponseData = subMosaicResponseData - meanSubMosaicNoResponse;
         
         % divide by std over all cones of a particular type (across all instances and time) for the noResponse data
         if (isInstanceData)
@@ -653,20 +673,24 @@ function [responseDataZscore, minZscore, maxZscore] = submosaicBasedZscore(respo
         end
     end % coneIndex
 
-    % Normalize
+    % Normalize to [0 .. 1]
     if (isInstanceData)
-        maxZscore = 1.0;
-        minZscore = -maxZscore;
+        maxZscore = max(abs(responseDataZscore(:))); 
+        minZscore = -maxZscore; 
     else
-        maxZscore = max(abs(responseDataZscore(:)));
-        minZscore = -maxZscore;
+        maxZscore = max(abs(responseDataZscore(:))); 
+        minZscore = -maxZscore; 
     end
-    responseDataZscore = (responseDataZscore-minZscore)/(maxZscore-minZscore);  
+    responseDataZscore = (responseDataZscore-minZscore)/(maxZscore-minZscore);
+    [min(responseDataZscore(:)) max(responseDataZscore(:))]
+    [minZscore maxZscore]
     
     % Back to original shape
     if (numel(coneDims) == 2)
         responseDataZscore = reshape(responseDataZscore, originalResponseDataDims);
     end
+    size(responseDataZscore)
+    
 end
  
  
@@ -687,6 +711,7 @@ end
         subMosaicResponseData = responseData(coneIndices,:);
     end
         
+    % Normalize to [0 .. 1]
     maxResp = max(subMosaicResponseData(:));
     minResp = min(subMosaicResponseData(:));
     scaledResp = (responseData-minResp)/(maxResp-minResp);
