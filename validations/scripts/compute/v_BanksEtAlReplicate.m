@@ -34,7 +34,7 @@ function ValidationFunction(runTimeParams)
         UnitTest.extraData('extraData2',extraData2);
  
     else
-        % Run with the default ISETBIO mosaic
+        % Run with the default ISETBIO mosaic, no validations
         c_BanksEtAlReplicate('compute', computeResponses, 'nTrainingSamples',100,...
                     'conePacking', 'rect', 'innerSegmentDiamMicrons', 1.4, 'coneSpacingMicrons', 2.0, ...   % old mosaic
             'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots);

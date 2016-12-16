@@ -18,7 +18,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'conePacking'   - how cones are packed spatially. 
 %       Choose from : 'rect', for a rectangular mosaic
 %                     'hex', for a hex mosaic with an eccentricity-varying cone spacing
-%                     {'hex', coneSpacingMicrons} for a hex mosaic with the given cone spacing
+%                     'hexReg' for a hex mosaic witha regular cone spacing
 %   'imagePixels' - value (default 400).  Size of image pixel array
 %   'computeResponses' - true/false (default true).  Compute responses.
 %   'findPerformance' - true/false (default true).  Find performance.
@@ -38,7 +38,7 @@ p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('innerSegmentDiamMicrons', diameterForSquareApertureFromDiameterForCircularAperture(3.0), @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
 p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
-p.addParameter('conePacking', 'hex-regular');                 % choose from 'rect', 'hex-regular' (fixed cone spacing and collecting area), and 'hex' (spatially-varying cone spacing, fixed colleting area)
+p.addParameter('conePacking', 'hexReg');                 % choose from 'rect', 'hexReg' (regular cone spacing and fixed collecting area), and 'hex' (spatially-varying cone spacing and fixed collecting area)
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);

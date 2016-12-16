@@ -31,7 +31,7 @@ if (ischar(mosaicParams.conePacking))
         theMosaic.pigment.pdWidth = mosaicParams.innerSegmentDiamMicrons*1e-6;
         theMosaic.pigment.pdHeight = mosaicParams.innerSegmentDiamMicrons*1e-6;
            
-    elseif (strcmp(mosaicParams.conePacking, 'hex-regular'))
+    elseif (strcmp(mosaicParams.conePacking, 'hexReg'))
         resamplingFactor = 6;
         centerInMM = [0.0 0.0];                    % mosaic eccentricity in MM - this should obey mosaicParams.eccentricityDegs, but it does not do so yet
         spatiallyVaryingConeDensity = false;        % spatially-varying density (at the mosaic's eccentricity)

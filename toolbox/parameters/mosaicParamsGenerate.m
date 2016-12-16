@@ -7,8 +7,8 @@ function mosaicParams = mosaicParamsGenerate(varargin)
 %  osModel - What model to use to compute photocurrent
 %  conePacking - Type of cone mosaic
 %    'rect' - rectangular
-%    'hex-regular' - hexagonal, regular spacing
-%    'hex-varying' - hexagonal, eccentricity-varying spacing 
+%    'hexReg' - hexagonal, regular spacing
+%    'hex'  - hexagonal, eccentricity-varying spacing 
 %
 % Other parameters that are needed for the mosaic are
 %  fieldOfViewDegs - Field of view computed
