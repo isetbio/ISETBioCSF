@@ -489,7 +489,7 @@ function chromaticDirectionParams = chromaticDirectionParamsGenerate(LMSsampling
         % Get angle along S-modulation axis
         elevationAngle = LMSsamplingParams{chromaticDirectionIndex}.elevationAngle;
             
-         % Compute cone contrasts from azimuth and elevation
+        % Compute cone contrasts from azimuth and elevation
         [cL, cM, cS] = sph2cart(azimuthAngle/180*pi, elevationAngle/180*pi, 1);
 
         % Normalize to unity RMS cone contrast (stimulus strength)
