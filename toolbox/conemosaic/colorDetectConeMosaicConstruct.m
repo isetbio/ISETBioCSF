@@ -17,19 +17,59 @@ function theMosaic = colorDetectConeMosaicConstruct(mosaicParams)
 % 12/8/16  npc       Update it after linearized os model.
 
 
-if (strcmp(mosaicParams.conePacking, 'hex'))
-    resamplingFactor = 6;
-    centerInMM = [0.0 0.0];                    % mosaic eccentricity in MM - this should obey mosaicParams.eccentricityDegs, but it does not do so yet
-    spatiallyVaryingConeDensity = true;        % constant spatial density (at the mosaic's eccentricity)
+if (ischar(mosaicParams.conePacking))
+    if (strcmp(mosaicParams.conePacking, 'hex'))
+        resamplingFactor = 6;
+        centerInMM = [0.0 0.0];                    % mosaic eccentricity in MM - this should obey mosaicParams.eccentricityDegs, but it does not do so yet
+        spatiallyVaryingConeDensity = true;        % spatially-varying density (at the mosaic's eccentricity)
 
-    theMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, ...
-                       'center', centerInMM*1e-3, ...
-               'spatialDensity', [0 mosaicParams.LMSRatio]' ...
-            );
+        theMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, nan, ...
+                           'center', centerInMM*1e-3, ...
+                   'spatialDensity', [0 mosaicParams.LMSRatio]' ...
+                );
+        % Set the pigment light collecting dimensions
+        theMosaic.pigment.pdWidth = mosaicParams.innerSegmentDiamMicrons*1e-6;
+        theMosaic.pigment.pdHeight = mosaicParams.innerSegmentDiamMicrons*1e-6;
+        
+    elseif (strcmp(mosaicParams.conePacking, 'hex-regular'))
+        resamplingFactor = 6;
+        centerInMM = [0.0 0.0];                    % mosaic eccentricity in MM - this should obey mosaicParams.eccentricityDegs, but it does not do so yet
+        spatiallyVaryingConeDensity = false;        % spatially-varying density (at the mosaic's eccentricity)
+        
+        % match cone-spacing to inner segment diameter
+        customLambda = mosaicParams.coneSpacingMicrons;
+        theMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, customLambda, ...
+                                   'center', centerInMM*1e-3, ...
+                           'spatialDensity', [0 mosaicParams.LMSRatio]' ...
+                        );  
+                    
+        % Set the pigment light collecting dimensions
+        theMosaic.pigment.pdWidth = mosaicParams.innerSegmentDiamMicrons*1e-6;
+        theMosaic.pigment.pdHeight = mosaicParams.innerSegmentDiamMicrons*1e-6;
+        
+        % Set the pigment geometric dimensions
+        theMosaic.pigment.width = customLambda*1e-6;
+        theMosaic.pigment.height = customLambda*1e-6;
+        
+    elseif (strcmp(mosaicParams.conePacking, 'rect'))
+        % Construct a cone mosaic with rectangular cone packing
+        theMosaic = coneMosaic();
+        theMosaic.spatialDensity = [0 mosaicParams.LMSRatio]';
+        
+        % Set the pigment collecting area   
+        theMosaic.pigment.pdWidth = mosaicParams.innerSegmentDiamMicrons*1e-6;
+        theMosaic.pigment.pdHeight = mosaicParams.innerSegmentDiamMicrons*1e-6;
+        
+        % Set the pigment geometric dimensions
+        theMosaic.pigment.width = mosaicParams.coneSpacingMicrons*1e-6;
+        theMosaic.pigment.height = mosaicParams.coneSpacingMicrons*1e-6;
+    else
+        mosaicParams.conePacking
+        error('Unknown conePacking value');
+    end
 else
-    % Construct a cone mosaic with rectangular cone packing
-    theMosaic = coneMosaic();
-    theMosaic.spatialDensity = [0 mosaicParams.LMSRatio]';
+    mosaicParams.conePacking
+    error('Unknown conePacking value');
 end
 
 % Set the outer segment model
@@ -43,6 +83,7 @@ if (isfield(mosaicParams, 'fieldOfViewDegs'))
     if (isa(theMosaic, 'coneMosaicHex'))
         theMosaic.setSizeToFOVForHexMosaic(mosaicParams.fieldOfViewDegs)
         theMosaic.visualizeGrid();
+        theMosaic.displayInfo();
     else
         theMosaic.setSizeToFOV(mosaicParams.fieldOfViewDegs);
     end

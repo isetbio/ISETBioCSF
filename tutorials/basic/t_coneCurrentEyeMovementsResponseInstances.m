@@ -204,6 +204,7 @@ if (p.Results.compute)
     [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, ...
         rParams.spatialParams, rParams.backgroundParams, colorModulationParamsNull, rParams.temporalParams, theOI, theMosaic, 'seed', 1, 'workerID', p.Results.workerID);
  
+    
     noStimData = struct(...
         'testContrast', colorModulationParamsNull.contrast, ...
         'testConeContrasts', colorModulationParamsNull.coneContrasts, ...
@@ -410,6 +411,7 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
     end
     
     photocurrents = [];
+    noiseFreePhotocurrents = [];
     if (strcmp(responseNormalization, 'LMSabsoluteResponseBased')) || (strcmp(responseNormalization, 'LMabsoluteResponseBased')) || (strcmp(responseNormalization, 'MabsoluteResponseBased')) 
         % Max from L- and M-cone mosaics
         if (strcmp(responseNormalization, 'LMSabsoluteResponseBased')) 
@@ -422,6 +424,12 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
         else
             error('unknown normalization: ''%s''.', responseNormalization);
         end
+        
+        if (timeBins == 1)
+            stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations';
+            noStimData.noiseFreeIsomerizations = noStimData.noiseFreeIsomerizations';
+        end
+        
         [absorptions, minAbsorptions, maxAbsorptions] = coneIndicesBasedScaling(stimData.responseInstanceArray.theMosaicIsomerizations, coneDims, normalizationConeIndices, true);
         [noiseFreeIsomerizations, minNoiseFreeIsomerizations, maxNoiseFreeIsomerizations] = coneIndicesBasedScaling(stimData.noiseFreeIsomerizations, coneDims, normalizationConeIndices, false);
         if (~isempty(stimData.noiseFreePhotocurrents))
@@ -429,6 +437,11 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
             [noiseFreePhotocurrents, minNoiseFreePhotocurrents, maxNoiseFreePhotocurrents] = coneIndicesBasedScaling(stimData.noiseFreePhotocurrents, coneDims, normalizationConeIndices, false);
         end
     elseif strcmp(responseNormalization, 'submosaicBasedZscore')
+        if (timeBins == 1)
+            stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations';
+            noStimData.noiseFreeIsomerizations = noStimData.noiseFreeIsomerizations';
+        end
+        
          [absorptions, minAbsorptions, maxAbsorptions] = submosaicBasedZscore(stimData.responseInstanceArray.theMosaicIsomerizations, noStimData.responseInstanceArray.theMosaicIsomerizations, coneDims, submosaicConeIndices, true);
          [noiseFreeIsomerizations, minNoiseFreeIsomerizations, maxNoiseFreeIsomerizations] = submosaicBasedZscore(stimData.noiseFreeIsomerizations, noStimData.noiseFreeIsomerizations,coneDims, submosaicConeIndices, false);
          if (~isempty(stimData.noiseFreePhotocurrents))
@@ -443,28 +456,43 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
     if (isa(theMosaic, 'coneMosaicHex'))
         for instanceIndex = 1:instancesNum
             if (instanceIndex==1)
-                tmp = theMosaic.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(instanceIndex,:,:)));
+                tmp = squeeze(absorptions(instanceIndex,:,:));
+                if (timeBins == 1)
+                    tmp = tmp';
+                end
+                tmp = theMosaic.reshapeHex2DmapToHex3Dmap(tmp);
                 absorptionsHex = zeros(instancesNum, size(tmp,1), size(tmp,2), size(tmp,3), 'single');
                 absorptionsHex(instanceIndex,:,:,:) = tmp;
                 
-                tmp = theMosaic.reshapeHex2DmapToHex3Dmap(squeeze(photocurrents(instanceIndex,:,:)));
-                photocurrentsHex = zeros(instancesNum, size(tmp,1), size(tmp,2), size(tmp,3), 'single');
-                photocurrentsHex(instanceIndex,:,:,:) = tmp;
+                if (~isempty(photocurrents))
+                    tmp = theMosaic.reshapeHex2DmapToHex3Dmap(squeeze(photocurrents(instanceIndex,:,:)));
+                    photocurrentsHex = zeros(instancesNum, size(tmp,1), size(tmp,2), size(tmp,3), 'single');
+                    photocurrentsHex(instanceIndex,:,:,:) = tmp;
+                else
+                  photocurrentsHex = [];
+                end
             else
-                absorptionsHex(instanceIndex,:,:,:) = theMosaic.reshapeHex2DmapToHex3Dmap(squeeze(absorptions(instanceIndex,:,:)));
-                photocurrentsHex(instanceIndex,:,:,:) = theMosaic.reshapeHex2DmapToHex3Dmap(squeeze(photocurrents(instanceIndex,:,:)));
+                tmp = squeeze(absorptions(instanceIndex,:,:));
+                if (timeBins == 1)
+                    tmp = tmp';
+                end
+                absorptionsHex(instanceIndex,:,:,:) = theMosaic.reshapeHex2DmapToHex3Dmap(tmp);
+                if (~isempty(photocurrents)) 
+                    photocurrentsHex(instanceIndex,:,:,:) = theMosaic.reshapeHex2DmapToHex3Dmap(squeeze(photocurrents(instanceIndex,:,:)));
+                end
             end
         end
         
         absorptions = absorptionsHex;
         photocurrents = photocurrentsHex;
         noiseFreeIsomerizations = theMosaic.reshapeHex2DmapToHex3Dmap(noiseFreeIsomerizations);
-        noiseFreePhotocurrents = theMosaic.reshapeHex2DmapToHex3Dmap(noiseFreePhotocurrents);
-        
+        if (~isempty(noiseFreePhotocurrents))
+            noiseFreePhotocurrents = theMosaic.reshapeHex2DmapToHex3Dmap(noiseFreePhotocurrents);
+        end
         activeConesActivations = find(theMosaic.pattern > 1);
         [iRows,iCols] = ind2sub(size(theMosaic.pattern), activeConesActivations);
     end
-    
+        
     absorptionsTimeAxis = stimData.responseInstanceArray.timeAxis;
     photocurrentsTimeAxis = stimData.responseInstanceArray.photocurrentTimeAxis;
          
