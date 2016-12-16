@@ -425,7 +425,7 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
             error('unknown normalization: ''%s''.', responseNormalization);
         end
         
-        if (timeBins == 1)
+        if (timeBins == 1) && isa(theMosaic, 'coneMosaicHex')
             stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations';
             noStimData.noiseFreeIsomerizations = noStimData.noiseFreeIsomerizations';
         end
@@ -437,7 +437,7 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
             [noiseFreePhotocurrents, minNoiseFreePhotocurrents, maxNoiseFreePhotocurrents] = coneIndicesBasedScaling(stimData.noiseFreePhotocurrents, coneDims, normalizationConeIndices, false);
         end
     elseif strcmp(responseNormalization, 'submosaicBasedZscore')
-        if (timeBins == 1)
+        if (timeBins == 1) && isa(theMosaic, 'coneMosaicHex')
             stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations';
             noStimData.noiseFreeIsomerizations = noStimData.noiseFreeIsomerizations';
         end
@@ -530,10 +530,10 @@ function visualizeResponses(theMosaic, stimData, noStimData, responseNormalizati
         isHexActivation = false;
     end
     
-    g = max([1 round(mosaicXaxis/80)]);
+    g = max([1 round(mosaicXaxis/100)]);
     
-    xTicks = theMosaic.center(1)*1e6 + g*(-75:25:75);
-    yTicks = theMosaic.center(2)*1e6 + g*(-75:25:75);
+    xTicks = theMosaic.center(1)*1e6 + g*(-100:50:100);
+    yTicks = theMosaic.center(2)*1e6 + g*(-100:50:100);
     xTickLabels = sprintf('%2.0f um\n', xTicks);
     yTickLabels = sprintf('%2.0f um\n', yTicks);
            
@@ -703,13 +703,15 @@ function [responseDataZscore, minZscore, maxZscore] = submosaicBasedZscore(respo
 
     % Normalize to [0 .. 1]
     if (isInstanceData)
-        maxZscore = max(abs(responseDataZscore(:))); 
-        minZscore = -maxZscore; 
+        maxZscore = prctile(responseDataZscore(:), 98); 
+        minZscore = prctile(responseDataZscore(:), 2);
     else
-        maxZscore = max(abs(responseDataZscore(:))); 
-        minZscore = -maxZscore; 
+        maxZscore = max(responseDataZscore(:)); 
+        minZscore = min(responseDataZscore(:)); 
     end
     responseDataZscore = (responseDataZscore-minZscore)/(maxZscore-minZscore);
+    responseDataZscore(responseDataZscore<0) = 0;
+    responseDataZscore(responseDataZscore>1) = 1;
     
     % Back to original shape
     if (numel(coneDims) == 2)

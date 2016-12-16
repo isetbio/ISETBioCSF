@@ -12,8 +12,9 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'luminances' - vector (default [3.4 34 340]).  Luminances in cd/m2 to be investigated.
 %   'pupilDiamMm' - value (default 2).  Pupil diameter in mm.
 %   'blur' - true/false (default true). Incorporate lens blur.
-%   'innerSegmentDiamMicrons' - Diameter of the cone light-collecting area,
-%   in microns (default: 3 microns, or 6 min arc given 300 mirons/degree in human retina)
+%   'innerSegmentDiamMicrons' - Diameter of the cone light-collecting area, in microns 
+%       Default:
+%       diameterForSquareApertureFromDiameterForCircularAperture(3.0), where 3 microns = 6 min arc FOR 300 mirons/degree in the human retina.
 %   'conePacking'   - how cones are packed spatially. 
 %       Choose from : 'rect', for a rectangular mosaic
 %                     'hex', for a hex mosaic with an eccentricity-varying cone spacing
