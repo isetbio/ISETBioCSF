@@ -51,7 +51,6 @@ rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
     'emPathType', 'frozen' ...
 );
 
-
 % Modify mosaic parameters
 conePacking = 'hex';        % Hexagonal mosaic
 %conePacking = 'rect';       % Rectangular mosaic

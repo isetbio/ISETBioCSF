@@ -78,8 +78,7 @@ for ll = 1:length(p.Results.luminances)
         	'blur', p.Results.blur, ...
             'pupilDiamMm', p.Results.pupilDiamMm ...    % 	They used a 2mm artificial pupil
         );
-        
-        
+              
         % Set background luminance
         %
         % We start with a base luminance that we know is about mid-gray on the
