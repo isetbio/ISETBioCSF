@@ -1,5 +1,5 @@
-function varargout = v_IBIOCDIBanksEtAlReplicate(varargin)
-% varargout = v_IBIOCDIBanksEtAlReplicate(varargin)
+function varargout = v_BanksEtAlReplicate(varargin)
+% varargout = v_anksEtAlReplicate(varargin)
 %
 % Works by running t_coneIsomerizationsMovie with various arguments and comparing
 % results with those stored.
@@ -17,9 +17,15 @@ function ValidationFunction(runTimeParams)
     rng('default');
     
     %% Basic validation
-    validationData1 = c_BanksEtAlReplicate('nTrainingSamples',100,'cyclesPerDegree',10,'luminances',340,'generatePlots',runTimeParams.generatePlots);
-    UnitTest.validationData('validationData1',validationData1);
+    computeResponses  = true;
     
+    [validationData1, extraData1] = c_BanksEtAlReplicate('compute', computeResponses, 'nTrainingSamples',100,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots);
+    UnitTest.validationData('validationData1',validationData1);
+    UnitTest.extraData('extraData1',extraData1);
+    
+    [validationData2, extraData2] = c_BanksEtAlReplicate('compute', computeResponses, 'nTrainingSamples',100,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,'generatePlots',runTimeParams.generatePlots);
+    UnitTest.validationData('validationData2',validationData2);
+    UnitTest.extraData('extraData2',extraData2);
 end
 
 

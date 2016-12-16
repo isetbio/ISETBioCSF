@@ -57,6 +57,31 @@ switch (params.instanceType)
         params.lowContrast = 0.001;
         params.highContrast = 0.15;
         params.contrastScale = 'log';    
+        
+    case 'LMSPlane'
+        % Define how many noisy data instances to generate
+        params.trialsNum = 100;
+        
+        % Azimuth sampling in LM plane (samples between 0 and 180 degrees)
+        params.startAzimuthAngle = 0;
+        params.deltaAzimuthAngle = 90;
+        params.nAzimuthAngles = 2;
+        
+        % Elevation sampling from LM plane (samples between 0 and 90 degrees)
+        params.startElevationAngle = 0;
+        params.deltaElevationAngle = 45;
+        params.nElevationAngles = 2;
+        
+        params.baseStimulusLength = 1;
+        params.scaleIntoMonitorGamut = true;
+        
+        % Number of contrasts to run in each color direction
+        % Choose between 'linear' and 'log'
+        params.nContrastsPerDirection = 5;
+        params.lowContrast = 0.001;
+        params.highContrast = 0.15;
+        params.contrastScale = 'log';    
+        
     case 'contrasts'
         % Define how many noisy data instances to generate
         params.trialsNum = 100;

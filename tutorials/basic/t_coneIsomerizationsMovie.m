@@ -1,5 +1,5 @@
-function validationData = t_coneIsomerrizationsMovie(rParams,varargin)
-% validationData = t_coneIsomerrizationsMovie(rParams,varargin)
+function validationData = t_coneIsomerizationsMovie(rParams,varargin)
+% validationData = t_coneIsomerizationsMovie(rParams,varargin)
 %
 % Illustrates the basic steps required to calculate cone isomerizations
 % for a Gaussian windowed temporal color modulation.
@@ -26,11 +26,15 @@ function validationData = t_coneIsomerrizationsMovie(rParams,varargin)
 %   colorSceneCreate
 %
 % Optional key/value pairs
-%  'generatePlots' - true/fale (default true).  Make plots?
+%  'isomerizationNoise' - % Select from {'random','frozen', or 'none'}.  Add isomerization noise?
+%  'generatePlots' - true/false (default true).  Make plots?
+%  'setRngSeed' - true/false (default true). When true, set the rng seed so noise is frozen.
 
 %% Parse vargin for options passed here
 p = inputParser;
+p.addParameter('isomerizationNoise','none', @(x)ismember(x, coneMosaic.validNoiseFlags));
 p.addParameter('generatePlots',true,@islogical);
+p.addParameter('setRngSeed',true,@islogical);
 p.parse(varargin{:});
 
 %% Clear
@@ -38,18 +42,35 @@ if (nargin == 0)
     ieInit; close all;
 end
 
-%% Fix random number generator so we can validate output exactly
-rng(1);
-
 %% Get the parameters we need
 if (nargin < 1 | isempty(rParams))
     rParams = responseParamsGenerate;
+    
+    % Override some of the defaults
+    rParams.mosaicParams.isomerizationNoise = p.Results.isomerizationNoise;
 end
+
+%% Fix random number generator so we can validate output exactly
+if (p.Results.setRngSeed)
+    fprintf(2, '\n%s: freezing all noise \n', mfilename);
+     rng(1);
+     if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
+         fprintf(2, '\tmosaicParams.isomerizationNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.isomerizationNoise);
+         rParams.mosaicParams.isomerizationNoise = 'frozen';
+     end
+     if (strcmp(rParams.mosaicParams.osNoise, 'random'))
+         fprintf(2, '\tmosaicParams.osNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.osNoise);
+         rParams.mosaicParams.osNoise = 'frozen';
+     end
+end;
+
 
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, rParams.colorModulationParams};
+
+% The params list
+paramsList = {rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, rParams.colorModulationParams};
 
 %% Plot the Gaussian temporal window, just to make sure it looks right
 if (p.Results.generatePlots)
@@ -59,6 +80,8 @@ if (p.Results.generatePlots)
     ylabel('Window Amplitude');
     title('Stimulus Temporal Window');
 end
+
+
 
 %% Loop over time and build a cell array of scenes
 gaborScene = cell(rParams.temporalParams.nSampleTimes,1);

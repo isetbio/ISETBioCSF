@@ -22,6 +22,3 @@ function ValidationFunction(runTimeParams)
     UnitTest.validationData('validationData2',validationData2);
     
 end
-
-
-

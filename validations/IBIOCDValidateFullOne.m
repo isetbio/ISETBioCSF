@@ -34,7 +34,7 @@ UnitTest.setPref('numericTolerance',p.Results.numericTolerance);
 
 % Run time error behavior
 % valid options are: 'rethrowExceptionAndAbort', 'catchExceptionAndContinue'
-UnitTest.setPref('onRunTimeErrorBehavior', 'catchExceptionAndContinue');
+UnitTest.setPref('onRunTimeErrorBehavior', 'rethrowExceptionAndAbort');
 
 % Plot generation
 UnitTest.setPref('closeFigsOnInit', true);
@@ -43,6 +43,6 @@ UnitTest.setPref('closeFigsOnInit', true);
 singleScriptToValidate = UnitTest.selectScriptFromExistingOnes();
 
 %% Validate
-UnitTest.runValidationSession({{singleScriptToValidate, []}}, 'FULL');
+UnitTest.runValidationSession({{singleScriptToValidate, []}}, 'FULLONLY');
 
 end

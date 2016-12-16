@@ -54,7 +54,7 @@ switch(spatialParams.spatialType)
         end
         
         % Make the spatial pattern as a Gabor and convert to a modulation around the mean (mean == 0)
-        spatialPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams,colorModulationParams));
+        spatialPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams,colorModulationParams.contrast));
         spatialModulation = spatialPattern-1;
         
     case 'spot'

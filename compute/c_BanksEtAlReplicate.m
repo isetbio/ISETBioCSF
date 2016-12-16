@@ -1,5 +1,5 @@
-function validationData = c_BanksEtAlReplicate(varargin)
-% validationData = c_BanksEtAlReplicate(varargin)
+function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
+% [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %
 % Compute thresholds to replicate Banks et al, 1987, more or less.
 %
@@ -10,6 +10,7 @@ function validationData = c_BanksEtAlReplicate(varargin)
 %   'nTrainingSamples' - value (default 500).  Number of training samples to cycle through.
 %   'cyclesPerDegree' - vector (default [3 5 10 20 40]). Spatial frequencoes of grating to be investigated.
 %   'luminances' - vector (default [3.4 34 340]).  Luminances in cd/m2 to be investigated.
+%   'pupilDiamMm' - value (default 2).  Pupil diameter in mm.
 %   'blur' - true/false (default true). Incorporate lens blur.
 %   'imagePixels' - value (default 400).  Size of image pixel array
 %   'computeResponses' - true/false (default true).  Compute responses.
@@ -24,9 +25,11 @@ p = inputParser;
 p.addParameter('nTrainingSamples',500,@isnumeric);
 p.addParameter('cyclesPerDegree',[3 5 10 20 40 50],@isnumeric);
 p.addParameter('luminances',[3.4 34 340],@isnumeric);
+p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
+p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
@@ -48,22 +51,23 @@ for ll = 1:length(p.Results.luminances)
         % The stimulus was half-cosine windowed to contain 7.5 cycles.  We set
         % our half-cosine window to match that and also make the field of view
         % just a tad bigger.
-        rParams.spatialParams.windowType = 'halfcos';
-        rParams.spatialParams.cyclesPerDegree = p.Results.cyclesPerDegree(cc);
-        rParams.spatialParams.gaussianFWHMDegs = 3.75*(1/rParams.spatialParams.cyclesPerDegree);
-        rParams.spatialParams.fieldOfViewDegs = 2.1*rParams.spatialParams.gaussianFWHMDegs;
-        rParams.spatialParams.row = p.Results.imagePixels;
-        rParams.spatialParams.col = p.Results.imagePixels;
+        cyclesPerDegree = p.Results.cyclesPerDegree(cc);
+        gaussianFWHMDegs = 3.75*(1/cyclesPerDegree);
+        fieldOfViewDegs = 2.1*gaussianFWHMDegs;
+        rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...
+            'windowType', 'halfcos', ...
+            'cyclesPerDegree', cyclesPerDegree, ...
+            'gaussianFWHMDegs', gaussianFWHMDegs, ...
+            'fieldOfViewDegs', fieldOfViewDegs, ...
+            'row', p.Results.imagePixels, ...
+            'col', p.Results.imagePixels);
         
         % Blur
-        rParams.oiParams.blur = p.Results.blur;
-        
-        % Keep mosaic size in lock step with stimulus.  This is also forced before
-        % the mosaic is created, but we need it here so that filenames are
-        % consistent.  It is possible that we should not have a separate mosaic
-        % size field, and just alwasy force it to match the scene.
-        rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
-        
+        rParams.oiParams = modifyStructParams(rParams.oiParams, ...
+        	'blur', p.Results.blur, ...
+            'pupilDiamMm', p.Results.pupilDiamMm ...    % 	They used a 2mm artificial pupil
+        );
+              
         % Set background luminance
         %
         % We start with a base luminance that we know is about mid-gray on the
@@ -72,57 +76,57 @@ for ll = 1:length(p.Results.luminances)
         % monitor channel spectra, so that we don't get unintersting out of gamut errors.
         baseLum = 50;
         theLum = p.Results.luminances(ll);
-        rParams.backgroundParams.backgroundxyY = [0.33 0.33 baseLum]';
-        rParams.backgroundParams.monitorFile = 'CRT-MODEL';
-        rParams.backgroundParams.leakageLum = 1.0;
-        rParams.backgroundParams.lumFactor = theLum/baseLum;
+        rParams.backgroundParams = modifyStructParams(rParams.backgroundParams, ...
+        	'backgroundxyY', [0.33 0.33 baseLum]',...
+        	'monitorFile', 'CRT-MODEL', ...
+        	'leakageLum', 1.0, ...
+        	'lumFactor', theLum/baseLum);
         
-        % Pupil size.  They used a 2mm artificial pupil
-        oiParams.pupilDiamMm = 2;
-        
-        % Set duration equal to sampling interval to do just one frame.
-        %
         % Their intervals were 100 msec each.
-        rParams.temporalParams.simulationTimeStepSecs = 100/1000;
-        rParams.temporalParams.stimulusDurationInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-        rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-        rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
+        stimulusDurationInSeconds = 100/1000;
         
-        % Their main calculation was without eye movements
-        rParams.temporalParams.eyesDoNotMove = true;
+        rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
+            'stimulusDurationInSeconds', stimulusDurationInSeconds, ...
+            'stimulusSamplingIntervalInSeconds',  stimulusDurationInSeconds, ... % Equate stimulusSamplingIntervalInSeconds to stimulusDurationInSeconds to generate 1 time point only
+            'secondsToInclude', stimulusDurationInSeconds, ...
+            'emPathType', 'none' ...        % Their main calculation was without eye movements
+        );
         
-        % Set up mosaic parameters for just one stimulus time step
-        rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-        rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
-        rParams.mosaicParams.isomerizationNoise = true;
-        rParams.mosaicParams.osNoise = true;
-        rParams.mosaicParams.osModel = 'Linear';
+        % Set up mosaic parameters. Here we integrate for the entire stimulus duration (100/1000)
+        rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
+            'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs, ...  % Keep mosaic size in lock step with stimulus. 
+        	'integrationTimeInSeconds', rParams.temporalParams.stimulusDurationInSeconds, ...
+        	'isomerizationNoise', 'frozen',...              % select from {'random', 'frozen', 'none'}
+        	'osNoise', 'frozen', ...                        % select from {'random', 'frozen', 'none'}
+        	'osModel', 'Linear');
         
         % Parameters that define the LM instances we'll generate here
         %
         % Use default LMPlane.
         testDirectionParams = instanceParamsGenerate;
-        testDirectionParams.startAngle = 45;
-        testDirectionParams.deltaAngle = 90;
-        testDirectionParams.nAngles = 1;
-        
-        % Number of contrasts to run in each color direction
-        testDirectionParams.nContrastsPerDirection = 20;
-        testDirectionParams.lowContrast = 0.0001;
-        testDirectionParams.highContrast = 0.1;
-        testDirectionParams.contrastScale = 'log';    % choose between 'linear' and 'log'
+        testDirectionParams = modifyStructParams(testDirectionParams, ...
+            'trialsNum', p.Results.nTrainingSamples, ...
+        	'startAngle', 45, ...
+        	'deltaAngle', 90, ...
+        	'nAngles', 1, ...
+            'nContrastsPerDirection', 20, ... % Number of contrasts to run in each color direction
+            'lowContrast', 0.0001, ...
+        	'highContrast', 0.1, ...
+        	'contrastScale', 'log' ...    % choose between 'linear' and 'log'
+            );
         
         % Parameters related to how we find thresholds from responses
-        %
         % Use default
         thresholdParams = thresholdParamsGenerate;
         
-        % Set number of trials
-        testDirectionParams.trialsNum = p.Results.nTrainingSamples;
-        
         %% Compute response instances
         if (p.Results.computeResponses)
-            t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'generatePlots',p.Results.generatePlots);
+           t_coneCurrentEyeMovementsResponseInstances(...
+               'rParams',rParams,...
+               'testDirectionParams',testDirectionParams,...
+               'compute',true,...
+               'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
+               'generatePlots',p.Results.generatePlots);
         end
         
         %% Find performance, template max likeli
@@ -137,21 +141,16 @@ for ll = 1:length(p.Results.luminances)
             thresholdParams.method = 'mlpt';
             banksEtAlReplicate.mlptThresholds(ll,cc) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'instanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
                 'plotPsychometric',p.Results.generatePlots & p.Results.plotPsychometric,'plotEllipse',false);
-            close all;
+            %close all;
         end
     end
 end
 
 %% Write out the data
 %
-% Set key spatial params to 0 to define a summary directory name
 if (p.Results.fitPsychometric)
     fprintf('Writing performance data ... ');
-    nameParams = rParams.spatialParams;
-    nameParams.cyclesPerDegree = 0;
-    nameParams.fieldOfViewDegs = 0;
-    nameParams.gaussianFWHMDegs = 0;
-    paramsList = {nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+    paramsList = {rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;
     rwObject.write('banksEtAlReplicate',banksEtAlReplicate,paramsList,writeProgram);
@@ -160,11 +159,7 @@ end
 
 %% Get performance data
 fprintf('Reading performance data ...');
-nameParams = rParams.spatialParams;
-nameParams.cyclesPerDegree = 0;
-nameParams.fieldOfViewDegs = 0;
-nameParams.gaussianFWHMDegs = 0;
-paramsList = {nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+paramsList = {rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
 rwObject = IBIOColorDetectReadWriteBasic;
 writeProgram = mfilename;
 banksEtAlReplicate = rwObject.read('banksEtAlReplicate',paramsList,writeProgram);
@@ -173,8 +168,10 @@ fprintf('done\n');
 %% Output validation data
 if (nargout > 0)
     validationData.cyclesPerDegree = banksEtAlReplicate.cyclesPerDegree;
-    validationData.mlptThresholds = banksEtAlReplicate.mlptThresholds
+    validationData.mlptThresholds = banksEtAlReplicate.mlptThresholds;
     validationData.luminances = p.Results.luminances;
+    extraData.paramsList = paramsList;
+    extraData.p.Results = p.Results;
 end
 
 %% Make a plot of estimated threshold versus training set size

@@ -1,5 +1,5 @@
-function validationData = t_coneIsomerzationsMovieSpot(rParams,varargin)
-% validationData = t_coneIsomerzationsMovieSpot(rParams,varargin)
+function validationData = t_coneIsomerizationsMovieSpot(rParams,varargin)
+% validationData = t_coneIsomerizationsMovieSpot(rParams,varargin)
 %
 % This is a call into t_coneIsomerizationsMovie that demonstates its
 % ability to handle AO spots as well as Gabor modulations on monitors.

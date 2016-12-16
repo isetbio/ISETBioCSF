@@ -27,7 +27,9 @@ p.addRequired('theProgram',@ischar);
 p.addParameter('Type','mat',@ischar);
 p.addParameter('ArtifactParams',[],@isstruct);
 p.addParameter('FigureType','pdf',@ischar);
+p.addParameter('FigureHandle', []);
 p.addParameter('MovieType','m4v',@ischar);
+p.addParameter('ShowFilePath', false, @islogical);
 p.parse(name,data,paramsList,theProgram,varargin{:});
 
 % Sometimes, for compatibility, we don't actually have anything
@@ -39,14 +41,17 @@ end
 %% Get fileid
 [fileid,filedir,filename] = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:},'MakeDirectories',true);
 
+if (p.Results.ShowFilePath)
+    warndlg(sprintf('FileDir ''%s''.', filedir), sprintf('Filename: ''%s''', filename));
+end
+
 %% Write the data
 switch (p.Results.Type)
     case 'mat'
         theData = p.Results.data;
         save(fileid,'theData','-v7.3');
     case 'figure'
-        % The cd method seems to prevent an error when fileid gets very
-        % long.
+        % The cd method seems to prevent an error when fileid gets very long.
         curdir = pwd;
         cd(filedir);
         if (exist('FigureSave','file'))
@@ -55,7 +60,17 @@ switch (p.Results.Type)
             saveas(data,filename,p.Results.FigureType);
         end
         cd(curdir);
+    case 'NicePlotExport'
+        % The cd method seems to prevent an error when fileid gets very long.
+        curdir = pwd;
+        cd(filedir);
+        NicePlot.exportFigToPNG(filename, p.Results.FigureHandle, 300);
+        fprintf('Figure exported to %s/%s\n', pwd,filename);
+        cd(curdir);
     case 'movieFile'
-        unix(['mv ' p.Results.data ' ' fileid]);
+        % This cp followed by em seems to prevent a permissions error when the dropbox
+        % location is pointed to via a softlink
+        unix(['cp ' p.Results.data ' ' fileid]);
+        unix(['rm ' p.Results.data]);
 end
 

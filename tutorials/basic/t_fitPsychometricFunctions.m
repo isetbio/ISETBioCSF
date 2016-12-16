@@ -49,16 +49,16 @@ if (isempty(rParams))
     % Override some defult parameters
     %
     % Set duration equal to sampling interval to do just one frame.
-    rParams.temporalParams.simulationTimeStepSecs = 200/1000;
-    rParams.temporalParams.stimulusDurationInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.eyesDoNotMove = true;
+    rParams.temporalParams.stimulusDurationInSeconds = 200/1000;
+    rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
+    rParams.temporalParams.secondsToInclude = rParams.temporalParams.stimulusDurationInSeconds;
     
-    rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
-    rParams.mosaicParams.isomerizationNoise = true;
-    rParams.mosaicParams.osNoise = true;
+    % No eye movements
+    rParams.temporalParams.emPathType = 'none';
+    
+    rParams.mosaicParams.integrationTimeInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
+    rParams.mosaicParams.isomerizationNoise = 'random';         % Type coneMosaic.validNoiseFlags to get valid values
+    rParams.mosaicParams.osNoise = 'random';                    % Type outerSegment.validNoiseFlags to get valid values
     rParams.mosaicParams.osModel = 'Linear';
 end
 
@@ -83,7 +83,7 @@ writeProgram = mfilename;
 %% Read performance data
 %
 % We need this both for computing and plotting, so we just do it
-paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, instanceParams, thresholdParams};
+paramsList = {rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, instanceParams, thresholdParams};
 performanceData = rwObject.read('performanceData',paramsList,readProgram);
 
 % If everything is working right, these check parameter structures will

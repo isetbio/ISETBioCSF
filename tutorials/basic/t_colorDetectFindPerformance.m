@@ -19,8 +19,8 @@ function validationData = t_colorDetectFindPerformance(varargin)
 % Key/value pairs
 %   'rParams' - Value the is the rParams structure to use
 %   'testDirectionParams' - Value is the testDirectionParams structure to use
-%   'setRngSeed' - true/false (default true).  Set the rng seed to a
-%        value so output is reproducible.
+%   'freezeNoise' - true/false (default false).  Freezes all noise so that results are reproducible.
+%     If there is no noise set, this leaves it alone.
 %   'compute' - true/false (default true).  Do the computations.
 %   'generatePlots' - true/false (default true).  Produce any plots at
 %      all? Other plot options only have an effect if this is true.
@@ -40,7 +40,7 @@ p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
 p.addParameter('thresholdParams',[],@isemptyorstruct);
-p.addParameter('setRng',true,@islogical);
+p.addParameter('freezeNoise',false,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',false,@islogical);
@@ -58,11 +58,6 @@ if (nargin == 0)
     ieInit; close all;
 end
 
-%% Fix random number generator so we can validate output exactly
-if (p.Results.setRng)
-    rng(1);
-end
-
 %% Get the parameters we need
 %
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
@@ -73,17 +68,26 @@ if (isempty(rParams))
     % Override some defult parameters
     %
     % Set duration equal to sampling interval to do just one frame.
-    rParams.temporalParams.simulationTimeStepSecs = 200/1000;
-    rParams.temporalParams.stimulusDurationInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.eyesDoNotMove = true;
+    rParams.temporalParams.stimulusDurationInSeconds = 200/1000;
+    rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
+    rParams.temporalParams.secondsToInclude = rParams.temporalParams.stimulusDurationInSeconds;
+    rParams.temporalParams.emPathType = 'none';
     
-    rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
-    rParams.mosaicParams.isomerizationNoise = true;
-    rParams.mosaicParams.osNoise = true;
+    rParams.mosaicParams.integrationTimeInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
+    rParams.mosaicParams.isomerizationNoise = 'random';     % Type coneMosaic.validNoiseFlags to get valid values
+    rParams.mosaicParams.osNoise = 'random';                % Type outerSegment.validNoiseFlags to get valid values
     rParams.mosaicParams.osModel = 'Linear';
+end
+
+% Fix random number generator so we can validate output exactly
+if (p.Results.freezeNoise)
+     rng(1);
+     if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
+         rParams.mosaicParams.isomerizationNoise = 'frozen';
+     end
+     if (strcmp(rParams.mosaicParams.osNoise, 'random'))
+         rParams.mosaicParams.osNoise = 'frozen';
+     end
 end
 
 %% Parameters that define the LM instances we'll generate here
@@ -104,6 +108,8 @@ rwObject = IBIOColorDetectReadWriteBasic;
 readProgram = 't_coneCurrentEyeMovementsResponseInstances';
 writeProgram = mfilename;
 
+constantParamsList = {rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
+
 %% Compute if desired
 if (p.Results.compute)
     
@@ -112,7 +118,10 @@ if (p.Results.compute)
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = [0 0 0]';
     colorModulationParamsTemp.contrast = 0;
-    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+    paramsList = constantParamsList;
+    paramsList{numel(paramsList)+1} = colorModulationParamsTemp;
+    clear 'colorModulationParamsTemp'
+    
     noStimData = rwObject.read('responseInstances',paramsList,readProgram);
     ancillaryData = rwObject.read('ancillaryData',paramsList,readProgram);
     
@@ -139,18 +148,27 @@ if (p.Results.compute)
     % to change the parfor here to a plain for loop.
     tic
     parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
+    for kk = 1:length(parforConditionStructs)
+        thisConditionStruct = parforConditionStructs{kk};
+        colorModulationParamsTemp = rParams.colorModulationParams;
+        colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
+        colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
+        paramsList = constantParamsList;
+        paramsList{numel(paramsList)+1} = colorModulationParamsTemp;
+        thisConditionStruct.paramsList = paramsList;
+        parforConditionStructs{kk} = thisConditionStruct;
+    end
+    
     nParforConditions = length(parforConditionStructs);
     parforRanSeeds = randi(1000000,nParforConditions,1)+1;
     usePercentCorrect = zeros(size(testConeContrasts,2),1);
     useStdErr = zeros(size(testConeContrasts,2),1);
     rState = rng;
+    
     parfor kk = 1:nParforConditions
         rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
-        colorModulationParamsTemp = rParams.colorModulationParams;
-        colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
-        colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
-        paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+        paramsList = thisConditionStruct.paramsList;
         stimData = rwObject.read('responseInstances',paramsList,readProgram);
         if (numel(stimData.responseInstanceArray) ~= nTrials)
             error('Inconsistent number of trials');
@@ -165,7 +183,7 @@ if (p.Results.compute)
         
         % Save classifier plot if we made one and then close the figure.
         if (p.Results.generatePlots && p.Results.plotSvmBoundary)
-            paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp, thresholdParams};
+            paramsList{numel(paramsList)+1} = thresholdParams;
             rwObject.write(sprintf('svmBoundary_PCA%d_PCA%d',plotSvmPCAAxis1,plotSvmPCAAxis2), ...
                 h,paramsList,writeProgram,'Type','figure');
             close(h);
@@ -175,7 +193,7 @@ if (p.Results.compute)
     fprintf('Classification took %2.2f minutes\n', toc/60);
     clearvars('theData','useData','classificationData','classes');
     
-    %% Take the returned vector form of the performance data and put it back into the
+    % Take the returned vector form of the performance data and put it back into the
     % matrix form we expect below and elsewhere.
     %
     % See function responseGenerationParforConditionStructsGenerate for how we
@@ -196,7 +214,8 @@ if (p.Results.compute)
     
     %% Save classification performance data and a copy of this script
     fprintf('Writing performance data ... ');
-    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, thresholdParams};
+    paramsList = constantParamsList;
+    paramsList{numel(paramsList)+1} = thresholdParams;
     rwObject.write('performanceData',performanceData,paramsList,writeProgram);
     fprintf('done\n');
     
@@ -209,12 +228,13 @@ end
 %% Plot performances obtained in each color direction as raw psychometric functions
 if (p.Results.generatePlots && p.Results.plotPsychometric) 
     fprintf('Reading performance data ... ');
-    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, thresholdParams};
+    paramsList = constantParamsList;
+    paramsList{numel(paramsList)+1} = thresholdParams;
     performanceData = rwObject.read('performanceData',paramsList,writeProgram);
     fprintf('done\n');
     
     for ii = 1:size(testConeContrasts,2)
-        hFig = figure(1); clf;
+        hFig = figure; clf;
         errorbar(testContrasts, squeeze(performanceData.percentCorrect(ii,:)), squeeze(performanceData.stdErr(ii, :)), ...
             'ro-', 'LineWidth', rParams.plotParams.lineWidth, 'MarkerSize', rParams.plotParams.markerSize, 'MarkerFaceColor', [1.0 0.5 0.50]);
         axis 'square'
@@ -232,7 +252,8 @@ end
 %
 % Doesn't delete figures.  
 if (p.Results.delete)
-    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, thresholdParams};
+    paramsList = constantParamsList;
+    paramsList{numel(paramsList)+1} = thresholdParams;
     rwObject.delete('performanceData',paramsList,writeProgram);
 end
 

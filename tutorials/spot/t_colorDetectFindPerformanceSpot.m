@@ -30,16 +30,16 @@ if (nargin < 1 | isempty(rParams))
     % Override some defult parameters
     %
     % Set duration equal to sampling interval to do just one frame.
-    rParams.temporalParams.simulationTimeStepSecs = 200/1000;
-    rParams.temporalParams.stimulusDurationInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.secondsToInclude = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.temporalParams.eyesDoNotMove = true;
+    rParams.temporalParams.stimulusDurationInSeconds = 200/1000;
+    rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
+    rParams.temporalParams.secondsToInclude = rParams.temporalParams.stimulusDurationInSeconds;
+
+    % No eye movements
+    rParams.temporalParams.emPathType = 'none';
     
-    rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
-    rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
-    rParams.mosaicParams.isomerizationNoise = true;
-    rParams.mosaicParams.osNoise = true;
+    rParams.mosaicParams.integrationTimeInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
+    rParams.mosaicParams.isomerizationNoise = 'random';         % Type coneMosaic.validNoiseFlags to get valid values
+    rParams.mosaicParams.osNoise = 'random';                    % Type outerSegment.validNoiseFlags to get valid values
     rParams.mosaicParams.osModel = 'Linear';
     
     rParams.oiParams.pupilDiamMm = 7;
