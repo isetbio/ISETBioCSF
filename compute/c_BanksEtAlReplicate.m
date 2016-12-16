@@ -12,11 +12,19 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'luminances' - vector (default [3.4 34 340]).  Luminances in cd/m2 to be investigated.
 %   'pupilDiamMm' - value (default 2).  Pupil diameter in mm.
 %   'blur' - true/false (default true). Incorporate lens blur.
+%   'innerSegmentDiamMicrons' - Diameter of the cone light-collecting area,
+%   in microns (default: 3 microns, or 6 min arc given 300 mirons/degree in human retina)
+%   'conePacking'   - how cones are packed spatially. 
+%       Choose from : 'rect', for a rectangular mosaic
+%                     'hex', for a hex mosaic with an eccentricity-varying cone spacing
+%                     {'hex', coneSpacingMicrons} for a hex mosaic with the given cone spacing
 %   'imagePixels' - value (default 400).  Size of image pixel array
 %   'computeResponses' - true/false (default true).  Compute responses.
 %   'findPerformance' - true/false (default true).  Find performance.
 %   'fitPsychometric' - true/false (default true).  Fit psychometric functions.
 %   'generatePlots' - true/false (default true).  No plots are generated unless this is true.
+%   'visualizedResponseNormalization' - how to normalize visualized responses
+%        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotCSF' - true/false (default true).  Plot results.
 
@@ -27,6 +35,9 @@ p.addParameter('cyclesPerDegree',[3 5 10 20 40 50],@isnumeric);
 p.addParameter('luminances',[3.4 34 340],@isnumeric);
 p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
+p.addParameter('innerSegmentDiamMicrons', diameterForSquareApertureFromDiameterForCircularAperture(3.0), @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
+p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
+p.addParameter('conePacking', 'hex-regular');                 % choose from 'rect', 'hex-regular' (fixed cone spacing and collecting area), and 'hex' (spatially-varying cone spacing, fixed colleting area)
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
@@ -95,7 +106,10 @@ for ll = 1:length(p.Results.luminances)
         
         % Set up mosaic parameters. Here we integrate for the entire stimulus duration (100/1000)
         rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
-            'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs, ...  % Keep mosaic size in lock step with stimulus. 
+            'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs, ...  % Keep mosaic size in lock step with stimulus
+            'innerSegmentDiamMicrons',p.Results.innerSegmentDiamMicrons, ...
+            'coneSpacingMicrons', p.Results.coneSpacingMicrons, ...
+            'conePacking', p.Results.conePacking, ...
         	'integrationTimeInSeconds', rParams.temporalParams.stimulusDurationInSeconds, ...
         	'isomerizationNoise', 'frozen',...              % select from {'random', 'frozen', 'none'}
         	'osNoise', 'frozen', ...                        % select from {'random', 'frozen', 'none'}
