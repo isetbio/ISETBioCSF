@@ -22,15 +22,15 @@ if (ischar(mosaicParams.conePacking))
         resamplingFactor = 6;
         centerInMM = [0.0 0.0];                    % mosaic eccentricity in MM - this should obey mosaicParams.eccentricityDegs, but it does not do so yet
         spatiallyVaryingConeDensity = true;        % spatially-varying density (at the mosaic's eccentricity)
-
-        theMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, nan, ...
+        
+        theMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, [], ...
                            'center', centerInMM*1e-3, ...
                    'spatialDensity', [0 mosaicParams.LMSRatio]' ...
                 );
         % Set the pigment light collecting dimensions
         theMosaic.pigment.pdWidth = mosaicParams.innerSegmentDiamMicrons*1e-6;
         theMosaic.pigment.pdHeight = mosaicParams.innerSegmentDiamMicrons*1e-6;
-        
+           
     elseif (strcmp(mosaicParams.conePacking, 'hex-regular'))
         resamplingFactor = 6;
         centerInMM = [0.0 0.0];                    % mosaic eccentricity in MM - this should obey mosaicParams.eccentricityDegs, but it does not do so yet
