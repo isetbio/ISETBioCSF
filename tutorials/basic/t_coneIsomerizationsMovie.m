@@ -137,7 +137,7 @@ end
 % Make a movie of the isomerizations
 if (p.Results.generatePlots)
     eyeMovementSequence = [];
-    visualizeMosaicResponseSequence(rwObject,paramsList,theProgram, ...
+    visualizeSubMosaicResponseSequence(rwObject,paramsList,theProgram, ...
         'isomerizations (R*/cone)', gaborConeAbsorptions, eyeMovementSequence, theMosaic.pattern, rParams.temporalParams.sampleTimes, [theMosaic.width theMosaic.height], theMosaic.fov, rParams.mosaicParams.integrationTimeInSeconds, 'gaborIsomerizations');
 end
 

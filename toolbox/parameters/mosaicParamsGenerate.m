@@ -7,7 +7,8 @@ function mosaicParams = mosaicParamsGenerate(varargin)
 %  osModel - What model to use to compute photocurrent
 %  conePacking - Type of cone mosaic
 %    'rect' - rectangular
-%    'hex' - hexagonal-like
+%    'hexReg' - hexagonal, regular spacing
+%    'hex'  - hexagonal, eccentricity-varying spacing 
 %
 % Other parameters that are needed for the mosaic are
 %  fieldOfViewDegs - Field of view computed
@@ -18,6 +19,8 @@ function mosaicParams = mosaicParamsGenerate(varargin)
 mosaicParams.type = 'Mosaic';
 
 mosaicParams.conePacking = 'rect';
+mosaicParams.innerSegmentDiamMicrons = 1.4;       % Diameter of a SQUARE cone light-collecting area in microns, isetbio default value for coneMosaic.pigment.pdWidth
+mosaicParams.coneSpacingMicrons = 2.0;            % Cone spacing in microns, isetbio default value for coneMosaic.pigment.width
 mosaicParams.macular = true;
 mosaicParams.LMSRatio = [0.62 0.31 0.07];
 mosaicParams.eccentricityDegs = 0;
