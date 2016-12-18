@@ -38,7 +38,7 @@ p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('innerSegmentDiamMicrons', diameterForSquareApertureFromDiameterForCircularAperture(3.0), @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
 p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
-p.addParameter('conePacking', 'hexReg');                 % choose from 'rect', 'hexReg' (regular cone spacing and fixed collecting area), and 'hex' (spatially-varying cone spacing and fixed collecting area)
+p.addParameter('conePacking', 'hexReg');                 
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);

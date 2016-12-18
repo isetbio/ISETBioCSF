@@ -5,7 +5,8 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 % ability to handle AO spots as well as Gabor modulations on monitors.
 %
 % Key/value pairs
-%   'rParams' - structure (default empty). Value the is the rParams structure to use
+%  'rParams' - Value the is the rParams structure to use.  Default empty,
+%        which then uses defaults produced by generation function.
 %   'contrastParams - structure (default empty). Value is the contrastParams structure to use.
 %   'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
 %   'compute' - true/false (default true).  Do the computations.

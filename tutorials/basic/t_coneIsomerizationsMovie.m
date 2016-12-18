@@ -1,5 +1,5 @@
-function validationData = t_coneIsomerizationsMovie(rParams,varargin)
-% validationData = t_coneIsomerizationsMovie(rParams,varargin)
+function validationData = t_coneIsomerizationsMovie(varargin)
+% validationData = t_coneIsomerizationsMovie(varargin)
 %
 % Illustrates the basic steps required to calculate cone isomerizations
 % for a Gaussian windowed temporal color modulation.
@@ -26,16 +26,20 @@ function validationData = t_coneIsomerizationsMovie(rParams,varargin)
 %   colorSceneCreate
 %
 % Optional key/value pairs
+%  'rParams' - Value the is the rParams structure to use.  Default empty,
+%     which then uses defaults produced by generation function.
 %  'isomerizationNoise' - % Select from {'random','frozen', or 'none'}.  Add isomerization noise?
 %  'generatePlots' - true/false (default true).  Make plots?
 %  'setRngSeed' - true/false (default true). When true, set the rng seed so noise is frozen.
 
 %% Parse vargin for options passed here
 p = inputParser;
+p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('isomerizationNoise','none', @(x)ismember(x, coneMosaic.validNoiseFlags));
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('setRngSeed',true,@islogical);
 p.parse(varargin{:});
+rParams = p.Results.rParams;
 
 %% Clear
 if (nargin == 0)

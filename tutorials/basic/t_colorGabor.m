@@ -1,5 +1,5 @@
-function validationData = t_colorGabor(rParams,varargin)
-% validationData = t_colorGabor(rParams,varargin)
+function validationData = t_colorGabor(varargin)
+% validationData = t_colorGabor(varargin)
 %
 % Illustrates the basic steps required to calculate cone isomerizations
 % for a static color Gabor modulation.
@@ -27,16 +27,20 @@ function validationData = t_colorGabor(rParams,varargin)
 %   colorSceneCreate
 %
 % Optional key/value pairs
+%  'rParams' - Value the is the rParams structure to use.  Default empty,
+%     which then uses defaults produced by generation function.
 %  'generatePlots' - true/false (default true).  Make plots?
 %  'setRngSeed' - true/false (default true). When true, set the rng seed so noise is frozen.
-%  'hexMosaic' - use a hexagonal mosaic, rather than a rectangular mosaic.
+%  'hexMosaic' - true/false (default false). Use a hexagonal mosaic, rather than a rectangular mosaic.
 
 %% Parse vargin for options passed here
 p = inputParser;
+p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('setRngSeed',true,@islogical);
 p.addParameter('hexMosaic',false,@islogical);
 p.parse(varargin{:});
+rParams = p.Results.rParams;
 
 %% Clear
 if (nargin == 0)
