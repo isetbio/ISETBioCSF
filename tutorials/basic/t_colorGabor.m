@@ -31,7 +31,7 @@ function validationData = t_colorGabor(varargin)
 %     which then uses defaults produced by generation function.
 %  'generatePlots' - true/false (default true).  Make plots?
 %  'setRngSeed' - true/false (default true). When true, set the rng seed so noise is frozen.
-%  'hexMosaic' - use a hexagonal mosaic, rather than a rectangular mosaic.
+%  'hexMosaic' - true/false (default false). Use a hexagonal mosaic, rather than a rectangular mosaic.
 
 %% Parse vargin for options passed here
 p = inputParser;

@@ -145,6 +145,7 @@ if (p.Results.compute)
     if (p.Results.computeMosaic)
         % Create the cone mosaic
         theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
+        
         % Save cone mosaic
         coneParamsList = {rParams.mosaicParams};
         rwObject.write('coneMosaic', theMosaic, coneParamsList, theProgram, 'type', 'mat');
