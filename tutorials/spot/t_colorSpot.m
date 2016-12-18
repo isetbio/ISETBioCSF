@@ -1,5 +1,5 @@
-function validationData = t_colorSpot(rParams)
-% validationData = t_colorSpot(rParams)
+function validationData = t_colorSpot(varargin)
+% validationData = t_colorSpot(varargin)
 %
 % Illustrates the basic steps required to calculate cone isomerizations for
 % a monochromatic spot on a background, where the key parameters that will
@@ -9,10 +9,15 @@ function validationData = t_colorSpot(rParams)
 % will vary as we change these properties, particularly the size of the
 % spot, for various radiometric, mosaic, and eccentricity choices.
 %
-% If parameters structure is not passed, the routine will use the defaults
+% If parameters structure rParams is not passed, the routine will use the defaults
 % provided by
 %   responseParamsGenerate('spatialType','spot','backgroundType','AO','modulationType','AO')
 % That function and its subfunctions also documents what the relavant parameters are.
+%
+% % Key/value pairs
+%  'rParams' - Value the is the rParams structure to use.  Default empty,
+%     which then uses defaults produced by generation function.
+%  'generatePlots' - true/false (default true).  Make plots?
 %
 % The code illustrated here is encapsulated into function
 %   colorSceneCreate.
@@ -26,6 +31,13 @@ function validationData = t_colorSpot(rParams)
 % See also:
 %
 % 9/14/16  dhb, wst  Wrote it.
+
+%% Parse vargin for options passed here
+p = inputParser;
+p.addParameter('rParams',[],@isemptyorstruct);
+p.addParameter('generatePlots',true,@islogical);
+p.parse(varargin{:});
+rParams = p.Results.rParams;
 
 %% Clear
 if (nargin == 0)

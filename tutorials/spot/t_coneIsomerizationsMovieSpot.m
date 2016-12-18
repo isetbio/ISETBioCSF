@@ -32,6 +32,6 @@ if (nargin < 1 | isempty(rParams))
 end
 
 %% Call into t_coneIsomerizationsMovie with spot parameters
-validationData = t_coneIsomerizationsMovie(rParams,'generatePlots',p.Results.generatePlots);
+validationData = t_coneIsomerizationsMovie('rParams',rParams,'generatePlots',p.Results.generatePlots);
 
 

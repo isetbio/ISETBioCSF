@@ -34,7 +34,8 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %   colorDetectResponseInstanceFastArrayConstruct
 %
 % Key/value pairs
-%   'rParams' - Value the is the rParams structure to use
+%  'rParams' - Value the is the rParams structure to use.  Default empty,
+%     which then uses defaults produced by generation function.
 %   'testDirectionParams - Value is the testDirectionParams structure to use
 %   'emPathType' - Value (one of: 'none', 'frozen', 'random') determines whether we have:
 %                  zero eye movements across all trials, 

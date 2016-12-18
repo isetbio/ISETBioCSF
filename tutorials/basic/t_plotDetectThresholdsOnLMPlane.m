@@ -14,7 +14,8 @@ function validationData = t_plotDetectThresholdsOnLMPlane(varargin)
 % The fit ellipse may be compared with actual psychophysical data.
 %
 % Key/value pairs
-%   'rParams' - Value the is the rParams structure to use
+%  'rParams' - Value the is the rParams structure to use.  Default empty,
+%     which then uses defaults produced by generation function.
 %   'instanceParams' - Value is the instanceParams structure to use
 %   'thresholdParams' - Value is the thresholdParams structure to use
 %   'setRngSeed' - true/false (default true).  Set the rng seed to a

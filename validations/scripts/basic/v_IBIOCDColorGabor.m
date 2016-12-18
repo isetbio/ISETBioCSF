@@ -14,7 +14,7 @@ function ValidationFunction(runTimeParams)
     UnitTest.validationRecord('SIMPLE_MESSAGE', '***** v_IBIOCDColorGabor *****');
     
     %% Basic validation
-    validationData1 = t_colorGabor([],'generatePlots',runTimeParams.generatePlots);
+    validationData1 = t_colorGabor('generatePlots',runTimeParams.generatePlots);
     UnitTest.validationData('validationData1',validationData1);
     
 end

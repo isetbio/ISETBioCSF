@@ -14,11 +14,11 @@ function ValidationFunction(runTimeParams)
     UnitTest.validationRecord('SIMPLE_MESSAGE', '***** v_IBIOCDConeIsomerizationsMovie *****');
     
     %% Basic validation
-    validationData1 = t_coneIsomerizationsMovie([],'generatePlots',runTimeParams.generatePlots);
+    validationData1 = t_coneIsomerizationsMovie('generatePlots',runTimeParams.generatePlots);
     UnitTest.validationData('validationData1',validationData1);
     
     %% Spot version
-    validationData2 = t_coneIsomerizationsMovieSpot([],'generatePlots',runTimeParams.generatePlots);
+    validationData2 = t_coneIsomerizationsMovieSpot('generatePlots',runTimeParams.generatePlots);
     UnitTest.validationData('validationData2',validationData2);
     
 end
