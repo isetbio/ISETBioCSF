@@ -17,7 +17,8 @@ function validationData = t_colorDetectFindPerformance(varargin)
 %   t_plotGabotDetectThresholdsOnLMPlane.
 %
 % Key/value pairs
-%   'rParams' - Value the is the rParams structure to use
+%  'rParams' - Value the is the rParams structure to use.  Default empty,
+%     which then uses defaults produced by generation function.
 %   'testDirectionParams' - Value is the testDirectionParams structure to use
 %   'freezeNoise' - true/false (default false).  Freezes all noise so that results are reproducible.
 %     If there is no noise set, this leaves it alone.
