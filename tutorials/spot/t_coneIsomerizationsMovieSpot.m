@@ -1,16 +1,20 @@
-function validationData = t_coneIsomerizationsMovieSpot(rParams,varargin)
-% validationData = t_coneIsomerizationsMovieSpot(rParams,varargin)
+function validationData = t_coneIsomerizationsMovieSpot(varargin)
+% validationData = t_coneIsomerizationsMovieSpot(varargin)
 %
 % This is a call into t_coneIsomerizationsMovie that demonstates its
 % ability to handle AO spots as well as Gabor modulations on monitors.
 %
 % Optional key/value pairs
+%  'rParams' - Value the is the rParams structure to use.  Default empty,
+%     which then uses defaults produced by generation function.
 %  'generatePlots' - true/fale (default true).  Make plots?
 
 %% Parse vargin for options passed here
 p = inputParser;
+p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('generatePlots',true,@islogical);
 p.parse(varargin{:});
+rParams = p.Results.rParams;
 
 %% Clear
 if (nargin == 0)
