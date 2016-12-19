@@ -74,9 +74,11 @@ for ll = 1:length(p.Results.luminances)
             'col', p.Results.imagePixels);
         
         % Blur
+        %
+        % Banks et al. used a 2mm artificial pupil
         rParams.oiParams = modifyStructParams(rParams.oiParams, ...
         	'blur', p.Results.blur, ...
-            'pupilDiamMm', p.Results.pupilDiamMm ...    % 	They used a 2mm artificial pupil
+            'pupilDiamMm', p.Results.pupilDiamMm ...    
         );
               
         % Set background luminance
@@ -93,9 +95,8 @@ for ll = 1:length(p.Results.luminances)
         	'leakageLum', 1.0, ...
         	'lumFactor', theLum/baseLum);
         
-        % Their intervals were 100 msec each.
+        % Their stimulus intervals were 100 msec each.
         stimulusDurationInSeconds = 100/1000;
-        
         rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
             'stimulusDurationInSeconds', stimulusDurationInSeconds, ...
             'stimulusSamplingIntervalInSeconds',  stimulusDurationInSeconds, ... % Equate stimulusSamplingIntervalInSeconds to stimulusDurationInSeconds to generate 1 time point only
@@ -161,7 +162,6 @@ for ll = 1:length(p.Results.luminances)
 end
 
 %% Write out the data
-%
 if (p.Results.fitPsychometric)
     fprintf('Writing performance data ... ');
     paramsList = {rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
