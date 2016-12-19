@@ -28,8 +28,8 @@ if (ischar(mosaicParams.conePacking))
                    'spatialDensity', [0 mosaicParams.LMSRatio]' ...
                 );
         % Set the pigment light collecting dimensions
-        theMosaic.pigment.pdWidth = mosaicParams.innerSegmentDiamMicrons*1e-6;
-        theMosaic.pigment.pdHeight = mosaicParams.innerSegmentDiamMicrons*1e-6;
+        theMosaic.pigment.pdWidth = mosaicParams.innerSegmentSizeMicrons*1e-6;
+        theMosaic.pigment.pdHeight = mosaicParams.innerSegmentSizeMicrons*1e-6;
            
     elseif (strcmp(mosaicParams.conePacking, 'hexReg'))
         resamplingFactor = 6;
@@ -44,8 +44,8 @@ if (ischar(mosaicParams.conePacking))
                         );  
                     
         % Set the pigment light collecting dimensions
-        theMosaic.pigment.pdWidth = mosaicParams.innerSegmentDiamMicrons*1e-6;
-        theMosaic.pigment.pdHeight = mosaicParams.innerSegmentDiamMicrons*1e-6;
+        theMosaic.pigment.pdWidth = mosaicParams.innerSegmentSizeMicrons*1e-6;
+        theMosaic.pigment.pdHeight = mosaicParams.innerSegmentSizeMicrons*1e-6;
         
         % Set the pigment geometric dimensions
         theMosaic.pigment.width = customLambda*1e-6;
@@ -57,8 +57,8 @@ if (ischar(mosaicParams.conePacking))
         theMosaic.spatialDensity = [0 mosaicParams.LMSRatio]';
         
         % Set the pigment collecting area   
-        theMosaic.pigment.pdWidth = mosaicParams.innerSegmentDiamMicrons*1e-6;
-        theMosaic.pigment.pdHeight = mosaicParams.innerSegmentDiamMicrons*1e-6;
+        theMosaic.pigment.pdWidth = mosaicParams.innerSegmentSizeMicrons*1e-6;
+        theMosaic.pigment.pdHeight = mosaicParams.innerSegmentSizeMicrons*1e-6;
         
         % Set the pigment geometric dimensions
         theMosaic.pigment.width = mosaicParams.coneSpacingMicrons*1e-6;

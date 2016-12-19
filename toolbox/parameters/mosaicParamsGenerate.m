@@ -19,7 +19,7 @@ function mosaicParams = mosaicParamsGenerate(varargin)
 mosaicParams.type = 'Mosaic';
 
 mosaicParams.conePacking = 'rect';
-mosaicParams.innerSegmentDiamMicrons = 1.4;       % Diameter of a SQUARE cone light-collecting area in microns, isetbio default value for coneMosaic.pigment.pdWidth
+mosaicParams.innerSegmentSizeMicrons = 1.4;       % Linear size of a square cone light-collecting area in microns, isetbio default value for coneMosaic.pigment.pdWidth
 mosaicParams.coneSpacingMicrons = 2.0;            % Cone spacing in microns, isetbio default value for coneMosaic.pigment.width
 mosaicParams.macular = true;
 mosaicParams.LMSRatio = [0.62 0.31 0.07];

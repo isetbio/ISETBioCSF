@@ -12,9 +12,8 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'luminances' - vector (default [3.4 34 340]).  Luminances in cd/m2 to be investigated.
 %   'pupilDiamMm' - value (default 2).  Pupil diameter in mm.
 %   'blur' - true/false (default true). Incorporate lens blur.
-%   'innerSegmentDiamMicrons' - Diameter of the cone light-collecting area, in microns 
-%       Default:
-%       diameterForSquareApertureFromDiameterForCircularAperture(3.0), where 3 microns = 6 min arc FOR 300 mirons/degree in the human retina.
+%   'innerSegmentSizeMicrons' - Diameter of the cone light-collecting area, in microns 
+%       Default: sizeForSquareApertureFromDiameterForCircularAperture(3.0), where 3 microns = 6 min arc for 300 mirons/degree in the human retina.
 %   'conePacking'   - how cones are packed spatially. 
 %       Choose from : 'rect', for a rectangular mosaic
 %                     'hex', for a hex mosaic with an eccentricity-varying cone spacing
@@ -36,7 +35,7 @@ p.addParameter('cyclesPerDegree',[3 5 10 20 40 50],@isnumeric);
 p.addParameter('luminances',[3.4 34 340],@isnumeric);
 p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
-p.addParameter('innerSegmentDiamMicrons', diameterForSquareApertureFromDiameterForCircularAperture(3.0), @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
+p.addParameter('innerSegmentSizeMicrons',sizeForSquareApertureFromDiameterForCircularAperture(3.0), @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
 p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
 p.addParameter('conePacking', 'hexReg');                 
 p.addParameter('imagePixels',400,@isnumeric);
@@ -107,7 +106,7 @@ for ll = 1:length(p.Results.luminances)
         % Set up mosaic parameters. Here we integrate for the entire stimulus duration (100/1000)
         rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
             'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs, ...  % Keep mosaic size in lock step with stimulus
-            'innerSegmentDiamMicrons',p.Results.innerSegmentDiamMicrons, ...
+            'innerSegmentSizeMicrons',p.Results.innerSegmentSizeMicrons, ...
             'coneSpacingMicrons', p.Results.coneSpacingMicrons, ...
             'conePacking', p.Results.conePacking, ...
         	'integrationTimeInSeconds', rParams.temporalParams.stimulusDurationInSeconds, ...
