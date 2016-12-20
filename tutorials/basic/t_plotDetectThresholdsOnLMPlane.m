@@ -93,7 +93,7 @@ if (isempty(thresholdParams))
 end
 
 %% Set up the rw object for this program
-paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, instanceParams, thresholdParams};
+paramsList = {rParams.topLevelDirParams, rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, instanceParams, thresholdParams};
 rwObject = IBIOColorDetectReadWriteBasic;
 readProgram = 't_colorDetectFindPerformance';
 writeProgram = mfilename;

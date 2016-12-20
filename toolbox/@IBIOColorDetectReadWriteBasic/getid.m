@@ -48,42 +48,37 @@ if (~isempty(p.Results.paramsList))
     for ii = 1:length(p.Results.paramsList)
         thisParams = p.Results.paramsList{ii};
         switch(thisParams.type)
+            case 'TopLevelDir'
+                thisParentDir = obj.paramsToTopLevelDirName(thisParams);
+                
             case 'ResponseGeneration'
                 thisParentDir = obj.paramsToResponseGenerationDirName(thisParams);
                 
-            case 'Session'
-                thisParentDir = obj.paramsToSessionDirName(thisParams);
-                
-            case {'ColorModulation' 'ColorModulation_v2'}
+            case {'ColorModulation'}
                 thisParentDir = obj.paramsToColorModulationDirName(thisParams);
                 
-            case {'Background' 'Background_v2'}
+            case {'Background'}
                 thisParentDir = obj.paramsToBackgroundDirName(thisParams);
                 
             case 'Instance'
                 thisParentDir = obj.paramsToInstanceDirName(thisParams);
-               
-            case 'LMSsampling'
-                thisParentDir = obj.paramsToLMSsamplingDirName(thisParams);
-                
-            case 'ResponseSubsampling'
-                thisParentDir = obj.paramsToResponseSubsamplingDirName(thisParams);
-                
+   
             case 'threshold'
                 thisParentDir = obj.paramsToThresholdDirName(thisParams);
+                
             case 'psychoEllipsoid'
                 thisParentDir = obj.paramsToPsychoEllipsoidDirName(thisParams);
                 
-            case {'Spatial' 'Spatial_v2'}
+            case {'Spatial'}
                 thisParentDir = obj.paramsToSpatialDirName(thisParams);
                 
-            case {'Temporal' 'Temporal_v2'}
+            case {'Temporal'}
                 thisParentDir = obj.paramsToTemporalDirName(thisParams);
                 
-            case {'Optics' 'Optics_v2'}
+            case {'Optics'}
                 thisParentDir = obj.paramsToOiDirName(thisParams);
                 
-            case {'Mosaic' 'Mosaic_v2'}
+            case {'Mosaic'}
                 thisParentDir = obj.paramsToMosaicDirName(thisParams);
             
             otherwise

@@ -9,6 +9,9 @@ function c_EffectOfTrainingSize(varargin)
 % so using a larger spatial frequency speeds things up.
 %
 % Key/value pairs
+%   'useScratchTopLevelDirName'- true/false (default false). 
+%      When true, the top level output directory is [scratch]. 
+%      When false, it is the name of this script.
 %   'nTrainingSamplesList' - vector (default [50 100 500 1000 5000].  Vector
 %       of number of training samples to cycle through.
 %   'cyclesPerDegree' - value (default 10). Spatial frequency of grating to be investigated.
@@ -32,6 +35,7 @@ function c_EffectOfTrainingSize(varargin)
 
 %% Parse input
 p = inputParser;
+p.addParameter('useScratchTopLevelDirName', false, @islogical);
 p.addParameter('nTrainingSamplesList',[50 100 500 1000 5000],@isnumeric);
 p.addParameter('cyclesPerDegree',10,@isnumeric);
 p.addParameter('computeResponses',true,@islogical);
@@ -51,6 +55,11 @@ p.parse(varargin{:});
 %
 % Start with default
 rParams = responseParamsGenerate;
+
+%% Set the  topLevelDir name
+if (~p.Results.useScratchTopLevelDirName)
+    rParams.topLevelDirParams.name = mfilename;
+end
 
 % Get stimulus parameters correct
 %
@@ -96,8 +105,8 @@ rParams.temporalParams.emPathType = 'none';
 
 % Set up mosaic parameters for just one stimulus time step
 rParams.mosaicParams.integrationTimeInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
-rParams.mosaicParams.isomerizationNoise = true;
-rParams.mosaicParams.osNoise = true;
+rParams.mosaicParams.isomerizationNoise = 'frozen';
+rParams.mosaicParams.osNoise = 'frozen';
 rParams.mosaicParams.osModel = 'Linear';
 
 %% Parameters that define the LM instances we'll generate here
@@ -128,7 +137,11 @@ for tt = 1:length(effectOfTrainingSize.nTrainingSamplesList)
     
     %% Compute response instances
     if (p.Results.computeResponses)
-        t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',testDirectionParams,'compute',true,'visualizeResponses',false);
+        t_coneCurrentEyeMovementsResponseInstances(...
+            'rParams',rParams, ...
+            'testDirectionParams',testDirectionParams, ...
+            'compute',true, ...
+            'generatePlots',false);
     end
     
     %% Find performance, template max likeli
@@ -181,7 +194,7 @@ end
 % Set trialsNum to 0 to define a summary directory name
 fprintf('Writing performance data ... ');
 testDirectionParams.trialsNum = 0;
-paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+paramsList = {rParams.topLevelDirParams, rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
 rwObject = IBIOColorDetectReadWriteBasic;
 writeProgram = mfilename;
 rwObject.write('effectOfTrainingSize',effectOfTrainingSize,paramsList,writeProgram);
@@ -194,7 +207,7 @@ fprintf('done\n');
 if (p.Results.plotTrainingSize)
     fprintf('Reading performance data ...');
     testDirectionParams.trialsNum = 0;
-    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+    paramsList = {rParams.topLevelDirParams, rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;
     effectOfTrainingSize = rwObject.read('effectOfTrainingSize',paramsList,writeProgram);

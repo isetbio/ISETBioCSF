@@ -7,6 +7,9 @@ function c_DavilaGeislerReplicate(varargin)
 % monochromatic rather than monitor based, but to first order that should not make much difference
 %
 % Key/value pairs
+%   'useScratchTopLevelDirName'- true/false (default false). 
+%      When true, the top level output directory is [scratch]. 
+%      When false, it is the name of this script.
 %   'nTrainingSamples' - value (default 500).  Number of training samples to cycle through.
 %   'spotDiametersMinutes' - vector (default [0.5 1 5 10 20 40]). Diameters of spots to be investigated.
 %   'backgroundSizeDegs' - value (default 2.1). Size of square background
@@ -29,6 +32,7 @@ function c_DavilaGeislerReplicate(varargin)
 
 %% Parse input
 p = inputParser;
+p.addParameter('useScratchTopLevelDirName', false, @islogical);
 p.addParameter('nTrainingSamples',500,@isnumeric);
 p.addParameter('spotDiametersMinutes',[0.5 0.75 1 1.5 2 2.5 5 10 20 40],@isnumeric);
 p.addParameter('backgroundSizeDegs',[2.1],@isnumeric);
@@ -53,6 +57,11 @@ p.parse(varargin{:});
 %
 % Start with default
 rParams = responseParamsGenerate('spatialType','spot','backgroundType','AO','modulationType','AO');
+
+%% Set the  topLevelDir name
+if (~p.Results.useScratchTopLevelDirName)
+    rParams.topLevelDirParams.name = mfilename;
+end
 
 %% Loop over spatial frequency
 for ll = 1:length(p.Results.luminances)
@@ -130,8 +139,8 @@ for ll = 1:length(p.Results.luminances)
         % Set up mosaic parameters for just one stimulus time step
         rParams.mosaicParams.timeStepInSeconds = rParams.temporalParams.simulationTimeStepSecs;
         rParams.mosaicParams.integrationTimeInSeconds = rParams.mosaicParams.timeStepInSeconds;
-        rParams.mosaicParams.isomerizationNoise = true;
-        rParams.mosaicParams.osNoise = true;
+        rParams.mosaicParams.isomerizationNoise = 'frozen';
+        rParams.mosaicParams.osNoise = 'frozen';
         rParams.mosaicParams.osModel = 'Linear';
         
         % Parameters that define the contrasts we'll study here
@@ -180,7 +189,7 @@ if (p.Results.fitPsychometric)
     nameParams.spotSizeDegs = 0;
     nameParams.backgroundSizeDegs = 0;
     nameParams.fieldOfViewDegs = 0;
-    paramsList = {nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+    paramsList = {rParams.topLevelDirParams, nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;
     rwObject.write('davilaGeislerReplicate',davilaGeislerReplicate,paramsList,writeProgram);
@@ -197,7 +206,7 @@ if (p.Results.generatePlots && p.Results.plotSpatialSummation)
     nameParams.spotSizeDegs = 0;
     nameParams.backgroundSizeDegs = 0;
     nameParams.fieldOfViewDegs = 0;
-    paramsList = {nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+    paramsList = {rParams.topLevelDirParams, nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;
     davilaGeislerReplicate = rwObject.read('davilaGeislerReplicate',paramsList,writeProgram);

@@ -147,12 +147,14 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
         mosaicYaxis = mosaicYaxis(iRows);
         isHexActivation = true;
         iTheta = (0:60:360)/180*pi;
-        apertureOutline.x = 1.1*theMosaic.pigment.width/2.0 * cos(iTheta)*1e6;
-        apertureOutline.y = 1.1*theMosaic.pigment.height/2.0 * sin(iTheta)*1e6;
     else
+        iTheta = (0:90:360)/180*pi;
         isHexActivation = false;
     end
     
+    apertureOutline.x = 1.1*theMosaic.pigment.width/2.0 * cos(iTheta)*1e6;
+    apertureOutline.y = 1.1*theMosaic.pigment.height/2.0 * sin(iTheta)*1e6;
+        
     g = max([1 round(mosaicXaxis/100)]);
     
     xTicks = theMosaic.center(1)*1e6 + g*(-100:50:100);

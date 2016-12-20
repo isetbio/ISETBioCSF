@@ -66,7 +66,7 @@ end
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
-paramsList = {rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, rParams.colorModulationParams};
+paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, rParams.colorModulationParams};
 
 %% Name the cone types for some printouts.
 coneTypes = {'L' 'M' 'S'};

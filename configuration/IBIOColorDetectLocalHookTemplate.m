@@ -1,4 +1,4 @@
-function IBIOColorDetect
+function IBIOColorDetectLocalHookTemplate
 % IBIOColorDetect
 %
 % Configure things for working on the IBIOColorDetect project.
@@ -17,7 +17,8 @@ function IBIOColorDetect
 % to match what is true on your computer.
 
 %% Say hello
-fprintf('Running IBIOColorDetect local hook\n');
+fprintf('Running local hook template IBIOColorDetect local hook\n');
+pause
 projectName = 'IBIOColorDetect';
 
 %% Put project toolbox onto path
@@ -53,8 +54,10 @@ withValidations = tbToolboxRecord( ...
     'update', 'never');
 
 % Obtain or update the git repo and add subfolders to the Matlab path
-config = [withToolbox withTutorials with Compute withValidations];
+config = [withToolbox withTutorials withCompute withValidations];
 tbDeployToolboxes('config', config, 'toolboxRoot', projectBaseDir, 'runLocalHooks', false);
+
+IBIOColorDetectValidationDir = '/Users/Shared/Matlab/Analysis/IBIOColorDetect/validations';
 
 %% Specify project-specific preferences
 %
@@ -69,8 +72,8 @@ p = struct(...
     'clonedWikiLocation',    '', ...                                                                                          % Local path to the directory where the wiki is cloned. Only relevant for publishing tutorials.
     'clonedGhPagesLocation', '', ...                                                                                          % Local path to the directory where the gh-pages repository is cloned. Only relevant for publishing tutorials.
     'githubRepoURL',         '', ...                                                                                          % Github URL for the project. This is only used for publishing tutorials.
-    'generateGroundTruthDataIfNotFound',false,...                                                                             % Flag indicating whether to generate ground truth if one is not found
-    'listingScript',         'IBIOColorDetectValidateListAllValidationDirs', ...                                              % Script that lists dirs to find validation scripts in
+    'generateGroundTruthDataIfNotFound',true,...                                                                             % Flag indicating whether to generate ground truth if one is not found
+    'listingScript',         'IBIOCDValidateListAllValidationDirs', ...                                              % Script that lists dirs to find validation scripts in
     'coreListingScript',     '', ...                                                                                          % Not used in this project
     'numericTolerance',      1e-11 ...                                                                                        % Numeric tolerance for comparisons with validation data.
     );

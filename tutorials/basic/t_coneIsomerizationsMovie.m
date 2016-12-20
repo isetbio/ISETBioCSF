@@ -74,7 +74,7 @@ rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
 
 % The params list
-paramsList = {rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, rParams.colorModulationParams};
+paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, rParams.colorModulationParams};
 
 %% Plot the Gaussian temporal window, just to make sure it looks right
 if (p.Results.generatePlots)
