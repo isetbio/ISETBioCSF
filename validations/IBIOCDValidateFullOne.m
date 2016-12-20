@@ -24,7 +24,7 @@ UnitTest.usePreferencesForProject(thisProject);
 p = inputParser;
 p.addParameter('verbosity','high',@ischar);
 p.addParameter('generatePlots',false,@islogical);
-p.addParameter('graphMismatchedData',false,@islogical);
+p.addParameter('graphMismatchedData',true,@islogical);
 p.addParameter('numericTolerance',500*eps,@isnumeric);
 p.parse(varargin{:});
 UnitTest.setPref('verbosity',p.Results.verbosity);
