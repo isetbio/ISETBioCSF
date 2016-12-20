@@ -36,6 +36,11 @@ function params = responseParamsGenerate(varargin)
 %% Type field for parameters
 params.type = 'ResponseGeneration';
  
+%% Define rootDirectory parameters
+params.topLevelDirParams = struct(...
+    'type', 'TopLevelDir', ...
+	'name', 'scratch');
+
 %% Define Gabor spatial parameters
 params.spatialParams = spatialParamsGenerate(varargin{:});
 

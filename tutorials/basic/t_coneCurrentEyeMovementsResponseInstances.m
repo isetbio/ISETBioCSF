@@ -127,7 +127,7 @@ if (isempty(testDirectionParams))
 end
 
 % The constant params list
-constantParamsList = {rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
+constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
 
 colorModulationParamsNull = rParams.colorModulationParams;
 colorModulationParamsNull.coneContrasts = [0 0 0]';
@@ -147,12 +147,12 @@ if (p.Results.compute)
         theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
         
         % Save cone mosaic
-        coneParamsList = {rParams.mosaicParams};
+        coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
         rwObject.write('coneMosaic', theMosaic, coneParamsList, theProgram, 'type', 'mat');
     else
          % Load a previously saved cone mosaic
          fprintf(2,'Loading a previously saved cone mosaic\n');
-         coneParamsList = {rParams.mosaicParams};
+         coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
          theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
     end
     
@@ -329,7 +329,7 @@ if (p.Results.generatePlots)
     instancesToVisualize = 1:5;
     
     % Load the mosaic
-    coneParamsList = {rParams.mosaicParams};
+    coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
     theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
          
     % Load the response and ancillary data

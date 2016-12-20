@@ -7,6 +7,9 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 % the isochromatic thresholds studied by Banks et al.
 %
 % Key/value pairs
+%   'useScratchTopLevelDirName'- true/false (default false). 
+%      When true, the top level output directory is [scratch]. 
+%      When false, it is the name of this script.
 %   'nTrainingSamples' - value (default 500).  Number of training samples to cycle through.
 %   'cyclesPerDegree' - vector (default [3 5 10 20 40]). Spatial frequencoes of grating to be investigated.
 %   'luminances' - vector (default [3.4 34 340]).  Luminances in cd/m2 to be investigated.
@@ -30,6 +33,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 
 %% Parse input
 p = inputParser;
+p.addParameter('useScratchTopLevelDirName', false, @islogical);
 p.addParameter('nTrainingSamples',500,@isnumeric);
 p.addParameter('cyclesPerDegree',[3 5 10 20 40 50],@isnumeric);
 p.addParameter('luminances',[3.4 34 340],@isnumeric);
@@ -52,6 +56,11 @@ p.parse(varargin{:});
 %
 % Start with default
 rParams = responseParamsGenerate;
+
+%% Set the  topLevelDir name
+if (~p.Results.useScratchTopLevelDirName)
+    rParams.topLevelDirParams.name = mfilename;
+end
 
 %% Loop over spatial frequency
 for ll = 1:length(p.Results.luminances)
@@ -164,7 +173,7 @@ end
 %% Write out the data
 if (p.Results.fitPsychometric)
     fprintf('Writing performance data ... ');
-    paramsList = {rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
+    paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;
     rwObject.write('banksEtAlReplicate',banksEtAlReplicate,paramsList,writeProgram);
@@ -173,7 +182,7 @@ end
 
 %% Get performance data
 fprintf('Reading performance data ...');
-paramsList = {rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
+paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
 rwObject = IBIOColorDetectReadWriteBasic;
 writeProgram = mfilename;
 banksEtAlReplicate = rwObject.read('banksEtAlReplicate',paramsList,writeProgram);

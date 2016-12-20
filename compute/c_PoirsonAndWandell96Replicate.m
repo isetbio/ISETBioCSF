@@ -1,6 +1,14 @@
 function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
+
+% Key/value pairs
+%   'useScratchTopLevelDirName'- true/false (default false). 
+%      When true, the top level output directory is [scratch]. 
+%      When false, it is the name of this script.
+
+
 %% Parse input
 p = inputParser;
+p.addParameter('useScratchTopLevelDirName', false, @islogical);
 p.addParameter('nTrainingSamples',10,@isnumeric);
 p.addParameter('imagePixels',500, @isnumeric);
 p.addParameter('computeResponses',true,@islogical);
@@ -13,6 +21,11 @@ p.parse(varargin{:});
 
 % Start with default
 rParams = responseParamsGenerate;
+
+%% Set the  topLevelDir name
+if (~p.Results.useScratchTopLevelDirName)
+    rParams.topLevelDirParams.name = mfilename;
+end
 
 % Modify spatial params to match P&W '96
 rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...

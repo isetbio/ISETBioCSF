@@ -9,6 +9,9 @@ function c_AdaptiveMethodTraining(varargin)
 % so using a larger spatial frequency speeds things up.
 %
 % Key/value pairs
+%   'useScratchTopLevelDirName'- true/false (default false). 
+%      When true, the top level output directory is [scratch]. 
+%      When false, it is the name of this script.
 %   'learningMethod' - string (default 'nnmse').  Learning rule to use.
 %       'nnmes' - nearest neighbor, squared error metric
 %       'nncorr' - nearest neighbor, correlation-based error metric
@@ -34,6 +37,7 @@ function c_AdaptiveMethodTraining(varargin)
 
 %% Parse input
 p = inputParser;
+p.addParameter('useScratchTopLevelDirName', false, @islogical);
 p.addParameter('learningMethod','nnmse',@ischar);
 p.addParameter('filterMethod','none',@ischar);
 p.addParameter('lowpassParam',10,@isnumeric);
@@ -52,6 +56,11 @@ p.parse(varargin{:});
 %
 % Start with default
 rParams = responseParamsGenerate;
+
+%% Set the  topLevelDir name
+if (~p.Results.useScratchTopLevelDirName)
+    rParams.topLevelDirParams.name = mfilename;
+end
 
 % Get stimulus parameters correct
 %
@@ -141,7 +150,7 @@ fprintf('Reading no stimulus data ... ');
 colorModulationParamsTemp = rParams.colorModulationParams;
 colorModulationParamsTemp.coneContrasts = [0 0 0]';
 colorModulationParamsTemp.contrast = 0;
-paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+paramsList = {rParams.topLevelDirParams, rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
 noStimData = rwObject.read('responseInstances',paramsList,readProgram);
 ancillaryData = rwObject.read('ancillaryData',paramsList,readProgram);
 fprintf(' done\n');
@@ -159,7 +168,7 @@ for cc = 1:testDirectionParams.nContrastsPerDirection
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = testConeContrasts;
     colorModulationParamsTemp.contrast = testContrasts(cc);
-    paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
+    paramsList = {rParams.topLevelDirParams, rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
     stimData{cc} = rwObject.read('responseInstances',paramsList,readProgram);
     fprintf(' done\n');
     if (numel(stimData{cc}.responseInstanceArray) ~= testDirectionParams.trialsNum)

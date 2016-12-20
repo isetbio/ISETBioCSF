@@ -109,7 +109,7 @@ rwObject = IBIOColorDetectReadWriteBasic;
 readProgram = 't_coneCurrentEyeMovementsResponseInstances';
 writeProgram = mfilename;
 
-constantParamsList = {rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
+constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
 
 %% Compute if desired
 if (p.Results.compute)
