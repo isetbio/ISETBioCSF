@@ -1,7 +1,8 @@
 function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 % [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %
-% Compute thresholds to replicate Banks et al, 1987, more or less.
+% Compute thresholds to replicate Banks et al, 1987, more or less.  That
+% paper builds on methods reported in Geisler, 1984.
 %
 % This looks at L+M detection thrsholds, which seems close enough for right now to
 % the isochromatic thresholds studied by Banks et al.
@@ -25,11 +26,48 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'computeResponses' - true/false (default true).  Compute responses.
 %   'findPerformance' - true/false (default true).  Find performance.
 %   'fitPsychometric' - true/false (default true).  Fit psychometric functions.
+%   'thresholdCriterionFraction' value (default 0.75). Criterion corrrect for threshold.
 %   'generatePlots' - true/false (default true).  No plots are generated unless this is true.
 %   'visualizedResponseNormalization' - how to normalize visualized responses
 %        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotCSF' - true/false (default true).  Plot results.
+
+%% Checks
+%
+% 1) - Quantal catch.  12/27/16.
+%
+% Geisler 1984 gives the formula he uses to estimate mean cone quantal
+% catch.  For 100 ms and a 2 mm pupil, this yields 3571 quanta per cone at
+% 340 cd/m2, for his cone aperture of 0.6 min (0.28 min2).  See  routine
+% IsomerizationsFromLuminanceGeisler.
+%
+% If we go look by hand at the cone catches for these parameters produced
+% for the uniform field by t_coneCurrentEyeMovementsResponseInstances, we
+% find 2956 for the M cones and 4097 for the L cones.  At 2:1 L:M, this
+% gives an average of 3716, which is pretty darn close.)
+%
+% 2) - Pupil size.  12/27/16
+% 
+% Doubling the pupil size increase retinal irradiance by a factor of 4,
+% which should in turn double contrast sensitivity.  For 75% correct
+% threshold, 340 cd/m2, 10 cpd and with optical blur, sensitivity goes from
+% 600 for a 2mm pupil to 1268 for a 4mm pupil, which seems close enough
+% for a numerical calculation like this one.
+%
+% 3) - Changing criterion percent correct. 12/27/16.
+%
+% It's not clear whether Banks et al. used 75% correct as their ideal observer 
+% criterion (as Geisler did in his 1984 paper) or switched to 70.1% to
+% match the 2 down - 1 up reversal threshold from the psychophysics.  Changing the 
+% criterion changes the sensitivity in the expected direction from the
+% pupil size case just above: 2mm pupil -> 750; 4mm pupil -> 1610.  I am
+% not quite sure why increasing the pupil size helps a tad more than a
+% factor of 2.
+%
+% 4) - Taking out blur.  12/27/16.  For the 2mm pupil, taking out the
+% optical blur takes sensitivity to 1006, from 750, which is the correct
+% direction for 10 cpd.
 
 %% Parse input
 p = inputParser;
@@ -47,6 +85,7 @@ p.addParameter('computeResponses',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
+p.addParameter('thresholdCriterionFraction',0.75,@isnumeric);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotCSF',true,@islogical);
@@ -105,17 +144,22 @@ for ll = 1:length(p.Results.luminances)
         	'lumFactor', theLum/baseLum);
         
         % Their stimulus intervals were 100 msec each.
+        %
+        % Equate stimulusSamplingIntervalInSeconds to stimulusDurationInSeconds to generate 1 time point only.
+        % Their main calculation was without eye movements
         stimulusDurationInSeconds = 100/1000;
         rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
             'stimulusDurationInSeconds', stimulusDurationInSeconds, ...
-            'stimulusSamplingIntervalInSeconds',  stimulusDurationInSeconds, ... % Equate stimulusSamplingIntervalInSeconds to stimulusDurationInSeconds to generate 1 time point only
+            'stimulusSamplingIntervalInSeconds',  stimulusDurationInSeconds, ... 
             'secondsToInclude', stimulusDurationInSeconds, ...
-            'emPathType', 'none' ...        % Their main calculation was without eye movements
+            'emPathType', 'none' ...       
         );
         
         % Set up mosaic parameters. Here we integrate for the entire stimulus duration (100/1000)
+        %
+        % Keep mosaic size in lock step with stimulus
         rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
-            'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs, ...  % Keep mosaic size in lock step with stimulus
+            'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs, ...  
             'innerSegmentSizeMicrons',p.Results.innerSegmentSizeMicrons, ...
             'coneSpacingMicrons', p.Results.coneSpacingMicrons, ...
             'conePacking', p.Results.conePacking, ...
@@ -133,7 +177,7 @@ for ll = 1:length(p.Results.luminances)
         	'startAngle', 45, ...
         	'deltaAngle', 90, ...
         	'nAngles', 1, ...
-            'nContrastsPerDirection', 20, ... % Number of contrasts to run in each color direction
+            'nContrastsPerDirection', 20, ...
             'lowContrast', 0.0001, ...
         	'highContrast', 0.1, ...
         	'contrastScale', 'log' ...    % choose between 'linear' and 'log'
@@ -142,6 +186,7 @@ for ll = 1:length(p.Results.luminances)
         % Parameters related to how we find thresholds from responses
         % Use default
         thresholdParams = thresholdParamsGenerate;
+        thresholdParams.criterionFraction = p.Results.thresholdCriterionFraction;
         
         %% Compute response instances
         if (p.Results.computeResponses)

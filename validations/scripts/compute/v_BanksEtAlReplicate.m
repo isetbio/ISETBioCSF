@@ -17,32 +17,51 @@ function ValidationFunction(runTimeParams)
     rng('default');
     
     %% Parameters
-    doSimulationWithBanksEtAlmosaicParams = false;
-    computeResponses = true;
+    VALIDATE = true;
+    if (VALIDATE)
+        doSimulationWithBanksEtAlmosaicParams = true;
+        computeResponses = true;
+        findPerformance = true;
+        fitPsychometric = true;
+        doBlur = true;
+        nTrainingSamples = 100;
+        thresholdCriterionFraction = 0.75;
+    else
+        doSimulationWithBanksEtAlmosaicParams = true;
+        computeResponses = true;
+        findPerformance = true;
+        fitPsychometric = true;
+        doBlur = false;
+        nTrainingSamples = 500;
+        thresholdCriterionFraction = 0.701;
+    end
     
     %% Basic validation
     if (doSimulationWithBanksEtAlmosaicParams)
         % Run with the Banks mosaic
         [validationData1, extraData1] = c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
-            'computeResponses', computeResponses, 'nTrainingSamples',100,...
+            'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
+            'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
             'conePacking','hexReg','innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(3),'coneSpacingMicrons', 3.0, ... 
-            'blur',true,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots);
+            'blur',doBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots);
         UnitTest.validationData('validationData1',validationData1);
         UnitTest.extraData('extraData1',extraData1);
 
         [validationData2, extraData2] = c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
-            'computeResponses', computeResponses, 'nTrainingSamples',100,...
+            'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
+            'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
             'conePacking','hexReg','innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(3),'coneSpacingMicrons', 3.0, ...
-            'blur',true,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,'generatePlots',runTimeParams.generatePlots);
+            'blur',doBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,'generatePlots',runTimeParams.generatePlots);
         UnitTest.validationData('validationData2',validationData2);
         UnitTest.extraData('extraData2',extraData2);
  
     else
         % Run with rect mosaic and parameters we think match summmer 2016
         c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
-            'computeResponses', computeResponses, 'nTrainingSamples',100,...
+            'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
+            'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
             'conePacking','rect','innerSegmentSizeMicrons',2,'coneSpacingMicrons',2, ...   
-            'blur',true,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',3,'generatePlots',runTimeParams.generatePlots);
+            'blur',nTrainingSamples,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots);
     end
     
 end
