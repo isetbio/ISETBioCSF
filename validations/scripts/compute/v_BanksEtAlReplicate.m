@@ -16,39 +16,34 @@ function ValidationFunction(runTimeParams)
     %% Freeze reandom number generator seed
     rng('default');
     
-    %% Basic validation
+    %% Parameters
+    doSimulationWithBanksEtAlmosaicParams = false;
     computeResponses = true;
- 
-    doSimulationWithBanksEtAlmosaicParams = true;
     
+    %% Basic validation
     if (doSimulationWithBanksEtAlmosaicParams)
         % Run with the Banks mosaic
-        [validationData1, extraData1] = c_BanksEtAlReplicate('useScratchTopLevelDirName', true, ...
-            'compute', computeResponses, 'nTrainingSamples',100,...
-            'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots);
+        [validationData1, extraData1] = c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
+            'computeResponses', computeResponses, 'nTrainingSamples',100,...
+            'conePacking','hexReg','innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(3),'coneSpacingMicrons', 3.0, ... 
+            'blur',true,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots);
         UnitTest.validationData('validationData1',validationData1);
         UnitTest.extraData('extraData1',extraData1);
 
-        [validationData2, extraData2] = c_BanksEtAlReplicate('useScratchTopLevelDirName', true, ...
-            'compute', computeResponses, 'nTrainingSamples',100,...
-            'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,'generatePlots',runTimeParams.generatePlots);
+        [validationData2, extraData2] = c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
+            'computeResponses', computeResponses, 'nTrainingSamples',100,...
+            'conePacking','hexReg','innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(3),'coneSpacingMicrons', 3.0, ...
+            'blur',true,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,'generatePlots',runTimeParams.generatePlots);
         UnitTest.validationData('validationData2',validationData2);
         UnitTest.extraData('extraData2',extraData2);
  
     else
-        % Run with the default ISETBIO mosaic, no validations
-        c_BanksEtAlReplicate('useScratchTopLevelDirName', true, ...
-            'compute', computeResponses, 'nTrainingSamples',100,...
-            'conePacking', 'rect', 'innerSegmentSizeMicrons', 1.4, 'coneSpacingMicrons', 2.0, ...   % old mosaic
-            'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots);
-
-        c_BanksEtAlReplicate('useScratchTopLevelDirName', true, ...
-            'compute', computeResponses, 'nTrainingSamples',100,...
-            'conePacking', 'rect', 'innerSegmentSizeMicrons', 1.4, 'coneSpacingMicrons', 2.0, ...   % old mosaic
-            'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,'generatePlots',runTimeParams.generatePlots);
+        % Run with rect mosaic and parameters we think match summmer 2016
+        c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
+            'computeResponses', computeResponses, 'nTrainingSamples',500,...
+            'conePacking','rect','innerSegmentSizeMicrons',1.4,'coneSpacingMicrons',2, ...   % old mosaic
+            'blur',true,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',3,'generatePlots',runTimeParams.generatePlots);
     end
     
 end
-
-
 
