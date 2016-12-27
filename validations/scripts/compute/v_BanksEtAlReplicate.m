@@ -17,7 +17,7 @@ function ValidationFunction(runTimeParams)
     rng('default');
     
     %% Parameters
-    VALIDATE = true;
+    VALIDATE = false;
     if (VALIDATE)
         doSimulationWithBanksEtAlmosaicParams = true;
         computeResponses = true;
@@ -27,13 +27,13 @@ function ValidationFunction(runTimeParams)
         nTrainingSamples = 100;
         thresholdCriterionFraction = 0.75;
     else
-        doSimulationWithBanksEtAlmosaicParams = true;
+        doSimulationWithBanksEtAlmosaicParams = false;
         computeResponses = true;
         findPerformance = true;
         fitPsychometric = true;
-        doBlur = false;
+        doBlur = true;
         nTrainingSamples = 500;
-        thresholdCriterionFraction = 0.701;
+        thresholdCriterionFraction = 0.75;
     end
     
     %% Basic validation
@@ -56,12 +56,18 @@ function ValidationFunction(runTimeParams)
         UnitTest.extraData('extraData2',extraData2);
  
     else
-        % Run with rect mosaic and parameters we think match summmer 2016
+        % Run with rect mosaic and parameters we think match summmer 2016.
+        % 
+        % Rectangular mosaic, 2uM pixel size, 1.4uM collecting area, we
+        % think.
+        %
+        % And pupil size was 3mm because of the bug where it did not
+        % actually get changed.
         c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
             'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
             'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
-            'conePacking','rect','innerSegmentSizeMicrons',2,'coneSpacingMicrons',2, ...   
-            'blur',nTrainingSamples,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots);
+            'conePacking','rect','innerSegmentSizeMicrons',1.4,'coneSpacingMicrons',2, ...   
+            'blur',doBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',3,'generatePlots',runTimeParams.generatePlots);
     end
     
 end
