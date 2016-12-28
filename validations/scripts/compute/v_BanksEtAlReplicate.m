@@ -110,7 +110,22 @@ function ValidationFunction(runTimeParams)
         % make no difference when I change it back now.
         % 
         % For 5000 training samples, constrast sensitivity is 532 in
-        % December 2016.  This is lower than it was in September 2016
+        % December 2016.  This is lower than it was in September 2016,
+        % where it was about 726.
+        %
+        % Although the noise free isomerizations are the same between
+        % September and December, when we use the September code to
+        % classify December response instances, we get the December
+        % performance.  Thus the difference is in the noise draws on the
+        % responses.  The difference is subtle - nothing pops out from
+        % histogramming the responses to the L cones for the uniform field
+        % or for a grating.
+        %
+        % The simplest explanation is that despite trying not to freeze the
+        % noise, we still have it frozen.  That would the make us think
+        % natural variability is smaller than it should be and have us
+        % worried about a difference that is just noise.  But the noise
+        % does not seem to be frozen.
         c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
             'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
             'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
