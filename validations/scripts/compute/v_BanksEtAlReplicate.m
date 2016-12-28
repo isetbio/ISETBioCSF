@@ -122,10 +122,24 @@ function ValidationFunction(runTimeParams)
         % or for a grating.
         %
         % The simplest explanation is that despite trying not to freeze the
-        % noise, we still have it frozen.  That would the make us think
+        % noise, we still have it frozen.  That would then make us think
         % natural variability is smaller than it should be and have us
         % worried about a difference that is just noise.  But the noise
-        % does not seem to be frozen.
+        % does not seem to be frozen.  I ran both the old and new several
+        % times:
+        %  September thresholds: 0.0624, 0.0630, 0.0671, 0.0651
+        %  December thresholds:  0.0884, 0.0996, 0.0912
+        % The variability is apparent in the individual points on the
+        % psychometric function, as well as in the thresholds.
+        %
+        % Both September and December code drops to 50% correct at low
+        % constrasts, but this drop happens at lower contrasts (below
+        % 0.0001) for the September code.
+        %
+        % My conclusion so far is either that we introduced some artifact
+        % that the classifier can pick up on in September and got rid of it
+        % by December, or that we are somehow adding too much noise in
+        % December.
         c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
             'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
             'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
