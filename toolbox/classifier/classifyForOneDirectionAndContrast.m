@@ -108,23 +108,151 @@ switch (thresholdParams.method)
         teData = classificationData;
         tePredict = -1*ones(size(teClasses));
         nTeObservations = size(teData,1);
+        
+        % Originally in this code, the likelihood ratio was computed via
+        % the poisspdf function.  Why not, you'd think?  But, this turns
+        % out to have numerical problems, or something.  Things work
+        % considerably better if you take advantage of knowing the analytic
+        % form of the Poisson PDF and working out the form of the log
+        % likelihood ratio.
+        %
+        % The problem with the poisspdf method manifested itself in lower
+        % percent than predicted analytically, and this in turn was related
+        % to 0 not being the best criterion.
+        %
+        % When you look at the form of the Poisson PDF, you realize that
+        % there may well be some approximations made for large N, because
+        % computing the various factorials and exponentials is probably
+        % problematic.  Going to the log ratio directly eliminates the
+        % middleman, and in particular the factorial cancels and goes away.
+        %
+        % A nice side effect is that the analytic method is considerably
+        % faster.
+        ANALYTIC_LIKELY = true;
+        if (ANALYTIC_LIKELY)
+            logTemplateDiff = log(templateClass1)-log(templateClass0);
+            C = sum(templateClass0-templateClass1);
+            for ii = 1:nTeObservations
+                logLikelyRatio(ii) = sum( teData(ii,:) .* logTemplateDiff ) + C;
+            end
+        else
+            for ii = 1:nTeObservations       
+                loglGiven0(ii) = sum(log10(poisspdf(teData(ii,:),templateClass0)));
+                loglGiven1(ii) = sum(log10(poisspdf(teData(ii,:),templateClass1)));
+                logLikelyRatio(ii) = loglGiven1(ii)-loglGiven0(ii);
+            end
+        end
+        
+        % Compute percent correct
         for ii = 1:nTeObservations
-            loglGiven0(ii) = sum(log10(poisspdf(teData(ii,:),templateClass0)));
-            loglGiven1(ii) = sum(log10(poisspdf(teData(ii,:),templateClass1)));
-            if (loglGiven1(ii) > loglGiven0(ii))
+            if (logLikelyRatio(ii) > 0)
                 tePredict(ii) = 1;
             else
                 tePredict(ii) = 0;
             end
-        end
-        
+        end 
         nCorrect = length(find(tePredict == teClasses));
         usePercentCorrect = nCorrect/length(teClasses);
         useStdErr = 0;
+        fprintf('\tPercent correct: %2.2f%%\n',usePercentCorrect*100);
         
-        % Report percent correct
-        fprintf('\tPercent correct: %2.2f%%\n\n', usePercentCorrect*100);
+        % This code makes plots that demonstrates how percent correct
+        % depends on the criterion to which the likelihood ratio is
+        % compared.  It should be best at 0, but isn't if you don't use the
+        % ANALYTIC_LIKELY option above.
+        DEBUG_CRITERIA = false;
+        if (DEBUG_CRITERIA)
+            llCriteria = linspace(min(logLikelyRatio),max(logLikelyRatio),1000);
+            for jj = 1:length(llCriteria)
+                for ii = 1:nTeObservations
+                    if (logLikelyRatio(ii) > llCriteria(jj))
+                        tePredictAsFunctionOfCriterion(ii,jj) = 1;
+                    else
+                        tePredictAsFunctionOfCriterion(ii,jj) = 0;
+                    end
+                end
+                
+                nCorrectAsFunctionOfCriterion(jj) = length(find(tePredictAsFunctionOfCriterion(:,jj) == teClasses));
+                usePercentCorrectAsFunctionOfCriterion(jj) = nCorrectAsFunctionOfCriterion(jj)/length(teClasses);
+            end
+            
+            figure(2); clf;
+            subplot(1,2,1);
+            hist(logLikelyRatio,40);
+            subplot(1,2,2); hold on
+            plot(llCriteria,usePercentCorrectAsFunctionOfCriterion,'r','LineWidth',4);
+            plot([0 0],[0 1],'g','LineWidth',3);
+            ylim([0 1]);
+            drawnow;
+        end
         
+        % Optionally do Geisler analytic d-prime calculation, from Geisler 1984.
+        % 
+        % This assumes that the distribution a transformation of the
+        % likelihood under each class is approximately normal, so we plot
+        % histograms and look.  It's pretty close, and the Geisler numbers
+        % are quite close to what we get empirically above.
+        DO_GEISLER_VERSION = false;
+        if (DO_GEISLER_VERSION)
+            alphaMean = noStimData.noiseFreeIsomerizations(:)';
+            betaMean = stimData.noiseFreeIsomerizations(:)';
+            numerator = sum( (betaMean-alphaMean).*log(betaMean./alphaMean) );
+            denominator = 0.5*sum( (betaMean+alphaMean).*(log(betaMean./alphaMean).^2) );
+            dprime = numerator / sqrt(denominator);
+            for ii = 1:nTeObservations
+                if (teClasses(ii) == 0)
+                    alphaData = teData(ii,1:size(teData,2)/2);
+                    betaData = teData(ii,size(teData,2)/2+1:end);
+                else
+                    betaData = teData(ii,1:size(teData,2)/2);
+                    alphaData = teData(ii,size(teData,2)/2+1:end);
+                end
+                
+                ZGivenAlpha(ii)= sum(alphaData .* log(betaMean./alphaMean));
+                ZGivenBeta(ii)= sum(betaData .* log(betaMean./alphaMean));
+            end
+            
+            meanZGivenBeta = mean(ZGivenBeta);
+            meanZGivenAlpha = mean(ZGivenAlpha);
+            varZGivenBeta = var(ZGivenBeta);
+            varZGivenAlpha = var(ZGivenAlpha);
+            dprimeEmpirical = (meanZGivenBeta-meanZGivenAlpha) / sqrt(0.5*(varZGivenBeta+varZGivenAlpha));
+            
+            figure(1); clf;
+            subplot(1,3,1); hold on;
+            [n,x] = hist(ZGivenAlpha,40);
+            bar(x,n);
+            pred = length(ZGivenAlpha)*normpdf(x,meanZGivenAlpha,sqrt(varZGivenAlpha))*(x(2)-x(1));
+            plot(x,pred,'g','LineWidth',4);
+            subplot(1,3,2); hold on;
+            [n,x] = hist(ZGivenBeta,40);
+            bar(x,n);
+            pred = length(ZGivenBeta)*normpdf(x,meanZGivenBeta,sqrt(varZGivenBeta))*(x(2)-x(1));
+            plot(x,pred,'g','LineWidth',4);
+            
+            % We can get the empirical ROC curve from the Z values and ask what
+            % TAFC percent correct corresponds to those.
+            criteria = linspace(min([ZGivenAlpha,ZGivenBeta]),max([ZGivenAlpha,ZGivenBeta]),1000);
+            for iii = 1:length(criteria)
+                empiricalHitRate(iii) = length(find(ZGivenBeta > criteria(iii))) / length(ZGivenBeta);
+                empiricalFARate(iii) = length(find(ZGivenAlpha > criteria(iii))) / length(ZGivenBeta);
+            end
+            empiricalPercentCorrect = -trapz([1 empiricalFARate 0],[1 empiricalHitRate 0]);
+            subplot(1,3,3);
+            plot([1 empiricalFARate 0],[1 empiricalHitRate 0],'r','LineWidth',4);
+            xlabel('False Alarm Rate');
+            ylabel('Hit Rate');
+            title('Empirical ROC Curve');
+            axis('square'); axis([0 1 0 1]);
+            drawnow;
+            
+            % Report percent correct
+            fprintf('\td'': %2.2f (%2.2f), d'' percent correct %2.2f%%, percent correct from Z histo ROC%2.2f%%\n',...
+                dprime,dprimeEmpirical,dPrimeToTAFCPercentCorrect(dprime)*100,empiricalPercentCorrect*100);
+        end
+       
+        % Final newline
+        fprintf('\n');
         % No figure with this method
         h = [];  
         
