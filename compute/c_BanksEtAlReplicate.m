@@ -32,42 +32,8 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotCSF' - true/false (default true).  Plot results.
-
-%% Checks
-%
-% 1) - Quantal catch.  12/27/16.
-%
-% Geisler 1984 gives the formula he uses to estimate mean cone quantal
-% catch.  For 100 ms and a 2 mm pupil, this yields 3571 quanta per cone at
-% 340 cd/m2, for his cone aperture of 0.6 min (0.28 min2).  See  routine
-% IsomerizationsFromLuminanceGeisler.
-%
-% If we go look by hand at the cone catches for these parameters produced
-% for the uniform field by t_coneCurrentEyeMovementsResponseInstances, we
-% find 2956 for the M cones and 4097 for the L cones.  At 2:1 L:M, this
-% gives an average of 3716, which is pretty darn close.)
-%
-% 2) - Pupil size.  12/27/16
-% 
-% Doubling the pupil size increase retinal irradiance by a factor of 4,
-% which should in turn double contrast sensitivity.  For 75% correct
-% threshold, 340 cd/m2, 10 cpd and with optical blur, sensitivity goes from
-% 600 for a 2mm pupil to 1268 for a 4mm pupil, which seems close enough
-% for a numerical calculation like this one.
-%
-% 3) - Changing criterion percent correct. 12/27/16.
-%
-% It's not clear whether Banks et al. used 75% correct as their ideal observer 
-% criterion (as Geisler did in his 1984 paper) or switched to 70.1% to
-% match the 2 down - 1 up reversal threshold from the psychophysics.  Changing the 
-% criterion changes the sensitivity in the expected direction from the
-% pupil size case just above: 2mm pupil -> 750; 4mm pupil -> 1610.  I am
-% not quite sure why increasing the pupil size helps a tad more than a
-% factor of 2.
-%
-% 4) - Taking out blur.  12/27/16.  For the 2mm pupil, taking out the
-% optical blur takes sensitivity to 1006, from 750, which is the correct
-% direction for 10 cpd.
+%   'freezeNoise' - true/false (default true). Freeze noise so calculations
+%   reproduce.
 
 %% Parse input
 p = inputParser;
@@ -89,6 +55,7 @@ p.addParameter('thresholdCriterionFraction',0.75,@isnumeric);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotCSF',true,@islogical);
+p.addParameter('freezeNoise',true,@islogical);
 p.parse(varargin{:});
 
 %% Get the parameters we need
@@ -164,8 +131,8 @@ for ll = 1:length(p.Results.luminances)
             'coneSpacingMicrons', p.Results.coneSpacingMicrons, ...
             'conePacking', p.Results.conePacking, ...
         	'integrationTimeInSeconds', rParams.temporalParams.stimulusDurationInSeconds, ...
-        	'isomerizationNoise', 'frozen',...              % select from {'random', 'frozen', 'none'}
-        	'osNoise', 'frozen', ...                        % select from {'random', 'frozen', 'none'}
+        	'isomerizationNoise', 'random',...              % select from {'random', 'frozen', 'none'}
+        	'osNoise', 'random', ...                        % select from {'random', 'frozen', 'none'}
         	'osModel', 'Linear');
         
         % Parameters that define the LM instances we'll generate here
@@ -180,7 +147,7 @@ for ll = 1:length(p.Results.luminances)
             'nContrastsPerDirection', 20, ...
             'lowContrast', 0.0001, ...
         	'highContrast', 0.1, ...
-        	'contrastScale', 'log' ...    % choose between 'linear' and 'log'
+        	'contrastScale', 'log' ...                       % choose between 'linear' and 'log'
             );
         
         % Parameters related to how we find thresholds from responses
@@ -195,7 +162,8 @@ for ll = 1:length(p.Results.luminances)
                'testDirectionParams',testDirectionParams,...
                'compute',true,...
                'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
-               'generatePlots',p.Results.generatePlots);
+               'generatePlots',p.Results.generatePlots,...
+               'freezeNoise',p.Results.freezeNoise);
         end
         
         %% Find performance, template max likeli
