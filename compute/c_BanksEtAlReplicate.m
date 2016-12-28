@@ -134,6 +134,19 @@ for ll = 1:length(p.Results.luminances)
         	'osNoise', 'random', ...                        % select from {'random', 'frozen', 'none'}
         	'osModel', 'Linear');
         
+        % Make sure mosaic noise parameters match the frozen noise flag
+        % passed in.  Doing this here means that things work on down the
+        % chain, while if we don't then there is a problem because routines
+        % create the wrong directory.
+        if (p.Results.freezeNoise)
+            if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
+                rParams.mosaicParams.isomerizationNoise = 'frozen';
+            end
+            if (strcmp(rParams.mosaicParams.osNoise, 'random'))
+                rParams.mosaicParams.osNoise = 'frozen';
+            end
+        end
+
         % Parameters that define the LM instances we'll generate here
         %
         % Use default LMPlane.
@@ -168,7 +181,7 @@ for ll = 1:length(p.Results.luminances)
         %% Find performance, template max likeli
         thresholdParams.method = 'mlpt';
         if (p.Results.findPerformance)
-            t_colorDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false);
+            t_colorDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false,'freezeNoise',p.Results.freezeNoise);
         end
         
         %% Fit psychometric functions

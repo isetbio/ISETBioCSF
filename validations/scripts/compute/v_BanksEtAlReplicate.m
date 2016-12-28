@@ -56,7 +56,7 @@ function ValidationFunction(runTimeParams)
     rng('default');
     
     %% Parameters
-    VALIDATE = false;
+    VALIDATE = true;
     if (VALIDATE)
         doSimulationWithBanksEtAlmosaicParams = true;
         computeResponses = true;
@@ -105,41 +105,39 @@ function ValidationFunction(runTimeParams)
         % These parameters produce 1836 mean isomerizations for the M cones
         % and 2542 for the L cones, for the uniform background, and these
         % numbers are the same in December 2016 as they were in September
-        % 2016.  The mean isomerizations are now represented at single
-        % rather than double precision, however.  That in turn seems to
-        % make no difference when I change it back now.
+        % 2016.
         % 
         % For 5000 training samples, constrast sensitivity is 532 in
         % December 2016.  This is lower than it was in September 2016,
-        % where it was about 726.
+        % where it was about 726.  This difference turns out to be because
+        % we now compute in single rather than double precision, and the
+        % log likelihood signal known exactly classifier actually does a
+        % bit better with a double precision representation of the mean
+        % isomerizations.  Along the way to finding this out, I verified
+        % that:
         %
-        % Although the noise free isomerizations are the same between
+        % Although the noise free isomerizations are very close to same between
         % September and December, when we use the September code to
         % classify December response instances, we get the December
-        % performance.  Thus the difference is in the noise draws on the
+        % performance.  Thus the difference is in the 
         % responses.  The difference is subtle - nothing pops out from
         % histogramming the responses to the L cones for the uniform field
-        % or for a grating.
+        % or for a grating, and the noise free isomerizations are equal to
+        % about 1 part in 10^8.
         %
-        % The simplest explanation is that despite trying not to freeze the
-        % noise, we still have it frozen.  That would then make us think
-        % natural variability is smaller than it should be and have us
-        % worried about a difference that is just noise.  But the noise
-        % does not seem to be frozen.  I ran both the old and new several
-        % times:
-        %  September thresholds: 0.0624, 0.0630, 0.0671, 0.0651
-        %  December thresholds:  0.0884, 0.0996, 0.0912
+        % The noise is not frozen, and the difference over time is real
+        %  September thresholds (%): 0.0624, 0.0630, 0.0671, 0.0651
+        %  December thresholds (%):  0.0884, 0.0996, 0.0912
+        %  December double prec (%): 0.0627
         % The variability is apparent in the individual points on the
         % psychometric function, as well as in the thresholds.
         %
         % Both September and December code drops to 50% correct at low
-        % constrasts, but this drop happens at lower contrasts (below
-        % 0.0001) for the September code.
-        %
-        % My conclusion so far is either that we introduced some artifact
-        % that the classifier can pick up on in September and got rid of it
-        % by December, or that we are somehow adding too much noise in
-        % December.
+        % constasts, but this drop happens at lower contrasts (below
+        % 0.0001) for the September code.  Performance for both times
+        % points is 50.00% for a 0% contrast stimulus, which it should
+        % because then there really is no difference between the two
+        % classes being classified.
         c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
             'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
             'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
