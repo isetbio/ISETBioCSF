@@ -32,8 +32,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotCSF' - true/false (default true).  Plot results.
-%   'freezeNoise' - true/false (default true). Freeze noise so calculations
-%   reproduce.
+%   'freezeNoise' - true/false (default true). Freeze noise so calculations reproduce.
 
 %% Parse input
 p = inputParser;
