@@ -56,7 +56,7 @@ function ValidationFunction(runTimeParams)
     rng('default');
     
     %% Parameters
-    VALIDATE = true;
+    VALIDATE = false;
     if (VALIDATE)
         doSimulationWithBanksEtAlmosaicParams = true;
         computeResponses = true;
@@ -67,8 +67,8 @@ function ValidationFunction(runTimeParams)
         thresholdCriterionFraction = 0.75;
         freezeNoise = true;
     else
-        doSimulationWithBanksEtAlmosaicParams = false;
-        computeResponses = true;
+        doSimulationWithBanksEtAlmosaicParams = true;
+        computeResponses = false;
         findPerformance = true;
         fitPsychometric = true;
         doBlur = true;
