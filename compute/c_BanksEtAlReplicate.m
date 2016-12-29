@@ -63,7 +63,6 @@ p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotCSF',true,@islogical);
 p.addParameter('freezeNoise',true,@islogical);
-
 p.parse(varargin{:});
 
 %% Get the parameters we need
