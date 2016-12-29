@@ -25,7 +25,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'imagePixels' - value (default 400).  Size of image pixel array
 %   'nContrastsPerDirection' - value (default 20). Number of contrasts.
 %   'lowContrast' - value (default 0.0001). Low contrast.
-%   'highContrat' - value (default 0.1). High contrast.
+%   'highContrast' - value (default 0.1). High contrast.
 %   'contrastScale' - 'log'/'linear' (default 'log'). Contrast scale.
 %   'computeResponses' - true/false (default true).  Compute responses.
 %   'findPerformance' - true/false (default true).  Find performance.
@@ -37,7 +37,6 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotCSF' - true/false (default true).  Plot results.
 %   'freezeNoise' - true/false (default true). Freeze noise so calculations reproduce.
-
 
 %% Parse input
 p = inputParser;
