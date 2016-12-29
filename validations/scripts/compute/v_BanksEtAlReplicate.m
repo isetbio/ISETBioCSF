@@ -74,6 +74,10 @@ function ValidationFunction(runTimeParams)
         nTrainingSamples = 100;
         thresholdCriterionFraction = 0.75;
         freezeNoise = true;
+    
+    % This runs with old parameters.  Probably don't need it anymore, as I
+    % added this case to the main validation file.  The notes may be of
+    % interest someday if we ever need to back way out.
     else
         doSimulationWithBanksEtAlmosaicParams = true;
         computeResponses = true;
@@ -88,7 +92,7 @@ function ValidationFunction(runTimeParams)
     %% Basic validation
     %
     % This branch checks the regular hex mosaic with 2 pupil sizes
-    % and one rect mosaic
+    % and one rect mosaic, and doesn't check against validation data.
     if (doSimulationWithBanksEtAlmosaicParams)
         % Run with the Banks mosaic
         [validationData1, extraData1] = c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
