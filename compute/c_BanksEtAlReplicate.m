@@ -23,16 +23,21 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %                     'hex', for a hex mosaic with an eccentricity-varying cone spacing
 %                     'hexReg' for a hex mosaic witha regular cone spacing
 %   'imagePixels' - value (default 400).  Size of image pixel array
+%   'nContrastsPerDirection' - value (default 20). Number of contrasts.
+%   'lowContrast' - value (default 0.0001). Low contrast.
+%   'highContrat' - value (default 0.1). High contrast.
+%   'contrastScale' - 'log'/'linear' (default 'log'). Contrast scale.
 %   'computeResponses' - true/false (default true).  Compute responses.
 %   'findPerformance' - true/false (default true).  Find performance.
 %   'fitPsychometric' - true/false (default true).  Fit psychometric functions.
 %   'thresholdCriterionFraction' value (default 0.75). Criterion corrrect for threshold.
 %   'generatePlots' - true/false (default true).  No plots are generated unless this is true.
-%   'visualizedResponseNormalization' - how to normalize visualized responses
+%   'visualizedResponseNormalization' - string (default 'submosaicBasedZscore'). How to normalize visualized responses
 %        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotCSF' - true/false (default true).  Plot results.
 %   'freezeNoise' - true/false (default true). Freeze noise so calculations reproduce.
+
 
 %% Parse input
 p = inputParser;
@@ -46,6 +51,10 @@ p.addParameter('innerSegmentSizeMicrons',sizeForSquareApertureFromDiameterForCir
 p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
 p.addParameter('conePacking', 'hexReg');                 
 p.addParameter('imagePixels',400,@isnumeric);
+p.addParameter('nContrastsPerDirection',20,@isnumeric);
+p.addParameter('lowContrast',0.0001,@isnumeric);
+p.addParameter('highContrast',0.1,@isnumeric);
+p.addParameter('contrastScale','log',@ischar);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('findPerformance',true,@islogical);
@@ -55,6 +64,7 @@ p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotCSF',true,@islogical);
 p.addParameter('freezeNoise',true,@islogical);
+
 p.parse(varargin{:});
 
 %% Get the parameters we need
@@ -156,10 +166,10 @@ for ll = 1:length(p.Results.luminances)
         	'startAngle', 45, ...
         	'deltaAngle', 90, ...
         	'nAngles', 1, ...
-            'nContrastsPerDirection', 20, ...
-            'lowContrast', 0.0001, ...
-        	'highContrast', 0.1, ...
-        	'contrastScale', 'log' ...                       % choose between 'linear' and 'log'
+            'nContrastsPerDirection', p.Results.nContrastsPerDirection, ...
+            'lowContrast', p.Results.lowContrast, ...
+        	'highContrast', p.Results.highContrast, ...
+        	'contrastScale', p.Results.contrastScale ...                       % choose between 'linear' and 'log'
             );
         
         % Parameters related to how we find thresholds from responses

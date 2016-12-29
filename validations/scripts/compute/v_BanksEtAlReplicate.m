@@ -39,12 +39,20 @@ end
 % 70.1% to match the 2 down - 1 up reversal threshold from the
 % psychophysics.  Changing the criterion changes the sensitivity in the
 % expected direction from the pupil size case just above: 2mm pupil -> 750;
-% 4mm pupil -> 1610.  I am not quite sure why increasing the pupil size
+% 4mm pupil -> 1610.  Again, I am not quite sure why increasing the pupil size
 % helps a tad more than a factor of 2 both here and above.
 %
 % 4) - Taking out blur.  12/27/16.  For the 2 mm pupil regular hex mosaic
 % case, taking out the optical blur for case 3 above takes sensitivity to
 % 1006, from 750, which is the correct direction for 10 cpd.
+%
+% The numbers above are before I switched the maximum likelihood
+% classifier calculation from using poisspdf to a calculation that takes
+% advantage of the analytic form of the Poisson pdf. Set ANALYTIC_LIKELY to
+% false in classifyForOneDirectionAndContrast to get the old behavior.  It
+% is now set to true.  I have also subsequently reduced the number of
+% contrasts that the routine computes for -- go back to defaults to produce
+% old behavior exactly.
 
 %% Function implementing the isetbio validation code
 function ValidationFunction(runTimeParams)
@@ -56,7 +64,7 @@ function ValidationFunction(runTimeParams)
     rng('default');
     
     %% Parameters
-    VALIDATE = false;
+    VALIDATE = true;
     if (VALIDATE)
         doSimulationWithBanksEtAlmosaicParams = true;
         computeResponses = true;
@@ -68,7 +76,7 @@ function ValidationFunction(runTimeParams)
         freezeNoise = true;
     else
         doSimulationWithBanksEtAlmosaicParams = true;
-        computeResponses = false;
+        computeResponses = true;
         findPerformance = true;
         fitPsychometric = true;
         doBlur = true;
@@ -78,13 +86,17 @@ function ValidationFunction(runTimeParams)
     end
     
     %% Basic validation
+    %
+    % This branch checks the regular hex mosaic with 2 pupil sizes
+    % and one rect mosaic
     if (doSimulationWithBanksEtAlmosaicParams)
         % Run with the Banks mosaic
         [validationData1, extraData1] = c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
             'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
             'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
             'conePacking','hexReg','innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(3),'coneSpacingMicrons', 3.0, ... 
-            'blur',doBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots,'freezeNoise',freezeNoise);
+            'blur',doBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots,'freezeNoise',freezeNoise, ...
+            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log');
         UnitTest.validationData('validationData1',validationData1);
         UnitTest.extraData('extraData1',extraData1);
 
@@ -92,9 +104,19 @@ function ValidationFunction(runTimeParams)
             'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
             'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
             'conePacking','hexReg','innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(3),'coneSpacingMicrons', 3.0, ...
-            'blur',doBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,'generatePlots',runTimeParams.generatePlots,'freezeNoise',freezeNoise);
+            'blur',doBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,'generatePlots',false,'freezeNoise',freezeNoise, ...
+            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log');
         UnitTest.validationData('validationData2',validationData2);
         UnitTest.extraData('extraData2',extraData2);
+        
+        [validationData3, extraData3] = c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
+            'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
+            'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
+            'conePacking','rect','innerSegmentSizeMicrons',1.4,'coneSpacingMicrons',2, ...
+            'blur',doBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',3,'generatePlots',false,'freezeNoise',freezeNoise, ...
+            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log');
+        UnitTest.validationData('validationData3',validationData3);
+        UnitTest.extraData('extraData3',extraData3);
     else
         % Run with rect mosaic and parameters we think match September 2016.
         %   Rectangular mosaic, 2uM pixel size, 1.4uM collecting area.
@@ -138,6 +160,12 @@ function ValidationFunction(runTimeParams)
         % points is 50.00% for a 0% contrast stimulus, which it should
         % because then there really is no difference between the two
         % classes being classified.
+        %
+        % The numbers above are before I switched the maximum likelihood
+        % classifier calculation from using poisspdf to a calculation that takes
+        % advantage of the analytic form of the Poisson pdf. Set ANALYTIC_LIKELY to
+        % false in classifyForOneDirectionAndContrast to get the old behavior.  It
+        % is now set to true.
         c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
             'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
             'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
