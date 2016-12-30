@@ -1,4 +1,4 @@
-function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum, instancesToVisualize)
+function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum, instancesToVisualize, format)
          
     instancesNum = size(stimData.responseInstanceArray.theMosaicIsomerizations,1);
     if (instancesNum < 1)
@@ -119,25 +119,6 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
     absorptionsTimeAxis = stimData.responseInstanceArray.timeAxis;
     photocurrentsTimeAxis = stimData.responseInstanceArray.photocurrentTimeAxis;
          
-    hFig = figure(100+condIndex); clf;
-    set(hFig, 'Position', [10 10 1100 1050], 'Color', [0 0 0], 'Name', stimData.stimulusLabel);
-
-    if (isempty(photocurrents))
-        subplotRows = 1;
-    else
-        subplotRows = 2;
-    end
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', subplotRows, ...
-           'colsNum', 2, ...
-           'heightMargin',   0.06, ...
-           'widthMargin',    0.13, ...
-           'leftMargin',     0.04, ...
-           'rightMargin',    0.10, ...
-           'bottomMargin',   0.03, ...
-           'topMargin',      0.03);
-       
-    
     mosaicXaxis = (squeeze(theMosaic.patternSupport(1,:,1)) + theMosaic.center(1))*1e6;
     mosaicYaxis = (squeeze(theMosaic.patternSupport(:,1,2)) + theMosaic.center(2))*1e6;
     cMapLevels = 1024;
@@ -164,7 +145,89 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
            
     colorbarTicks = 0:0.25:1.0;
     
-    for instanceIndex = instancesToVisualize
+    if (strcmp(format, 'montage')) && (numel(absorptionsTimeAxis) > 1)
+        % Plot of absorptions as a montage for the first instance only
+            instanceIndex = 1;
+            randomBaseFigNum = round(rand*10000);
+            hFig(1) = figure(randomBaseFigNum+condIndex); clf;
+            set(hFig(1), 'Position', [10 10 1600 1000], 'Color', [0 0 0], 'Name', sprintf('Absorptions (first instance, integrationTime: %2.2fms); %s', theMosaic.integrationTime*1000, stimData.stimulusLabel));
+
+            if (~isempty(photocurrents))
+                randomBaseFigNum = randomBaseFigNum+1000;
+                hFig(2) = figure(randomBaseFigNum+condIndex); clf;
+                set(hFig(2), 'Position', [10+200 10+20 1600 1000], 'Color', [0 0 0], 'Name', sprintf('Photocurrents (first instance); %s', stimData.stimulusLabel));
+            end
+
+            subplotCols = max([1 floor(1.25*sqrt(numel(absorptionsTimeAxis)))]);
+            subplotRows = ceil(numel(absorptionsTimeAxis) / subplotCols);
+            subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+                   'rowsNum', subplotRows, ...
+                   'colsNum', subplotCols, ...
+                   'heightMargin',   0.03, ...
+                   'widthMargin',    0.03, ...
+                   'leftMargin',     0.03, ...
+                   'rightMargin',    0.04, ...
+                   'bottomMargin',   0.02, ...
+                   'topMargin',      0.02);
+
+    for k = 1:numel(hFig)
+        figure(hFig(k));
+
+        for tBin = 1:numel(absorptionsTimeAxis)
+            row = floor((tBin-1)/subplotCols) + 1;
+            col = mod(tBin-1, subplotCols)+1;
+            subplot('Position', subplotPosVectors(row,col).v);
+            if (k == 1)
+                activation = squeeze(absorptions(instanceIndex, :,:,tBin));
+                instanceLabel = sprintf('%2.2fms', absorptionsTimeAxis(tBin)*1000);
+                minActivation = minAbsorptions;
+                maxActivation = maxAbsorptions;
+            else
+                activation = squeeze(photocurrents(instanceIndex, :,:,tBin));
+                instanceLabel = sprintf('%2.2fms', photocurrentsTimeAxis(tBin)*1000);
+                minActivation = minPhotocurrents;
+                maxActivation = maxPhotocurrents;
+            end
+            if (isHexActivation)
+                activation = activation(activeConesActivations);
+            end
+        
+            
+            signalName = '';
+            xTicks = [];
+            displayColorBar = false;
+            if (tBin == numel(absorptionsTimeAxis))
+                displayColorBar = true;
+            end
+            renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apertureOutline, ...
+                        responseNormalization, signalName, ...
+                        instanceLabel, ...
+                        colorbarTicks, minActivation+colorbarTicks*(maxActivation-minActivation), displayColorBar,  ...
+                        xTicks, yTicks, xTickLabels, yTickLabels);
+        end % tBin
+    end % k
+    else
+        % Plots of absorptions, photocurrents, and their averages
+        randomBaseFigNum = round(rand*10000);
+        hFig = figure(randomBaseFigNum+condIndex); clf;
+        set(hFig, 'Position', [10 10 1100 1050], 'Color', [0 0 0], 'Name', stimData.stimulusLabel);
+
+        if (isempty(photocurrents))
+            subplotRows = 1;
+        else
+            subplotRows = 2;
+        end
+        subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', subplotRows, ...
+           'colsNum', 2, ...
+           'heightMargin',   0.06, ...
+           'widthMargin',    0.13, ...
+           'leftMargin',     0.04, ...
+           'rightMargin',    0.10, ...
+           'bottomMargin',   0.03, ...
+           'topMargin',      0.03);
+    
+        for instanceIndex = instancesToVisualize
          for tBin = 1: numel(absorptionsTimeAxis)  
              
             % Instance absorptions on the left
@@ -175,8 +238,8 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
             end
             renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apertureOutline, ...
                 responseNormalization, sprintf('absorptions (intTime: %2.2fms)',  theMosaic.integrationTime*1000), ...
-                sprintf('instance %d/%d (t: %2.1fms)', instanceIndex, instancesNum, absorptionsTimeAxis(tBin)*1000), ...
-                colorbarTicks, minAbsorptions + colorbarTicks*(maxAbsorptions-minAbsorptions),  ...
+                sprintf('instance %d/%d (t: %2.1fms)', instanceIndex, instancesNum, absorptionsTimeAxis(tBin)*1000),  ...
+                colorbarTicks, minAbsorptions + colorbarTicks*(maxAbsorptions-minAbsorptions), true, ...
                 xTicks, yTicks, xTickLabels, yTickLabels);
            
             % Noise-free isomerizations on the right
@@ -188,7 +251,7 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
             renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apertureOutline, ...
                 responseNormalization, sprintf('noise-free absorptions (intTime: %2.2fms)',  theMosaic.integrationTime*1000), ...
                 sprintf('cond: %d/%d (t: %2.1fms)', condIndex, condsNum, absorptionsTimeAxis(tBin)*1000), ...
-                colorbarTicks, minNoiseFreeIsomerizations + colorbarTicks*(maxNoiseFreeIsomerizations-minNoiseFreeIsomerizations),  ...
+                colorbarTicks, minNoiseFreeIsomerizations + colorbarTicks*(maxNoiseFreeIsomerizations-minNoiseFreeIsomerizations), true, ...
                 xTicks, yTicks, xTickLabels, yTickLabels);
  
 
@@ -202,7 +265,7 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
                 renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apertureOutline, ...
                     responseNormalization, 'photocurrents', ...
                     sprintf('instance %d/%d (t: %2.1fms)', instanceIndex, instancesNum, photocurrentsTimeAxis(tBin)*1000), ...
-                    colorbarTicks, minPhotocurrents + colorbarTicks*(maxPhotocurrents-minPhotocurrents),  ...
+                    colorbarTicks, minPhotocurrents + colorbarTicks*(maxPhotocurrents-minPhotocurrents), true, ...
                     xTicks, yTicks, xTickLabels, yTickLabels);
 
                 % Noise-free photocurrents on the right
@@ -214,19 +277,21 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
                 renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apertureOutline, ...
                     responseNormalization, 'noise-free photocurrents', ...
                     sprintf('cond: %d/%d (t: %2.1fms)', condIndex, condsNum, photocurrentsTimeAxis(tBin)*1000), ...
-                    colorbarTicks, minNoiseFreePhotocurrents + colorbarTicks*(maxNoiseFreePhotocurrents-minNoiseFreePhotocurrents),  ...
+                    colorbarTicks, minNoiseFreePhotocurrents + colorbarTicks*(maxNoiseFreePhotocurrents-minNoiseFreePhotocurrents), true, ...
                     xTicks, yTicks, xTickLabels, yTickLabels);  
             end
             
             colormap(gray(cMapLevels));
             drawnow;
          end % tBin
-    end % instanceIndex 
+        end % instanceIndex 
+    end
+
 end 
     
 function renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apertureOutline, ...
                 responseNormalization, signalName, instanceLabel, ...
-                colorbarTicks, colorbarTickLabels, xTicks, yTicks, xTickLabels, yTickLabels)      
+                colorbarTicks, colorbarTickLabels, displayColorbar, xTicks, yTicks, xTickLabels, yTickLabels)      
     if (isHexActivation)
         edgeColor = 'none';
         lineWidth = 1.0;
@@ -238,25 +303,29 @@ function renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apert
     set(gca, 'XTick', xTicks, 'YTick', [], 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels, 'XColor', [0.5 0.5 0.5], 'YColor', [0.5 0.5 0.5]);
     set(gca, 'CLim', [0 1], 'FontSize', 14, 'Color', [0 0 0]);
     title(sprintf('%s\n%s', signalName, instanceLabel), 'Color', [0.8 0.8 0.5]);
+    colormap(gray(1024));
 
-    % Add colorbar
-    originalPosition = get(gca, 'position');
+    if (displayColorbar)
+        % Add colorbar
+        originalPosition = get(gca, 'position');
 
-    if strcmp(responseNormalization, 'submosaicBasedZscore')
-        colorbarLabel = sprintf('z-score');
-    else
-        colorbarLabel = sprintf('(R*/cone/integrationTIme)');
+        if strcmp(responseNormalization, 'submosaicBasedZscore')
+            colorbarLabel = sprintf('z-score');
+        else
+            colorbarLabel = sprintf('(R*/cone/integrationTIme)');
+        end
+        hCbar = colorbar('Ticks', colorbarTicks, 'TickLabels', sprintf('%2.3f\n',colorbarTickLabels));
+        hCbar.Orientation = 'vertical'; 
+        hCbar.Label.String = colorbarLabel;
+        hCbar.FontSize = 14; 
+        hCbar.FontName = 'Menlo'; 
+        hCbar.FontWeight = 'Bold'; 
+        hCbar.Color = [0.5 0.5 0.5];
+        % The addition changes the figure size, so undo this change
+        newPosition = get(gca, 'position');
+        set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
     end
-    hCbar = colorbar('Ticks', colorbarTicks, 'TickLabels', sprintf('%2.3f\n',colorbarTickLabels));
-    hCbar.Orientation = 'vertical'; 
-    hCbar.Label.String = colorbarLabel;
-    hCbar.FontSize = 14; 
-    hCbar.FontName = 'Menlo'; 
-    hCbar.FontWeight = 'Bold'; 
-    hCbar.Color = [0.5 0.5 0.5];
-    % The addition changes the figure size, so undo this change
-    newPosition = get(gca, 'position');
-    set(gca,'position',[newPosition(1) newPosition(2) originalPosition(3) originalPosition(4)]);
+
 end
     
 function renderPatchArray(pixelOutline, xCoords, yCoords, faceColorsNormalizedValues,  edgeColor, lineWidth)
