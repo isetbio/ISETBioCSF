@@ -48,6 +48,8 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %        visualizations.  Set to false when running big jobs on clusters or
 %        in parfor loops, as plotting doesn't seem to play well with those
 %        conditions.
+%   'visualizationFormat' - How to arrange visualized maps. 
+%       Available options: 'montage', 'video'. Default is 'montage'
 %   'visualizedResponseNormalization' - How to normalize visualized responses
 %        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
 %   'exportPDF' - true/false (default true).  If visualizing responses,
@@ -68,10 +70,17 @@ p.addParameter('generatePlots',false,@islogical);
 p.addParameter('exportPDF',true,@islogical);
 p.addParameter('delete',false',@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
+p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('workerID', [], @isnumeric);
 p.parse(varargin{:});
 rParams = p.Results.rParams;
 testDirectionParams = p.Results.testDirectionParams;
+visualizationFormat = p.Results.visualizationFormat;
+
+if (strcmp(visualizationFormat, 'montage')) || (strcmp(visualizationFormat, 'video'))
+else
+    error('visualizationFormat must be set to either ''montage'' or ''video''. Current value: ''%s''.', visualizationFormat);
+end
 
 %% Clear
 if (nargin == 0)
@@ -350,7 +359,7 @@ if (p.Results.generatePlots)
          paramsList = constantParamsList;
          paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
          stimData = rwObject.read('responseInstances',paramsList,theProgram);
-         visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, instancesToVisualize);
+         visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, instancesToVisualize, p.Results.visualizationFormat);
     end
 end
 

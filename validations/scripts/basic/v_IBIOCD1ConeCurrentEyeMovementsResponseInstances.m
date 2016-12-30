@@ -31,32 +31,53 @@ function ValidationFunction(runTimeParams)
     UnitTest.validationData('validationData2',validationData2);
     UnitTest.extraData('extraData2',extraData2);
     
-    
-    %% Photocurrent validation with frozen emPaths
-    % Use a mosaic that covers the central 1/3 of the stimulus to accelerate computation
+    %% Photocurrent validation with frozen emPaths - rect mosaic
     rParams = responseParamsGenerate;
-    rParams.temporalParams.secondsToInclude = 0.5;
-    rParams.mosaicParams.fieldOfViewDegs = 0.3*rParams.spatialParams.fieldOfViewDegs;
+    rParams.spatialParams.gaussianFWHMDegs = 0.35;
+    rParams.spatialParams.cyclesPerDegree = 8;
+    rParams.spatialParams.fieldOfViewDegs = 0.6;
+    rParams.temporalParams.secondsToInclude = 0.24;
+    rParams.mosaicParams.conePacking = 'rect';
+    rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
     rParams.mosaicParams.isomerizationNoise = 'frozen';
     rParams.mosaicParams.osNoise = 'frozen';
 
     % Select a small number of contitions
     testDirectionParams = instanceParamsGenerate();
     testDirectionParams.nAngles = 1;
+    testDirectionParams.startAngle = 45;
     testDirectionParams.nContrastsPerDirection = 1;
     testDirectionParams.lowContrast = 0.9;
     testDirectionParams.highContrast = 0.9;
-    testDirectionParams.trialsNum = 20;
+    testDirectionParams.trialsNum = 5;
     
     [validationData3, extraData3] = t_coneCurrentEyeMovementsResponseInstances(...
         'rParams', rParams, ...
         'testDirectionParams', testDirectionParams, ...
         'emPathType', 'frozen', ...
         'generatePlots', runTimeParams.generatePlots, ...
+        'visualizationFormat', 'montage', ...
         'visualizedResponseNormalization', 'submosaicBasedZscore', ...
         'freezeNoise', true);
     UnitTest.validationData('validationData3',validationData3);
     UnitTest.extraData('extraData3',extraData3);
+
+
+    %% Photocurrent validation with frozen emPaths - hex mosaic
+    rParams.mosaicParams.conePacking = 'hex';
+    testDirectionParams.trialsNum = 2;
+
+    [validationData4, extraData4] = t_coneCurrentEyeMovementsResponseInstances(...
+        'rParams', rParams, ...
+        'testDirectionParams', testDirectionParams, ...
+        'emPathType', 'frozen', ...
+        'generatePlots', runTimeParams.generatePlots, ...
+        'visualizationFormat', 'montage', ...
+        'visualizedResponseNormalization', 'submosaicBasedZscore', ...
+        'freezeNoise', true);
+    UnitTest.validationData('validationData4',validationData4);
+    UnitTest.extraData('extraData4',extraData4);
+
 end
 
 
