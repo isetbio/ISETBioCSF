@@ -102,5 +102,18 @@
 		"type": "webget",
 		"update": "never",
 		"url": "http://palamedestoolbox.org/sitebuildercontent/sitebuilderfiles/palamedes1_8_2.zip"
+	},
+    {
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "Psychtoolbox-3",
+		"pathPlacement": "append",
+		"subfolder": "Psychtoolbox",
+		"toolboxRoot": "",
+		"type": "include",
+		"update": "",
+		"url": ""
 	}
 ]
