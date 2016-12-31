@@ -9,7 +9,7 @@ function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
 %% Parse input
 p = inputParser;
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
-p.addParameter('nTrainingSamples',10,@isnumeric);
+p.addParameter('nTrainingSamples',200,@isnumeric);
 p.addParameter('imagePixels',500, @isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
@@ -69,7 +69,7 @@ conePacking = 'hex';        % Hexagonal mosaic
 %conePacking = 'rect';       % Rectangular mosaic
 rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
     'conePacking', conePacking, ...                       
-    'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs*0.15, ... 
+    'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs*0.125, ... 
     'integrationTimeInSeconds', 10/1000, ...
     'isomerizationNoise', 'frozen',...              % select from {'random', 'frozen', 'none'}
     'osNoise', 'frozen', ...                        % select from {'random', 'frozen', 'none'}
@@ -91,10 +91,12 @@ testDirectionParams = modifyStructParams(testDirectionParams, ...
 );
 
 
-% Split the testDirectionParams.trialsNum into this many blocks
-% Only compute 3 instances per block
-instancesPerBlock = 3;
-trialBlocks = floor(testDirectionParams.trialsNum/instancesPerBlock);
+% Split the testDirectionParams.trialsNum into this many blocks.
+% Usually # of threads, when the noStimData computation (which is not
+% parfored) takes around 100% of the RAM. For a 4-core computer, set it to 4.
+% With 200 nTrials, and a cone mosaic 1.25x1.25, no paging (max RAM around
+% 14 GB) and CPU = 400%
+trialBlocks = 4;
 
 % Parameters related to how we find thresholds from responses
 % Use default
