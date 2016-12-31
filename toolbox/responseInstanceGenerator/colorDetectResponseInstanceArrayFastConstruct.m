@@ -4,15 +4,19 @@ function [responseInstanceArray,noiseFreeIsomerizations,noiseFreePhotocurrents] 
 % Construct an array of nTrials response instances given the
 % simulationTimeStep, spatialParams, temporalParams, theOI, theMosaic.
 %
-% The noise free isomerizations response is returned for the first frame
-% in the temporal sequence.
-% [FIRST FRAME OR FIRST INSTANCE?  I THINK IT SHOULD BE FOR THE FIRST INSTANCE.  PLEASE CHECK
-% AND SAY EXACTLY WHAT THIS IS.  NOTE THAT BECAUSE EYE MOVEMENT PATHS DIFFER ACROSS INSTANCES,
+% The noise free isomerizations response is returned for the first
+% instance. NOTE THAT BECAUSE EYE MOVEMENT PATHS DIFFER ACROSS INSTANCES,
 % THIS IS NOT THE SAME FOR EVERY INSTANCE.]
 %
 % Key/value pairs
 %  'seed' - value (default 1). Random number generator seed
-%  'workerID' - value (default []). [NICOLAS PLEASE ADD COMMENT]
+%   'workerID' - (default empty).  If this field is non-empty, the progress of
+%            the computation is printed in the command window along with the
+%            workerID (from a parfor loop).
+%   'trialBlocks' - How many blocks to split the testDirectionParams.trialsNum into. Default: 1 (no blocking). 
+%               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
+%               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
+
 %  'useSinglePrecision' - true/false (default true) use single precision to represent isomerizations and photocurrent
 
 % 7/10/16  npc Wrote it.
@@ -22,6 +26,7 @@ p = inputParser;
 p.addParameter('seed',1, @isnumeric);   
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('useSinglePrecision',true,@islogical);
+p.addParameter('trialBlocks', 1, @isnumeric);
 p.parse(varargin{:});
 currentSeed = p.Results.seed;
 
@@ -65,6 +70,7 @@ theEMpaths = colorDetectMultiTrialEMPathGenerate(theMosaic, nTrials, eyeMovement
      theMosaic.computeForOISequence(theOIsequence, ...
                     'seed', currentSeed, ...
                     'emPaths', theEMpaths, ...
+                    'trialBlocks', p.Results.trialBlocks, ...
                     'currentFlag', true, ...
                     'workerID', p.Results.workerID);
 isomerizationsTimeAxis = theMosaic.timeAxis + theOIsequence.timeAxis(1);
