@@ -30,7 +30,7 @@ function ValidationFunction(runTimeParams)
         'freezeNoise', true);
     UnitTest.validationData('validationData2',validationData2);
     UnitTest.extraData('extraData2',extraData2);
-    
+
     %% Photocurrent validation with frozen emPaths - rect mosaic
     rParams = responseParamsGenerate;
     rParams.spatialParams.gaussianFWHMDegs = 0.35;
@@ -62,7 +62,6 @@ function ValidationFunction(runTimeParams)
     UnitTest.validationData('validationData3',validationData3);
     UnitTest.extraData('extraData3',extraData3);
 
-
     %% Photocurrent validation with frozen emPaths - hex mosaic
     rParams.mosaicParams.conePacking = 'hex';
     testDirectionParams.trialsNum = 2;
@@ -77,7 +76,6 @@ function ValidationFunction(runTimeParams)
         'freezeNoise', true);
     UnitTest.validationData('validationData4',validationData4);
     UnitTest.extraData('extraData4',extraData4);
-
 end
 
 
