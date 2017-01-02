@@ -57,18 +57,17 @@ withValidations = tbToolboxRecord( ...
 % Obtain or update the git repo and add subfolders to the Matlab path
 config = [withToolbox withTutorials withCompute withValidations];
 tbDeployToolboxes('config', config, 'toolboxRoot', fileparts(projectBaseDir), 'runLocalHooks', false);
-IBIOColorDetectValidationDir = fullfile(projectBaseDir,'validations');
 
 %% Specify project-specific preferences
 %
 % This currently include UnitTestToolbox/RemoteDataToolbox setup
 p = struct(...
     'projectName',           projectName, ...                                                                                 % The project's name (also the preferences group name)
-    'validationRootDir',     IBIOColorDetectValidationDir, ...                                                                % Directory location where the 'scripts' subdirectory resides.
+    'validationRootDir',     IBIOCDValidationDir, ...                                                                         % Directory location where the 'scripts' subdirectory resides.
     'alternateFastDataDir',  '',  ...                                                                                         % Alternate FAST (hash) data directory location. Specify '' to use the default location, i.e., $validationRootDir/data/fast
     'alternateFullDataDir',  '', ...                                                                                          % Alternate FULL data directory location. Specify '' to use the default location, i.e., $validationRootDir/data/full
     'useRemoteDataToolbox',  true, ...                                                                                        % If true use Remote Data Toolbox to fetch full validation data on demand.
-    'remoteDataToolboxConfig', projectName, ...                                                                               % Struct, file path, or project name with Remote Data Toolbox configuration.
+    'remoteDataToolboxConfig', fullfile(projectBaseDir,['rdt-config-' projectName '.json']), ...                              % Struct, file path, or project name with Remote Data Toolbox configuration.
     'clonedWikiLocation',    '', ...                                                                                          % Local path to the directory where the wiki is cloned. Only relevant for publishing tutorials.
     'clonedGhPagesLocation', '', ...                                                                                          % Local path to the directory where the gh-pages repository is cloned. Only relevant for publishing tutorials.
     'githubRepoURL',         '', ...                                                                                          % Github URL for the project. This is only used for publishing tutorials.
