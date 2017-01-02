@@ -25,7 +25,7 @@ projectName = 'IBIOColorDetect';
 %
 % Specify project URL and location
 projectUrl = 'https://github.com/isetbio/IBIOColorDetect.git';
-projectBaseDir = '/Users/Shared/Matlab/Analysis';
+projectBaseDir = tbLocateProject('IBIOColorDetect');
 
 % Declare the project git repo and two subfolders that we want on the path
 % Only update repository the first time, to save time.

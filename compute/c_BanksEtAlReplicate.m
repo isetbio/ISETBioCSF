@@ -18,6 +18,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'blur' - true/false (default true). Incorporate lens blur.
 %   'innerSegmentSizeMicrons' - Diameter of the cone light-collecting area, in microns 
 %       Default: sizeForSquareApertureFromDiameterForCircularAperture(3.0), where 3 microns = 6 min arc for 300 mirons/degree in the human retina.
+%   'apertureBlur' - Blur by cone aperture? true/false (default false).
 %   'conePacking'   - how cones are packed spatially. 
 %       Choose from : 'rect', for a rectangular mosaic
 %                     'hex', for a hex mosaic with an eccentricity-varying cone spacing
@@ -47,6 +48,7 @@ p.addParameter('luminances',[3.4 34 340],@isnumeric);
 p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('innerSegmentSizeMicrons',sizeForSquareApertureFromDiameterForCircularAperture(3.0), @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
+p.addParameter('apertureBlur', false, @islogical);
 p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
 p.addParameter('conePacking', 'hexReg');                 
 p.addParameter('imagePixels',400,@isnumeric);
@@ -135,6 +137,7 @@ for ll = 1:length(p.Results.luminances)
         rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
             'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs, ...  
             'innerSegmentSizeMicrons',p.Results.innerSegmentSizeMicrons, ...
+            'apertureBlur',p.Results.apertureBlur, ...
             'coneSpacingMicrons', p.Results.coneSpacingMicrons, ...
             'conePacking', p.Results.conePacking, ...
         	'integrationTimeInSeconds', rParams.temporalParams.stimulusDurationInSeconds, ...
