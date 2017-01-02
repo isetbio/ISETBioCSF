@@ -180,7 +180,7 @@ for ll = 1:length(p.Results.luminances)
         
         %% Compute response instances
         desiredTrialsPerBlock = 50;
-        trialBlocks = round(testDirectionParams/desiredTrialsPerBlock);
+        trialBlocks = round(testDirectionParams.trialsNum/desiredTrialsPerBlock);
         if (p.Results.computeResponses)
            t_coneCurrentEyeMovementsResponseInstances(...
                'rParams',rParams,...
