@@ -67,12 +67,12 @@ p = struct(...
     'alternateFastDataDir',  '',  ...                                                                                         % Alternate FAST (hash) data directory location. Specify '' to use the default location, i.e., $validationRootDir/data/fast
     'alternateFullDataDir',  '', ...                                                                                          % Alternate FULL data directory location. Specify '' to use the default location, i.e., $validationRootDir/data/full
     'useRemoteDataToolbox',  true, ...                                                                                        % If true use Remote Data Toolbox to fetch full validation data on demand.
-    'remoteDataToolboxConfig', fullfile(projectBaseDir,['rdt-config-' projectName '.json']), ...                              % Struct, file path, or project name with Remote Data Toolbox configuration.
+    'remoteDataToolboxConfig', fullfile(projectBaseDir,'configuration',['rdt-config-' projectName '.json']), ...              % Struct, file path, or project name with Remote Data Toolbox configuration.
     'clonedWikiLocation',    '', ...                                                                                          % Local path to the directory where the wiki is cloned. Only relevant for publishing tutorials.
     'clonedGhPagesLocation', '', ...                                                                                          % Local path to the directory where the gh-pages repository is cloned. Only relevant for publishing tutorials.
     'githubRepoURL',         '', ...                                                                                          % Github URL for the project. This is only used for publishing tutorials.
-    'generateGroundTruthDataIfNotFound',true,...                                                                             % Flag indicating whether to generate ground truth if one is not found
-    'listingScript',         'IBIOCDValidateListAllValidationDirs', ...                                              % Script that lists dirs to find validation scripts in
+    'generateGroundTruthDataIfNotFound',true,...                                                                              % Flag indicating whether to generate ground truth if one is not found
+    'listingScript',         'IBIOCDValidateListAllValidationDirs', ...                                                       % Script that lists dirs to find validation scripts in
     'coreListingScript',     '', ...                                                                                          % Not used in this project
     'numericTolerance',      1e-11 ...                                                                                        % Numeric tolerance for comparisons with validation data.
     );
