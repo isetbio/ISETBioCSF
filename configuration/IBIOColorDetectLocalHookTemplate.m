@@ -57,8 +57,7 @@ withValidations = tbToolboxRecord( ...
 % Obtain or update the git repo and add subfolders to the Matlab path
 config = [withToolbox withTutorials withCompute withValidations];
 tbDeployToolboxes('config', config, 'toolboxRoot', fileparts(projectBaseDir), 'runLocalHooks', false);
-
-IBIOColorDetectValidationDir = '/Users/Shared/Matlab/Analysis/IBIOColorDetect/validations';
+IBIOColorDetectValidationDir = fullfile(projectBaseDir,'validations');
 
 %% Specify project-specific preferences
 %
