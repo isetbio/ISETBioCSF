@@ -1,5 +1,6 @@
 function theMosaic = colorDetectConeMosaicConstruct(mosaicParams)
-% theMosaic = colorDetectConeMosaicConstruct(mosaicParams)
+% colorDetectConeMosaicConstruct  Construct cone mosaic according to parameters structure
+%   theMosaic = colorDetectConeMosaicConstruct(mosaicParams)
 % 
 % Construct a cone mosaic according to the passed parameters structure.
 % Designed to allow us to control exactly what features of early vision
@@ -13,9 +14,8 @@ function theMosaic = colorDetectConeMosaicConstruct(mosaicParams)
 %   mosaicParams.macular -  true/false, include macular pigment?
 %   mosaicParams.osModel - 'Linear','Biophys', which outer segment model
 %
-%  7/9/16  npc, dhb  Wrote it.
+% 07/9/16  npc, dhb  Wrote it.
 % 12/8/16  npc       Update it after linearized os model.
-
 
 if (ischar(mosaicParams.conePacking))
     if (strcmp(mosaicParams.conePacking, 'hex'))
@@ -72,6 +72,9 @@ else
     error('Unknown conePacking value');
 end
 
+% Set whether to blur by cone aperture
+theMosaic.apertureBlur = mosaicParams.apertureBlur;
+
 % Set the outer segment model
 if strcmp(mosaicParams.osModel, 'Linear')
     theMosaic.os = osLinear();
@@ -89,7 +92,7 @@ if (isfield(mosaicParams, 'fieldOfViewDegs'))
     end
 end
 
-% integration time
+% Integration time
 if (isfield(mosaicParams, 'integrationTimeInSeconds'))
     warningIntegrationTimeInSeconds = 25/1000;
     if (mosaicParams.integrationTimeInSeconds > warningIntegrationTimeInSeconds)
@@ -102,7 +105,7 @@ if (isfield(mosaicParams, 'integrationTimeInSeconds'))
     theMosaic.integrationTime = mosaicParams.integrationTimeInSeconds;
 end
 
-% outer-segment time step
+% Outer-segment time step
 if (isfield(mosaicParams, 'osTimeStep'))
     if (mosaicParams.osTimeStepInSeconds > 1/1000)
         error('Cannot set os.timeStepto %2.4f. It must be less t<= to 1/1000, and preferably <= 0.5/1000', mosaicParams.osTimeStepInSeconds);
@@ -110,7 +113,7 @@ if (isfield(mosaicParams, 'osTimeStep'))
     theMosaic.os.timeStep = mosaicParams.osTimeStepInSeconds;
 end
 
-% isomerization noise
+% Isomerization noise
 if (isfield(mosaicParams, 'isomerizationNoise'))
     theMosaic.noiseFlag = mosaicParams.isomerizationNoise;
 end

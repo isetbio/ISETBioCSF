@@ -114,13 +114,12 @@ if (isempty(rParams))
     rParams.mosaicParams.osModel = 'Linear';
 end
 
-
-% Set the emPathType
+%% Set the emPathType
 if (~isempty(p.Results.emPathType))
     rParams.temporalParams.emPathType = p.Results.emPathType;
 end
     
-% Fix random number generator so we can validate output exactly
+%% Fix random number generator so we can validate output exactly
 if (p.Results.freezeNoise)
      fprintf(2, '\n%s: freezing all noise \n', mfilename);
      rng(1);
@@ -139,7 +138,7 @@ if (isempty(testDirectionParams))
     testDirectionParams = instanceParamsGenerate;
 end
 
-% The constant params list
+%% The constant params list
 constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
 
 colorModulationParamsNull = rParams.colorModulationParams;
