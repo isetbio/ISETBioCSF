@@ -370,7 +370,7 @@ if (p.Results.generatePlots)
          paramsList = constantParamsList;
          paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
          stimData = rwObject.read('responseInstances',paramsList,theProgram);
-         visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, instancesToVisualize, p.Results.visualizationFormat);
+         %visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, instancesToVisualize, p.Results.visualizationFormat);
     end
 end
 
