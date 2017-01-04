@@ -1,5 +1,5 @@
-function IBIOColorDetectLocalHookTemplate
-% IBIOColorDetect
+function IBIOColorDetectLocalHook
+% IBIOColorDetectLocalHook
 %
 % Configure things for working on the IBIOColorDetect project.
 %
@@ -30,6 +30,11 @@ projectName = 'IBIOColorDetect';
 
 
 %% UnitTestToolbox and RemoteDataToolbox setup.
+%
+% If you customize your rdt-config json file, you will want to place it
+% somewhere outside the repository and change the path to point to your
+% copy.  The usual reason for doing this is so that you can add your
+% username and password and have write permission.
 projectBaseDir = tbLocateProject(projectName);
 rdtConfig = fullfile(projectBaseDir, 'configuration', ['rdt-config-' projectName '.json']);
 p = struct(...
@@ -53,6 +58,10 @@ UnitTest.usePreferencesForProject(p.projectName);
 
 
 %% Output directory.
+%
+% This is where the project writes its output.  By default, we'll stick it
+% in a subfolder of a folder called output, in the tbUserFolder.  But you
+% may want it somewhere else.
 outputBaseDir = fullfile(tbUserFolder(), 'output', projectName);
 if (7 ~= exist(outputBaseDir, 'dir'))
     mkdir(outputBaseDir);
