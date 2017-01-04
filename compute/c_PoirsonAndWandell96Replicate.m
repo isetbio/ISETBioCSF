@@ -9,7 +9,7 @@ function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
 %% Parse input
 p = inputParser;
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
-p.addParameter('nTrainingSamples',1000,@isnumeric);
+p.addParameter('nTrainingSamples',500,@isnumeric);
 p.addParameter('imagePixels',500, @isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
@@ -53,7 +53,7 @@ rParams.backgroundParams = modifyStructParams(rParams.backgroundParams, ...
 frameRate = 87;                                     % their CRT had 87 Hz refresh rate
 windowTauInSeconds = 165/1000;
 stimulusSamplingIntervalInSeconds = 1/frameRate;
-stimulusDurationInSeconds = 2.0*windowTauInSeconds;
+stimulusDurationInSeconds = 1.5*windowTauInSeconds;
 rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
     'frameRate', frameRate, ...
     'windowTauInSeconds', windowTauInSeconds, ...
@@ -96,6 +96,7 @@ testDirectionParams = modifyStructParams(testDirectionParams, ...
 % parfored) takes around 100% of the RAM. For a 4-core computer, set it to 4.
 % With 200 nTrials, and a cone mosaic 1.25x1.25, no paging (max RAM around
 % 14 GB) and CPU = 400%
+% 10 is borderline as it  brings the 32 GB iMac to a halt with 500. 12 should work.
 trialBlocks = 12;
 
 % Parameters related to how we find thresholds from responses
