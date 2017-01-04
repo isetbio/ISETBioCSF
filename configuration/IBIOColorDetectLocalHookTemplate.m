@@ -1,73 +1,49 @@
-function IBIOColorDetectLocalHookTemplate
-% IBIOColorDetect
+function IBIOColorDetectLocalHook
+% IBIOColorDetectLocalHook
 %
 % Configure things for working on the IBIOColorDetect project.
 %
-% For use with the ToolboxToolbox.  If you copy this into your
-% ToolboxToolbox localToolboxHooks directory (by defalut,
-% ~/localToolboxHooks) and delete "LocalHooksTemplate" from the filename,
-% this will get run when you execute tbUse({'IBIOColorDetect'}) to set up for
-% this project.  You then edit your local copy to match your local machine.
+% For use with the ToolboxToolbox.
 %
-% The thing that this does is add subfolders of the project to the path as
-% well as define Matlab preferences that specify input and output
-% directories.
+% If you 'git clone' IBIOColorDetect into your ToolboxToolbox "projectRoot"
+% folder, then run in MATLAB
+%   tbUseProject('IBIOColorDetect')
+% ToolboxToolbox will set up IBIOColorDetect and its dependencies on
+% your machine.
 %
-% You will need to edit the project location and i/o directory locations
-% to match what is true on your computer.
+% As part of the setup process, ToolboxToolbox will copy this file to your
+% ToolboxToolbox localToolboxHooks directory (minus the "Template" suffix).
+% The defalt location for this would be
+%   ~/localToolboxHooks/IBIOColorDetectLocalHook.m
+%
+% Each time you run tbUseProject('IBIOColorDetect'), ToolboxToolbox will
+% execute your local copy of this file to do setup for IBIOColorDetect.
+%
+% You should edit your local copy with values that are correct for your
+% local machine, for example the output directory location.
+%
 
-%% Say hello
-fprintf('Running local hook template IBIOColorDetect local hook\n');
-pause
+
+%% Say hello.
+fprintf('IBIOColorDetect local hook.\n');
 projectName = 'IBIOColorDetect';
 
-%% Put project toolbox onto path
+
+%% UnitTestToolbox and RemoteDataToolbox setup.
 %
-% Specify project URL and location
-projectUrl = 'https://github.com/isetbio/IBIOColorDetect.git';
-projectBaseDir = tbLocateProject('IBIOColorDetect');
-
-% Declare the project git repo and two subfolders that we want on the path
-% Only update repository the first time, to save time.
-withToolbox = tbToolboxRecord( ...
-    'name', 'IBIOColorDetect', ...
-    'type', 'git', ...
-    'url', projectUrl, ...
-    'subfolder', 'toolbox', ...
-    'update', '');
-withTutorials = tbToolboxRecord( ...
-    'name', 'IBIOColorDetect', ...
-    'type', 'git', ...
-    'url', projectUrl, ...
-    'subfolder', 'tutorials', ...
-    'update', 'never');
-withCompute = tbToolboxRecord( ...
-    'name', 'IBIOColorDetect', ...
-    'type', 'git', ...
-    'url', projectUrl, ...
-    'subfolder', 'compute', ...
-    'update', 'never');
-withValidations = tbToolboxRecord( ...
-    'name', 'IBIOColorDetect', ...
-    'type', 'git', ...
-    'url', projectUrl, ...
-    'subfolder', 'validations', ...
-    'update', 'never');
-
-% Obtain or update the git repo and add subfolders to the Matlab path
-config = [withToolbox withTutorials withCompute withValidations];
-tbDeployToolboxes('config', config, 'toolboxRoot', fileparts(projectBaseDir), 'runLocalHooks', false);
-
-%% Specify project-specific preferences
-%
-% This currently include UnitTestToolbox/RemoteDataToolbox setup
+% If you customize your rdt-config json file, you will want to place it
+% somewhere outside the repository and change the path to point to your
+% copy.  The usual reason for doing this is so that you can add your
+% username and password and have write permission.
+projectBaseDir = tbLocateProject(projectName);
+rdtConfig = fullfile(projectBaseDir, 'configuration', ['rdt-config-' projectName '.json']);
 p = struct(...
     'projectName',           projectName, ...                                                                                 % The project's name (also the preferences group name)
     'validationRootDir',     IBIOCDValidationDir, ...                                                                         % Directory location where the 'scripts' subdirectory resides.
     'alternateFastDataDir',  '',  ...                                                                                         % Alternate FAST (hash) data directory location. Specify '' to use the default location, i.e., $validationRootDir/data/fast
     'alternateFullDataDir',  '', ...                                                                                          % Alternate FULL data directory location. Specify '' to use the default location, i.e., $validationRootDir/data/full
     'useRemoteDataToolbox',  true, ...                                                                                        % If true use Remote Data Toolbox to fetch full validation data on demand.
-    'remoteDataToolboxConfig', fullfile(projectBaseDir,'configuration',['rdt-config-' projectName '.json']), ...              % Struct, file path, or project name with Remote Data Toolbox configuration.
+    'remoteDataToolboxConfig', rdtConfig, ...                                                                                 % Struct, file path, or project name with Remote Data Toolbox configuration.
     'clonedWikiLocation',    '', ...                                                                                          % Local path to the directory where the wiki is cloned. Only relevant for publishing tutorials.
     'clonedGhPagesLocation', '', ...                                                                                          % Local path to the directory where the gh-pages repository is cloned. Only relevant for publishing tutorials.
     'githubRepoURL',         '', ...                                                                                          % Github URL for the project. This is only used for publishing tutorials.
@@ -80,23 +56,23 @@ p = struct(...
 generatePreferenceGroup(p);
 UnitTest.usePreferencesForProject(p.projectName);
 
-%% Set up additional preferences for project output
+
+%% Output directory.
 %
-%outputBaseDir = '/Users/dhb/DropboxLab/IBIO_analysis';
-outputBaseDir = '/Volumes/Users1/DropboxLab/IBIO_analysis';
-if (~exist(outputBaseDir))
+% This is where the project writes its output.  By default, we'll stick it
+% in a subfolder of a folder called output, in the tbUserFolder.  But you
+% may want it somewhere else.
+outputBaseDir = fullfile(tbUserFolder(), 'output', projectName);
+if (7 ~= exist(outputBaseDir, 'dir'))
     mkdir(outputBaseDir);
 end
 
-% This project's dir under the base dir
-theDir = fullfile(outputBaseDir,projectName);
-
-% Add into the preferences
-setpref(projectName,'outputBaseDir',theDir);
+setpref(projectName, 'outputBaseDir', outputBaseDir);
 
 end
 
-%% Little generatePreferenceGroup utility
+
+%% Generate preferences that work with UnitTest toolbox.
 function generatePreferenceGroup(p)
 % Remove any existing preferences for this project
 if ispref(p.projectName)
