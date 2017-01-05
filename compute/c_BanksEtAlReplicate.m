@@ -33,11 +33,14 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'fitPsychometric' - true/false (default true).  Fit psychometric functions.
 %   'thresholdCriterionFraction' value (default 0.701). Criterion corrrect for threshold.
 %   'generatePlots' - true/false (default true).  No plots are generated unless this is true.
+%   'visualizeResponses' - true/false (default false).  Do the fancy response visualization when generating responses.
 %   'visualizedResponseNormalization' - string (default 'submosaicBasedZscore'). How to normalize visualized responses
 %        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotCSF' - true/false (default true).  Plot results.
 %   'freezeNoise' - true/false (default true). Freeze noise so calculations reproduce.
+%   'useTrialBlocks' - true/false (default true).  Break response computations down into blocks?]
+%   'nTrialsPerBlock' - value (default 50).  Target number of trials per block.
 
 %% Parse input
 p = inputParser;
@@ -57,14 +60,17 @@ p.addParameter('lowContrast',0.0001,@isnumeric);
 p.addParameter('highContrast',0.1,@isnumeric);
 p.addParameter('contrastScale','log',@ischar);
 p.addParameter('computeResponses',true,@islogical);
-p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('thresholdCriterionFraction',0.701,@isnumeric);
 p.addParameter('generatePlots',true,@islogical);
+p.addParameter('visualizeResponses',false,@islogical);
+p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotCSF',true,@islogical);
 p.addParameter('freezeNoise',true,@islogical);
+p.addParameter('useTrialBlocks',true,@islogical);
+p.addParameter('nTrialsPerBlock',50,@isnumeric);
 p.parse(varargin{:});
 
 %% Get the parameters we need
@@ -179,14 +185,19 @@ for ll = 1:length(p.Results.luminances)
         thresholdParams.criterionFraction = p.Results.thresholdCriterionFraction;
         
         %% Compute response instances
-        desiredTrialsPerBlock = 50;
-        trialBlocks = round(testDirectionParams.trialsNum/desiredTrialsPerBlock);
+        if (p.Results.useTrialBlocks)
+            desiredTrialsPerBlock = p.Results.nTrialsPerBlock;
+            trialBlocks = round(testDirectionParams.trialsNum/desiredTrialsPerBlock);
+        else
+            trialBlocks = 1;
+        end
         if (p.Results.computeResponses)
            t_coneCurrentEyeMovementsResponseInstances(...
                'rParams',rParams,...
                'testDirectionParams',testDirectionParams,...
                'compute',true,...
                'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
+               'visualizeResponses',p.Results.visualizeResponses, ...
                'generatePlots',p.Results.generatePlots,...
                'freezeNoise',p.Results.freezeNoise,...
                'trialBlocks',trialBlocks);
