@@ -105,6 +105,7 @@ thresholdParams = thresholdParamsGenerate;
 
 %% Compute response instances
 if (p.Results.computeResponses)
+    tBegin = clock
     t_coneCurrentEyeMovementsResponseInstances(...
           'rParams',rParams,...
           'testDirectionParams',testDirectionParams,...
@@ -115,6 +116,9 @@ if (p.Results.computeResponses)
           'freezeNoise',p.Results.freezeNoise, ...
           'generatePlots',p.Results.generatePlots, ...
           'workerID', 1);
+    tEnd = clock;
+    timeLapsed = etime(tEnd,tBegin);
+    fprintf('Compute took %f minutes \n', timeLapsed/60);
 end
 
 %% Find performance, template max likeli
