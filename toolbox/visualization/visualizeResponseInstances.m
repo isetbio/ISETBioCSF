@@ -127,14 +127,17 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
         mosaicXaxis = mosaicXaxis(iCols);
         mosaicYaxis = mosaicYaxis(iRows);
         isHexActivation = true;
-        iTheta = (0:60:360)/180*pi;
+        iTheta = (0:10:360)/180*pi;
     else
         iTheta = (0:90:360)/180*pi;
         isHexActivation = false;
     end
     
-    apertureOutline.x = 1.1*theMosaic.pigment.width/2.0 * cos(iTheta)*1e6;
-    apertureOutline.y = 1.1*theMosaic.pigment.height/2.0 * sin(iTheta)*1e6;
+    % Note that pigment.pdWidth defines the size of a square collective
+    % aperture. Here we compute the equivalent circular aperture
+    dx = sqrt((theMosaic.pigment.pdWidth^2)/pi)*2;
+    apertureOutline.x = dx/2 * cos(iTheta)*1e6;
+    apertureOutline.y = dx/2 * sin(iTheta)*1e6;
         
     g = max([1 round(mosaicXaxis/100)]);
     
