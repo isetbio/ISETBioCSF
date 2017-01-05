@@ -67,30 +67,30 @@ function ValidationFunction(runTimeParams)
     VALIDATE = true;
     if (VALIDATE)
         doSimulationWithBanksEtAlmosaicParams = true;
-        computeResponses = true;
-        findPerformance = true;
-        fitPsychometric = true;
-        doBlur = true;
-        apertureBlur = false;
-        nTrainingSamples = 100;
-        thresholdCriterionFraction = 0.75;
-        freezeNoise = true;
-        useTrialBlocks = false;
+        params.computeResponses = true;
+        params.findPerformance = true;
+        params.fitPsychometric = true;
+        params.blur = true;
+        params.apertureBlur = false;
+        params.nTrainingSamples = 100;
+        params.thresholdCriterionFraction = 0.75;
+        params.freezeNoise = true;
+        params.useTrialBlocks = false;
     
     % This runs with old parameters.  Probably don't need it anymore, as I
     % added this case to the main validation file.  The notes may be of
     % interest someday if we ever need to back way out.
     else
-        doSimulationWithBanksEtAlmosaicParams = true;
-        computeResponses = true;
-        findPerformance = true;
-        fitPsychometric = true;
-        doBlur = true;
-        apertureBlur = false;
-        nTrainingSamples = 500;
-        thresholdCriterionFraction = 0.75;
-        freezeNoise = false;
-        useTrialBlocks = false;
+        doSimulationWithBanksEtAlmosaicParams = false;
+        params.computeResponses = true;
+        params.findPerformance = true;
+        params.fitPsychometric = true;
+        params.blur = true;
+        params.apertureBlur = false;
+        params.nTrainingSamples = 500;
+        params.thresholdCriterionFraction = 0.75;
+        params.freezeNoise = false;
+        params.useTrialBlocks = false;
 
     end
     
@@ -100,30 +100,27 @@ function ValidationFunction(runTimeParams)
     % and one rect mosaic, and doesn't check against validation data.
     if (doSimulationWithBanksEtAlmosaicParams)
         % Run with the Banks mosaic
-        [validationData1, extraData1] = c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
-            'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
-            'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
-            'conePacking','hexReg','innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(3),'coneSpacingMicrons', 3.0, ... 
-            'blur',doBlur,'apertureBlur',apertureBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots,'freezeNoise',freezeNoise, ...
-            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log','useTrialBlocks',useTrialBlocks);
+        [validationData1, extraData1] = c_BanksEtAlReplicate(params, ...
+            'useScratchTopLevelDirName',true, 'generatePlots',runTimeParams.generatePlots, ...
+            'conePacking','hexReg','innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(3),'coneSpacingMicrons', 3.0, ...
+            'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,...
+            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log');
         UnitTest.validationData('validationData1',validationData1);
         UnitTest.extraData('extraData1',extraData1);
 
-        [validationData2, extraData2] = c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
-            'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
-            'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
+        [validationData2, extraData2] = c_BanksEtAlReplicate(params, ...
+            'useScratchTopLevelDirName',true, 'generatePlots',runTimeParams.generatePlots, ...
             'conePacking','hexReg','innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(3),'coneSpacingMicrons', 3.0, ...
-            'blur',doBlur,'apertureBlur',apertureBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,'generatePlots',runTimeParams.generatePlots,'freezeNoise',freezeNoise, ...
-            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log','useTrialBlocks',useTrialBlocks);
+            'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,...
+            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log');
         UnitTest.validationData('validationData2',validationData2);
         UnitTest.extraData('extraData2',extraData2);
         
-        [validationData3, extraData3] = c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
-            'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
-            'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
+        [validationData3, extraData3] = c_BanksEtAlReplicate(params, ...
+            'useScratchTopLevelDirName',true,'generatePlots',runTimeParams.generatePlots, ...
             'conePacking','rect','innerSegmentSizeMicrons',1.4,'coneSpacingMicrons',2, ...
-            'blur',doBlur,'apertureBlur',apertureBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',3,'generatePlots',runTimeParams.generatePlots,'freezeNoise',freezeNoise, ...
-            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log','useTrialBlocks',useTrialBlocks);
+            'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',3, ...
+            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log');
         UnitTest.validationData('validationData3',validationData3);
         UnitTest.extraData('extraData3',extraData3);
     else
@@ -175,11 +172,10 @@ function ValidationFunction(runTimeParams)
         % advantage of the analytic form of the Poisson pdf. Set ANALYTIC_LIKELY to
         % false in classifyForOneDirectionAndContrast to get the old behavior.  It
         % is now set to true.
-        c_BanksEtAlReplicate('useScratchTopLevelDirName',true, ...
-            'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
-            'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
+        c_BanksEtAlReplicate(params, ...
+            'useScratchTopLevelDirName',true,'generatePlots',runTimeParams.generatePlots, ...
             'conePacking','rect','innerSegmentSizeMicrons',1.4,'coneSpacingMicrons',2, ...   
-            'blur',doBlur,'apertureBlur',apertureBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',3,'generatePlots',runTimeParams.generatePlots,'freezeNoise',freezeNoise,'useTrialBlocks',useTrialBlocks);
+            'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',3);
     end
     
 end

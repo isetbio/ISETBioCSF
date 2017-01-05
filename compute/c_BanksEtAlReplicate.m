@@ -31,7 +31,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'computeResponses' - true/false (default true).  Compute responses.
 %   'findPerformance' - true/false (default true).  Find performance.
 %   'fitPsychometric' - true/false (default true).  Fit psychometric functions.
-%   'thresholdCriterionFraction' value (default 0.701). Criterion corrrect for threshold.
+%   'thresholdCriterionFraction' value (default 0.75). Criterion corrrect for threshold.
 %   'generatePlots' - true/false (default true).  No plots are generated unless this is true.
 %   'visualizeResponses' - true/false (default false).  Do the fancy response visualization when generating responses.
 %   'visualizedResponseNormalization' - string (default 'submosaicBasedZscore'). How to normalize visualized responses
@@ -62,7 +62,7 @@ p.addParameter('contrastScale','log',@ischar);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
-p.addParameter('thresholdCriterionFraction',0.701,@isnumeric);
+p.addParameter('thresholdCriterionFraction',0.75,@isnumeric);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeResponses',false,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
