@@ -67,7 +67,7 @@ p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
 p.addParameter('trialBlocks', 1, @isnumeric);
-p.addParameter('emPathType','none',@ischar);
+%p.addParameter('emPathType','none',@ischar);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('computeMosaic', true, @islogical);
@@ -117,9 +117,9 @@ if (isempty(rParams))
 end
 
 %% Set the emPathType
-if (~isempty(p.Results.emPathType))
-    rParams.temporalParams.emPathType = p.Results.emPathType;
-end
+% if (~isempty(p.Results.emPathType))
+%     rParams.temporalParams.emPathType = p.Results.emPathType;
+% end
     
 %% Fix random number generator so we can validate output exactly
 if (p.Results.freezeNoise)
