@@ -51,6 +51,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %        visualizations.  Set to false when running big jobs on clusters or
 %        in parfor loops, as plotting doesn't seem to play well with those
 %        conditions.
+%   'visualizeResonses' - true/false (default true). Call the fancy visualize response routine?
 %   'visualizationFormat' - How to arrange visualized maps. 
 %       Available options: 'montage', 'video'. Default is 'montage'
 %   'visualizedResponseNormalization' - How to normalize visualized responses
@@ -71,11 +72,12 @@ p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('computeMosaic', true, @islogical);
 p.addParameter('generatePlots',false,@islogical);
-p.addParameter('exportPDF',true,@islogical);
-p.addParameter('delete',false',@islogical);
+p.addParameter('visualizeResponses',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('workerID', [], @isnumeric);
+p.addParameter('exportPDF',true,@islogical);
+p.addParameter('delete',false',@islogical);
 p.parse(varargin{:});
 rParams = p.Results.rParams;
 testDirectionParams = p.Results.testDirectionParams;
@@ -342,7 +344,7 @@ if (p.Results.compute)
 end
 
 %% Visualize
-if (p.Results.generatePlots)
+if (p.Results.generatePlots & p.Results.visualizeResponses)
 
     % How many istances to visualize
     instancesToVisualize = 1:5;
@@ -369,7 +371,7 @@ if (p.Results.generatePlots)
          paramsList = constantParamsList;
          paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
          stimData = rwObject.read('responseInstances',paramsList,theProgram);
-         %visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, instancesToVisualize, p.Results.visualizationFormat);
+         visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, instancesToVisualize, p.Results.visualizationFormat);
     end
 end
 

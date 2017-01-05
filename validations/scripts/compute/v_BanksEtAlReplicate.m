@@ -75,6 +75,7 @@ function ValidationFunction(runTimeParams)
         nTrainingSamples = 100;
         thresholdCriterionFraction = 0.75;
         freezeNoise = true;
+        useTrialBlocks = false;
     
     % This runs with old parameters.  Probably don't need it anymore, as I
     % added this case to the main validation file.  The notes may be of
@@ -89,6 +90,8 @@ function ValidationFunction(runTimeParams)
         nTrainingSamples = 500;
         thresholdCriterionFraction = 0.75;
         freezeNoise = false;
+        useTrialBlocks = false;
+
     end
     
     %% Basic validation
@@ -102,7 +105,7 @@ function ValidationFunction(runTimeParams)
             'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
             'conePacking','hexReg','innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(3),'coneSpacingMicrons', 3.0, ... 
             'blur',doBlur,'apertureBlur',apertureBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,'generatePlots',runTimeParams.generatePlots,'freezeNoise',freezeNoise, ...
-            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log');
+            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log','useTrialBlocks',useTrialBlocks);
         UnitTest.validationData('validationData1',validationData1);
         UnitTest.extraData('extraData1',extraData1);
 
@@ -110,8 +113,8 @@ function ValidationFunction(runTimeParams)
             'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
             'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
             'conePacking','hexReg','innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(3),'coneSpacingMicrons', 3.0, ...
-            'blur',doBlur,'apertureBlur',apertureBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,'generatePlots',false,'freezeNoise',freezeNoise, ...
-            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log');
+            'blur',doBlur,'apertureBlur',apertureBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,'generatePlots',runTimeParams.generatePlots,'freezeNoise',freezeNoise, ...
+            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log','useTrialBlocks',useTrialBlocks);
         UnitTest.validationData('validationData2',validationData2);
         UnitTest.extraData('extraData2',extraData2);
         
@@ -119,8 +122,8 @@ function ValidationFunction(runTimeParams)
             'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
             'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
             'conePacking','rect','innerSegmentSizeMicrons',1.4,'coneSpacingMicrons',2, ...
-            'blur',doBlur,'apertureBlur',apertureBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',3,'generatePlots',false,'freezeNoise',freezeNoise, ...
-            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log');
+            'blur',doBlur,'apertureBlur',apertureBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',3,'generatePlots',runTimeParams.generatePlots,'freezeNoise',freezeNoise, ...
+            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log','useTrialBlocks',useTrialBlocks);
         UnitTest.validationData('validationData3',validationData3);
         UnitTest.extraData('extraData3',extraData3);
     else
@@ -176,7 +179,7 @@ function ValidationFunction(runTimeParams)
             'computeResponses',computeResponses,'findPerformance',findPerformance,'fitPsychometric',fitPsychometric,...
             'nTrainingSamples',nTrainingSamples,'thresholdCriterionFraction',thresholdCriterionFraction,...
             'conePacking','rect','innerSegmentSizeMicrons',1.4,'coneSpacingMicrons',2, ...   
-            'blur',doBlur,'apertureBlur',apertureBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',3,'generatePlots',runTimeParams.generatePlots,'freezeNoise',freezeNoise);
+            'blur',doBlur,'apertureBlur',apertureBlur,'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',3,'generatePlots',runTimeParams.generatePlots,'freezeNoise',freezeNoise,'useTrialBlocks',useTrialBlocks);
     end
     
 end
