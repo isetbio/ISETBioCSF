@@ -12,7 +12,6 @@ p.addParameter('useScratchTopLevelDirName', false, @islogical);
 p.addParameter('nTrainingSamples',500,@isnumeric);
 p.addParameter('imagePixels',500, @isnumeric);
 p.addParameter('computeResponses',true,@islogical);
-p.addParameter('nTrialsPerBlock',50,@isnumeric);
 p.addParameter('computeMosaic',false,@islogical);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
@@ -94,9 +93,10 @@ testDirectionParams = modifyStructParams(testDirectionParams, ...
 );
 
 
-% Split the testDirectionParams.trialsNum into this many blocks.
-desiredTrialsPerBlock = p.Results.nTrialsPerBlock;
-trialBlocks = round(testDirectionParams.trialsNum/desiredTrialsPerBlock);
+% Let the colorDetectResponseInstanceArrayFastConstruct decide how many
+% blocks to split the trials in, depending on the size of the mosaic,
+% the cores available and the system RAM.
+trialBlocks = -1;
 
 % Parameters related to how we find thresholds from responses
 % Use default
@@ -115,6 +115,7 @@ if (p.Results.computeResponses)
           'trialBlocks', trialBlocks, ...
           'freezeNoise',p.Results.freezeNoise, ...
           'generatePlots',p.Results.generatePlots, ...
+          'visualizeResponses', true, ...
           'workerID', 1);
     tEnd = clock;
     timeLapsed = etime(tEnd,tBegin);

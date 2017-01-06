@@ -29,6 +29,7 @@ p.addParameter('useSinglePrecision',true,@islogical);
 p.addParameter('trialBlocks', 1, @isnumeric);
 p.parse(varargin{:});
 currentSeed = p.Results.seed;
+trialBlocks = p.Results.trialBlocks;
 
 %% Start computation time measurement
 tic
@@ -66,11 +67,24 @@ theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, ...
 eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theMosaic.integrationTime);
 theEMpaths = colorDetectMultiTrialEMPathGenerate(theMosaic, nTrials, eyeMovementsNum, temporalParams.emPathType, 'seed', currentSeed);
 
+
+% Determine optimal trialBlocks
+fudgeFactor = 5;
+[numberOfCores, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
+maxMemoryRequiredGBytes = fudgeFactor * 2*(numberOfCores * numel(theMosaic.pattern) * nTrials * sizeOfDoubleInBytes)/(1024^3);
+desiredTrialsPerBlock = floor(min([nTrials nTrials / (maxMemoryRequiredGBytes/ramSizeGBytes)]));
+trialBlocksForParforLoop = ceil(nTrials / desiredTrialsPerBlock);
+warndlg(sprintf('%d %2.3fGB %2.3fGB, desiredTrialsPerBlock = %d (nTrials=%d), trialBlocks = %d', numberOfCores, ramSizeGBytes, maxMemoryRequiredGBytes, desiredTrialsPerBlock, nTrials, trialBlocksForParforLoop));
+    
+if (trialBlocks == -1)
+    trialBlocks = trialBlocksForParforLoop;
+end
+
 [isomerizations, photocurrents] = ...
      theMosaic.computeForOISequence(theOIsequence, ...
                     'seed', currentSeed, ...
                     'emPaths', theEMpaths, ...
-                    'trialBlocks', p.Results.trialBlocks, ...
+                    'trialBlocks', trialBlocks, ...
                     'currentFlag', true, ...
                     'workerID', p.Results.workerID);
 isomerizationsTimeAxis = theMosaic.timeAxis + theOIsequence.timeAxis(1);

@@ -75,21 +75,24 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
         error('Unknown responseNormalization method: ''%s''.', responseNormalization);
     end
 
+    if (instancesToVisualize > instancesNum)
+        instancesToVisualize = instancesNum;
+    end
      
     if (isa(theMosaic, 'coneMosaicHex'))
-        for instanceIndex = 1:instancesNum
+        for instanceIndex = 1:instancesToVisualize
             if (instanceIndex==1)
                 tmp = squeeze(absorptions(instanceIndex,:,:));
                 if (timeBins == 1)
                     tmp = tmp';
                 end
                 tmp = theMosaic.reshapeHex2DmapToHex3Dmap(tmp);
-                absorptionsHex = zeros(instancesNum, size(tmp,1), size(tmp,2), size(tmp,3), 'single');
+                absorptionsHex = zeros(instancesToVisualize, size(tmp,1), size(tmp,2), size(tmp,3), 'single');
                 absorptionsHex(instanceIndex,:,:,:) = tmp;
                 
                 if (~isempty(photocurrents))
                     tmp = theMosaic.reshapeHex2DmapToHex3Dmap(squeeze(photocurrents(instanceIndex,:,:)));
-                    photocurrentsHex = zeros(instancesNum, size(tmp,1), size(tmp,2), size(tmp,3), 'single');
+                    photocurrentsHex = zeros(instancesToVisualize, size(tmp,1), size(tmp,2), size(tmp,3), 'single');
                     photocurrentsHex(instanceIndex,:,:,:) = tmp;
                 else
                   photocurrentsHex = [];
