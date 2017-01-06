@@ -74,7 +74,9 @@ fudgeFactor = 5;
 maxMemoryRequiredGBytes = fudgeFactor * 2*(numberOfCores * numel(theMosaic.pattern) * nTrials * sizeOfDoubleInBytes)/(1024^3);
 desiredTrialsPerBlock = floor(min([nTrials nTrials / (maxMemoryRequiredGBytes/ramSizeGBytes)]));
 trialBlocksForParforLoop = ceil(nTrials / desiredTrialsPerBlock);
-warndlg(sprintf('%d %2.3fGB %2.3fGB, desiredTrialsPerBlock = %d (nTrials=%d), trialBlocks = %d', numberOfCores, ramSizeGBytes, maxMemoryRequiredGBytes, desiredTrialsPerBlock, nTrials, trialBlocksForParforLoop));
+warndlg(...
+    sprintf('CoresNum = %d; SystemRAM = %2.2fGB; requiredRAM (all trials) = %2.2fGB', numberOfCores, ramSizeGBytes, maxMemoryRequiredGBytes), ...
+    sprintf('nTrials = %d, trialBlocksForParforLoop = %d', nTrials, trialBlocksForParforLoop));
     
 if (trialBlocks == -1)
     trialBlocks = trialBlocksForParforLoop;
