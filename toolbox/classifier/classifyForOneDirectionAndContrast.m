@@ -192,13 +192,17 @@ switch (thresholdParams.method)
         % likelihood under each class is approximately normal, so we plot
         % histograms and look.  It's pretty close, and the Geisler numbers
         % are quite close to what we get empirically above.
-        DO_GEISLER_VERSION = false;
+        DO_GEISLER_VERSION = true;
         if (DO_GEISLER_VERSION)
             alphaMean = noStimData.noiseFreeIsomerizations(:)';
             betaMean = stimData.noiseFreeIsomerizations(:)';
+            
+            % Get analytic ideal observer dPrime and fraction correct
             numerator = sum( (betaMean-alphaMean).*log(betaMean./alphaMean) );
             denominator = 0.5*sum( (betaMean+alphaMean).*(log(betaMean./alphaMean).^2) );
-            dprime = numerator / sqrt(denominator);
+            analyticDPrime = numerator / sqrt(denominator);
+            [analyticFractionCorrect,analyticDPrime] = analyticPoissonIdealObserver(alphaMean,betaMean);
+            
             for ii = 1:nTeObservations
                 if (teClasses(ii) == 0)
                     alphaData = teData(ii,1:size(teData,2)/2);
@@ -237,7 +241,7 @@ switch (thresholdParams.method)
                 empiricalHitRate(iii) = length(find(ZGivenBeta > criteria(iii))) / length(ZGivenBeta);
                 empiricalFARate(iii) = length(find(ZGivenAlpha > criteria(iii))) / length(ZGivenBeta);
             end
-            empiricalPercentCorrect = -trapz([1 empiricalFARate 0],[1 empiricalHitRate 0]);
+            empiricalFractionCorrect = -trapz([1 empiricalFARate 0],[1 empiricalHitRate 0]);
             subplot(1,3,3);
             plot([1 empiricalFARate 0],[1 empiricalHitRate 0],'r','LineWidth',4);
             xlabel('False Alarm Rate');
@@ -248,7 +252,7 @@ switch (thresholdParams.method)
             
             % Report percent correct
             fprintf('\td'': %2.2f (%2.2f), d'' percent correct %2.2f%%, percent correct from Z histo ROC%2.2f%%\n',...
-                dprime,dprimeEmpirical,dPrimeToTAFCPercentCorrect(dprime)*100,empiricalPercentCorrect*100);
+                analyticDPrime,dprimeEmpirical,analyticFractionCorrect*100,empiricalFractionCorrect*100);
         end
        
         % Final newline
