@@ -1,14 +1,14 @@
-function percentCorrect = dPrimeToTAFCPercentCorrect(dPrime)
-% percentCorrect = dPrimeToTAFCPercentCorrect(dPrime)
+function fractionCorrect = dPrimeToTAFCFractionCorrect(dPrime)
+% fractionCorrect = dPrimeToTAFCPercentFraction(dPrime)
 %
 % Get area under ROC curve for a normal distribution d-prime and from there
-% compute percent correct.
+% compute fraction correct.
 
 nCriteria = 1000;
 lowCriterion = -8;
 highCriterion = 8;
 
-percentCorrect = ComputeROCArea(dPrime,0,1,linspace(lowCriterion,highCriterion,nCriteria));
+fractionCorrect = ComputeROCArea(dPrime,0,1,linspace(lowCriterion,highCriterion,nCriteria));
     
 end
 

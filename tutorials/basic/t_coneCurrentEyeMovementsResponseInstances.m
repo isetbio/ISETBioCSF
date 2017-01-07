@@ -40,10 +40,6 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %   'trialBlocks' - How many blocks to split the testDirectionParams.trialsNum into. Default: 1 (no blocking). 
 %               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
 %               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
-%   'emPathType' - Value (one of: 'none', 'frozen', 'random') determines whether we have:
-%                  zero eye movements across all trials, 
-%                  an emPath that is frozen across all trials,
-%                  or a dynamic emPath that changes across trials.
 %   'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
 %   'compute' - true/false (default true).  Do the computations.
 %   'computeMosaic' - true/false (default true). Compute a cone mosaic or load one (good for large hex mosaics which take a while to compute)
@@ -51,7 +47,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %        visualizations.  Set to false when running big jobs on clusters or
 %        in parfor loops, as plotting doesn't seem to play well with those
 %        conditions.
-%   'visualizeResonses' - true/false (default true). Call the fancy visualize response routine?
+%   'visualizeResponses' - true/false (default true). Call the fancy visualize response routine?
 %   'visualizationFormat' - How to arrange visualized maps. 
 %       Available options: 'montage', 'video'. Default is 'montage'
 %   'visualizedResponseNormalization' - How to normalize visualized responses
@@ -67,7 +63,6 @@ p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
 p.addParameter('trialBlocks', 1, @isnumeric);
-%p.addParameter('emPathType','none',@ischar);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('computeMosaic', true, @islogical);
@@ -344,7 +339,7 @@ if (p.Results.compute)
 end
 
 %% Visualize
-if (p.Results.generatePlots & p.Results.visualizeResponses)
+if (p.Results.generatePlots && p.Results.visualizeResponses)
 
     % How many istances to visualize
     instancesToVisualize = 1:5;
