@@ -13,6 +13,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %      When false, it is the name of this script.
 %   'nTrainingSamples' - value (default 500).  Number of training samples to cycle through.
 %   'cyclesPerDegree' - vector (default [3 5 10 20 40]). Spatial frequencoes of grating to be investigated.
+%   'spatialPhaseDegs' - value (default 0).  Spatial phase of grating in degrees.
 %   'luminances' - vector (default [3.4 34 340]).  Luminances in cd/m2 to be investigated.
 %   'pupilDiamMm' - value (default 2).  Pupil diameter in mm.
 %   'blur' - true/false (default true). Incorporate lens blur.
@@ -47,6 +48,7 @@ p = inputParser;
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
 p.addParameter('nTrainingSamples',500,@isnumeric);
 p.addParameter('cyclesPerDegree',[3 5 10 20 40 50],@isnumeric);
+p.addParameter('spatialPhaseDegs',0,@isnumeric);
 p.addParameter('luminances',[3.4 34 340],@isnumeric);
 p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
@@ -98,6 +100,7 @@ for ll = 1:length(p.Results.luminances)
         rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...
             'windowType', 'halfcos', ...
             'cyclesPerDegree', cyclesPerDegree, ...
+            'ph', (pi/180)*p.Results.spatialPhaseDegs, ...
             'gaussianFWHMDegs', gaussianFWHMDegs, ...
             'fieldOfViewDegs', fieldOfViewDegs, ...
             'row', p.Results.imagePixels, ...
