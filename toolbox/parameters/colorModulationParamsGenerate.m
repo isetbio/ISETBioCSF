@@ -32,6 +32,9 @@ switch (colorModulationParams.modulationType )
     case 'monitor'
         colorModulationParams.contrast = 1;
         colorModulationParams.coneContrasts = [0.05 -0.05 0]';
+        colorModulationParams.startWl = 380;
+        colorModulationParams.endWl = 780;
+        colorModulationParams.deltaWl = 4;
     case 'AO'
         colorModulationParams.startWl = 550;
         colorModulationParams.endWl = 830;

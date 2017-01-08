@@ -25,6 +25,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %                     'hex', for a hex mosaic with an eccentricity-varying cone spacing
 %                     'hexReg' for a hex mosaic witha regular cone spacing
 %   'imagePixels' - value (default 400).  Size of image pixel array
+%   'wavelengths' - vector (default [380 4 780).  Start, delta, end wavelength sampling.
 %   'nContrastsPerDirection' - value (default 20). Number of contrasts.
 %   'lowContrast' - value (default 0.0001). Low contrast.
 %   'highContrast' - value (default 0.1). High contrast.
@@ -57,6 +58,7 @@ p.addParameter('apertureBlur', false, @islogical);
 p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
 p.addParameter('conePacking', 'hexReg');                 
 p.addParameter('imagePixels',400,@isnumeric);
+p.addParameter('wavelengths',[380 4 780],@isnumeric);
 p.addParameter('nContrastsPerDirection',20,@isnumeric);
 p.addParameter('lowContrast',0.0001,@isnumeric);
 p.addParameter('highContrast',0.1,@isnumeric);
@@ -105,6 +107,11 @@ for ll = 1:length(p.Results.luminances)
             'fieldOfViewDegs', fieldOfViewDegs, ...
             'row', p.Results.imagePixels, ...
             'col', p.Results.imagePixels);
+        
+        % Set wavelength sampling
+        rParams.colorModulationParams.startWl = p.Results.wavelengths(1);
+        rParams.colorModulationParams.deltaWl = p.Results.wavelengths(2);
+        rParams.colorModulationParams.endWl = p.Results.wavelengths(3);
         
         % Blur
         %
@@ -250,7 +257,7 @@ if (nargout > 0)
     extraData.p.Results = p.Results;
 end
 
-%% Make a plot of estimated threshold versus training set size
+%% Make a plot of CSFs
 %
 % The way the plot is coded counts on the test contrasts never changing
 % across the conditions, which we could explicitly check for here.

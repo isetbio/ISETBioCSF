@@ -1,4 +1,4 @@
-function varargout = v_BanksEtAlReplicate(varargin)
+close alfunction varargout = v_BanksEtAlReplicate(varargin)
 % varargout = v_BanksEtAlReplicate(varargin)
 %
 % Works by running t_coneIsomerizationsMovie with various arguments and comparing
@@ -46,13 +46,19 @@ end
 % case, taking out the optical blur for case 3 above takes sensitivity to
 % 1006, from 750, which is the correct direction for 10 cpd.
 %
-% The numbers above are before I switched the maximum likelihood
-% classifier calculation from using poisspdf to a calculation that takes
-% advantage of the analytic form of the Poisson pdf. Set ANALYTIC_LIKELY to
-% false in classifyForOneDirectionAndContrast to get the old behavior.  It
-% is now set to true.  I have also subsequently reduced the number of
-% contrasts that the routine computes for -- go back to defaults to produce
-% old behavior exactly.
+% The numbers above are before I switched the maximum likelihood classifier
+% calculation from using poisspdf to a calculation that takes advantage of
+% the analytic form of the Poisson pdf. Set ANALYTIC_LIKELY to false in
+% classifyForOneDirectionAndContrast to get the old behavior.  It is now
+% set to true.  I have also subsequently reduced the number of contrasts
+% that the routine computes for -- go back to defaults to produce old
+% behavior exactly.
+%
+% Also reduced wavelength sampling and number of training samples for speed
+% in the validation Original values are [380 4 780] and 100, for comparison
+% with numbers above.  The wavelength sampling actually matters in terms of
+% the threshold you get.  Finally changed to 20 cpd from 10 cpd because
+% this is a smaller number of cones and thus also makes things run faster.
 
 %% Function implementing the isetbio validation code
 function ValidationFunction(runTimeParams)
@@ -76,6 +82,7 @@ function ValidationFunction(runTimeParams)
         params.thresholdCriterionFraction = 0.75;
         params.freezeNoise = true;
         params.useTrialBlocks = false;
+        params.wavelengths = [400 20 700];
     
     % This runs with old parameters.  Probably don't need it anymore, as I
     % added this case to the main validation file.  The notes may be of
@@ -103,24 +110,24 @@ function ValidationFunction(runTimeParams)
         [validationData1, extraData1] = c_BanksEtAlReplicate(params, ...
             'useScratchTopLevelDirName',true, 'generatePlots',runTimeParams.generatePlots, ...
             'conePacking','hexReg','innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(3),'coneSpacingMicrons', 3.0, ...
-            'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',2,...
-            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log');
+            'cyclesPerDegree',20,'luminances',340,'pupilDiamMm',2,...
+            'nContrastsPerDirection',4,'lowContrast',0.005,'highContrast',0.1,'contrastScale','log');
         UnitTest.validationData('validationData1',validationData1);
         UnitTest.extraData('extraData1',extraData1);
 
         [validationData2, extraData2] = c_BanksEtAlReplicate(params, ...
             'useScratchTopLevelDirName',true, 'generatePlots',runTimeParams.generatePlots, ...
             'conePacking','hexReg','innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(3),'coneSpacingMicrons', 3.0, ...
-            'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',4,...
-            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log');
+            'cyclesPerDegree',20,'luminances',340,'pupilDiamMm',4,...
+            'nContrastsPerDirection',4,'lowContrast',0.005,'highContrast',0.1,'contrastScale','log');
         UnitTest.validationData('validationData2',validationData2);
         UnitTest.extraData('extraData2',extraData2);
         
         [validationData3, extraData3] = c_BanksEtAlReplicate(params, ...
             'useScratchTopLevelDirName',true,'generatePlots',runTimeParams.generatePlots, ...
             'conePacking','rect','innerSegmentSizeMicrons',1.4,'coneSpacingMicrons',2, ...
-            'cyclesPerDegree',10,'luminances',340,'pupilDiamMm',3, ...
-            'nContrastsPerDirection',4,'lowContrast',0.0005,'highContrast',0.01,'contrastScale','log');
+            'cyclesPerDegree',20,'luminances',340,'pupilDiamMm',3, ...
+            'nContrastsPerDirection',4,'lowContrast',0.005,'highContrast',0.1,'contrastScale','log');
         UnitTest.validationData('validationData3',validationData3);
         UnitTest.extraData('extraData3',extraData3);
     else
