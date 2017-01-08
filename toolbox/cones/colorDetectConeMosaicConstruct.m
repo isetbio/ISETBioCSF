@@ -24,13 +24,14 @@ if (ischar(mosaicParams.conePacking))
         spatiallyVaryingConeDensity = true;        % spatially-varying density (at the mosaic's eccentricity)
         
         theMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, [], ...
-                           'center', centerInMM*1e-3, ...
-                   'spatialDensity', [0 mosaicParams.LMSRatio]' ...
-                );
+            'center', centerInMM*1e-3, ...
+            'spatialDensity', [0 mosaicParams.LMSRatio]', ...
+            'rotationDegrees', mosaicParams.mosaicRotationDegs ...
+            );
         % Set the pigment light collecting dimensions
         theMosaic.pigment.pdWidth = mosaicParams.innerSegmentSizeMicrons*1e-6;
         theMosaic.pigment.pdHeight = mosaicParams.innerSegmentSizeMicrons*1e-6;
-           
+        
     elseif (strcmp(mosaicParams.conePacking, 'hexReg'))
         resamplingFactor = 6;
         centerInMM = [0.0 0.0];                    % mosaic eccentricity in MM - this should obey mosaicParams.eccentricityDegs, but it does not do so yet
@@ -39,10 +40,11 @@ if (ischar(mosaicParams.conePacking))
         % match cone-spacing to inner segment diameter
         customLambda = mosaicParams.coneSpacingMicrons;
         theMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, customLambda, ...
-                                   'center', centerInMM*1e-3, ...
-                           'spatialDensity', [0 mosaicParams.LMSRatio]' ...
-                        );  
-                    
+            'center', centerInMM*1e-3, ...
+            'spatialDensity', [0 mosaicParams.LMSRatio]', ...
+            'rotationDegs', mosaicParams.mosaicRotationDegs ...
+            );
+        
         % Set the pigment light collecting dimensions
         theMosaic.pigment.pdWidth = mosaicParams.innerSegmentSizeMicrons*1e-6;
         theMosaic.pigment.pdHeight = mosaicParams.innerSegmentSizeMicrons*1e-6;
@@ -74,6 +76,9 @@ end
 
 % Set whether to blur by cone aperture
 theMosaic.apertureBlur = mosaicParams.apertureBlur;
+
+% Set dark noise
+theMosaic.coneDarkNoiseRate = mosaicParams.coneDarkNoiseRate;
 
 % Set the outer segment model
 if strcmp(mosaicParams.osModel, 'Linear')

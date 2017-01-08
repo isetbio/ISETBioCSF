@@ -20,6 +20,9 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'innerSegmentSizeMicrons' - Diameter of the cone light-collecting area, in microns 
 %       Default: sizeForSquareApertureFromDiameterForCircularAperture(3.0), where 3 microns = 6 min arc for 300 mirons/degree in the human retina.
 %   'apertureBlur' - Blur by cone aperture? true/false (default false).
+%   'coneSpacingMicrons' - Cone spacing in microns (3).
+%   'mosaicRotationDegs' - Rotation of hex or hexReg mosaic in degrees (default 0).
+%   'coneDarkNoiseRate' - Vector of LMS dark (thermal) isomerization rate iso/sec (default [0,0,0]).
 %   'conePacking'   - how cones are packed spatially. 
 %       Choose from : 'rect', for a rectangular mosaic
 %                     'hex', for a hex mosaic with an eccentricity-varying cone spacing
@@ -56,6 +59,8 @@ p.addParameter('blur',true,@islogical);
 p.addParameter('innerSegmentSizeMicrons',sizeForSquareApertureFromDiameterForCircularAperture(3.0), @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
 p.addParameter('apertureBlur', false, @islogical);
 p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
+p.addParameter('mosaicRotationDegs', 0, @isnumeric);
+p.addParameter('coneDarkNoiseRate',[0 0 0], @isnumeric);
 p.addParameter('conePacking', 'hexReg');                 
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('wavelengths',[380 4 780],@isnumeric);
@@ -154,6 +159,8 @@ for ll = 1:length(p.Results.luminances)
             'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs, ...  
             'innerSegmentSizeMicrons',p.Results.innerSegmentSizeMicrons, ...
             'apertureBlur',p.Results.apertureBlur, ...
+            'mosaicRotationDegs',p.Results.mosaicRotationDegs,...
+            'coneDarkNoiseRate',p.Results.coneDarkNoiseRate,...
             'coneSpacingMicrons', p.Results.coneSpacingMicrons, ...
             'conePacking', p.Results.conePacking, ...
         	'integrationTimeInSeconds', rParams.temporalParams.stimulusDurationInSeconds, ...
