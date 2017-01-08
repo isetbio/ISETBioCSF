@@ -1,4 +1,4 @@
-close alfunction varargout = v_BanksEtAlReplicate(varargin)
+function varargout = v_BanksEtAlReplicate(varargin)
 % varargout = v_BanksEtAlReplicate(varargin)
 %
 % Works by running t_coneIsomerizationsMovie with various arguments and comparing
@@ -78,7 +78,7 @@ function ValidationFunction(runTimeParams)
         params.fitPsychometric = true;
         params.blur = true;
         params.apertureBlur = false;
-        params.nTrainingSamples = 100;
+        params.nTrainingSamples = 50;
         params.thresholdCriterionFraction = 0.75;
         params.freezeNoise = true;
         params.useTrialBlocks = false;
