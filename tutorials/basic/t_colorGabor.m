@@ -1,37 +1,39 @@
 function validationData = t_colorGabor(varargin)
-% validationData = t_colorGabor(varargin)
+% T_COLORGABOR  Calculate cone isomerizations for a static color Gabor modulation.
+%     validationData = T_COLORGABOR(varargin)
+% 
+%     Illustrates the basic steps required to calculate cone isomerizations
+%     for a static color Gabor modulation.
+% 
+%     Create a scene with a color gabor patch with color directions
+%     specified as L, M, and S cone contrasts.  The scene will produce
+%     a Gabor with these contrasts on a specified monitor.  Then passes the
+%     scene through the optics and a cone mosaic and gets the isomerizations at
+%     each cone.
+% 
+%     If parameters structure is not passed, the routine will use the defaults
+%     provided by
+%       responseParamsGenerate
+%     That function and its subfunctions also documents what the relavant parameters are.
+% 
+%     The returned validation structure allows this routine to be called from a
+%     validation script driven by the UnitTest toolbox.
+% 
+%     The tutorial produces output according to a scheme controlled by the
+%     specified IBIOColorDetect rwObject.
+% 
+%     Optional key/value pairs
+%      'rParams' - Value the is the rParams structure to use.  Default empty,
+%         which then uses defaults produced by generation function.
+%      'generatePlots' - true/false (default true).  Make plots?
+%      'setRngSeed' - true/false (default true). When true, set the rng seed so noise is frozen.
+%      'hexMosaic' - true/false (default false). Use a hexagonal mosaic, rather than a rectangular mosaic.
+%      'wavelengths' - vector (default [400 10 700]). Start, delta, end wavelength sampling.
+%        This parameter (including its default) overrides what is in
+%        rParams, whether that is passed or obtained via
+%        RESPONSEPARAMSGENERATE.
 %
-% Illustrates the basic steps required to calculate cone isomerizations
-% for a static color Gabor modulation.
-%
-% Create a scene with a color gabor patch with color directions
-% specified as L, M, and S cone contrasts.  The scene will produce
-% a Gabor with these contrasts on a specified monitor.  Then passes the
-% scene through the optics and a cone mosaic and gets the isomerizations at
-% each cone.
-%
-% If parameters structure is not passed, the routine will use the defaults
-% provided by
-%   responseParamsGenerate
-% That function and its subfunctions also documents what the relavant parameters are.
-%
-% The returned validation structure allows this routine to be called from a
-% validation script driven by the UnitTest toolbox.
-%
-% The tutorial produces output according to a scheme controlled by the
-% specified IBIOColorDetect rwObject.
-%
-% See also:
-%	t_coneIsomerrizationsMovie
-%   responseParamsGenerate
-%   colorSceneCreate
-%
-% Optional key/value pairs
-%  'rParams' - Value the is the rParams structure to use.  Default empty,
-%     which then uses defaults produced by generation function.
-%  'generatePlots' - true/false (default true).  Make plots?
-%  'setRngSeed' - true/false (default true). When true, set the rng seed so noise is frozen.
-%  'hexMosaic' - true/false (default false). Use a hexagonal mosaic, rather than a rectangular mosaic.
+%     See also T_CONEISOMERIZATIONSMOVIE RESPONSEPARAMSGENERATE COLORSCENECREATE
 
 %% Parse vargin for options passed here
 p = inputParser;
@@ -39,6 +41,7 @@ p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('setRngSeed',true,@islogical);
 p.addParameter('hexMosaic',false,@islogical);
+p.addParameter('wavelengths',[400 10 700],@isnumeric);
 p.parse(varargin{:});
 rParams = p.Results.rParams;
 
@@ -54,14 +57,20 @@ end
 
 %% Get the parameters we need
 %
-% t_colorGaborResponseGenerationParams returns a hierarchical struct of
+% Furnction responseParamsGenerate returns a hierarchical struct of
 % parameters used by a number of tutorials and functions in this project.
+% These provide reasonable defaults.
 if (nargin < 1 | isempty(rParams))
     rParams = responseParamsGenerate;
     if (p.Results.hexMosaic)
         rParams.mosaicParams.conePacking = 'hex';
     end
 end
+
+%% Override wavelength parameters with specification
+rParams.colorModulationParams.startWl = p.Results.wavelengths(1);
+rParams.colorModulationParams.deltaWl = p.Results.wavelengths(2);
+rParams.colorModulationParams.endWl = p.Results.wavelengths(3);
 
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;

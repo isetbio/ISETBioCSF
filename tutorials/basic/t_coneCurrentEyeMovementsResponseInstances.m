@@ -1,62 +1,57 @@
 function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstances(varargin)
-% [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstances(varargin)
-%
-% Show how to generate a number of response instances for a given stimulus
-% condition.  The default parameters are set up to generate just a single frame
-% of the response, but the same tutorial can do temporal sequences with other
-% parameter choices.
-%
-% This tutorial relies on routine
-%   colorDetectResponseInstanceFastArrayConstruct
-% which does most of the hard work.  The basic principles underlying colorDetectResponseInstanceFastArrayConstruct
-% itself is demonstrated in tutorial
-%   t_coneCurrentEyeMovementsMovie
-% but the actual routine has some tricks to make it go fast.  There is also
-% are routine
-%   colorDetectResponseInstanceArrayConstruct
-% that works more like the tutorial but is slower.
-%
-% This tutorial saves its output in a .mat file, which cah then read in by
-%   t_colorDetectFindPerformance
-% which shows how to use the data to find the thresholds.
-%
-% The returned validation structure allows this routine to be called from a
-% validation script driven by the UnitTest toolbox.
-%
-% The tutorial produces output according to a scheme controlled by the
-% specified IBIOColorDetect rwObject.
-%
-% See also:
-%   t_colorGaborRespnseGenerationParams
-%   t_coneCurrentEyeMovementsMovie
-%	t_colorDetectFindPerformance
-%   colorDetectResponseInstanceArrayConstruct
-%   colorDetectResponseInstanceFastArrayConstruct
-%
-% Key/value pairs
-%  'rParams' - Value the is the rParams structure to use.  Default empty,
+% T_CONECURRENTEYEMOVEMENTRESPONSES  Generate response instances for a given stimulus condition.
+%     [validationData, extraData] = T_CONECURRENTEYEMOVEMENTRESPONSES(varargin)
+% 
+%     Show how to generate a number of response instances for a given
+%     stimulus condition.  The default parameters are set up to generate
+%     just a single frame of the response, but the same tutorial can do
+%     temporal sequences with other parameter choices.
+% 
+%     This tutorial relies on routine
+%     colorDetectResponseInstanceFastArrayConstruct which does most of the
+%     hard work.  The basic principles underlying
+%     colorDetectResponseInstanceFastArrayConstruct itself is demonstrated
+%     in tutorial t_coneCurrentEyeMovementsMovie but the actual routine has
+%     some tricks to make it go fast.  There is also are routine
+%     colorDetectResponseInstanceArrayConstruct that works more like the
+%     tutorial but is slower.
+% 
+%     This tutorial saves its output in a .mat file, which cah then read in
+%     by t_colorDetectFindPerformance which shows how to use the data to
+%     find the thresholds.
+% 
+%     The returned validation structure allows this routine to be called
+%     from a validation script driven by the UnitTest toolbox.
+% 
+%     The tutorial produces output according to a scheme controlled by the
+%     specified IBIOColorDetect rwObject.
+% 
+%     Key/value pairs
+%     'rParams' - Value the is the rParams structure to use.  Default empty,
 %     which then uses defaults produced by generation function.
-%   'testDirectionParams - Value is the testDirectionParams structure to use
-%   'trialBlocks' - How many blocks to split the testDirectionParams.trialsNum into. Default: 1 (no blocking). 
+%     'testDirectionParams - Value is the testDirectionParams structure to use
+%     'trialBlocks' - How many blocks to split the testDirectionParams.trialsNum into. Default: 1 (no blocking). 
 %               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
 %               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
-%   'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
-%   'compute' - true/false (default true).  Do the computations.
-%   'computeMosaic' - true/false (default true). Compute a cone mosaic or load one (good for large hex mosaics which take a while to compute)
-%   'generatePlots' - true/false (default false).  Produce response
+%     'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
+%     'compute' - true/false (default true).  Do the computations.
+%     'computeMosaic' - true/false (default true). Compute a cone mosaic or load one (good for large hex mosaics which take a while to compute)
+%     'generatePlots' - true/false (default false).  Produce response
 %        visualizations.  Set to false when running big jobs on clusters or
 %        in parfor loops, as plotting doesn't seem to play well with those
 %        conditions.
-%   'visualizeResponses' - true/false (default true). Call the fancy visualize response routine?
-%   'visualizationFormat' - How to arrange visualized maps. 
+%     'visualizeResponses' - true/false (default true). Call the fancy visualize response routine?
+%     'visualizationFormat' - How to arrange visualized maps. 
 %       Available options: 'montage', 'video'. Default is 'montage'
-%   'visualizedResponseNormalization' - How to normalize visualized responses
+%     'visualizedResponseNormalization' - How to normalize visualized responses
 %        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
-%   'exportPDF' - true/false (default true).  If visualizing responses,
+%     'exportPDF' - true/false (default true).  If visualizing responses,
 %        export the PDF files.
-%   'delete' - true/false (default true).  Delete the response instance
+%     'delete' - true/false (default true).  Delete the response instance
 %        files.  Useful for cleaning up big output when we are done with
 %        it.  If this is true, output files are deleted at the end.
+%
+%     See also: T_COLORDETECTFINDPERFORMANCE COLORDETECTRESPONSEINSTANCEFASTARRAYCONSTRUCT
 
 %% Parse input
 p = inputParser;
@@ -118,14 +113,14 @@ end
     
 %% Fix random number generator so we can validate output exactly
 if (p.Results.freezeNoise)
-     fprintf(2, '\n%s: freezing all noise \n', mfilename);
+     fprintf(1, '\n%s: freezing all noise \n', mfilename);
      rng(1);
      if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
-         fprintf(2, '\tmosaicParams.isomerizationNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.isomerizationNoise);
+         fprintf(1, '\tmosaicParams.isomerizationNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.isomerizationNoise);
          rParams.mosaicParams.isomerizationNoise = 'frozen';
      end
      if (strcmp(rParams.mosaicParams.osNoise, 'random'))
-         fprintf(2, '\tmosaicParams.osNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.osNoise);
+         fprintf(1, '\tmosaicParams.osNoise was set to ''%s'', setting it to ''frozen''.\n', rParams.mosaicParams.osNoise);
          rParams.mosaicParams.osNoise = 'frozen';
      end
 end

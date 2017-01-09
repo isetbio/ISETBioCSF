@@ -151,15 +151,19 @@ switch (colorModulationParams.modulationType)
         % Set the viewing distance
         display = displaySet(display,'viewingdistance', spatialParams.viewingDistance);
         
+        % Reset the display wavelengths, because everything else follows on
+        % this.
+        newWls = colorModulationParams.startWl:colorModulationParams.deltaWl:colorModulationParams.endWl;
+        display = displaySet(display,'wave',newWls);
+        
         % Get display channel spectra.  The S vector displayChannelS is PTB format
         % for specifying wavelength sampling: [startWl deltaWl nWlSamples],
         displayChannelWavelengths = displayGet(display,'wave');
         displayChannelS = WlsToS(displayChannelWavelengths);
         displayChannelSpectra = displayGet(display,'spd');
         
-        % Spline XYZ and cones to same wavelength sampling as display
+        % Spline cones to same wavelength sampling as display
         T_conesForDisplay = SplineCmf(S_cones,T_cones,displayChannelWavelengths);
-        % T_XYZForDisplay = SplineCmf(S_XYZ,T_XYZ,displayChannelWavelengths);
         
         % Find the matrix that converts between linear channel weights (called
         % "primary" in PTB lingo) and LMS excitations, and its inverse.  Multiplication by
