@@ -152,12 +152,12 @@ function trialBlocksForParforLoop = computeTrialBlocksForParforLoop(nTrials, con
 
     % Increasing it, decreases the RAM pressure
     fudgeFactor = 3.75;
-    singleTrialMemoryGBytes = fudgeFactor * 2* numberOfCores * (coneMosaicPatternSize * sizeOfDoubleInBytes + coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2)/(1024^3)
-    desiredTrialsPerBlock = ramSizeGBytes/singleTrialMemoryGBytes
+    singleTrialMemoryGBytes = fudgeFactor * 2* numberOfCores * (coneMosaicPatternSize * sizeOfDoubleInBytes + coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2)/(1024^3);
+    desiredTrialsPerBlock = ramSizeGBytes/singleTrialMemoryGBytes;
     if (desiredTrialsPerBlock > nTrials)
         desiredTrialsPerBlock = nTrials;
     end
-    trialBlocksForParforLoop = floor(nTrials / desiredTrialsPerBlock)
+    trialBlocksForParforLoop = floor(nTrials / desiredTrialsPerBlock);
     
     displayTrialBlockInfo = true;
     if (displayTrialBlockInfo)
@@ -168,12 +168,12 @@ function trialBlocksForParforLoop = computeTrialBlocksForParforLoop(nTrials, con
             if (iTrialBlock == trialBlocksForParforLoop)
                 lastTrial = nTrials;
             end
-            [iTrialBlock firstTrial lastTrial lastTrial-firstTrial+1]
+            %[iTrialBlock firstTrial lastTrial lastTrial-firstTrial+1]
         end
     end
     
-    warndlg(...
-        sprintf('CoresNum = %d; SystemRAM = %2.2fGB; estimated peak RAM = %2.2fGB', numberOfCores, ramSizeGBytes, trialBlockSize*singleTrialMemoryGBytes), ...
-        sprintf('nTrials = %d, trialBlocksForParforLoop = %d', nTrials, trialBlocksForParforLoop));
+    %warndlg(...
+    %    sprintf('CoresNum = %d; SystemRAM = %2.2fGB; estimated peak RAM = %2.2fGB', numberOfCores, ramSizeGBytes, trialBlockSize*singleTrialMemoryGBytes), ...
+    %    sprintf('nTrials = %d, trialBlocksForParforLoop = %d', nTrials, trialBlocksForParforLoop));
     
 end

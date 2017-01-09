@@ -13,6 +13,7 @@ p.addParameter('nTrainingSamples',500,@isnumeric);
 p.addParameter('imagePixels',500, @isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
+p.addParameter('visualizeResponses',true,@islogical);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('findPerformance',true,@islogical);
@@ -115,12 +116,44 @@ if (p.Results.computeResponses)
           'trialBlocks', trialBlocks, ...
           'freezeNoise',p.Results.freezeNoise, ...
           'generatePlots',p.Results.generatePlots, ...
-          'visualizeResponses', true, ...
+          'visualizeResponses', false, ...
           'workerID', 1);
     tEnd = clock;
     timeLapsed = etime(tEnd,tBegin);
     fprintf('Compute took %f minutes \n', timeLapsed/60);
 end
+
+%% Compute response instances
+if (p.Results.visualizeResponses)
+
+    % How many istances to visualize
+    instancesToVisualize = 5;
+    
+    % Load the mosaic
+    coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
+    theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
+         
+    % Load the response and ancillary data
+    paramsList = constantParamsList;
+    paramsList{numel(paramsList)+1} = colorModulationParamsNull;    
+    noStimData = rwObject.read('responseInstances',paramsList,theProgram);
+    ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
+    
+    rParams = ancillaryData.rParams;
+    parforConditionStructs = ancillaryData.parforConditionStructs;
+    nParforConditions = length(parforConditionStructs); 
+    for kk = 1:nParforConditions 
+         thisConditionStruct = parforConditionStructs{kk};
+         colorModulationParamsTemp = rParams.colorModulationParams;
+         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
+         colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
+
+         paramsList = constantParamsList;
+         paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
+         stimData = rwObject.read('responseInstances',paramsList,theProgram);
+         visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, instancesToVisualize, p.Results.visualizationFormat);
+    end
+end % visualizeResponses
 
 %% Find performance, template max likeli
 thresholdParams.method = 'mlpt';
