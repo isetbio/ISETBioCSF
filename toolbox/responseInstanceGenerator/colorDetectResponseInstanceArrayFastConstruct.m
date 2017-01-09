@@ -67,19 +67,10 @@ theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, ...
 eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theMosaic.integrationTime);
 theEMpaths = colorDetectMultiTrialEMPathGenerate(theMosaic, nTrials, eyeMovementsNum, temporalParams.emPathType, 'seed', currentSeed);
 
-
+trialBlocks = computeTrialBlocksForParforLoop(nTrials, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), eyeMovementsNum);
 % Determine optimal trialBlocks
-fudgeFactor = 5;
-[numberOfCores, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
-maxMemoryRequiredGBytes = fudgeFactor * 2*(numberOfCores * numel(theMosaic.pattern) * nTrials * sizeOfDoubleInBytes)/(1024^3);
-desiredTrialsPerBlock = floor(min([nTrials nTrials / (maxMemoryRequiredGBytes/ramSizeGBytes)]));
-trialBlocksForParforLoop = ceil(nTrials / desiredTrialsPerBlock);
-warndlg(...
-    sprintf('CoresNum = %d; SystemRAM = %2.2fGB; requiredRAM (all trials) = %2.2fGB', numberOfCores, ramSizeGBytes, maxMemoryRequiredGBytes), ...
-    sprintf('nTrials = %d, trialBlocksForParforLoop = %d', nTrials, trialBlocksForParforLoop));
-    
 if (trialBlocks == -1)
-    trialBlocks = trialBlocksForParforLoop;
+    trialBlocks = computeTrialBlocksForParforLoop(nTrials, numel(theMosaic.pattern));
 end
 
 [isomerizations, photocurrents] = ...
@@ -150,4 +141,39 @@ end
 %% Report time taken
 fprintf('Response instance array generation (%d instances) took %2.3f minutes to compute.\n', nTrials, toc/60);
 
+end
+
+
+
+function trialBlocksForParforLoop = computeTrialBlocksForParforLoop(nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, emPathLength)
+        
+    % Determine system resources
+    [numberOfCores, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
+
+    % Increasing it, decreases the RAM pressure
+    fudgeFactor = 3.75;
+    singleTrialMemoryGBytes = fudgeFactor * 2* numberOfCores * (coneMosaicPatternSize * sizeOfDoubleInBytes + coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2)/(1024^3)
+    desiredTrialsPerBlock = ramSizeGBytes/singleTrialMemoryGBytes
+    if (desiredTrialsPerBlock > nTrials)
+        desiredTrialsPerBlock = nTrials;
+    end
+    trialBlocksForParforLoop = floor(nTrials / desiredTrialsPerBlock)
+    
+    displayTrialBlockInfo = true;
+    if (displayTrialBlockInfo)
+        trialBlockSize = floor(nTrials/trialBlocksForParforLoop);
+        for iTrialBlock = 1:trialBlocksForParforLoop
+            firstTrial = trialBlockSize*(iTrialBlock-1) + 1;
+            lastTrial = trialBlockSize*(iTrialBlock-1) + trialBlockSize;
+            if (iTrialBlock == trialBlocksForParforLoop)
+                lastTrial = nTrials;
+            end
+            [iTrialBlock firstTrial lastTrial lastTrial-firstTrial+1]
+        end
+    end
+    
+    warndlg(...
+        sprintf('CoresNum = %d; SystemRAM = %2.2fGB; estimated peak RAM = %2.2fGB', numberOfCores, ramSizeGBytes, trialBlockSize*singleTrialMemoryGBytes), ...
+        sprintf('nTrials = %d, trialBlocksForParforLoop = %d', nTrials, trialBlocksForParforLoop));
+    
 end
