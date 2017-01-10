@@ -27,10 +27,12 @@ p.addParameter('seed',1, @isnumeric);
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('useSinglePrecision',true,@islogical);
 p.addParameter('trialBlocks', 1, @isnumeric);
+p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
+
 p.parse(varargin{:});
 currentSeed = p.Results.seed;
 trialBlocks = p.Results.trialBlocks;
-
+displayTrialBlockPartitionDiagnostics = p.Results.displayTrialBlockPartitionDiagnostics;
 %% Start computation time measurement
 tic
 
@@ -69,17 +71,9 @@ theEMpaths = colorDetectMultiTrialEMPathGenerate(theMosaic, nTrials, eyeMovement
 
 
 % Determine optimal trialBlocks
-fudgeFactor = 5;
-[numberOfCores, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
-maxMemoryRequiredGBytes = fudgeFactor * 2*(numberOfCores * numel(theMosaic.pattern) * nTrials * sizeOfDoubleInBytes)/(1024^3);
-desiredTrialsPerBlock = floor(min([nTrials nTrials / (maxMemoryRequiredGBytes/ramSizeGBytes)]));
-trialBlocksForParforLoop = ceil(nTrials / desiredTrialsPerBlock);
-%warndlg(...
-%    sprintf('CoresNum = %d; SystemRAM = %2.2fGB; requiredRAM (all trials) = %2.2fGB', numberOfCores, ramSizeGBytes, %maxMemoryRequiredGBytes), ...
-%    sprintf('nTrials = %d, trialBlocksForParforLoop = %d', nTrials, trialBlocksForParforLoop));
-    
+computeTrialBlocksForParforLoop(nTrials, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), eyeMovementsNum, displayTrialBlockPartitionDiagnostics);
 if (trialBlocks == -1)
-    trialBlocks = trialBlocksForParforLoop;
+    trialBlocks = computeTrialBlocksForParforLoop(nTrials, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), eyeMovementsNum, displayTrialBlockPartitionDiagnostics);
 end
 
 [isomerizations, photocurrents] = ...
@@ -150,4 +144,52 @@ end
 %% Report time taken
 fprintf('Response instance array generation (%d instances) took %2.3f minutes to compute.\n', nTrials, toc/60);
 
+end
+
+
+
+function trialBlocksForParforLoop = computeTrialBlocksForParforLoop(nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, emPathLength, displayDiagnostics)
+        
+    % Determine system resources
+    [numberOfCores, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
+
+    % If RAMcompressionFactor is too low, we are under-utilizing the
+    % availabe RAM, and performance is sub-optimal in a parfor loop.
+    % If RAMcompressionFactor is too high, we are swapping to the disk too
+    % much and performance becomes sub-optimal, and eventually we get an
+    % out-of-memory crash. 
+    % RAMcompressionFactor should be tuned so that it is high enough that 
+    % the system does a very small amount of RAM compression. Use
+    % ActivityMonitor to monitor memory compression.
+    % I have tested on 3 systems: a 16GB macbook, a 32GM iMac and a 64GB MacPro. 
+    % 1. MacbookPro with 16GB RAM. 512 instances. 
+    %    0.28 with Peak compressed RAM: 3.0 GB (medium Green)
+    RAMcompressionFactor = 0.28;
+    
+    % 2. iMac with 32 GB RAM. 1024 instances. 
+    %    0.35 OK
+    %    0.40 Results in 13 GB peak compressed RAM and 29 GB Swap. Also starting to get system run out of memory errors.
+    % Next to try for the iMac: RAMcompressionFactor = 0.37;
+
+    % Compute trialBlocksForParforLoop
+    singleTrialMemoryGBytes = 2*numberOfCores*(coneMosaicPatternSize*sizeOfDoubleInBytes + coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2)/(1024^3)/RAMcompressionFactor;
+    desiredTrialsPerBlock = ramSizeGBytes/singleTrialMemoryGBytes;
+    if (desiredTrialsPerBlock > nTrials)
+        desiredTrialsPerBlock = nTrials;
+    end
+    trialBlocksForParforLoop = floor(nTrials / desiredTrialsPerBlock);
+    
+    % Display nTrial partitioning into blocks
+    if (displayDiagnostics)
+        [trialBlockSize, blockedTrialIndices] = computeBlockedTrialIndices(trialBlocksForParforLoop, nTrials);
+        for iTrialBlock = 1:numel(blockedTrialIndices)
+            trialIndicesForThisBlock = blockedTrialIndices{iTrialBlock};
+            firstTrial = trialIndicesForThisBlock(1);
+            lastTrial = trialIndicesForThisBlock(end);
+            fprintf('trialBlock%d contains %d trials: %04d - %04d (%d)\n', iTrialBlock, numel(trialIndicesForThisBlock), firstTrial, lastTrial);
+        end
+        warndlg(...
+            sprintf('CoresNum = %d; SystemRAM = %2.2fGB; estimated peak RAM = %2.2fGB', numberOfCores, ramSizeGBytes, trialBlockSize*singleTrialMemoryGBytes), ...
+            sprintf('nTrials = %d, trialBlocksForParforLoop = %d', nTrials, trialBlocksForParforLoop));
+    end
 end

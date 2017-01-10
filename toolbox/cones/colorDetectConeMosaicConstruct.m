@@ -100,14 +100,6 @@ end
 
 % Integration time
 if (isfield(mosaicParams, 'integrationTimeInSeconds'))
-    warningIntegrationTimeInSeconds = 25/1000;
-    if (mosaicParams.integrationTimeInSeconds > warningIntegrationTimeInSeconds)
-        fprintf(2, '\n\n=====================================================================\n');
-        fprintf(2, 'Setting coneMosaic.integrationTime to %2.3f\n', mosaicParams.integrationTimeInSeconds);
-        fprintf(2, 'Warning: Setting the coneMosaic.integrationTime > %2.3f is\n', warningIntegrationTimeInSeconds);
-        fprintf(2, 'NOT recommended if you are interested in photocurrent computations.\n');
-        fprintf(2, '=====================================================================\n');
-    end
     theMosaic.integrationTime = mosaicParams.integrationTimeInSeconds;
 end
 

@@ -233,7 +233,7 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
            'bottomMargin',   0.03, ...
            'topMargin',      0.03);
     
-        for instanceIndex = instancesToVisualize
+        for instanceIndex = 1:instancesToVisualize
          for tBin = 1: numel(absorptionsTimeAxis)  
              
             % Instance absorptions on the left

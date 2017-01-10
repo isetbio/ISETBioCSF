@@ -33,6 +33,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %     'trialBlocks' - How many blocks to split the testDirectionParams.trialsNum into. Default: 1 (no blocking). 
 %               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
 %               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
+%     'displayTrialBlockPartitionDiagnostics', true/false. Wether to display trial block diagnostics.
 %     'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
 %     'compute' - true/false (default true).  Do the computations.
 %     'computeMosaic' - true/false (default true). Compute a cone mosaic or load one (good for large hex mosaics which take a while to compute)
@@ -58,6 +59,7 @@ p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
 p.addParameter('trialBlocks', 1, @isnumeric);
+p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('computeMosaic', true, @islogical);
@@ -73,6 +75,7 @@ rParams = p.Results.rParams;
 testDirectionParams = p.Results.testDirectionParams;
 visualizationFormat = p.Results.visualizationFormat;
 
+% Ensure visualizationFormat has a valid value
 if (strcmp(visualizationFormat, 'montage')) || (strcmp(visualizationFormat, 'video'))
 else
     error('visualizationFormat must be set to either ''montage'' or ''video''. Current value: ''%s''.', visualizationFormat);
@@ -155,7 +158,7 @@ if (p.Results.compute)
         rwObject.write('coneMosaic', theMosaic, coneParamsList, theProgram, 'type', 'mat');
     else
          % Load a previously saved cone mosaic
-         fprintf(2,'Loading a previously saved cone mosaic\n');
+         fprintf('Loading a previously saved cone mosaic\n');
          coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
          theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
     end
@@ -211,6 +214,7 @@ if (p.Results.compute)
         rParams.spatialParams, rParams.backgroundParams, colorModulationParamsNull, rParams.temporalParams, theOI, theMosaic, ...
         'seed', 1, ...
         'workerID', p.Results.workerID,...
+        'displayTrialBlockPartitionDiagnostics', p.Results.displayTrialBlockPartitionDiagnostics, ...
         'trialBlocks', 1);   % use 1 trialBlock since this is done outside the parfor loop
     
     noStimData = struct(...
@@ -276,6 +280,7 @@ if (p.Results.compute)
                 rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic, ...
                 'seed', parforRanSeeds(kk), ...
                 'workerID', workerID, ...
+                'displayTrialBlockPartitionDiagnostics', false, ...
                 'trialBlocks', p.Results.trialBlocks);
             
         stimData = struct(...
@@ -337,7 +342,7 @@ end
 if (p.Results.generatePlots && p.Results.visualizeResponses)
 
     % How many istances to visualize
-    instancesToVisualize = 1:5;
+    instancesToVisualize = 5;
     
     % Load the mosaic
     coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};

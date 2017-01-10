@@ -4,21 +4,34 @@ function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
 %   'useScratchTopLevelDirName'- true/false (default false). 
 %      When true, the top level output directory is [scratch]. 
 %      When false, it is the name of this script.
+%     'displayTrialBlockPartitionDiagnostics', true/false. Wether to display trial block diagnostics.
 
+warning('on', 'ISETBIO:ConeMosaic:osCompute:computeForOISequence:displaySizeInfo');
+warning('off', 'backtrace');
 
 %% Parse input
 p = inputParser;
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
-p.addParameter('nTrainingSamples',500,@isnumeric);
+p.addParameter('nTrainingSamples',100,@isnumeric);
 p.addParameter('imagePixels',500, @isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
+p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
+p.addParameter('visualizeResponses',true,@islogical);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
+p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.parse(varargin{:});
+
+% Ensure visualizationFormat has a valid value
+visualizationFormat = p.Results.visualizationFormat;
+if (strcmp(visualizationFormat, 'montage')) || (strcmp(visualizationFormat, 'video'))
+else
+    error('visualizationFormat must be set to either ''montage'' or ''video''. Current value: ''%s''.', visualizationFormat);
+end
 
 % Start with default
 rParams = responseParamsGenerate;
@@ -112,15 +125,49 @@ if (p.Results.computeResponses)
           'compute',p.Results.computeResponses, ...
           'computeMosaic', p.Results.computeMosaic, ... 
           'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
+          'visualizationFormat', p.Results.visualizationFormat, ...
           'trialBlocks', trialBlocks, ...
+          'displayTrialBlockPartitionDiagnostics', p.Results.displayTrialBlockPartitionDiagnostics, ...
           'freezeNoise',p.Results.freezeNoise, ...
           'generatePlots',p.Results.generatePlots, ...
-          'visualizeResponses', true, ...
+          'visualizeResponses', false, ...
           'workerID', 1);
     tEnd = clock;
     timeLapsed = etime(tEnd,tBegin);
     fprintf('Compute took %f minutes \n', timeLapsed/60);
 end
+
+%% Compute response instances
+if (p.Results.visualizeResponses)
+
+    % How many istances to visualize
+    instancesToVisualize = 5;
+    
+    % Load the mosaic
+    coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
+    theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
+         
+    % Load the response and ancillary data
+    paramsList = constantParamsList;
+    paramsList{numel(paramsList)+1} = colorModulationParamsNull;    
+    noStimData = rwObject.read('responseInstances',paramsList,theProgram);
+    ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
+    
+    rParams = ancillaryData.rParams;
+    parforConditionStructs = ancillaryData.parforConditionStructs;
+    nParforConditions = length(parforConditionStructs); 
+    for kk = 1:nParforConditions 
+         thisConditionStruct = parforConditionStructs{kk};
+         colorModulationParamsTemp = rParams.colorModulationParams;
+         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
+         colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
+
+         paramsList = constantParamsList;
+         paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
+         stimData = rwObject.read('responseInstances',paramsList,theProgram);
+         visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, instancesToVisualize, p.Results.visualizationFormat);
+    end
+end % visualizeResponses
 
 %% Find performance, template max likeli
 thresholdParams.method = 'mlpt';
