@@ -158,7 +158,7 @@ if (p.Results.compute)
         rwObject.write('coneMosaic', theMosaic, coneParamsList, theProgram, 'type', 'mat');
     else
          % Load a previously saved cone mosaic
-         fprintf(2,'Loading a previously saved cone mosaic\n');
+         fprintf('Loading a previously saved cone mosaic\n');
          coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
          theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
     end
