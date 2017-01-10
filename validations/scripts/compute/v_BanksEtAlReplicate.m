@@ -76,6 +76,7 @@ function ValidationFunction(runTimeParams)
         params.computeResponses = true;
         params.findPerformance = true;
         params.fitPsychometric = true;
+        params.LMSRatio = [0.62 0.31 0.07];
         params.blur = true;
         params.apertureBlur = false;
         params.nTrainingSamples = 50;
@@ -92,6 +93,7 @@ function ValidationFunction(runTimeParams)
         params.computeResponses = true;
         params.findPerformance = true;
         params.fitPsychometric = true;
+        params.LMSRatio = [0.62 0.31 0.07];
         params.blur = true;
         params.apertureBlur = false;
         params.nTrainingSamples = 500;

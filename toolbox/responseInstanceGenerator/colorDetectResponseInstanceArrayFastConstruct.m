@@ -13,10 +13,14 @@ function [responseInstanceArray,noiseFreeIsomerizations,noiseFreePhotocurrents] 
 %   'workerID' - (default empty).  If this field is non-empty, the progress of
 %            the computation is printed in the command window along with the
 %            workerID (from a parfor loop).
-%   'trialBlocks' - How many blocks to split the testDirectionParams.trialsNum into. Default: 1 (no blocking). 
-%               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
-%               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
-
+%   'trialBlocks' - How many blocks to split the
+%   testDirectionParams.trialsNum into. Default: 1 (no blocking).
+%               This only has an effect with @coneMosaicHex mosaics and
+%               when nTrials>1 and it is useful with large mosaics x lots
+%               of trials, in which case the absorptions matrix does not
+%               fit in the RAM. Passing -1 will cause this routine to try
+%               to maximize efficiency, given amount of RAM it thinks is
+%               available.
 %  'useSinglePrecision' - true/false (default true) use single precision to represent isomerizations and photocurrent
 
 % 7/10/16  npc Wrote it.

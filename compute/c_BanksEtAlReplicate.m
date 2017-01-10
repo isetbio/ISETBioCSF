@@ -23,6 +23,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'coneSpacingMicrons' - Cone spacing in microns (3).
 %   'mosaicRotationDegs' - Rotation of hex or hexReg mosaic in degrees (default 0).
 %   'coneDarkNoiseRate' - Vector of LMS dark (thermal) isomerization rate iso/sec (default [0,0,0]).
+%   'LMSRatio' - Ratio of LMS cones in mosaic.  Should sum to 1 (default [0.67 0.33 0]).
 %   'conePacking'   - how cones are packed spatially. 
 %       Choose from : 'rect', for a rectangular mosaic
 %                     'hex', for a hex mosaic with an eccentricity-varying cone spacing
@@ -44,7 +45,11 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotCSF' - true/false (default true).  Plot results.
 %   'freezeNoise' - true/false (default true). Freeze noise so calculations reproduce.
-%   'useTrialBlocks' - true/false (default true).  Break response computations down into blocks?]
+%   'useTrialBlocks' - true/false (default true).  Break response
+%        computations down into blocks?  If this is set to -1, then
+%        nTrialBlocks is passed down the chain as -1, which causes the
+%        underlying routines to try to be smart.  Otherwise if this is 1,
+%        the nTrialsPerBlock parameter is used.
 %   'nTrialsPerBlock' - value (default 50).  Target number of trials per block.
 
 %% Parse input
@@ -61,6 +66,7 @@ p.addParameter('apertureBlur', false, @islogical);
 p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
 p.addParameter('mosaicRotationDegs', 0, @isnumeric);
 p.addParameter('coneDarkNoiseRate',[0 0 0], @isnumeric);
+p.addParameter('LMSRatio',[0.67 0.33 0],@isnumeric);
 p.addParameter('conePacking', 'hexReg');                 
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('wavelengths',[380 4 780],@isnumeric);
@@ -161,6 +167,7 @@ for ll = 1:length(p.Results.luminances)
             'apertureBlur',p.Results.apertureBlur, ...
             'mosaicRotationDegs',p.Results.mosaicRotationDegs,...
             'coneDarkNoiseRate',p.Results.coneDarkNoiseRate,...
+            'LMSRatio',p.Results.LMSRatio,...
             'coneSpacingMicrons', p.Results.coneSpacingMicrons, ...
             'conePacking', p.Results.conePacking, ...
         	'integrationTimeInSeconds', rParams.temporalParams.stimulusDurationInSeconds, ...
@@ -203,8 +210,12 @@ for ll = 1:length(p.Results.luminances)
         
         %% Compute response instances
         if (p.Results.useTrialBlocks)
-            desiredTrialsPerBlock = p.Results.nTrialsPerBlock;
-            trialBlocks = round(testDirectionParams.trialsNum/desiredTrialsPerBlock);
+            if (p.Results.useTrialBlocks == -1)
+                trialBlocks = -1;
+            else
+                desiredTrialsPerBlock = p.Results.nTrialsPerBlock;
+                trialBlocks = round(testDirectionParams.trialsNum/desiredTrialsPerBlock);
+            end
         else
             trialBlocks = 1;
         end
