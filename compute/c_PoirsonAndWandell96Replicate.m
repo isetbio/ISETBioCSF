@@ -4,22 +4,33 @@ function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
 %   'useScratchTopLevelDirName'- true/false (default false). 
 %      When true, the top level output directory is [scratch]. 
 %      When false, it is the name of this script.
+%     'displayTrialBlockPartitionDiagnostics', true/false. Wether to display trial block diagnostics.
 
+warning('off', 'ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed');
 
 %% Parse input
 p = inputParser;
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
-p.addParameter('nTrainingSamples',500,@isnumeric);
+p.addParameter('nTrainingSamples',100,@isnumeric);
 p.addParameter('imagePixels',500, @isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
+p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('visualizeResponses',true,@islogical);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
+p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.parse(varargin{:});
+
+% Ensure visualizationFormat has a valid value
+visualizationFormat = p.Results.visualizationFormat;
+if (strcmp(visualizationFormat, 'montage')) || (strcmp(visualizationFormat, 'video'))
+else
+    error('visualizationFormat must be set to either ''montage'' or ''video''. Current value: ''%s''.', visualizationFormat);
+end
 
 % Start with default
 rParams = responseParamsGenerate;
@@ -113,7 +124,9 @@ if (p.Results.computeResponses)
           'compute',p.Results.computeResponses, ...
           'computeMosaic', p.Results.computeMosaic, ... 
           'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
+          'visualizationFormat', p.Results.visualizationFormat, ...
           'trialBlocks', trialBlocks, ...
+          'displayTrialBlockPartitionDiagnostics', p.Results.displayTrialBlockPartitionDiagnostics, ...
           'freezeNoise',p.Results.freezeNoise, ...
           'generatePlots',p.Results.generatePlots, ...
           'visualizeResponses', false, ...
