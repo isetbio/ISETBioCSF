@@ -163,11 +163,12 @@ function trialBlocksForParforLoop = computeTrialBlocksForParforLoop(nTrials, con
     % ActivityMonitor to monitor memory compression.
     % I have tested on 3 systems: a 16GB macbook, a 32GM iMac and a 64GB MacPro.
     % A RamcompressionFactor of around 0.286 seems near optimal for all 3 systems. 
-    % 1. MacbookPro with 16GB RAM. 512 instances. 0.28 with Peak compressed RAM: 3.0 GB (medium Green)
-    % 2. iMac with 32 GB RAM. 1024 instances. Peak compressed RAM: 
-    % 0.35 still good for.imac, 0.40 Results in 4 GB compressed RAM and 29
-    % GB Swap. Also startint to get system run out of memory errors
-    RAMcompressionFactor = 0.37; %0.286;
+    % 1. MacbookPro with 16GB RAM. 512 instances. 
+    %    0.28 with Peak compressed RAM: 3.0 GB (medium Green)
+    % 2. iMac with 32 GB RAM. 1024 instances. 
+    %    0.35 OK
+    %    0.40 Results in 13 GB peak compressed RAM and 29 GB Swap. Also starting to get system run out of memory errors.
+    RAMcompressionFactor = 0.37;
 
     % Compute trialBlocksForParforLoop
     singleTrialMemoryGBytes = 2*numberOfCores*(coneMosaicPatternSize*sizeOfDoubleInBytes + coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2)/(1024^3)/RAMcompressionFactor;
