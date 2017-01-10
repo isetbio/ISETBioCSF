@@ -6,7 +6,8 @@ function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
 %      When false, it is the name of this script.
 %     'displayTrialBlockPartitionDiagnostics', true/false. Wether to display trial block diagnostics.
 
-warning('off', 'ISETBIO:ConeMosaic:osCompute:displayFrozenNoiseSeed');
+warning('on', 'ISETBIO:ConeMosaic:osCompute:computeForOISequence:displaySizeInfo');
+warning('off', 'verbose')
 
 %% Parse input
 p = inputParser;
