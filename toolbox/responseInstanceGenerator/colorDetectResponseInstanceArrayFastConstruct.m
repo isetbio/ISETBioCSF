@@ -186,7 +186,7 @@ function trialBlocksForParforLoop = computeTrialBlocksForParforLoop(nTrials, con
             trialIndicesForThisBlock = blockedTrialIndices{iTrialBlock};
             firstTrial = trialIndicesForThisBlock(1);
             lastTrial = trialIndicesForThisBlock(end);
-            fprintf('trialBlock%d contains %d trials: %04d - %04d (%d)\n', iTrialBlock, numel(trialIndicesForThisBlock), firstTrial, lastTrial);
+            fprintf('trialBlock%d contains %d trials: %04d - %04d\n', iTrialBlock, numel(trialIndicesForThisBlock), firstTrial, lastTrial);
         end
         warndlg(...
             sprintf('CoresNum = %d; SystemRAM = %2.2fGB; estimated peak RAM = %2.2fGB', numberOfCores, ramSizeGBytes, trialBlockSize*singleTrialMemoryGBytes), ...
