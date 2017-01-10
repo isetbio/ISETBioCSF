@@ -15,13 +15,14 @@ params.conePacking = 'hexReg';
 params.mosaicRotationDegs = 30;
 params.coneSpacingMicrons = 3;
 params.innerSegmentSizeMicrons = sizeForSquareApertureFromDiameterForCircularAperture(params.coneSpacingMicrons);
-params.cyclesPerDegree = [3 5 10 20 40 50 60];
+params.cyclesPerDegree = [5 10 20 30 40 50 60];
 params.luminances = [3.4 34 340];
 params.pupilDiamMm = 2;
 params.thresholdCriterionFraction = 0.75;
 params.freezeNoise = true;
 params.useTrialBlocks = true;
 params.generatePlots = true;
+params.plotCSF = true;
 params.visualizeResponses = false;
 
 % No blur, no dark noise, no aperture blur
