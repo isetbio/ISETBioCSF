@@ -33,6 +33,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %     'trialBlocks' - How many blocks to split the testDirectionParams.trialsNum into. Default: 1 (no blocking). 
 %               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
 %               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
+%               If set to -1, the number of trial blocks is computed automatically based on the number of cores and system RAM.
 %     'displayTrialBlockPartitionDiagnostics', true/false. Wether to display trial block diagnostics.
 %     'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
 %     'compute' - true/false (default true).  Do the computations.
