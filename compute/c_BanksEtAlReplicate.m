@@ -238,9 +238,15 @@ for ll = 1:length(p.Results.luminances)
 end
 
 %% Write out the data
+%
+% This read and write does not distinguish the number of backgrounds
+% studied, and so can screw up if the number of backgrounds changes 
+% between a run that generated the data and one that read it back.  If
+% everything else is in place, it is quick to regenerate the data by just
+% doing the fit psychometric step, which is pretty quick.
 if (p.Results.fitPsychometric)
     fprintf('Writing performance data ... ');
-    paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
+    paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;
     rwObject.write('banksEtAlReplicate',banksEtAlReplicate,paramsList,writeProgram);
@@ -249,7 +255,7 @@ end
 
 %% Get performance data
 fprintf('Reading performance data ...');
-paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
+paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
 rwObject = IBIOColorDetectReadWriteBasic;
 writeProgram = mfilename;
 banksEtAlReplicate = rwObject.read('banksEtAlReplicate',paramsList,writeProgram);
@@ -281,6 +287,7 @@ if (p.Results.generatePlots & p.Results.plotCSF)
         plot(banksEtAlReplicate.cyclesPerDegree(ll,:),1./[banksEtAlReplicate.mlptThresholds(ll,:).thresholdContrasts]*banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1), ...
             [theColors(theColorIndex) 'o-'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
         legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
+        
     end
     set(gca,'XScale','log');
     set(gca,'YScale','log');
@@ -289,12 +296,11 @@ if (p.Results.generatePlots & p.Results.plotCSF)
     xlim([1 100]); ylim([10 10000]);
     legend(legendStr,'Location','NorthEast','FontSize',rParams.plotParams.labelFontSize+fontBump);
     box off; grid on
-    if (p.Results.blur)
-        title(sprintf('Computational Observer CSF - w/ blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
-        rwObject.write('banksEtAlReplicateWithBlur',hFig,paramsList,writeProgram,'Type','figure');
-    else
-        title(sprintf('Computational Observer CSF - no blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
-        rwObject.write('banksEtAlReplicateNoBlur',hFig,paramsList,writeProgram,'Type','figure');
-    end
+    titleStr1 = 'Computational Observer CSF';
+    titleStr2 = sprintf('Blur: %d, Aperture Blur: %d',p.Results.blur, p.Results.apertureBlur);
+    title({titleStr1 ; titleStr2});
+        
+    % Write out the figure
+    rwObject.write('banksEtAlReplicate',hFig,paramsList,writeProgram,'Type','figure')
 end
 
