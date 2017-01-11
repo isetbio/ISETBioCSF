@@ -168,7 +168,7 @@ function trialBlocksForParforLoop = computeTrialBlocksForParforLoop(nTrials, con
     % I have tested on 3 systems: a 16GB macbook, a 32GM iMac and a 64GB MacPro. 
     % 1. MacbookPro with 16GB RAM. 512 instances. 
     %    0.28 with Peak compressed RAM: 3.0 GB (medium Green)
-    RAMcompressionFactor = 0.33;
+    RAMcompressionFactor = 0.30;
     
     % 2. iMac with 32 GB RAM. 1024 instances. 
     %    0.35 OK
