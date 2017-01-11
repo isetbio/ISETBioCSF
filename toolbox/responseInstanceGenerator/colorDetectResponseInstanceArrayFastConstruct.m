@@ -153,6 +153,10 @@ function trialBlocksForParforLoop = computeTrialBlocksForParforLoop(nTrials, con
     % Determine system resources
     [numberOfCores, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
 
+    % Subtract RAM used by the OS
+    ramUsedByOSGBytes = 3.2;
+    ramSizeGBytes = ramSizeGBytes - ramUsedByOSGBytes;
+    
     % If RAMcompressionFactor is too low, we are under-utilizing the
     % availabe RAM, and performance is sub-optimal in a parfor loop.
     % If RAMcompressionFactor is too high, we are swapping to the disk too
@@ -164,7 +168,7 @@ function trialBlocksForParforLoop = computeTrialBlocksForParforLoop(nTrials, con
     % I have tested on 3 systems: a 16GB macbook, a 32GM iMac and a 64GB MacPro. 
     % 1. MacbookPro with 16GB RAM. 512 instances. 
     %    0.28 with Peak compressed RAM: 3.0 GB (medium Green)
-    RAMcompressionFactor = 0.28;
+    RAMcompressionFactor = 0.33;
     
     % 2. iMac with 32 GB RAM. 1024 instances. 
     %    0.35 OK
