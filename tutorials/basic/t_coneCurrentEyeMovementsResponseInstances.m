@@ -257,14 +257,12 @@ if (p.Results.compute)
     % under other circumstances.
     tic;
     stimDataForValidation = cell(nParforConditions,1);
-
-    % Capture the current warning state
-    warningState = warning;
     
-    % Set captured warning state to each worker's workspace
-    parfor kk = 1:nParforConditions 
-        warning(warningState);
-    end
+    % % Set captured warning state to each worker's workspace
+    % warningState = warning;
+    % parfor kk = 1:nParforConditions 
+    %     warning(warningState);
+    % end
         
     parfor kk = 1:nParforConditions   
         fprintf('Computing responses for condition %d/%d ...\n', kk,nParforConditions);
