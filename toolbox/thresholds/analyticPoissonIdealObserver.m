@@ -27,13 +27,22 @@ if (all(alphaMeanResponses == betaMeanResponses))
     return;
 end
 
+% Sometimes the mosaic extends beyond the stimulus, giving 0 mean responses
+% and causing trouble in the formula.  In general, we need only consider
+% locations where the alpha and beta means differ, so let's handle that.
+index = find(alphaMeanResponses ~= betaMeanResponses);
+
 % This comes from the appendix of the paper
-numerator = sum( (betaMeanResponses-alphaMeanResponses).*log(betaMeanResponses./alphaMeanResponses) );
-denominator = 0.5*sum( (betaMeanResponses+alphaMeanResponses).*(log(betaMeanResponses./alphaMeanResponses).^2) );
+numerator = sum( (betaMeanResponses(index)-alphaMeanResponses(index)).*log(betaMeanResponses(index)./alphaMeanResponses(index)) );
+denominator = 0.5*sum( (betaMeanResponses(index)+alphaMeanResponses(index)).*(log(betaMeanResponses(index)./alphaMeanResponses(index)).^2) );
 dPrime = numerator / sqrt(denominator);
 
 % Call into our dPrime to TAFC conversion function
 fractionCorrect = dPrimeToTAFCFractionCorrect(dPrime);
+
+if (isnan(dPrime) || isnan(fractionCorrect))
+    error('Should not get NaN here.  Probably there are some zero mean response cones');
+end
 
 
 

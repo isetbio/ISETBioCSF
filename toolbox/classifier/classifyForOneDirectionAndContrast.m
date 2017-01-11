@@ -128,17 +128,21 @@ switch (thresholdParams.method)
         %
         % A nice side effect is that the analytic method is considerably
         % faster.
+        
+        % We only need to consider data where the two classes differ, so
+        % find that subset and use below.
+        index = find(templateClass0 ~= templateClass1);
         ANALYTIC_LIKELY = true;
         if (ANALYTIC_LIKELY)
-            logTemplateDiff = log(templateClass1)-log(templateClass0);
-            C = sum(templateClass0-templateClass1);
+            logTemplateDiff = log(templateClass1(index))-log(templateClass0(index));
+            C = sum(templateClass0(index)-templateClass1(index));
             for ii = 1:nTeObservations
-                logLikelyRatio(ii) = sum( teData(ii,:) .* logTemplateDiff ) + C;
+                logLikelyRatio(ii) = sum( teData(ii,index) .* logTemplateDiff ) + C;
             end
         else
             for ii = 1:nTeObservations       
-                loglGiven0(ii) = sum(log10(poisspdf(teData(ii,:),templateClass0)));
-                loglGiven1(ii) = sum(log10(poisspdf(teData(ii,:),templateClass1)));
+                loglGiven0(ii) = sum(log10(poisspdf(teData(ii,index),templateClass0(index))));
+                loglGiven1(ii) = sum(log10(poisspdf(teData(ii,index),templateClass1(index))));
                 logLikelyRatio(ii) = loglGiven1(ii)-loglGiven0(ii);
             end
         end
@@ -192,17 +196,16 @@ switch (thresholdParams.method)
         % likelihood under each class is approximately normal, so we plot
         % histograms and look.  It's pretty close, and the Geisler numbers
         % are quite close to what we get empirically above.
-        DO_GEISLER_VERSION = true;
+        DO_GEISLER_VERSION = false;
         if (DO_GEISLER_VERSION)
             alphaMean = noStimData.noiseFreeIsomerizations(:)';
             betaMean = stimData.noiseFreeIsomerizations(:)';
             
             % Get analytic ideal observer dPrime and fraction correct
-            numerator = sum( (betaMean-alphaMean).*log(betaMean./alphaMean) );
-            denominator = 0.5*sum( (betaMean+alphaMean).*(log(betaMean./alphaMean).^2) );
-            analyticDPrime = numerator / sqrt(denominator);
             [analyticFractionCorrect,analyticDPrime] = analyticPoissonIdealObserver(alphaMean,betaMean);
             
+            % This next bit probably breaks for cases where there are 0
+            % mean catches in the alpha data.
             for ii = 1:nTeObservations
                 if (teClasses(ii) == 0)
                     alphaData = teData(ii,1:size(teData,2)/2);
@@ -251,7 +254,7 @@ switch (thresholdParams.method)
             drawnow;
             
             % Report percent correct
-            fprintf('\td'': %2.2f (%2.2f), d'' percent correct %2.2f%%, percent correct from Z histo ROC%2.2f%%\n',...
+            fprintf('\td'': %2.2f (%2.2f), d'' percent correct %2.2f%%, percent correct from Z histo ROC %2.2f%%\n',...
                 analyticDPrime,dprimeEmpirical,analyticFractionCorrect*100,empiricalFractionCorrect*100);
         end
        
