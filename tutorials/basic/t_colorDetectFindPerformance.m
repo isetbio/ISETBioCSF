@@ -115,17 +115,22 @@ constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.o
 if (p.Results.compute)
     
     % Read data for the no stimulus condition
-    fprintf('Reading no stimulus data ... ');
+    fprintf('Reading no stimulus data ... \n');
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = [0 0 0]';
     colorModulationParamsTemp.contrast = 0;
     paramsList = constantParamsList;
     paramsList{numel(paramsList)+1} = colorModulationParamsTemp;
     clear 'colorModulationParamsTemp'
-    
-    noStimData = rwObject.read('responseInstances',paramsList,readProgram);
     ancillaryData = rwObject.read('ancillaryData',paramsList,readProgram);
-    
+    noStimData = rwObject.read('responseInstances',paramsList,readProgram);
+    % Only keep the data we will visualize
+    if isfield(thresholdParams, 'trialsUsed')
+        fprintf('Only using %d of the computed %d trials\n', thresholdParams.trialsUsed, size(noStimData.responseInstanceArray.theMosaicIsomerizations,1));
+        noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations(1:thresholdParams.trialsUsed,:,:);
+        noStimData.responseInstanceArray.theMosaicPhotocurrents = noStimData.responseInstanceArray.theMosaicPhotocurrents(1:thresholdParams.trialsUsed,:,:);
+    end
+
     % Get out some data we'll want
     nTrials = numel(noStimData.responseInstanceArray);
     testConeContrasts = ancillaryData.testConeContrasts;
@@ -170,7 +175,12 @@ if (p.Results.compute)
         rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         paramsList = thisConditionStruct.paramsList;
+        fprintf('Reading stimulus data for condition %d of %d... \n', kk,nParforConditions);
         stimData = rwObject.read('responseInstances',paramsList,readProgram);
+        if isfield(thresholdParams, 'trialsUsed')
+            stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(1:thresholdParams.trialsUsed,:,:);
+            stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(1:thresholdParams.trialsUsed,:,:);
+        end
         if (numel(stimData.responseInstanceArray) ~= nTrials)
             error('Inconsistent number of trials');
         end
