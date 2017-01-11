@@ -258,10 +258,19 @@ if (p.Results.compute)
     tic;
     stimDataForValidation = cell(nParforConditions,1);
 
-    parfor kk = 1:nParforConditions
+    % Capture the current warning state
+    warningState = warning;
+    
+    % Set captured warning state to each worker's workspace
+    parfor kk = 1:nParforConditions 
+        warning(warningState);
+    end
+        
+    parfor kk = 1:nParforConditions   
         fprintf('Computing responses for condition %d/%d ...\n', kk,nParforConditions);
-        if (~isempty(p.Results.workerID))
-            % Get the parallel pool worker ID
+        
+        % Get the parallel pool worker ID
+        if (~isempty(p.Results.workerID))  
             t = getCurrentTask();
             workerID = t.ID;
         else
