@@ -1,4 +1,4 @@
-function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum, instancesToVisualize, format)
+function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum, format)
          
     instancesNum = size(stimData.responseInstanceArray.theMosaicIsomerizations,1);
     if (instancesNum < 1)
@@ -75,24 +75,21 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
         error('Unknown responseNormalization method: ''%s''.', responseNormalization);
     end
 
-    if (instancesToVisualize > instancesNum)
-        instancesToVisualize = instancesNum;
-    end
      
     if (isa(theMosaic, 'coneMosaicHex'))
-        for instanceIndex = 1:instancesToVisualize
+        for instanceIndex = 1:instancesNum
             if (instanceIndex==1)
                 tmp = squeeze(absorptions(instanceIndex,:,:));
                 if (timeBins == 1)
                     tmp = tmp';
                 end
                 tmp = theMosaic.reshapeHex2DmapToHex3Dmap(tmp);
-                absorptionsHex = zeros(instancesToVisualize, size(tmp,1), size(tmp,2), size(tmp,3), 'single');
+                absorptionsHex = zeros(instancesNum, size(tmp,1), size(tmp,2), size(tmp,3), 'single');
                 absorptionsHex(instanceIndex,:,:,:) = tmp;
                 
                 if (~isempty(photocurrents))
                     tmp = theMosaic.reshapeHex2DmapToHex3Dmap(squeeze(photocurrents(instanceIndex,:,:)));
-                    photocurrentsHex = zeros(instancesToVisualize, size(tmp,1), size(tmp,2), size(tmp,3), 'single');
+                    photocurrentsHex = zeros(instancesNum, size(tmp,1), size(tmp,2), size(tmp,3), 'single');
                     photocurrentsHex(instanceIndex,:,:,:) = tmp;
                 else
                   photocurrentsHex = [];
@@ -233,7 +230,7 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
            'bottomMargin',   0.03, ...
            'topMargin',      0.03);
     
-        for instanceIndex = 1:instancesToVisualize
+        for instanceIndex = 1:instancesNum
          for tBin = 1: numel(absorptionsTimeAxis)  
              
             % Instance absorptions on the left

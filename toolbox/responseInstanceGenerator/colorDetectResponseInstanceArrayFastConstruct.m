@@ -157,25 +157,8 @@ function trialBlocksForParforLoop = computeTrialBlocksForParforLoop(nTrials, con
     ramUsedByOSGBytes = 3.2;
     ramSizeGBytes = ramSizeGBytes - ramUsedByOSGBytes;
     
-    % If RAMcompressionFactor is too low, we are under-utilizing the
-    % availabe RAM, and performance is sub-optimal in a parfor loop.
-    % If RAMcompressionFactor is too high, we are swapping to the disk too
-    % much and performance becomes sub-optimal, and eventually we get an
-    % out-of-memory crash. 
-    % RAMcompressionFactor should be tuned so that it is high enough that 
-    % the system does a very small amount of RAM compression. Use
-    % ActivityMonitor to monitor memory compression.
-    % I have tested on 3 systems: a 16GB macbook, a 32GM iMac and a 64GB MacPro. 
-    % 1. MacbookPro with 16GB RAM. 512 instances. 
-    %    0.28 with Peak compressed RAM: 3.0 GB (medium Green)
-    RAMcompressionFactor = 0.30;
-    
-    % 2. iMac with 32 GB RAM. 1024 instances. 
-    %    0.35 OK
-    %    0.40 Results in 13 GB peak compressed RAM and 29 GB Swap. Also starting to get system run out of memory errors.
-    % Next to try for the iMac: RAMcompressionFactor = 0.37;
-
     % Compute trialBlocksForParforLoop
+    RAMcompressionFactor = 0.25;
     singleTrialMemoryGBytes = 2*numberOfCores*(coneMosaicPatternSize*sizeOfDoubleInBytes + coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2)/(1024^3)/RAMcompressionFactor;
     desiredTrialsPerBlock = ramSizeGBytes/singleTrialMemoryGBytes;
     if (desiredTrialsPerBlock > nTrials)

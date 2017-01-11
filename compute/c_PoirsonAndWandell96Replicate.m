@@ -16,7 +16,7 @@ p.addParameter('nTrainingSamples',100,@isnumeric);
 p.addParameter('imagePixels',500, @isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
-p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
+p.addParameter('displayTrialBlockPartitionDiagnostics', true, @islogical);
 p.addParameter('visualizeResponses',true,@islogical);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
@@ -100,8 +100,8 @@ testDirectionParams = modifyStructParams(testDirectionParams, ...
     'startElevationAngle', 0, ...
     'nElevationAngles', 1, ...
     'nContrastsPerDirection', 12, ...
-    'lowContrast', 0.01, ...
-    'highContrast', 1.0, ...
+    'lowContrast', 0.001, ...
+    'highContrast', 0.2, ...
     'contrastScale', 'log' ...    % choose between 'linear' and 'log'  
 );
 
@@ -139,38 +139,23 @@ end
 
 %% Compute response instances
 if (p.Results.visualizeResponses)
-
-    % How many istances to visualize
-    instancesToVisualize = 5;
-    
-    % Load the mosaic
-    coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
-    theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
-         
-    % Load the response and ancillary data
-    paramsList = constantParamsList;
-    paramsList{numel(paramsList)+1} = colorModulationParamsNull;    
-    noStimData = rwObject.read('responseInstances',paramsList,theProgram);
-    ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
-    
-    rParams = ancillaryData.rParams;
-    parforConditionStructs = ancillaryData.parforConditionStructs;
-    nParforConditions = length(parforConditionStructs); 
-    for kk = 1:nParforConditions 
-         thisConditionStruct = parforConditionStructs{kk};
-         colorModulationParamsTemp = rParams.colorModulationParams;
-         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
-         colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
-
-         paramsList = constantParamsList;
-         paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
-         stimData = rwObject.read('responseInstances',paramsList,theProgram);
-         visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, instancesToVisualize, p.Results.visualizationFormat);
-    end
+    t_coneCurrentEyeMovementsResponseInstances(...
+          'rParams',rParams,...
+          'testDirectionParams',testDirectionParams,...
+          'compute', false, ...
+          'computeMosaic', false, ... 
+          'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
+          'visualizationFormat', p.Results.visualizationFormat, ...
+          'generatePlots', true, ...
+          'visualizeResponses', true);
 end % visualizeResponses
+
 
 %% Find performance, template max likeli
 thresholdParams.method = 'mlpt';
+% Reduce trials used to make computation feasible
+thresholdParams.trialsUsed = 64;
+
 if (p.Results.findPerformance)
     t_colorDetectFindPerformance(...
         'rParams',rParams, ...
@@ -178,7 +163,7 @@ if (p.Results.findPerformance)
         'thresholdParams',thresholdParams, ...
         'compute',true, ...
         'plotSvmBoundary',false, ...
-        'plotPsychometric',false ...
+        'plotPsychometric',true ...
         );
 end
         
