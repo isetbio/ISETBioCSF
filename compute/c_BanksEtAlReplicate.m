@@ -23,6 +23,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'coneSpacingMicrons' - Cone spacing in microns (3).
 %   'mosaicRotationDegs' - Rotation of hex or hexReg mosaic in degrees (default 0).
 %   'coneDarkNoiseRate' - Vector of LMS dark (thermal) isomerization rate iso/sec (default [0,0,0]).
+%   'LMSRatio' - Ratio of LMS cones in mosaic.  Should sum to 1 (default [0.67 0.33 0]).
 %   'conePacking'   - how cones are packed spatially. 
 %       Choose from : 'rect', for a rectangular mosaic
 %                     'hex', for a hex mosaic with an eccentricity-varying cone spacing
@@ -44,7 +45,11 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotCSF' - true/false (default true).  Plot results.
 %   'freezeNoise' - true/false (default true). Freeze noise so calculations reproduce.
-%   'useTrialBlocks' - true/false (default true).  Break response computations down into blocks?]
+%   'useTrialBlocks' - true/false (default true).  Break response
+%        computations down into blocks?  If this is set to -1, then
+%        nTrialBlocks is passed down the chain as -1, which causes the
+%        underlying routines to try to be smart.  Otherwise if this is 1,
+%        the nTrialsPerBlock parameter is used.
 %   'nTrialsPerBlock' - value (default 50).  Target number of trials per block.
 
 %% Parse input
@@ -61,6 +66,7 @@ p.addParameter('apertureBlur', false, @islogical);
 p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
 p.addParameter('mosaicRotationDegs', 0, @isnumeric);
 p.addParameter('coneDarkNoiseRate',[0 0 0], @isnumeric);
+p.addParameter('LMSRatio',[0.67 0.33 0],@isnumeric);
 p.addParameter('conePacking', 'hexReg');                 
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('wavelengths',[380 4 780],@isnumeric);
@@ -161,6 +167,7 @@ for ll = 1:length(p.Results.luminances)
             'apertureBlur',p.Results.apertureBlur, ...
             'mosaicRotationDegs',p.Results.mosaicRotationDegs,...
             'coneDarkNoiseRate',p.Results.coneDarkNoiseRate,...
+            'LMSRatio',p.Results.LMSRatio,...
             'coneSpacingMicrons', p.Results.coneSpacingMicrons, ...
             'conePacking', p.Results.conePacking, ...
         	'integrationTimeInSeconds', rParams.temporalParams.stimulusDurationInSeconds, ...
@@ -203,8 +210,12 @@ for ll = 1:length(p.Results.luminances)
         
         %% Compute response instances
         if (p.Results.useTrialBlocks)
-            desiredTrialsPerBlock = p.Results.nTrialsPerBlock;
-            trialBlocks = round(testDirectionParams.trialsNum/desiredTrialsPerBlock);
+            if (p.Results.useTrialBlocks == -1)
+                trialBlocks = -1;
+            else
+                desiredTrialsPerBlock = p.Results.nTrialsPerBlock;
+                trialBlocks = round(testDirectionParams.trialsNum/desiredTrialsPerBlock);
+            end
         else
             trialBlocks = 1;
         end
@@ -238,9 +249,15 @@ for ll = 1:length(p.Results.luminances)
 end
 
 %% Write out the data
+%
+% This read and write does not distinguish the number of backgrounds
+% studied, and so can screw up if the number of backgrounds changes 
+% between a run that generated the data and one that read it back.  If
+% everything else is in place, it is quick to regenerate the data by just
+% doing the fit psychometric step, which is pretty quick.
 if (p.Results.fitPsychometric)
     fprintf('Writing performance data ... ');
-    paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
+    paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;
     rwObject.write('banksEtAlReplicate',banksEtAlReplicate,paramsList,writeProgram);
@@ -249,7 +266,7 @@ end
 
 %% Get performance data
 fprintf('Reading performance data ...');
-paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
+paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
 rwObject = IBIOColorDetectReadWriteBasic;
 writeProgram = mfilename;
 banksEtAlReplicate = rwObject.read('banksEtAlReplicate',paramsList,writeProgram);
@@ -281,6 +298,7 @@ if (p.Results.generatePlots & p.Results.plotCSF)
         plot(banksEtAlReplicate.cyclesPerDegree(ll,:),1./[banksEtAlReplicate.mlptThresholds(ll,:).thresholdContrasts]*banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1), ...
             [theColors(theColorIndex) 'o-'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
         legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
+        
     end
     set(gca,'XScale','log');
     set(gca,'YScale','log');
@@ -289,12 +307,13 @@ if (p.Results.generatePlots & p.Results.plotCSF)
     xlim([1 100]); ylim([10 10000]);
     legend(legendStr,'Location','NorthEast','FontSize',rParams.plotParams.labelFontSize+fontBump);
     box off; grid on
-    if (p.Results.blur)
-        title(sprintf('Computational Observer CSF - w/ blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
-        rwObject.write('banksEtAlReplicateWithBlur',hFig,paramsList,writeProgram,'Type','figure');
-    else
-        title(sprintf('Computational Observer CSF - no blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
-        rwObject.write('banksEtAlReplicateNoBlur',hFig,paramsList,writeProgram,'Type','figure');
-    end
+    titleStr1 = 'Computational Observer CSF';
+    titleStr2 = sprintf('Blur: %d, Aperture Blur: %d',p.Results.blur, p.Results.apertureBlur);
+    title({titleStr1 ; titleStr2});
+        
+    % Write out the figure
+    rwObject.write('banksEtAlReplicate',hFig,paramsList,writeProgram,'Type','figure')
 end
+
+
 

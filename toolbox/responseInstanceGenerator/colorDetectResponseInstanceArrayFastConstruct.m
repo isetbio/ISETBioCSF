@@ -16,7 +16,7 @@ function [responseInstanceArray,noiseFreeIsomerizations,noiseFreePhotocurrents] 
 %   'trialBlocks' - How many blocks to split the testDirectionParams.trialsNum into. Default: 1 (no blocking). 
 %               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
 %               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
-
+%               If set to -1, the number of trial blocks is computed automatically based on the number of cores and system RAM.
 %  'useSinglePrecision' - true/false (default true) use single precision to represent isomerizations and photocurrent
 
 % 7/10/16  npc Wrote it.
@@ -161,16 +161,15 @@ function trialBlocksForParforLoop = computeTrialBlocksForParforLoop(nTrials, con
     % RAMcompressionFactor should be tuned so that it is high enough that 
     % the system does a very small amount of RAM compression. Use
     % ActivityMonitor to monitor memory compression.
-    % I have tested on 3 systems: a 16GB macbook, a 32GM iMac and a 64GB MacPro.
-    % A RamcompressionFactor of around 0.286 seems near optimal for all 3 systems. 
-    % 1. 8-core MacbookPro with 16GB RAM. 512 instances. 
+    % I have tested on 3 systems: a 16GB macbook, a 32GM iMac and a 64GB MacPro. 
+    % 1. MacbookPro with 16GB RAM. 512 instances. 
     %    0.28 with Peak compressed RAM: 3.0 GB (medium Green)
-    % 2. 8-core iMac with 32 GB RAM. 1024 instances. 
+    RAMcompressionFactor = 0.28;
+    
+    % 2. iMac with 32 GB RAM. 1024 instances. 
     %    0.35 OK
-    %    0.40 Results in 13 GB peak compressed RAM and 34 GB peaK Swap. Also starting to get system run out of memory errors and system halts.
-    % 3. 12-core MacPro with 64 GB
-    %    0.40 Results in 32 GB of swap
-    RAMcompressionFactor = 0.37;
+    %    0.40 Results in 13 GB peak compressed RAM and 29 GB Swap. Also starting to get system run out of memory errors.
+    % Next to try for the iMac: RAMcompressionFactor = 0.37;
 
     % Compute trialBlocksForParforLoop
     singleTrialMemoryGBytes = 2*numberOfCores*(coneMosaicPatternSize*sizeOfDoubleInBytes + coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2)/(1024^3)/RAMcompressionFactor;
@@ -187,7 +186,7 @@ function trialBlocksForParforLoop = computeTrialBlocksForParforLoop(nTrials, con
             trialIndicesForThisBlock = blockedTrialIndices{iTrialBlock};
             firstTrial = trialIndicesForThisBlock(1);
             lastTrial = trialIndicesForThisBlock(end);
-            fprintf('trialBlock%d: [%04d - %04d] (%d)\n', iTrialBlock, firstTrial, lastTrial, numel(trialIndicesForThisBlock));
+            fprintf('trialBlock%d contains %d trials: %04d - %04d\n', iTrialBlock, numel(trialIndicesForThisBlock), firstTrial, lastTrial);
         end
         warndlg(...
             sprintf('CoresNum = %d; SystemRAM = %2.2fGB; estimated peak RAM = %2.2fGB', numberOfCores, ramSizeGBytes, trialBlockSize*singleTrialMemoryGBytes), ...

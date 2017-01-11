@@ -33,6 +33,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %     'trialBlocks' - How many blocks to split the testDirectionParams.trialsNum into. Default: 1 (no blocking). 
 %               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
 %               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
+%               If set to -1, the number of trial blocks is computed automatically based on the number of cores and system RAM.
 %     'displayTrialBlockPartitionDiagnostics', true/false. Wether to display trial block diagnostics.
 %     'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
 %     'compute' - true/false (default true).  Do the computations.
@@ -158,7 +159,7 @@ if (p.Results.compute)
         rwObject.write('coneMosaic', theMosaic, coneParamsList, theProgram, 'type', 'mat');
     else
          % Load a previously saved cone mosaic
-         fprintf(2,'Loading a previously saved cone mosaic\n');
+         fprintf('Loading a previously saved cone mosaic\n');
          coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
          theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
     end
@@ -256,11 +257,18 @@ if (p.Results.compute)
     % under other circumstances.
     tic;
     stimDataForValidation = cell(nParforConditions,1);
-
-    parfor kk = 1:nParforConditions
+    
+    % % Set captured warning state to each worker's workspace
+    % warningState = warning;
+    % parfor kk = 1:nParforConditions 
+    %     warning(warningState);
+    % end
+        
+    parfor kk = 1:nParforConditions   
         fprintf('Computing responses for condition %d/%d ...\n', kk,nParforConditions);
-        if (~isempty(p.Results.workerID))
-            % Get the parallel pool worker ID
+        
+        % Get the parallel pool worker ID
+        if (~isempty(p.Results.workerID))  
             t = getCurrentTask();
             workerID = t.ID;
         else
