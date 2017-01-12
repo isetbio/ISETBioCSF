@@ -182,12 +182,12 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
             subplot('Position', subplotPosVectors(row,col).v);
             if (k == 1)
                 activation = squeeze(absorptions(instanceIndex, :,:,tBin));
-                instanceLabel = sprintf('%2.2fms (instace 1, %d emPaths)', absorptionsTimeAxis(tBin)*1000, instancesNum);
+                instanceLabel = sprintf('%2.1fms (inst.1, emPath:1-%d)', absorptionsTimeAxis(tBin)*1000, instancesNum);
                 minActivation = minAbsorptions;
                 maxActivation = maxAbsorptions;
             else
                 activation = squeeze(photocurrents(instanceIndex, :,:,tBin));
-                instanceLabel = sprintf('%2.2fms (instace 1, %d emPaths)', photocurrentsTimeAxis(tBin)*1000, instancesNum);
+                instanceLabel = sprintf('%2.1fms (inst.1, emPath:1-%d)', photocurrentsTimeAxis(tBin)*1000, instancesNum);
                 minActivation = minPhotocurrents;
                 maxActivation = maxPhotocurrents;
             end
@@ -228,7 +228,7 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
            'heightMargin',   0.06, ...
            'widthMargin',    0.13, ...
            'leftMargin',     0.04, ...
-           'rightMargin',    0.10, ...
+           'rightMargin',    0.04, ...
            'bottomMargin',   0.03, ...
            'topMargin',      0.03);
     
@@ -331,7 +331,7 @@ function renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apert
         else
             colorbarLabel = sprintf('(R*/cone/integrationTIme)');
         end
-        hCbar = colorbar('Ticks', colorbarTicks, 'TickLabels', sprintf('%2.3f\n',colorbarTickLabels));
+        hCbar = colorbar('Ticks', colorbarTicks, 'TickLabels', sprintf('%2.2f\n',colorbarTickLabels));
         hCbar.Orientation = 'vertical'; 
         hCbar.Label.String = colorbarLabel;
         hCbar.FontSize = 14; 
