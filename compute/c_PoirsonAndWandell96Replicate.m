@@ -13,7 +13,7 @@ warning('off', 'backtrace');
 p = inputParser;
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
 p.addParameter('nTrainingSamples',100,@isnumeric);
-p.addParameter('emPathType','frozen',@(x)ismember(x, {'none', 'frozen', 'dynamic'}));
+p.addParameter('emPathType','frozen',@(x)ismember(x, {'none', 'frozen', 'random'}));
 p.addParameter('imagePixels',500, @isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
