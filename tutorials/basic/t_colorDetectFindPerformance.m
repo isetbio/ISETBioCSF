@@ -128,7 +128,11 @@ if (p.Results.compute)
     if isfield(thresholdParams, 'trialsUsed')
         fprintf('Only using %d of the computed %d trials\n', thresholdParams.trialsUsed, size(noStimData.responseInstanceArray.theMosaicIsomerizations,1));
         noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations(1:thresholdParams.trialsUsed,:,:);
-        noStimData.responseInstanceArray.theMosaicPhotocurrents = noStimData.responseInstanceArray.theMosaicPhotocurrents(1:thresholdParams.trialsUsed,:,:);
+        if isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents)
+            noStimData.responseInstanceArray.theMosaicPhotocurrents = [];
+        else
+            noStimData.responseInstanceArray.theMosaicPhotocurrents = noStimData.responseInstanceArray.theMosaicPhotocurrents(1:thresholdParams.trialsUsed,:,:);
+        end
     end
 
     % Get out some data we'll want
@@ -179,7 +183,11 @@ if (p.Results.compute)
         stimData = rwObject.read('responseInstances',paramsList,readProgram);
         if isfield(thresholdParams, 'trialsUsed')
             stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(1:thresholdParams.trialsUsed,:,:);
-            stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(1:thresholdParams.trialsUsed,:,:);
+            if isempty(stimData.responseInstanceArray.theMosaicPhotocurrents)
+                stimData.responseInstanceArray.theMosaicPhotocurrents = [];
+            else
+                stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(1:thresholdParams.trialsUsed,:,:);
+            end
         end
         if (numel(stimData.responseInstanceArray) ~= nTrials)
             error('Inconsistent number of trials');
