@@ -1,30 +1,70 @@
 function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
-
+%
+% Compute thresholds to replicate the Poirson and Wandell 96 paper.
+% We are finding thresholds for spatio-temporal stimuli defined in the full 3D LMS space.
+%
+%
 % Key/value pairs
+%    DATADIR OPTIONS
 %   'useScratchTopLevelDirName'- true/false (default false). 
 %      When true, the top level output directory is [scratch]. 
 %      When false, it is the name of this script.
+%
+%     % RESPONSE COMPUTATION OPTIONS
+%     'imagePixels' : how many pixels to use to represent the input stimulus
+%     'nTrainingSamples' - how many response instances to compute. default: 128
+%     'emPathType' - choose from {'none', 'frozen', 'random'}. Type of emPath: 
+%         'none'   : results to 1 eye movement at (0,0)
+%         'frozen' : results to the identical emPath being applied to each computed instance
+%         'random' : results in a different emPath being applied to each computed instance
+%     'freezeNoise' - true/false (default true).  Freezes isomerization and photocurrent noise so that results are reproducible
+%     'computeResponses' - true/false (default true).  Do the computations.
+%     'computeMosaic' - true/false (default true). Compute a cone mosaic or load one (good for large hex mosaics which take a while to compute)
+%
+%     DIAGNOSTIC OPTIONS
 %     'displayTrialBlockPartitionDiagnostics', true/false. Wether to display trial block diagnostics.
-
-warning('on', 'ISETBIO:ConeMosaic:osCompute:computeForOISequence:displaySizeInfo');
-warning('off', 'backtrace');
+%
+%     VISUALIZATION OPTIONS
+%     'generatePlots' - true/false (default false).  Produce response
+%        visualizations.  Set to false when running big jobs on clusters or
+%        in parfor loops, as plotting doesn't seem to play well with those
+%        conditions.
+%
+%     RESPONSE MAP VISUALIZATION OPTIONS
+%     'visualizeResponses' - true/false (default true). Call the fancy visualize response routine.
+%     'visualizationFormat' - How to arrange visualized response maps. 
+%       Available options: 'montage', 'video'. Default is 'montage'
+%     'visualizedResponseNormalization' - How to normalize visualized response maps
+%        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
+%
+%     PERFORMANCE COMPUTATION OPTIONS
+%   'findPerformance' - true/false (default true).  Find performance.
+%   'fitPsychometric' - true/false (default true).  Fit psychometric functions.
+%
+%
 
 %% Parse input
 p = inputParser;
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
-p.addParameter('nTrainingSamples',100,@isnumeric);
-p.addParameter('emPathType','frozen',@(x)ismember(x, {'none', 'frozen', 'random'}));
+% RESPONSE COMPUTATION OPTIONS
 p.addParameter('imagePixels',500, @isnumeric);
+p.addParameter('nTrainingSamples',128, @isnumeric);
+p.addParameter('emPathType','frozen',@(x)ismember(x, {'none', 'frozen', 'random'}));
+p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
+% DIAGNOSTIC OPTIONS
 p.addParameter('displayTrialBlockPartitionDiagnostics', true, @islogical);
+% VISUALIZATION OPTIONS
+p.addParameter('generatePlots',true,@islogical);
+% RESPONSE MAP VISUALIZATION OPTIONS
 p.addParameter('visualizeResponses',true,@islogical);
-p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('visualizationFormat', 'montage', @ischar);
+% PERFORMANCE COMPUTATION OPTIONS
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
-p.addParameter('generatePlots',true,@islogical);
+
 p.parse(varargin{:});
 
 % Ensure visualizationFormat has a valid value
@@ -50,7 +90,7 @@ rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...
         'fieldOfViewDegs', 10.0, ...             % In P&W 1996, in the constant cycle condition, this was 10 deg (Section 2.2, p 517)
         'viewingDistance', 0.75, ...            % vd in meters
         'ang', 0,  ...                          % orientation in radians
-        'ph', 0, ...                         % spatial phase in radians
+        'ph', 0, ...                            % spatial phase in radians
         'row', p.Results.imagePixels, ...
         'col', p.Results.imagePixels);
   
@@ -83,7 +123,7 @@ if strcmp(p.Results.emPathType, 'none')
     % No eye movements
     % Run with a single exposure == windowTau and no eye movements
     % Equate stimulusSamplingIntervalInSeconds to stimulusDurationInSeconds to generate 1 time point only.
-    stimulusDurationInSeconds = 1.0*windowTauInSeconds;
+    stimulusDurationInSeconds = 100/1000; % 1.0*windowTauInSeconds;
     rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
         'stimulusDurationInSeconds', stimulusDurationInSeconds, ...
         'stimulusSamplingIntervalInSeconds',  stimulusDurationInSeconds, ... 
@@ -102,8 +142,8 @@ rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
     'osNoise', 'frozen', ...                        % select from {'random', 'frozen', 'none'}
     'osModel', 'Linear');
         
-% Parameters that define the LM instances we'll generate
-% Here, we are generating an L-only grating (azimuth = 0, elevation = 0);
+% Parameters that define the LMS instances we'll generate
+% Here, we are generating an L+M stimulus (azimuth = 45, elevation = 0);
 testDirectionParams = instanceParamsGenerate('instanceType', 'LMSPlane');
 testDirectionParams = modifyStructParams(testDirectionParams, ...
     'trialsNum', p.Results.nTrainingSamples, ...
@@ -116,12 +156,6 @@ testDirectionParams = modifyStructParams(testDirectionParams, ...
     'highContrast', 0.1, ...
     'contrastScale', 'log' ...    % choose between 'linear' and 'log'  
 );
-
-
-% Let the colorDetectResponseInstanceArrayFastConstruct decide how many
-% blocks to split the trials in, depending on the size of the mosaic,
-% the cores available and the system RAM.
-trialBlocks = -1;
 
 % Parameters related to how we find thresholds from responses
 % Use default
@@ -136,20 +170,20 @@ if (p.Results.computeResponses)
           'testDirectionParams',testDirectionParams,...
           'compute',p.Results.computeResponses, ...
           'computeMosaic', p.Results.computeMosaic, ... 
+          'freezeNoise', p.Results.freezeNoise, ...
+          'trialBlocks', -1, ...                    % automatically decide trialBlocks based on system resources
+          'displayTrialBlockPartitionDiagnostics', p.Results.displayTrialBlockPartitionDiagnostics, ...
+          'generatePlots', p.Results.generatePlots, ...
+          'visualizeResponses', p.Results.visualizeResponses, ... 
           'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
           'visualizationFormat', p.Results.visualizationFormat, ...
-          'trialBlocks', trialBlocks, ...
-          'displayTrialBlockPartitionDiagnostics', p.Results.displayTrialBlockPartitionDiagnostics, ...
-          'freezeNoise',p.Results.freezeNoise, ...
-          'generatePlots',p.Results.generatePlots, ...
-          'visualizeResponses', false, ...
           'workerID', 1);
     tEnd = clock;
     timeLapsed = etime(tEnd,tBegin);
-    fprintf('Compute took %f minutes \n', timeLapsed/60);
+    fprintf('Computation of isomerization & photocurrent responses was completed in %f minutes. \n', timeLapsed/60);
 end
 
-%% Compute response instances
+%% Visualize response instances
 if (p.Results.visualizeResponses)
     t_coneCurrentEyeMovementsResponseInstances(...
           'rParams',rParams,...
@@ -165,7 +199,7 @@ end % visualizeResponses
 
 %% Find performance, template max likeli
 thresholdParams.method = 'mlpt';
-% Reduce trials used to make computation feasible
+% Reduce # of trials used to make computation feasible
 thresholdParams.trialsUsed = 64;
 
 if (p.Results.findPerformance)
