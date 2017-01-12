@@ -365,8 +365,10 @@ if (p.Results.generatePlots && p.Results.visualizeResponses)
     
     % Only keep the data we will visualize
     noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations(1:instancesToVisualize,:,:);
-    noStimData.responseInstanceArray.theMosaicPhotocurrents = noStimData.responseInstanceArray.theMosaicPhotocurrents(1:instancesToVisualize,:,:);
-    
+    if (~isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
+        noStimData.responseInstanceArray.theMosaicPhotocurrents  = noStimData.responseInstanceArray.theMosaicPhotocurrents(1:instancesToVisualize,:,:);
+    end
+    noStimData.responseInstanceArray.theMosaicEyeMovements   = noStimData.responseInstanceArray.theMosaicEyeMovements(1:instancesToVisualize,:,:);
     rParams = ancillaryData.rParams;
     parforConditionStructs = ancillaryData.parforConditionStructs;
     nParforConditions = length(parforConditionStructs); 
@@ -382,7 +384,10 @@ if (p.Results.generatePlots && p.Results.visualizeResponses)
         stimData = rwObject.read('responseInstances',paramsList,theProgram);
         % Only keep the data we will visualize
         stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(1:instancesToVisualize,:,:);
-        stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(1:instancesToVisualize,:,:);
+        if (~isempty(stimData.responseInstanceArray.theMosaicPhotocurrents))
+            stimData.responseInstanceArray.theMosaicPhotocurrents  = stimData.responseInstanceArray.theMosaicPhotocurrents(1:instancesToVisualize,:,:);
+        end
+        stimData.responseInstanceArray.theMosaicEyeMovements   = stimData.responseInstanceArray.theMosaicEyeMovements(1:instancesToVisualize,:,:);
         visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, p.Results.visualizationFormat);
     end
 end

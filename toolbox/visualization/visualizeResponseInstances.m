@@ -104,7 +104,7 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
                     photocurrentsHex(instanceIndex,:,:,:) = theMosaic.reshapeHex2DmapToHex3Dmap(squeeze(photocurrents(instanceIndex,:,:)));
                 end
             end
-        end
+        end % instanceIndex
         
         absorptions = absorptionsHex;
         photocurrents = photocurrentsHex;
@@ -182,12 +182,12 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
             subplot('Position', subplotPosVectors(row,col).v);
             if (k == 1)
                 activation = squeeze(absorptions(instanceIndex, :,:,tBin));
-                instanceLabel = sprintf('%2.2fms', absorptionsTimeAxis(tBin)*1000);
+                instanceLabel = sprintf('%2.2fms (instace 1, %d emPaths)', absorptionsTimeAxis(tBin)*1000, instancesNum);
                 minActivation = minAbsorptions;
                 maxActivation = maxAbsorptions;
             else
                 activation = squeeze(photocurrents(instanceIndex, :,:,tBin));
-                instanceLabel = sprintf('%2.2fms', photocurrentsTimeAxis(tBin)*1000);
+                instanceLabel = sprintf('%2.2fms (instace 1, %d emPaths)', photocurrentsTimeAxis(tBin)*1000, instancesNum);
                 minActivation = minPhotocurrents;
                 maxActivation = maxPhotocurrents;
             end
@@ -202,11 +202,13 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
             if (tBin == numel(absorptionsTimeAxis))
                 displayColorBar = true;
             end
+            eyeMovementPathsToThisPoint = stimData.responseInstanceArray.theMosaicEyeMovements(:,1:tBin,:);
             renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apertureOutline, ...
-                        responseNormalization, signalName, ...
-                        instanceLabel, ...
+                        responseNormalization, signalName, instanceLabel, ...
+                        eyeMovementPathsToThisPoint, ...
                         colorbarTicks, minActivation+colorbarTicks*(maxActivation-minActivation), displayColorBar,  ...
                         xTicks, yTicks, xTickLabels, yTickLabels);
+            drawnow;
         end % tBin
     end % k
     else
@@ -239,9 +241,11 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
             if (isHexActivation)
                 activation = activation(activeConesActivations);
             end
+            eyeMovementPathsToThisPointForThisInstance = stimData.responseInstanceArray.theMosaicEyeMovements(instanceIndex,1:tBin,:);
             renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apertureOutline, ...
                 responseNormalization, sprintf('absorptions (intTime: %2.2fms)',  theMosaic.integrationTime*1000), ...
                 sprintf('instance %d/%d (t: %2.1fms)', instanceIndex, instancesNum, absorptionsTimeAxis(tBin)*1000),  ...
+                eyeMovementPathsToThisPointForThisInstance, ...
                 colorbarTicks, minAbsorptions + colorbarTicks*(maxAbsorptions-minAbsorptions), true, ...
                 xTicks, yTicks, xTickLabels, yTickLabels);
            
@@ -251,9 +255,11 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
             if (isHexActivation)
                 activation = activation(activeConesActivations);
             end
+            eyeMovementPathsToThisPointForAllInstances = stimData.responseInstanceArray.theMosaicEyeMovements(:,1:tBin,:);
             renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apertureOutline, ...
                 responseNormalization, sprintf('noise-free absorptions (intTime: %2.2fms)',  theMosaic.integrationTime*1000), ...
                 sprintf('cond: %d/%d (t: %2.1fms)', condIndex, condsNum, absorptionsTimeAxis(tBin)*1000), ...
+                eyeMovementPathsToThisPointForAllInstances, ...
                 colorbarTicks, minNoiseFreeIsomerizations + colorbarTicks*(maxNoiseFreeIsomerizations-minNoiseFreeIsomerizations), true, ...
                 xTicks, yTicks, xTickLabels, yTickLabels);
  
@@ -268,6 +274,7 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
                 renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apertureOutline, ...
                     responseNormalization, 'photocurrents', ...
                     sprintf('instance %d/%d (t: %2.1fms)', instanceIndex, instancesNum, photocurrentsTimeAxis(tBin)*1000), ...
+                    eyeMovementPathsToThisPointForThisInstance, ...
                     colorbarTicks, minPhotocurrents + colorbarTicks*(maxPhotocurrents-minPhotocurrents), true, ...
                     xTicks, yTicks, xTickLabels, yTickLabels);
 
@@ -280,6 +287,7 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
                 renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apertureOutline, ...
                     responseNormalization, 'noise-free photocurrents', ...
                     sprintf('cond: %d/%d (t: %2.1fms)', condIndex, condsNum, photocurrentsTimeAxis(tBin)*1000), ...
+                    eyeMovementPathsToThisPointForAllInstances, ...
                     colorbarTicks, minNoiseFreePhotocurrents + colorbarTicks*(maxNoiseFreePhotocurrents-minNoiseFreePhotocurrents), true, ...
                     xTicks, yTicks, xTickLabels, yTickLabels);  
             end
@@ -293,7 +301,7 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
 end 
     
 function renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apertureOutline, ...
-                responseNormalization, signalName, instanceLabel, ...
+                responseNormalization, signalName, instanceLabel, eyeMovementPathsToThisPoint,...
                 colorbarTicks, colorbarTickLabels, displayColorbar, xTicks, yTicks, xTickLabels, yTickLabels)      
     if (isHexActivation)
         edgeColor = 'none';
@@ -302,6 +310,12 @@ function renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apert
     else
         imagesc(mosaicXaxis, mosaicYaxis, activation);
     end
+    hold on;
+    instancesVisualized = size(eyeMovementPathsToThisPoint,1);
+    for k = 1:instancesVisualized 
+        plot(squeeze(eyeMovementPathsToThisPoint(k,:,1)), squeeze(eyeMovementPathsToThisPoint(k,:,2)), 'r-', 'LineWidth', 1.5);
+    end
+    hold off
     axis 'image'; axis 'xy'; box 'on';
     set(gca, 'XTick', xTicks, 'YTick', [], 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels, 'XColor', [0.5 0.5 0.5], 'YColor', [0.5 0.5 0.5]);
     set(gca, 'CLim', [0 1], 'FontSize', 14, 'Color', [0 0 0]);
