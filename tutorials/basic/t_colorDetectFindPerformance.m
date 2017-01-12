@@ -140,13 +140,11 @@ if (p.Results.compute)
     testConeContrasts = ancillaryData.testConeContrasts;
     testContrasts = ancillaryData.testContrasts;
     
-    % If everything is working right, these check parameter structures will
-    % match what we used to specify the file we read in.
-    %
-    % SHOULD ACTUALLY CHECK FOR EQUALITY HERE.  Should be able to use
-    % RecursivelyCompareStructs to do so.
-    rParamsCheck = ancillaryData.rParams;
-    LMPlaneInstanceParamsCheck = ancillaryData.instanceParams;
+    % If everything is working right, rParams and ancillaryData.rParams
+    % should be identical structs. Same for testDirectionParams and ancillaryParams.instanceParams
+    % Check for that below.
+    checkStructs('rParams', rParams, 'ancillaryParams.rParams', ancillaryData.rParams);
+    checkStructs('testDirectionParams', testDirectionParams, 'ancillaryParams.instanceParams', ancillaryData.instanceParams);
     fprintf('done\n');
     
     % Do SVM for each test contrast and color direction.
@@ -282,5 +280,27 @@ if (p.Results.delete)
     paramsList = constantParamsList;
     paramsList{numel(paramsList)+1} = thresholdParams;
     rwObject.delete('performanceData',paramsList,writeProgram);
+end
+end
+
+% Function to check for struct equality
+function checkStructs(struct1Name, struct1, struct2Name, struct2)
+    compareStringFields = true;
+    graphMismatchedData = false;
+    customTolerances = [];
+    tolerance = 1e-12;
+    structCheck = RecursivelyCompareStructs(...
+        struct1Name, struct1, ...
+        struct2Name, struct2, ...
+        tolerance, customTolerances, graphMismatchedData, compareStringFields, []);
+    if (~isempty(structCheck))
+        % Oh oh, structs do not match. Print mismatched fields
+        for k = 1:numel(structCheck)
+            fprintf(2,'\t[%d]. %s\n', k, structCheck{k});
+        end
+        error('\n<strong>%s and %s are NOT identical structs. </strong>\n', struct1Name, struct2Name);
+    else
+        fprintf('%s and %s are identical structs\n', struct1Name, struct2Name);
+    end
 end
 
