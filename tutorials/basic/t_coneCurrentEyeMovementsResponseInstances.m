@@ -358,23 +358,32 @@ if (p.Results.generatePlots && p.Results.visualizeResponses)
          
     % Load the response and ancillary data
     paramsList = constantParamsList;
-    paramsList{numel(paramsList)+1} = colorModulationParamsNull;    
+    paramsList{numel(paramsList)+1} = colorModulationParamsNull;   
+    fprintf('Importing NOSTIM data and ancillary data\n');
     noStimData = rwObject.read('responseInstances',paramsList,theProgram);
     ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
+    
+    % Only keep the data we will visualize
+    noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations(1:instancesToVisualize,:,:);
+    noStimData.responseInstanceArray.theMosaicPhotocurrents = noStimData.responseInstanceArray.theMosaicPhotocurrents(1:instancesToVisualize,:,:);
     
     rParams = ancillaryData.rParams;
     parforConditionStructs = ancillaryData.parforConditionStructs;
     nParforConditions = length(parforConditionStructs); 
-    for kk = 1:nParforConditions 
-         thisConditionStruct = parforConditionStructs{kk};
-         colorModulationParamsTemp = rParams.colorModulationParams;
-         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
-         colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
+    for kk = nParforConditions:-nParforConditions+1:1
+        fprintf('Importing STIM data for condition %d/%d\n', kk, nParforConditions);
+        thisConditionStruct = parforConditionStructs{kk};
+        colorModulationParamsTemp = rParams.colorModulationParams;
+        colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
+        colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
 
-         paramsList = constantParamsList;
-         paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
-         stimData = rwObject.read('responseInstances',paramsList,theProgram);
-         visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, instancesToVisualize, p.Results.visualizationFormat);
+        paramsList = constantParamsList;
+        paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
+        stimData = rwObject.read('responseInstances',paramsList,theProgram);
+        % Only keep the data we will visualize
+        stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(1:instancesToVisualize,:,:);
+        stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(1:instancesToVisualize,:,:);
+        visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, p.Results.visualizationFormat);
     end
 end
 

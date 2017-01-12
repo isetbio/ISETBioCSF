@@ -31,5 +31,8 @@ switch (params.method)
         error('Unknown classification method');
 end
 
+if (isfield(params, 'trialsUsed'))
+    theThresholdName = sprintf('%s_trialsUsed%d',theThresholdName, params.trialsUsed);
+end
 dirname = theThresholdName;
 
