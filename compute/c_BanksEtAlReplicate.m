@@ -289,6 +289,7 @@ if (p.Results.generatePlots & p.Results.plotCSF)
     hFig = figure; clf; hold on
     fontBump = 4;
     markerBump = -4;
+    lineBump = -1;
     set(gcf,'Position',[100 100 450 650]);
     set(gca,'FontSize', rParams.plotParams.axisFontSize+fontBump);
     theColors = ['r' 'g' 'b'];
@@ -298,8 +299,17 @@ if (p.Results.generatePlots & p.Results.plotCSF)
         plot(banksEtAlReplicate.cyclesPerDegree(ll,:),1./[banksEtAlReplicate.mlptThresholds(ll,:).thresholdContrasts]*banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1), ...
             [theColors(theColorIndex) 'o-'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
         legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
-        
     end
+    
+    % Add Banks et al. data to the figure
+    banksFactor = 1/1.95;
+    [A,B,C,D,E] = LoadDigitizedBanksFigure2;
+    plot(A(:,1),A(:,2)*banksFactor,'r-','MarkerSize',rParams.plotParams.markerSize+markerBump,'LineWidth',rParams.plotParams.lineWidth+lineBump);
+    plot(B(:,1),B(:,2)*banksFactor,'r:','MarkerSize',rParams.plotParams.markerSize+markerBump,'LineWidth',rParams.plotParams.lineWidth+lineBump);
+    plot(C(:,1),C(:,2)*banksFactor,'b-','MarkerSize',rParams.plotParams.markerSize+markerBump,'LineWidth',rParams.plotParams.lineWidth+lineBump);
+    plot(D(:,1),D(:,2)*banksFactor,'b-','MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor','r','LineWidth',rParams.plotParams.lineWidth+lineBump);
+    plot(E(:,1),E(:,2)*banksFactor,'b-','MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor','r','LineWidth',rParams.plotParams.lineWidth+lineBump);
+    
     set(gca,'XScale','log');
     set(gca,'YScale','log');
     xlabel('Log10 Spatial Frequency (cpd)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
@@ -310,7 +320,7 @@ if (p.Results.generatePlots & p.Results.plotCSF)
     titleStr1 = 'Computational Observer CSF';
     titleStr2 = sprintf('Blur: %d, Aperture Blur: %d',p.Results.blur, p.Results.apertureBlur);
     title({titleStr1 ; titleStr2});
-        
+     
     % Write out the figure
     rwObject.write('banksEtAlReplicate',hFig,paramsList,writeProgram,'Type','figure')
 end
