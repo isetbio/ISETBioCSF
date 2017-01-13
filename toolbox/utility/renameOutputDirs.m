@@ -3,11 +3,14 @@
 
 function renameOutputDirs
 
+    % Get baseOutputDir
     p = getpref('IBIOColorDetect');
     rootDir = uigetdir(p.outputBaseDir);
     
+    % Get all dirs containing [STIM_TEMPORAL] in their filename
     matchingDirs = dir(sprintf('%s/**/[STIM_TEMPORAL]*',rootDir));
     
+    % Parse list
     for k = 1:numel(matchingDirs)
         if (matchingDirs(k).isdir)
             
