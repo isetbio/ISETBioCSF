@@ -45,7 +45,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotCSF' - true/false (default true).  Plot results.
 %   'freezeNoise' - true/false (default true). Freeze noise so calculations reproduce.
-%   'useTrialBlocks' - true/false (default true).  Break response
+%   'useTrialBlocks' - true/false (default -1).  Break response
 %        computations down into blocks?  If this is set to -1, then
 %        nTrialBlocks is passed down the chain as -1, which causes the
 %        underlying routines to try to be smart.  Otherwise if this is 1,
@@ -84,7 +84,7 @@ p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischa
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotCSF',true,@islogical);
 p.addParameter('freezeNoise',true,@islogical);
-p.addParameter('useTrialBlocks',true,@islogical);
+p.addParameter('useTrialBlocks',-1,@islogical);
 p.addParameter('nTrialsPerBlock',50,@isnumeric);
 p.parse(varargin{:});
 
