@@ -182,12 +182,12 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
             subplot('Position', subplotPosVectors(row,col).v);
             if (k == 1)
                 activation = squeeze(absorptions(instanceIndex, :,:,tBin));
-                instanceLabel = sprintf('%2.1fms (inst.1, emPath:1-%d)', absorptionsTimeAxis(tBin)*1000, instancesNum);
+                instanceLabel = sprintf('%2.1fms (inst:1, em:1-%d)', absorptionsTimeAxis(tBin)*1000, instancesNum);
                 minActivation = minAbsorptions;
                 maxActivation = maxAbsorptions;
             else
                 activation = squeeze(photocurrents(instanceIndex, :,:,tBin));
-                instanceLabel = sprintf('%2.1fms (inst.1, emPath:1-%d)', photocurrentsTimeAxis(tBin)*1000, instancesNum);
+                instanceLabel = sprintf('%2.1fms (inst:1, em:1-%d)', photocurrentsTimeAxis(tBin)*1000, instancesNum);
                 minActivation = minPhotocurrents;
                 maxActivation = maxPhotocurrents;
             end
