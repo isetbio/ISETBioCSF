@@ -6,40 +6,43 @@ function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
 %
 % Key/value pairs
 %    DATADIR OPTIONS
-%   'useScratchTopLevelDirName'- true/false (default false). 
-%      When true, the top level output directory is [scratch]. 
-%      When false, it is the name of this script.
+%       'useScratchTopLevelDirName'- true/false (default false). 
+%           When true, the top level output directory is [scratch]. 
+%           When false, it is the name of this script.
 %
 %     % RESPONSE COMPUTATION OPTIONS
-%     'imagePixels' : how many pixels to use to represent the input stimulus
-%     'nTrainingSamples' - how many response instances to compute. default: 128
-%     'emPathType' - choose from {'none', 'frozen', 'random'}. Type of emPath: 
-%         'none'   : results to 1 eye movement at (0,0)
-%         'frozen' : results to the identical emPath being applied to each computed instance
-%         'random' : results in a different emPath being applied to each computed instance
-%     'freezeNoise' - true/false (default true).  Freezes isomerization and photocurrent noise so that results are reproducible
-%     'computeResponses' - true/false (default true).  Do the computations.
-%     'computeMosaic' - true/false (default true). Compute a cone mosaic or load one (good for large hex mosaics which take a while to compute)
+%       'imagePixels' : how many pixels to use to represent the input stimulus
+%       'nTrainingSamples' - how many response instances to compute. default: 128
+%       'emPathType' - choose from {'none', 'frozen', 'random'}. Type of emPath: 
+%           'none'   : results to 1 eye movement at (0,0)
+%           'frozen' : results to the identical emPath being applied to each computed instance
+%           'random' : results in a different emPath being applied to each computed instance
+%       'freezeNoise' - true/false (default true).  Freezes isomerization and photocurrent noise so that results are reproducible
+%       'computeResponses' - true/false (default true).  Do the computations.
+%       'computeMosaic' - true/false (default true). Compute a cone mosaic or load one (good for large hex mosaics which take a while to compute)
 %
 %     DIAGNOSTIC OPTIONS
-%     'displayTrialBlockPartitionDiagnostics', true/false. Wether to display trial block diagnostics.
+%       'displayTrialBlockPartitionDiagnostics', true/false. Wether to display trial block diagnostics.
 %
-%     VISUALIZATION OPTIONS
-%     'generatePlots' - true/false (default false).  Produce response
-%        visualizations.  Set to false when running big jobs on clusters or
-%        in parfor loops, as plotting doesn't seem to play well with those
-%        conditions.
+%     GENERAL VISUALIZATION OPTIONS
+%       'generatePlots' - true/false (default false).  Produce response
+%           visualizations.  Set to false when running big jobs on clusters or
+%           in parfor loops, as plotting doesn't seem to play well with those conditions.
 %
 %     RESPONSE MAP VISUALIZATION OPTIONS
-%     'visualizeResponses' - true/false (default true). Call the fancy visualize response routine.
-%     'visualizationFormat' - How to arrange visualized response maps. 
-%       Available options: 'montage', 'video'. Default is 'montage'
-%     'visualizedResponseNormalization' - How to normalize visualized response maps
-%        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
+%       'visualizeResponses' - true/false (default true). Call the fancy visualize response routine.
+%       'visualizationFormat' - How to arrange visualized response maps.  Available options: 
+%            'montage' (default). Create a montage of all frames 
+%            'video'.             Animate through all frames. 
+%       'visualizedResponseNormalization' - How to normalize visualized response maps. Available options: 
+%           'submosaicBasedZscore', 
+%           'LMSabsoluteResponseBased', 
+%           'LMabsoluteResponseBased', 
+%           'MabsoluteResponseBased'
 %
 %     PERFORMANCE COMPUTATION OPTIONS
-%   'findPerformance' - true/false (default true).  Find performance.
-%   'fitPsychometric' - true/false (default true).  Fit psychometric functions.
+%       'findPerformance' - true/false (default true).  Find performance.
+%       'fitPsychometric' - true/false (default true).  Fit psychometric functions.
 %
 %
 
@@ -151,7 +154,7 @@ testDirectionParams = modifyStructParams(testDirectionParams, ...
     'nAzimuthAngles', 1, ...
     'startElevationAngle', 0, ...
     'nElevationAngles', 1, ...
-    'nContrastsPerDirection', 12, ...
+    'nContrastsPerDirection', 4, ...
     'lowContrast', 0.0001, ...
     'highContrast', 0.1, ...
     'contrastScale', 'log' ...    % choose between 'linear' and 'log'  

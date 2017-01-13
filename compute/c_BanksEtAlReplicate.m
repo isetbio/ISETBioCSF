@@ -211,13 +211,15 @@ for ll = 1:length(p.Results.luminances)
         %% Compute response instances
         if (p.Results.useTrialBlocks)
             if (p.Results.useTrialBlocks == -1)
-                trialBlocks = -1;
+                % Automatically compute trials in each block based on system resources (RAM size and number of cores)
+                trialBlockSize = -1;
             else
-                desiredTrialsPerBlock = p.Results.nTrialsPerBlock;
-                trialBlocks = round(testDirectionParams.trialsNum/desiredTrialsPerBlock);
+                % Use this many trials in each block
+                trialBlockSize = p.Results.nTrialsPerBlock;
             end
         else
-            trialBlocks = 1;
+            % Use all the trials
+            trialBlockSize = [];
         end
         if (p.Results.computeResponses)
            t_coneCurrentEyeMovementsResponseInstances(...
@@ -228,7 +230,7 @@ for ll = 1:length(p.Results.luminances)
                'visualizeResponses',p.Results.visualizeResponses, ...
                'generatePlots',p.Results.generatePlots,...
                'freezeNoise',p.Results.freezeNoise,...
-               'trialBlocks',trialBlocks);
+               'trialBlockSize',trialBlockSize);
         end
         
         %% Find performance, template max likeli

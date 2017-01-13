@@ -13,7 +13,7 @@ function [responseInstanceArray,noiseFreeIsomerizations,noiseFreePhotocurrents] 
 %   'workerID' - (default empty).  If this field is non-empty, the progress of
 %            the computation is printed in the command window along with the
 %            workerID (from a parfor loop).
-%   'trialBlocks' - How many blocks to split the testDirectionParams.trialsNum into. Default: 1 (no blocking). 
+%   'trialBlockSize' - How many trials each trialBlock should have. Default: [], which results in nTrials (no blocking). 
 %               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
 %               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
 %               If set to -1, the number of trial blocks is computed automatically based on the number of cores and system RAM.
@@ -26,12 +26,12 @@ p = inputParser;
 p.addParameter('seed',1, @isnumeric);   
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('useSinglePrecision',true,@islogical);
-p.addParameter('trialBlocks', 1, @isnumeric);
+p.addParameter('trialBlockSize', [], @isnumeric);
 p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 
 p.parse(varargin{:});
 currentSeed = p.Results.seed;
-trialBlocks = p.Results.trialBlocks;
+trialBlockSize = p.Results.trialBlockSize;
 displayTrialBlockPartitionDiagnostics = p.Results.displayTrialBlockPartitionDiagnostics;
 %% Start computation time measurement
 tic
@@ -71,16 +71,16 @@ theEMpaths = colorDetectMultiTrialEMPathGenerate(theMosaic, nTrials, eyeMovement
 
 
 % Determine optimal trialBlocks
-computeTrialBlocksForParforLoop(nTrials, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), eyeMovementsNum, displayTrialBlockPartitionDiagnostics);
-if (trialBlocks == -1)
-    trialBlocks = computeTrialBlocksForParforLoop(nTrials, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), eyeMovementsNum, displayTrialBlockPartitionDiagnostics);
+computeTrialBlockSizeForParforLoop(nTrials, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), eyeMovementsNum, displayTrialBlockPartitionDiagnostics);
+if (trialBlockSize == -1)
+    trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), eyeMovementsNum, displayTrialBlockPartitionDiagnostics);
 end
 
 [isomerizations, photocurrents] = ...
      theMosaic.computeForOISequence(theOIsequence, ...
                     'seed', currentSeed, ...
                     'emPaths', theEMpaths, ...
-                    'trialBlocks', trialBlocks, ...
+                    'trialBlockSize', trialBlockSize, ...
                     'currentFlag', true, ...
                     'workerID', p.Results.workerID);
 isomerizationsTimeAxis = theMosaic.timeAxis + theOIsequence.timeAxis(1);
@@ -148,7 +148,7 @@ end
 
 
 
-function trialBlocksForParforLoop = computeTrialBlocksForParforLoop(nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, emPathLength, displayDiagnostics)
+function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, emPathLength, displayDiagnostics)
         
     % Determine system resources
     [numberOfCores, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
@@ -158,25 +158,30 @@ function trialBlocksForParforLoop = computeTrialBlocksForParforLoop(nTrials, con
     ramSizeGBytes = ramSizeGBytes - ramUsedByOSGBytes;
     
     % Compute trialBlocksForParforLoop
-    RAMcompressionFactor = 0.25;
+    RAMcompressionFactor = 0.30;
     singleTrialMemoryGBytes = 2*numberOfCores*(coneMosaicPatternSize*sizeOfDoubleInBytes + coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2)/(1024^3)/RAMcompressionFactor;
-    desiredTrialsPerBlock = ramSizeGBytes/singleTrialMemoryGBytes;
-    if (desiredTrialsPerBlock > nTrials)
-        desiredTrialsPerBlock = nTrials;
+    trialBlockSize = round(ramSizeGBytes/singleTrialMemoryGBytes);
+    if (trialBlockSize > nTrials)
+        trialBlockSize = nTrials;
     end
-    trialBlocksForParforLoop = floor(nTrials / desiredTrialsPerBlock);
-    
+    blockedTrialIndices = computeBlockedTrialIndices(trialBlockSize, nTrials);
+
     % Display nTrial partitioning into blocks
     if (displayDiagnostics)
-        [trialBlockSize, blockedTrialIndices] = computeBlockedTrialIndices(trialBlocksForParforLoop, nTrials);
         for iTrialBlock = 1:numel(blockedTrialIndices)
             trialIndicesForThisBlock = blockedTrialIndices{iTrialBlock};
             firstTrial = trialIndicesForThisBlock(1);
             lastTrial = trialIndicesForThisBlock(end);
+            if (iTrialBlock == 1)
+                firstTrialBlockSize = lastTrial-firstTrial+1;
+            end
+            if (iTrialBlock == numel(blockedTrialIndices))
+                lastTrialBlockSize = lastTrial-firstTrial+1;
+            end
             fprintf('trialBlock%d contains %d trials: %04d - %04d\n', iTrialBlock, numel(trialIndicesForThisBlock), firstTrial, lastTrial);
         end
         warndlg(...
             sprintf('CoresNum = %d; SystemRAM = %2.2fGB; estimated peak RAM = %2.2fGB', numberOfCores, ramSizeGBytes, trialBlockSize*singleTrialMemoryGBytes), ...
-            sprintf('nTrials = %d, trialBlocksForParforLoop = %d', nTrials, trialBlocksForParforLoop));
+            sprintf('nTrials = %d, blocks = %d, blockSize(1/last) = %d/%d', nTrials, numel(blockedTrialIndices), firstTrialBlockSize, lastTrialBlockSize));
     end
 end

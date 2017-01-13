@@ -30,7 +30,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %     'rParams' - Value the is the rParams structure to use.  Default empty,
 %     which then uses defaults produced by generation function.
 %     'testDirectionParams - Value is the testDirectionParams structure to use
-%     'trialBlocks' - How many blocks to split the testDirectionParams.trialsNum into. Default: 1 (no blocking). 
+%     'trialBlockSize' - How many blocks to split the testDirectionParams.trialsNum into. Default: [], which results in nTrials  (no blocking). 
 %               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
 %               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
 %               If set to -1, the number of trial blocks is computed automatically based on the number of cores and system RAM.
@@ -59,7 +59,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
-p.addParameter('trialBlocks', 1, @isnumeric);
+p.addParameter('trialBlockSize', [], @isnumeric);
 p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
@@ -216,7 +216,7 @@ if (p.Results.compute)
         'seed', 1, ...
         'workerID', p.Results.workerID,...
         'displayTrialBlockPartitionDiagnostics', p.Results.displayTrialBlockPartitionDiagnostics, ...
-        'trialBlocks', 1);   % use 1 trialBlock since this is done outside the parfor loop
+        'trialBlockSize', []);   % use all trials since this is done outside the parfor loop
     
     noStimData = struct(...
         'testContrast', colorModulationParamsNull.contrast, ...
@@ -289,7 +289,7 @@ if (p.Results.compute)
                 'seed', parforRanSeeds(kk), ...
                 'workerID', workerID, ...
                 'displayTrialBlockPartitionDiagnostics', false, ...
-                'trialBlocks', p.Results.trialBlocks);
+                'trialBlockSize', p.Results.trialBlockSize);
             
         stimData = struct(...
             'testContrast', colorModulationParamsTemp.contrast, ...
