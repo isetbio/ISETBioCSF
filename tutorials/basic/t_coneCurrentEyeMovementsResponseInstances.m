@@ -166,7 +166,7 @@ if (p.Results.compute)
     end
     
     if (~isempty(p.Results.overrideMosaicIntegrationTime))
-        fprintf('Overriding mosaic''s default integrationTime (%2.1fms) with %2.1fms', theMosaic.integrationTime*1000, p.Results.overrideMosaicIntegrationTime*1000);
+        fprintf(2, 'NOTE: Overriding mosaic''s default integrationTime (%2.1fms) with %2.1fms\n', theMosaic.integrationTime*1000, p.Results.overrideMosaicIntegrationTime*1000);
         theMosaic.integrationTime = p.Results.overrideMosaicIntegrationTime;
     end
     
