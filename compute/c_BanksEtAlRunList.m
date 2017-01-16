@@ -51,6 +51,7 @@ params.blur = true;
 params.apertureBlur = true;
 params.LMSRatio = [0.62 0.31 0.07];
 params.coneDarkNoiseRate = [300 300 00];
+params.cyclesPerDegree = [10 20 30 40 50 60];
 params.conePacking = 'hex';
 params = rmfield(params,'innerSegmentSizeMicrons');
 params = rmfield(params,'coneSpacingMicrons');
