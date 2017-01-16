@@ -134,8 +134,8 @@ rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
     
 if strcmp(p.Results.emPathType, 'none')
     % No eye movements
-    [stimulusTimeAxis, stimulusModulationFunction, ~] = gaussianTemporalWindowCreate(temporalParams);
-    timeIndicesToKeep = find(abs(stimulusTimeAxis-temporalParams.secondsToIncludeOffset) <= temporalParams.secondsToInclude/2);
+    [stimulusTimeAxis, stimulusModulationFunction, ~] = gaussianTemporalWindowCreate(rParams.temporalParams);
+    timeIndicesToKeep = find(abs(stimulusTimeAxis-rParams.temporalParams.secondsToIncludeOffset) <= rParams.temporalParams.secondsToInclude/2);
     areaUnderTheCurve = sum(stimulusModulationFunction(timeIndicesToKeep)) * (stimulusTimeAxis(2)-stimulusTimeAxis(1));
     equivalentIntegrationTime = areaUnderTheCurve
     
