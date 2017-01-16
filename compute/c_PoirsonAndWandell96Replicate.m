@@ -81,7 +81,7 @@ end
 
 % Ensure the performanceSignal has a valid value
 performanceSignal = p.Results.performanceSignal;
-if (strcmp(visualizationFormat, 'isomerizations')) || (strcmp(visualizationFormat, 'photocurrents'))
+if (strcmp(performanceSignal, 'isomerizations')) || (strcmp(performanceSignal, 'photocurrents'))
 else
     error('performanceSignal must be set to either ''isomerizations'' or ''photocurrents''. Current value: ''%s''.', performanceSignal);
 end
