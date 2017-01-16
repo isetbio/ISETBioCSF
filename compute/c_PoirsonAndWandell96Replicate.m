@@ -135,10 +135,12 @@ rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
 equivalentIntegrationTime = [];
 if strcmp(p.Results.emPathType, 'none')
     % No eye movements
+    % Adjust the integrationTime to match the area under the curve of the
+    % stimulus modulation function
     [stimulusTimeAxis, stimulusModulationFunction, ~] = gaussianTemporalWindowCreate(rParams.temporalParams);
     timeIndicesToKeep = find(abs(stimulusTimeAxis-rParams.temporalParams.secondsToIncludeOffset) <= rParams.temporalParams.secondsToInclude/2);
     areaUnderTheCurve = sum(stimulusModulationFunction(timeIndicesToKeep)) * (stimulusTimeAxis(2)-stimulusTimeAxis(1));
-    equivalentIntegrationTime = areaUnderTheCurve
+    equivalentIntegrationTime = areaUnderTheCurve;
     
     % Run with a single exposure == windowTau and no eye movements
     % Equate stimulusSamplingIntervalInSeconds to stimulusDurationInSeconds to generate 1 time point only.
