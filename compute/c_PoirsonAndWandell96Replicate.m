@@ -134,14 +134,20 @@ rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
     
 if strcmp(p.Results.emPathType, 'none')
     % No eye movements
+    [stimulusTimeAxis, stimulusModulationFunction, ~] = gaussianTemporalWindowCreate(temporalParams);
+    timeIndicesToKeep = find(abs(stimulusTimeAxis-temporalParams.secondsToIncludeOffset) <= temporalParams.secondsToInclude/2);
+    areaUnderTheCurve = sum(stimulusModulationFunction(timeIndicesToKeep)) * (stimulusTimeAxis(2)-stimulusTimeAxis(1));
+    equivalentIntegrationTime = areaUnderTheCurve
+    
     % Run with a single exposure == windowTau and no eye movements
     % Equate stimulusSamplingIntervalInSeconds to stimulusDurationInSeconds to generate 1 time point only.
-    stimulusDurationInSeconds = 1.0*windowTauInSeconds;
     rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
         'stimulusDurationInSeconds', stimulusDurationInSeconds, ...
         'stimulusSamplingIntervalInSeconds',  stimulusDurationInSeconds, ... 
         'secondsToInclude', stimulusDurationInSeconds ...  
     );
+
+    rParams.mosaicParams.integrationTime = equivalentIntegrationTime;
 end
 
 % Modify mosaic parameters
