@@ -37,8 +37,8 @@ elseif (thresholdParams.nIntervals == 2)
     halfTrials = floor(nTrials/2);
     for iTrial = 1:halfTrials
         if (strcmp(thresholdParams.signalSource,'photocurrents'))
-            classificationData(iTrial,1:responseSize) = reshape(squeeze(noStimData.responseInstanceArray.theMosaicPhotoCurrents(iTrial,:,:,:)), [1 responseSize]);
-            classificationData(halfTrials+iTrial,responseSize+1:end) = reshape(squeeze(noStimData.responseInstanceArray.theMosaicPhotoCurrents(halfTrials+iTrial,:,:,:)), [1 responseSize]);
+            classificationData(iTrial,1:responseSize) = reshape(squeeze(noStimData.responseInstanceArray.theMosaicPhotocurrents(iTrial,:,:,:)), [1 responseSize]);
+            classificationData(halfTrials+iTrial,responseSize+1:end) = reshape(squeeze(noStimData.responseInstanceArray.theMosaicPhotocurrents(halfTrials+iTrial,:,:,:)), [1 responseSize]);
         else
             classificationData(iTrial,1:responseSize) = reshape(squeeze(noStimData.responseInstanceArray.theMosaicIsomerizations(iTrial,:,:,:)), [1 responseSize]);
             classificationData(halfTrials+iTrial,responseSize+1:end) = reshape(squeeze(noStimData.responseInstanceArray.theMosaicIsomerizations(halfTrials+iTrial,:,:,:)), [1 responseSize]);
