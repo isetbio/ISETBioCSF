@@ -219,7 +219,7 @@ end % visualizeResponses
 %% Find performance, template max likeli
 thresholdParams.method = 'mlpt';
 % Reduce # of trials used to make computation feasible
-thresholdParams.trialsUsed = 128;
+thresholdParams.trialsUsed = 512;
 thresholdParams.signalSource = performanceSignal;
 
 if (p.Results.findPerformance)
