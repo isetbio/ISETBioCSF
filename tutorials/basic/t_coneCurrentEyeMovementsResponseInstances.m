@@ -64,6 +64,7 @@ p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('computeMosaic', true, @islogical);
+p.addParameter('overrideMosaicIntegrationTime', [], @isnumeric);
 p.addParameter('generatePlots',false,@islogical);
 p.addParameter('visualizeResponses',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
@@ -162,6 +163,11 @@ if (p.Results.compute)
          fprintf('Loading a previously saved cone mosaic\n');
          coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
          theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
+    end
+    
+    if (~isempty(p.Results.overrideMosaicIntegrationTime))
+        fprintf('Overriding mosaic''s default integrationTime (%2.1fms) with %2.1fms', theMosaic.integrationTime*1000, p.Results.overrideMosaicIntegrationTime*1000);
+        theMosaic.integrationTime = p.Results.overrideMosaicIntegrationTime;
     end
     
     %% Define color modulation list
