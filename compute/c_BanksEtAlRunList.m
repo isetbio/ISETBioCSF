@@ -52,5 +52,7 @@ params.apertureBlur = true;
 params.LMSRatio = [0.62 0.31 0.07];
 params.coneDarkNoiseRate = [300 300 00];
 params.conePacking = 'hex';
+params = rmfield(params,'innerSegmentSizeMicrons');
+params = rmfield(params,'coneSpacingMicrons');
 c_BanksEtAlReplicate(params);
 
