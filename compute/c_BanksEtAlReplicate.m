@@ -36,6 +36,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'contrastScale' - 'log'/'linear' (default 'log'). Contrast scale.
 %   'computeResponses' - true/false (default true).  Compute responses.
 %   'findPerformance' - true/false (default true).  Find performance.
+%   'thresholdMethod' - string (default 'mlpt').  How to find performance ('mlpt', 'mlpe', 'svm')
 %   'fitPsychometric' - true/false (default true).  Fit psychometric functions.
 %   'thresholdCriterionFraction' value (default 0.75). Criterion corrrect for threshold.
 %   'generatePlots' - true/false (default true).  No plots are generated unless this is true.
@@ -76,6 +77,7 @@ p.addParameter('highContrast',0.1,@isnumeric);
 p.addParameter('contrastScale','log',@ischar);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('findPerformance',true,@islogical);
+p.addParameter('thresholdMethod','mlpt',@ischar);
 p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('thresholdCriterionFraction',0.75,@isnumeric);
 p.addParameter('generatePlots',true,@islogical);
@@ -204,10 +206,10 @@ for ll = 1:length(p.Results.luminances)
             );
         
         % Parameters related to how we find thresholds from responses
-        % Use default
         thresholdParams = thresholdParamsGenerate;
         thresholdParams.criterionFraction = p.Results.thresholdCriterionFraction;
-        
+        thresholdParams.method = p.Results.thresholdMethod;
+
         %% Compute response instances
         if (p.Results.useTrialBlocks)
             if (p.Results.useTrialBlocks == -1)
@@ -234,7 +236,6 @@ for ll = 1:length(p.Results.luminances)
         end
         
         %% Find performance, template max likeli
-        thresholdParams.method = 'mlpt';
         if (p.Results.findPerformance)
             t_colorDetectFindPerformance('rParams',rParams,'testDirectionParams',testDirectionParams,'thresholdParams',thresholdParams,'compute',true,'plotSvmBoundary',false,'plotPsychometric',false,'freezeNoise',p.Results.freezeNoise);
         end

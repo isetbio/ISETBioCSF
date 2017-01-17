@@ -9,6 +9,7 @@ clear; close all;
 params.useScratchTopLevelDirName = false;
 params.computeResponses = true;
 params.findPerformance = true;
+params.thresholdMethod = 'mlpt';
 params.fitPsychometric = true;
 params.nTrainingSamples = 2000;
 params.conePacking = 'hexReg';
@@ -56,3 +57,13 @@ params = rmfield(params,'innerSegmentSizeMicrons');
 params = rmfield(params,'coneSpacingMicrons');
 c_BanksEtAlReplicate(params);
 
+% SVM version of the above
+params.computeResponses = false;
+params.thresholdMethod = 'svm';
+params.blur = true;
+params.apertureBlur = true;
+params.LMSRatio = [0.62 0.31 0.07];
+params.coneDarkNoiseRate = [300 300 00];
+params.conePacking = 'hex';
+params = rmfield(params,'innerSegmentSizeMicrons');
+params = rmfield(params,'coneSpacingMicrons');
