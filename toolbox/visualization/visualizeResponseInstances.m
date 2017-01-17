@@ -153,12 +153,12 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
             instanceIndex = 1;
             randomBaseFigNum = round(rand*10000);
             hFig(1) = figure(randomBaseFigNum+condIndex); clf;
-            set(hFig(1), 'Position', [10 10 1600 1000], 'Color', [0 0 0], 'Name', sprintf('Absorptions (first instance, integrationTime: %2.2fms); %s', theMosaic.integrationTime*1000, stimData.stimulusLabel));
+            set(hFig(1), 'Position', [10 10 2290 1650], 'Color', [0 0 0], 'Name', sprintf('Absorptions (first instance, integrationTime: %2.2fms); %s', theMosaic.integrationTime*1000, stimData.stimulusLabel));
 
             if (~isempty(photocurrents))
                 randomBaseFigNum = randomBaseFigNum+1000;
                 hFig(2) = figure(randomBaseFigNum+condIndex); clf;
-                set(hFig(2), 'Position', [10+200 10+20 1600 1000], 'Color', [0 0 0], 'Name', sprintf('Photocurrents (first instance); %s', stimData.stimulusLabel));
+                set(hFig(2), 'Position', [10+200 10+20 2290 1650], 'Color', [0 0 0], 'Name', sprintf('Photocurrents (first instance); %s', stimData.stimulusLabel));
             end
 
             subplotCols = max([1 floor(1.25*sqrt(numel(absorptionsTimeAxis)))]);
@@ -166,12 +166,12 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
             subplotPosVectors = NicePlot.getSubPlotPosVectors(...
                    'rowsNum', subplotRows, ...
                    'colsNum', subplotCols, ...
-                   'heightMargin',   0.03, ...
-                   'widthMargin',    0.03, ...
-                   'leftMargin',     0.03, ...
-                   'rightMargin',    0.04, ...
-                   'bottomMargin',   0.02, ...
-                   'topMargin',      0.02);
+                   'heightMargin',   0.02, ...
+                   'widthMargin',    0.01, ...
+                   'leftMargin',     0.01, ...
+                   'rightMargin',    0.01, ...
+                   'bottomMargin',   0.01, ...
+                   'topMargin',      0.01);
 
     for k = 1:numel(hFig)
         figure(hFig(k));
@@ -182,12 +182,12 @@ function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNor
             subplot('Position', subplotPosVectors(row,col).v);
             if (k == 1)
                 activation = squeeze(absorptions(instanceIndex, :,:,tBin));
-                instanceLabel = sprintf('%2.1fms (inst:1, em:1-%d)', absorptionsTimeAxis(tBin)*1000, instancesNum);
+                instanceLabel = sprintf('%2.1fms (i:1, em:1-%d)', absorptionsTimeAxis(tBin)*1000, instancesNum);
                 minActivation = minAbsorptions;
                 maxActivation = maxAbsorptions;
             else
                 activation = squeeze(photocurrents(instanceIndex, :,:,tBin));
-                instanceLabel = sprintf('%2.1fms (inst:1, em:1-%d)', photocurrentsTimeAxis(tBin)*1000, instancesNum);
+                instanceLabel = sprintf('%2.1fms (i:1, em:1-%d)', photocurrentsTimeAxis(tBin)*1000, instancesNum);
                 minActivation = minPhotocurrents;
                 maxActivation = maxPhotocurrents;
             end
@@ -312,13 +312,14 @@ function renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apert
     end
     hold on;
     instancesVisualized = size(eyeMovementPathsToThisPoint,1);
+    instanceColors = jet(instancesVisualized+3);
     for k = 1:instancesVisualized 
-        plot(squeeze(eyeMovementPathsToThisPoint(k,:,1)), squeeze(eyeMovementPathsToThisPoint(k,:,2)), 'r-', 'LineWidth', 1.5);
+        plot(squeeze(eyeMovementPathsToThisPoint(k,:,1)), squeeze(eyeMovementPathsToThisPoint(k,:,2)), '-', 'LineWidth', 1.5, 'Color', squeeze(instanceColors(k,:)));
     end
     hold off
     axis 'image'; axis 'xy'; box 'on';
     set(gca, 'XTick', xTicks, 'YTick', [], 'XTickLabel', xTickLabels, 'YTickLabel', yTickLabels, 'XColor', [0.5 0.5 0.5], 'YColor', [0.5 0.5 0.5]);
-    set(gca, 'CLim', [0 1], 'FontSize', 14, 'Color', [0 0 0]);
+    set(gca, 'CLim', [0 1], 'FontSize', 12, 'Color', [0 0 0]);
     title(sprintf('%s\n%s', signalName, instanceLabel), 'Color', [0.8 0.8 0.5]);
     colormap(gray(1024));
 
@@ -334,7 +335,7 @@ function renderPlot(isHexActivation, mosaicXaxis, mosaicYaxis, activation, apert
         hCbar = colorbar('Ticks', colorbarTicks, 'TickLabels', sprintf('%2.2f\n',colorbarTickLabels));
         hCbar.Orientation = 'vertical'; 
         hCbar.Label.String = colorbarLabel;
-        hCbar.FontSize = 14; 
+        hCbar.FontSize = 12; 
         hCbar.FontName = 'Menlo'; 
         hCbar.FontWeight = 'Bold'; 
         hCbar.Color = [0.5 0.5 0.5];

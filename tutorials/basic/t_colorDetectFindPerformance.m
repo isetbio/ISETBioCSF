@@ -263,6 +263,9 @@ if (p.Results.generatePlots && p.Results.plotPsychometric)
     performanceData = rwObject.read('performanceData',paramsList,writeProgram);
     fprintf('done\n');
     
+    testConeContrasts = performanceData.testConeContrasts;
+    testContrasts = performanceData.testContrasts;
+    
     for ii = 1:size(testConeContrasts,2)
         hFig = figure; clf;
         errorbar(testContrasts, squeeze(performanceData.percentCorrect(ii,:)), squeeze(performanceData.stdErr(ii, :)), ...

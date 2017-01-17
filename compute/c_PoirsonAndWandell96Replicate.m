@@ -40,6 +40,8 @@ function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
 %           'LMabsoluteResponseBased', 
 %           'MabsoluteResponseBased'
 %
+%       'visualizePerformance' - true/false (default true). Plot the performance function
+%
 %     PERFORMANCE COMPUTATION OPTIONS
 %       'performanceSignal' - either 'isomerizations', or 'photocurrents'
 %       'performanceClassifier' - 'svm', 'mlpt', 'mlpe' (latter 2 applicable to Poisson noise, i.e. absorptions only)
@@ -66,6 +68,7 @@ p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeResponses',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('visualizationFormat', 'montage', @ischar);
+p.addParameter('visualizePerformance', true, @islogical);
 % PERFORMANCE COMPUTATION OPTIONS
 p.addParameter('performanceClassifier', 'svm', @(x)ismember(x, {'svm', 'mlpt', 'mlpe'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
@@ -238,6 +241,23 @@ if (p.Results.findPerformance)
         'plotPsychometric',true ...
         );
 end
-        
+       
+if (p.Results.visualizePerformance)
+    rParams.plotParams = modifyStructParams(rParams.plotParams, ...
+        'axisFontSize', 12, ...
+        'labelFontSize', 14, ...
+        'lineWidth', 1.5);
+    
+    t_colorDetectFindPerformance(...
+        'rParams',rParams, ...
+        'testDirectionParams',testDirectionParams,...
+        'thresholdParams',thresholdParams, ...
+        'compute',false, ...
+        'parforWorkersNum', 0, ... % do a serial for loop
+        'plotSvmBoundary',false, ...
+        'plotPsychometric',true ...
+        );
+end
+
 end
 
