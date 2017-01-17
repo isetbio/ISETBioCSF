@@ -34,7 +34,7 @@ switch (thresholdParams.method)
         
         % Do PCA?  This also standardizes the data if desired, and gets rid of any
         % features with no variance.
-        fprintf('\tDoing PCA etc ... ');
+        fprintf('\tExtracting the first %d principal components of the data ... ', thresholdParams.PCAComponents);
         theData = transformDataWithPCA(classificationData,thresholdParams.PCAComponents,thresholdParams.STANDARDIZE);
         fprintf('done\n');
         
@@ -313,7 +313,7 @@ switch (thresholdParams.method)
         
         % Aggregate percent correct
         usePercentCorrect = mean(percentCorrect);
-        useStdErr = std(percentCorrect)/sqrt(length(percentCorrect));;
+        useStdErr = std(percentCorrect)/sqrt(length(percentCorrect));
 
         % Report percent correct
         fprintf('\tPercent correct: %2.2f%%\n\n', usePercentCorrect*100);
