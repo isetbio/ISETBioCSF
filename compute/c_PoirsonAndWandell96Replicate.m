@@ -42,6 +42,7 @@ function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
 %
 %     PERFORMANCE COMPUTATION OPTIONS
 %       'performanceSignal' - either 'isomerizations', or 'photocurrents'
+%       'performanceClassifier' - 'svm', 'mlpt', 'mlpe' (latter 2 applicable to Poisson noise, i.e. absorptions only)
 %       'findPerformance' - true/false (default true).  Find performance.
 %       'fitPsychometric' - true/false (default true).  Fit psychometric functions.
 %
@@ -66,24 +67,21 @@ p.addParameter('visualizeResponses',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('visualizationFormat', 'montage', @ischar);
 % PERFORMANCE COMPUTATION OPTIONS
-p.addParameter('performanceSignal', 'isomerizations', @ischar);
+p.addParameter('performanceClassifier', 'svm', @(x)ismember(x, {'svm', 'mlpt', 'mlpe'}));
+p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
 
 p.parse(varargin{:});
+
+performanceSignal = p.Results.performanceSignal;
+performanceClassifier = p.Results.performanceClassifier;
 
 % Ensure visualizationFormat has a valid value
 visualizationFormat = p.Results.visualizationFormat;
 if (strcmp(visualizationFormat, 'montage')) || (strcmp(visualizationFormat, 'video'))
 else
     error('visualizationFormat must be set to either ''montage'' or ''video''. Current value: ''%s''.', visualizationFormat);
-end
-
-% Ensure the performanceSignal has a valid value
-performanceSignal = p.Results.performanceSignal;
-if (strcmp(performanceSignal, 'isomerizations')) || (strcmp(performanceSignal, 'photocurrents'))
-else
-    error('performanceSignal must be set to either ''isomerizations'' or ''photocurrents''. Current value: ''%s''.', performanceSignal);
 end
 
 
@@ -219,7 +217,7 @@ end % visualizeResponses
 
 
 %% Find performance, template max likeli
-thresholdParams.method = 'svm';
+thresholdParams.method = performanceClassifier;
 % Reduce # of trials used to make computation feasible
 thresholdParams.trialsUsed = 512;
 thresholdParams.signalSource = performanceSignal;
