@@ -57,9 +57,10 @@ params = rmfield(params,'innerSegmentSizeMicrons');
 params = rmfield(params,'coneSpacingMicrons');
 c_BanksEtAlReplicate(params);
 
-% SVM version of the above
+% SVM version of the above, 50 components
 params.computeResponses = false;
 params.thresholdMethod = 'svm';
+params.thresholdPCA = 50;
 params.blur = true;
 params.apertureBlur = true;
 params.LMSRatio = [0.62 0.31 0.07];
@@ -67,3 +68,17 @@ params.coneDarkNoiseRate = [300 300 00];
 params.conePacking = 'hex';
 params = rmfield(params,'innerSegmentSizeMicrons');
 params = rmfield(params,'coneSpacingMicrons');
+c_BanksEtAlReplicate(params);
+
+% SVM version of the above, 5 components
+params.computeResponses = false;
+params.thresholdMethod = 'svm';
+params.thresholdPCA = 5;
+params.blur = true;
+params.apertureBlur = true;
+params.LMSRatio = [0.62 0.31 0.07];
+params.coneDarkNoiseRate = [300 300 00];
+params.conePacking = 'hex';
+params = rmfield(params,'innerSegmentSizeMicrons');
+params = rmfield(params,'coneSpacingMicrons');
+c_BanksEtAlReplicate(params);

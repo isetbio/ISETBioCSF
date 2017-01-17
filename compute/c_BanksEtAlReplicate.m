@@ -37,6 +37,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'computeResponses' - true/false (default true).  Compute responses.
 %   'findPerformance' - true/false (default true).  Find performance.
 %   'thresholdMethod' - string (default 'mlpt').  How to find performance ('mlpt', 'mlpe', 'svm')
+%   'thresholdPCA' - value (default 60).  Number of PCA components to keep for SVM method.
 %   'fitPsychometric' - true/false (default true).  Fit psychometric functions.
 %   'thresholdCriterionFraction' value (default 0.75). Criterion corrrect for threshold.
 %   'generatePlots' - true/false (default true).  No plots are generated unless this is true.
@@ -78,6 +79,7 @@ p.addParameter('contrastScale','log',@ischar);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('thresholdMethod','mlpt',@ischar);
+p.addParameter('thresholdPCA',60,@isnumeric);
 p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('thresholdCriterionFraction',0.75,@isnumeric);
 p.addParameter('generatePlots',true,@islogical);
@@ -209,6 +211,7 @@ for ll = 1:length(p.Results.luminances)
         thresholdParams = thresholdParamsGenerate;
         thresholdParams.criterionFraction = p.Results.thresholdCriterionFraction;
         thresholdParams.method = p.Results.thresholdMethod;
+        thresholdParams.PCAComponents = p.Results.thresholdPCA;
 
         %% Compute response instances
         if (p.Results.useTrialBlocks)
