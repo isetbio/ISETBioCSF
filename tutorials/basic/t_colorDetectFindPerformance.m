@@ -23,6 +23,9 @@ function [validationData,extraData] = t_colorDetectFindPerformance(varargin)
 %   'freezeNoise' - true/false (default false).  Freezes all noise so that results are reproducible.
 %     If there is no noise set, this leaves it alone.
 %   'compute' - true/false (default true).  Do the computations.
+%   'parforWorkersNum' - 0 .. 12 (default: 12). How many workers to use for the computations.
+%       use 0: for a serial for loop
+%       use > 0: for a parfor loop with desired number of workers
 %   'generatePlots' - true/false (default true).  Produce any plots at
 %      all? Other plot options only have an effect if this is true.
 %   'plotPsychometric' - true/false (default false).  Produce
@@ -43,12 +46,14 @@ p.addParameter('testDirectionParams',[],@isemptyorstruct);
 p.addParameter('thresholdParams',[],@isemptyorstruct);
 p.addParameter('freezeNoise',false,@islogical);
 p.addParameter('compute',true,@islogical);
+p.addParameter('parforWorkersNum', 12, @isnumeric);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',false,@islogical);
 p.addParameter('plotSvmBoundary',false,@islogical);
 p.addParameter('plotPCAAxis1',1,@isnumeric)
 p.addParameter('plotPCAAxis2',2,@isnumeric)
 p.addParameter('delete',false',@islogical);
+
 p.parse(varargin{:});
 rParams = p.Results.rParams;
 testDirectionParams = p.Results.testDirectionParams;
@@ -143,7 +148,7 @@ if (p.Results.compute)
     % If everything is working right, rParams and ancillaryData.rParams
     % should be identical structs. Same for testDirectionParams and ancillaryParams.instanceParams
     % Check for that below.
-    checkStructs('rParams', rParams, 'ancillaryParams.rParams', ancillaryData.rParams);
+    checkStructs('rParams', rParams, 'ancillaryParams.rParams', ancillaryData.rParams, 'ignoredFields', {'plotParams'});
     checkStructs('testDirectionParams', testDirectionParams, 'ancillaryParams.instanceParams', ancillaryData.instanceParams);
     fprintf('done\n');
     
@@ -173,7 +178,7 @@ if (p.Results.compute)
     useStdErr = zeros(size(testConeContrasts,2),1);
     rState = rng;
     
-    parfor kk = 1:nParforConditions
+    parfor (kk = 1:nParforConditions, p.Results.parforWorkersNum)
         rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         paramsList = thisConditionStruct.paramsList;
@@ -263,11 +268,11 @@ if (p.Results.generatePlots && p.Results.plotPsychometric)
         errorbar(testContrasts, squeeze(performanceData.percentCorrect(ii,:)), squeeze(performanceData.stdErr(ii, :)), ...
             'ro-', 'LineWidth', rParams.plotParams.lineWidth, 'MarkerSize', rParams.plotParams.markerSize, 'MarkerFaceColor', [1.0 0.5 0.50]);
         axis 'square'
-        set(gca, 'YLim', [0 1.0],'XLim', [testContrasts(1) testContrasts(end)], 'FontSize', rParams.plotParams.axisFontSize);
+        set(gca,'XScale', 'log', 'YLim', [0 1.0],'XLim', [testContrasts(1) testContrasts(end)], 'FontSize', rParams.plotParams.axisFontSize);
         xlabel('contrast', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
         ylabel('percent correct', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
         box off; grid on
-        title(sprintf('LMS = [%2.2f %2.2f %2.2f]', testConeContrasts(1,ii), testConeContrasts(2,ii), testConeContrasts(3,ii)), ...
+        title(sprintf('LMS = [%2.2f %2.2f %2.2f]\nsignal = ''%s'', emPath = ''%s''', testConeContrasts(1,ii), testConeContrasts(2,ii), testConeContrasts(3,ii), thresholdParams.signalSource, rParams.temporalParams.emPathType), ...
             'FontSize',rParams.plotParams.titleFontSize);
         rwObject.write(sprintf('performanceData_%d',ii),hFig,paramsList,writeProgram,'Type','figure');
     end
@@ -284,7 +289,23 @@ end
 end
 
 % Function to check for struct equality
-function checkStructs(struct1Name, struct1, struct2Name, struct2)
+function checkStructs(struct1Name, struct1, struct2Name, struct2, varargin)
+
+    %% Parse input
+    p = inputParser;
+    p.addParameter('ignoredFields',{},@iscell);
+    p.parse(varargin{:});
+
+    % Deal with ignored fields
+    ignoredFields = p.Results.ignoredFields;
+    if (~isempty(ignoredFields))
+        % Make ignoredFields empty
+        for subFieldIndex = 1:numel(ignoredFields)
+            struct1.(ignoredFields{subFieldIndex}) = [];
+            struct2.(ignoredFields{subFieldIndex}) = [];
+        end
+    end
+    
     compareStringFields = true;
     graphMismatchedData = false;
     customTolerances = [];

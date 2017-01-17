@@ -158,7 +158,7 @@ function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaic
     ramSizeGBytes = ramSizeGBytes - ramUsedByOSGBytes;
     
     % Compute trialBlocksForParforLoop
-    RAMcompressionFactor = 0.30;
+    RAMcompressionFactor = 0.25;
     singleTrialMemoryGBytes = 2*numberOfCores*(coneMosaicPatternSize*sizeOfDoubleInBytes + coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2)/(1024^3)/RAMcompressionFactor;
     trialBlockSize = round(ramSizeGBytes/singleTrialMemoryGBytes);
     if (trialBlockSize > nTrials)
