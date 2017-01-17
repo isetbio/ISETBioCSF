@@ -53,8 +53,12 @@ params.apertureBlur = true;
 params.LMSRatio = [0.62 0.31 0.07];
 params.coneDarkNoiseRate = [300 300 00];
 params.conePacking = 'hex';
-params = rmfield(params,'innerSegmentSizeMicrons');
-params = rmfield(params,'coneSpacingMicrons');
+if (isfield(params,'innerSegmentSizeMicrons'))
+    params = rmfield(params,'innerSegmentSizeMicrons');
+end
+if (isfield(params,'coneSpacingMicrons'))
+    params = rmfield(params,'coneSpacingMicrons');
+end
 c_BanksEtAlReplicate(params);
 
 % SVM version of the above, 50 components
@@ -66,8 +70,12 @@ params.apertureBlur = true;
 params.LMSRatio = [0.62 0.31 0.07];
 params.coneDarkNoiseRate = [300 300 00];
 params.conePacking = 'hex';
-params = rmfield(params,'innerSegmentSizeMicrons');
-params = rmfield(params,'coneSpacingMicrons');
+if (isfield(params,'innerSegmentSizeMicrons'))
+    params = rmfield(params,'innerSegmentSizeMicrons');
+end
+if (isfield(params,'coneSpacingMicrons'))
+    params = rmfield(params,'coneSpacingMicrons');
+end
 c_BanksEtAlReplicate(params);
 
 % SVM version of the above, 5 components
@@ -79,6 +87,10 @@ params.apertureBlur = true;
 params.LMSRatio = [0.62 0.31 0.07];
 params.coneDarkNoiseRate = [300 300 00];
 params.conePacking = 'hex';
-params = rmfield(params,'innerSegmentSizeMicrons');
-params = rmfield(params,'coneSpacingMicrons');
+if (isfield(params,'innerSegmentSizeMicrons'))
+    params = rmfield(params,'innerSegmentSizeMicrons');
+end
+if (isfield(params,'coneSpacingMicrons'))
+    params = rmfield(params,'coneSpacingMicrons');
+end
 c_BanksEtAlReplicate(params);
