@@ -63,6 +63,7 @@ c_BanksEtAlReplicate(params);
 
 % SVM version of the above, 50 components
 params.computeResponses = false;
+params.findPerformance = false;
 params.thresholdMethod = 'svm';
 params.thresholdPCA = 50;
 params.blur = true;
@@ -80,6 +81,7 @@ c_BanksEtAlReplicate(params);
 
 % SVM version of the above, 5 components
 params.computeResponses = false;
+params.findPerformance = false;
 params.thresholdMethod = 'svm';
 params.thresholdPCA = 5;
 params.blur = true;

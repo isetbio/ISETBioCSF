@@ -246,7 +246,6 @@ for ll = 1:length(p.Results.luminances)
         %% Fit psychometric functions
         if (p.Results.fitPsychometric)
             banksEtAlReplicate.cyclesPerDegree(ll,cc) = p.Results.cyclesPerDegree(cc);
-            thresholdParams.method = 'mlpt';
             banksEtAlReplicate.mlptThresholds(ll,cc) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'instanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
                 'plotPsychometric',p.Results.generatePlots & p.Results.plotPsychometric,'plotEllipse',false);
             %close all;
