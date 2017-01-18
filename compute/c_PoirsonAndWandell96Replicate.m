@@ -10,7 +10,11 @@ function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
 %           When true, the top level output directory is [scratch]. 
 %           When false, it is the name of this script.
 %
-%     % RESPONSE COMPUTATION OPTIONS
+%    STIMULUS OPTIONS
+%       'spatialFrequency': stimulus spatial frequency (default: 4 cpd)
+%       'meanLuminance': stimulus mean luminance (default: 200 cd/m2)
+%
+%    RESPONSE COMPUTATION OPTIONS
 %       'imagePixels' : how many pixels to use to represent the input stimulus
 %       'nTrainingSamples' - how many response instances to compute. default: 128
 %       'emPathType' - choose from {'none', 'frozen', 'random'}. Type of emPath: 
@@ -53,6 +57,9 @@ function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
 %% Parse input
 p = inputParser;
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
+% STIMULUS OPTIONS
+p.addParameter('spatialFrequency', 4.0, @isnumeric);
+p.addParameter('meanLuminance', 200, @isnumeric);
 % RESPONSE COMPUTATION OPTIONS
 p.addParameter('imagePixels',500, @isnumeric);
 p.addParameter('nTrainingSamples',128, @isnumeric);
@@ -99,7 +106,7 @@ end
 % Modify spatial params to match P&W '96
 rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...
         'windowType', 'Gaussian', ...
-        'cyclesPerDegree', 4.0, ...
+        'cyclesPerDegree', p.Results.spatialFrequency, ...
         'gaussianFWHMDegs', 1.9, ...
         'fieldOfViewDegs', 10.0, ...             % In P&W 1996, in the constant cycle condition, this was 10 deg (Section 2.2, p 517)
         'viewingDistance', 0.75, ...            % vd in meters
@@ -110,8 +117,9 @@ rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...
   
 % Modify background params to match P&W '96
 luminancePW96 = 536.2;
-luminancePW96 = 200.0;  % limit to 200 for now because the photocurrent model is validated up to this luminance level
+luminancePW96 = p.Results.meanLuminance;  % limit to 200 for now because the photocurrent model is validated up to this luminance level
 baseLum = 50;
+
 rParams.backgroundParams = modifyStructParams(rParams.backgroundParams, ...
     'backgroundxyY', [0.38 0.39 baseLum]',...
     'monitorFile', 'CRT-MODEL', ...
