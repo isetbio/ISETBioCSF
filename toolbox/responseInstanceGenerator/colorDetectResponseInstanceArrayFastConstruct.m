@@ -169,7 +169,7 @@ function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaic
     singleTrialMemoryGBytes = numberOfCores * (obj_absorptions_memsize  +  obj_currents_memsize + absorptions_memsize + photocurrents_memsize)/(1024^3);
     
     allowedRAMcompression = 1.0;
-    trialBlockSize = floor(allowedRAMcompression*ramSizeGBytesAvailable/singleTrialMemoryGBytes);
+    trialBlockSize = round(allowedRAMcompression*ramSizeGBytesAvailable/singleTrialMemoryGBytes);
     if (trialBlockSize > nTrials)
         trialBlockSize = nTrials;
     end
