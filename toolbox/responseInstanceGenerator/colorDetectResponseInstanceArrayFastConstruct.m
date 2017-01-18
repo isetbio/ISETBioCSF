@@ -191,6 +191,6 @@ function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaic
         end
         warndlg(...
             sprintf('CoresNum = %d; SystemRAM = %2.2fGB; estimated peak RAM = %2.2fGB', numberOfCores, ramSizeGBytes, trialBlockSize*singleTrialMemoryGBytes+ramUsedByOSGBytes), ...
-            sprintf('%d trials computed in %d blocks, blockSize(1/last) = %d/%d', nTrials, numel(blockedTrialIndices), firstTrialBlockSize, lastTrialBlockSize));
+            sprintf('%d trials in %d blocks, blockSize(1/last) = %d/%d', nTrials, numel(blockedTrialIndices), firstTrialBlockSize, lastTrialBlockSize));
     end
 end

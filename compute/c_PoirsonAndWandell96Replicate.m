@@ -72,10 +72,10 @@ p.addParameter('displayTrialBlockPartitionDiagnostics', true, @islogical);
 % VISUALIZATION OPTIONS
 p.addParameter('generatePlots',true,@islogical);
 % RESPONSE MAP VISUALIZATION OPTIONS
-p.addParameter('visualizeResponses',true,@islogical);
+p.addParameter('visualizeResponses', false,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('visualizationFormat', 'montage', @ischar);
-p.addParameter('visualizePerformance', true, @islogical);
+p.addParameter('visualizePerformance', false, @islogical);
 % PERFORMANCE COMPUTATION OPTIONS
 p.addParameter('performanceClassifier', 'svm', @(x)ismember(x, {'svm', 'mlpt', 'mlpe'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
