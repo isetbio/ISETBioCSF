@@ -49,6 +49,8 @@ function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
 %     PERFORMANCE COMPUTATION OPTIONS
 %       'performanceSignal' - either 'isomerizations', or 'photocurrents'
 %       'performanceClassifier' - 'svm', 'mlpt', 'mlpe' (latter 2 applicable to Poisson noise, i.e. absorptions only)
+%       'performanceEvidenceIntegrationTime' - How many time bins should the classifier use
+%            (default: [], which corresponds to all the available time bins)
 %       'findPerformance' - true/false (default true).  Find performance.
 %       'fitPsychometric' - true/false (default true).  Fit psychometric functions.
 %
@@ -79,13 +81,15 @@ p.addParameter('visualizePerformance', false, @islogical);
 % PERFORMANCE COMPUTATION OPTIONS
 p.addParameter('performanceClassifier', 'svm', @(x)ismember(x, {'svm', 'mlpt', 'mlpe'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
+p.addParameter('performanceEvidenceIntegrationTime', [], @isnumeric);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
-
 p.parse(varargin{:});
 
+% Get performance classifier options
 performanceSignal = p.Results.performanceSignal;
 performanceClassifier = p.Results.performanceClassifier;
+performanceEvidenceIntegrationTime = p.Results.performanceEvidenceIntegrationTime;
 
 % Ensure visualizationFormat has a valid value
 visualizationFormat = p.Results.visualizationFormat;
@@ -115,8 +119,7 @@ rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...
         'row', p.Results.imagePixels, ...
         'col', p.Results.imagePixels);
   
-% Modify background params to match P&W '96
-luminancePW96 = 536.2;
+% Modify background params to match P&W '96 (536.2 in paper)
 luminancePW96 = p.Results.meanLuminance;  % limit to 200 for now because the photocurrent model is validated up to this luminance level
 baseLum = 50;
 
@@ -231,6 +234,7 @@ end % visualizeResponses
 thresholdParams.method = performanceClassifier;
 % Reduce # of trials used to make computation feasible
 thresholdParams.trialsUsed = 512;
+thresholdParams.evidenceIntegrationTime = performanceEvidenceIntegrationTime;
 thresholdParams.signalSource = performanceSignal;
 
 if (p.Results.findPerformance)

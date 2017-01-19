@@ -34,5 +34,10 @@ end
 if (isfield(params, 'trialsUsed'))
     theThresholdName = sprintf('%s_trialsUsed%d',theThresholdName, params.trialsUsed);
 end
+
+if (~isempty(params.evidenceIntegrationTime))
+    theThresholdName = sprintf('%s_evidenceIntegrationTimeMilliSecs%2.1f',theThresholdName, params.actualEvidenceIntegrationTime);
+end
+
 dirname = theThresholdName;
 

@@ -129,17 +129,17 @@ if (p.Results.compute)
     clear 'colorModulationParamsTemp'
     ancillaryData = rwObject.read('ancillaryData',paramsList,readProgram);
     noStimData = rwObject.read('responseInstances',paramsList,readProgram);
-    % Only keep the data we will visualize
+    
+    % Only keep the trials we will use
     if isfield(thresholdParams, 'trialsUsed')
-        fprintf('Only using %d of the computed %d trials\n', thresholdParams.trialsUsed, size(noStimData.responseInstanceArray.theMosaicIsomerizations,1));
-        noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations(1:thresholdParams.trialsUsed,:,:);
-        if isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents)
-            noStimData.responseInstanceArray.theMosaicPhotocurrents = [];
-        else
-            noStimData.responseInstanceArray.theMosaicPhotocurrents = noStimData.responseInstanceArray.theMosaicPhotocurrents(1:thresholdParams.trialsUsed,:,:);
-        end
+        noStimData.responseInstanceArray = keepTrialsUsed(noStimData.responseInstanceArray, thresholdParams.trialsUsed);
     end
 
+    % Only keep the time bins we will use
+    if (~isempty(thresholdParams.evidenceIntegrationTime))
+        [noStimData, thresholdParams.actualEvidenceIntegrationTime] = keepTimeBinsUsed(noStimData, thresholdParams.evidenceIntegrationTime);
+    end
+    
     % Get out some data we'll want
     nTrials = numel(noStimData.responseInstanceArray);
     testConeContrasts = ancillaryData.testConeContrasts;
@@ -184,16 +184,15 @@ if (p.Results.compute)
         paramsList = thisConditionStruct.paramsList;
         fprintf('Reading stimulus data for condition %d of %d... \n', kk,nParforConditions);
         stimData = rwObject.read('responseInstances',paramsList,readProgram);
+        
+        % Only keep the data we will use
         if isfield(thresholdParams, 'trialsUsed')
-            stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(1:thresholdParams.trialsUsed,:,:);
-            if isempty(stimData.responseInstanceArray.theMosaicPhotocurrents)
-                stimData.responseInstanceArray.theMosaicPhotocurrents = [];
-            else
-                stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(1:thresholdParams.trialsUsed,:,:);
-            end
+            stimData.responseInstanceArray = keepTrialsUsed(stimData.responseInstanceArray, thresholdParams.trialsUsed);
         end
-        if (numel(stimData.responseInstanceArray) ~= nTrials)
-            error('Inconsistent number of trials');
+        
+        % Only keep the time bins we will use
+        if (~isempty(thresholdParams.evidenceIntegrationTime))
+            [stimData, ~] = keepTimeBinsUsed(stimData, thresholdParams.evidenceIntegrationTime);
         end
         
         % Get performance for this condition.  Optional parameters control
@@ -275,8 +274,20 @@ if (p.Results.generatePlots && p.Results.plotPsychometric)
         xlabel('contrast', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
         ylabel('percent correct', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
         box off; grid on
-        title(sprintf('LMS = [%2.2f %2.2f %2.2f]\nsignal = ''%s'', emPath = ''%s''', testConeContrasts(1,ii), testConeContrasts(2,ii), testConeContrasts(3,ii), thresholdParams.signalSource, rParams.temporalParams.emPathType), ...
-            'FontSize',rParams.plotParams.titleFontSize);
+        if (isempty(thresholdParams.evidenceIntegrationTime))
+             title(sprintf('LMS = [%2.2f %2.2f %2.2f]\nsignal = ''%s'', classifier = ''%s''\nemPath = ''%s''', ...
+                 testConeContrasts(1,ii), testConeContrasts(2,ii), testConeContrasts(3,ii), ...
+                 thresholdParams.signalSource, thresholdParams.method, rParams.temporalParams.emPathType), ...
+                'FontSize',rParams.plotParams.titleFontSize);
+        else
+            title(sprintf('LMS = [%2.2f %2.2f %2.2f]\nsignal = ''%s'', classifier = ''%s''\nemPath = ''%s'', evidenceIntTime: %2.1f ms', ...
+                 testConeContrasts(1,ii), testConeContrasts(2,ii), testConeContrasts(3,ii), ...
+                 thresholdParams.signalSource, thresholdParams.method, rParams.temporalParams.emPathType, thresholdParams.actualEvidenceIntegrationTime), ...
+                'FontSize',rParams.plotParams.titleFontSize);
+        end
+        
+        
+       
         rwObject.write(sprintf('performanceData_%d',ii),hFig,paramsList,writeProgram,'Type','figure');
     end
 end
@@ -327,4 +338,48 @@ function checkStructs(struct1Name, struct1, struct2Name, struct2, varargin)
         %fprintf('%s and %s are identical structs\n', struct1Name, struct2Name);
     end
 end
+
+function responseInstanceArray = keepTrialsUsed(responseInstanceArray, trialsUsed)
+    fprintf('Classifying based on %d of the computed %d trials\n', trialsUsed, size(responseInstanceArray.theMosaicIsomerizations,1));
+    responseInstanceArray.theMosaicIsomerizations = responseInstanceArray.theMosaicIsomerizations(1:trialsUsed,:,:,:);
+    if ~isempty(responseInstanceArray.theMosaicPhotocurrents)
+        responseInstanceArray.theMosaicPhotocurrents = responseInstanceArray.theMosaicPhotocurrents(1:trialsUsed,:,:,:);
+    end
+end
+
+function [stimData, actualEvidenceIntegrationTime] = keepTimeBinsUsed(stimData, evidenceIntegrationTime)
+
+    dt = stimData.responseInstanceArray.timeAxis(2)-stimData.responseInstanceArray.timeAxis(1);
+    timeBinsToKeep = find(stimData.responseInstanceArray.timeAxis <= stimData.responseInstanceArray.timeAxis(1)+evidenceIntegrationTime/1000);
+    actualEvidenceIntegrationTime = numel(timeBinsToKeep)*dt*1000;
+    
+    responseDimensionality = ndims(stimData.responseInstanceArray.theMosaicIsomerizations);
+    if (responseDimensionality == 2)
+        % nTrials x cones - do nothing
+    elseif (responseDimensionality == 3)
+        % nTrials X non-null cones x time bins
+        stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(:,:,timeBinsToKeep);
+        if ~isempty(stimData.responseInstanceArray.theMosaicPhotocurrents)
+            stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(:,:,timeBinsToKeep);
+        end
+        stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations(:,timeBinsToKeep);
+        if (~isempty(stimData.noiseFreePhotocurrents))
+            stimData.noiseFreePhotocurrents = stimData.noiseFreePhotocurrents(:,timeBinsToKeep);
+        end
+    elseif (responseDimensionality == 4)
+        % nTrials X cone rows x cone cols x time bins
+        stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(:,:,:,timeBinsToKeep);
+        if ~isempty(stimData.responseInstanceArray.theMosaicPhotocurrents)
+            stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(:,:,:,timeBinsToKeep);
+        end
+        stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations(:,:,timeBinsToKeep);
+        if (~isempty(stimData.noiseFreePhotocurrents))
+            stimData.noiseFreePhotocurrents = stimData.noiseFreePhotocurrents(:,:,timeBinsToKeep);
+        end
+    else
+        error('Response dimensionality: %d', responseDimensionality);
+    end
+    
+end
+
 
