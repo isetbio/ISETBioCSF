@@ -324,7 +324,7 @@ function checkStructs(struct1Name, struct1, struct2Name, struct2, varargin)
         end
         error('\n<strong>%s and %s are NOT identical structs. </strong>\n', struct1Name, struct2Name);
     else
-        fprintf('%s and %s are identical structs\n', struct1Name, struct2Name);
+        %fprintf('%s and %s are identical structs\n', struct1Name, struct2Name);
     end
 end
 
