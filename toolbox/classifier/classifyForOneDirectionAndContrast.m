@@ -28,6 +28,19 @@ p.parse(noStimData,stimData,thresholdParams,varargin{:});
 
 %% Decide what type of classifier we are running
 switch (thresholdParams.method)
+    
+    case 'svmV1FilterBank'
+        % SVM classification using responses from a V1 filter bank which
+        % operates on the raw cone signals
+        fprintf('\tComputing the V1 filter response of the responses ...');
+        theData = transformDataWithV1FilterBank(classificationData, filterBank);
+        fprintf('done\n');
+        
+        % Perform SVM classification for this stimulus vs the zero contrast stimulus
+        fprintf('\tRunning SVM ...');
+        [usePercentCorrect, useStdErr, svm] = classifyWithSVM(theData,classes,thresholdParams.kFold);
+        fprintf(' correct: %2.2f%%\n', usePercentCorrect*100);
+        
     case 'svm'
         % Friendly neighborhood SVM, with optional standardization and PCA
         % first
