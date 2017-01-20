@@ -32,6 +32,9 @@ function c_PoirsonAndWandell96RunSession()
 end
 
 function computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples)   
+
+    tBegin = clock;
+
     c_PoirsonAndWandell96Replicate(...
         'spatialFrequency', spatialFrequency, ...
         'meanLuminance', meanLuminance, ...
@@ -58,6 +61,12 @@ function computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples)
         'emPathType', 'none', ...
         'visualizeResponses', false, ...
         'findPerformance', false);
+    
+    tEnd = clock;
+    timeLapsed = etime(tEnd,tBegin);
+    fprintf('BATCH JOB: Computation of isomerization & photocurrent responses was completed in %f minutes. \n', timeLapsed/60);
+
+    
 end
 
 
