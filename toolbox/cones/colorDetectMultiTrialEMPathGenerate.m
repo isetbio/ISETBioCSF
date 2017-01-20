@@ -28,7 +28,11 @@ switch (emPathType)
 end
 
 if (p.Results.centeredPaths)
+    % find centers
     emPathCenters = mean(theEMpaths,2);
+    % subtract them from the emPaths
     theEMpaths = bsxfun(@minus, theEMpaths, emPathCenters);
+    % emPaths must be integered-valued, so round
+    theEMpaths = round(theEMpaths);
 end
 end
