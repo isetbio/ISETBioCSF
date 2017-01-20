@@ -7,7 +7,8 @@ function theEMpaths = colorDetectMultiTrialEMPathGenerate(theConeMosaic, nTrials
 %
 
 p = inputParser;
-p.addParameter('seed',1, @isnumeric);   
+p.addParameter('seed',1, @isnumeric);  
+p.addParameter('centeredPaths',false, @islogical);   
 p.parse(varargin{:});
 
 switch (emPathType)
@@ -24,5 +25,10 @@ switch (emPathType)
         end
     otherwise
         error('Unknown emPathType: ''%s''. Valid choices: ''none'', ''frozen'', ''random''.', emPathType);
+end
+
+if (p.Results.centeredPaths)
+    emPathCenters = mean(theEMpaths,2);
+    theEMpaths = bsxfun(@minus, theEMpaths, emPathCenters);
 end
 end

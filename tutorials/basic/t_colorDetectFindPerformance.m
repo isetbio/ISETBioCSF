@@ -350,8 +350,16 @@ end
 function [stimData, actualEvidenceIntegrationTime] = keepTimeBinsUsed(stimData, evidenceIntegrationTime)
 
     dt = stimData.responseInstanceArray.timeAxis(2)-stimData.responseInstanceArray.timeAxis(1);
-    timeBinsToKeep = find(stimData.responseInstanceArray.timeAxis <= stimData.responseInstanceArray.timeAxis(1)+evidenceIntegrationTime/1000);
-    actualEvidenceIntegrationTime = numel(timeBinsToKeep)*dt*1000;
+    timeBinsToKeep = find(stimData.responseInstanceArray.timeAxis <= stimData.responseInstanceArray.timeAxis(1)+abs(evidenceIntegrationTime)/1000);
+    if (evidenceIntegrationTime >= 0)
+        % em1 -> emN
+        actualEvidenceIntegrationTime = numel(timeBinsToKeep)*dt*1000;
+    else
+        % emN -> em1
+        timeBinsToKeep = numel(stimData.responseInstanceArray.timeAxis) - timeBinsToKeep + 1
+        actualEvidenceIntegrationTime = -numel(timeBinsToKeep)*dt*1000;
+    end
+    
     
     responseDimensionality = ndims(stimData.responseInstanceArray.theMosaicIsomerizations);
     if (responseDimensionality == 2)
