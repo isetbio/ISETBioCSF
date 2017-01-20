@@ -14,7 +14,9 @@ function params = thresholdParamsGenerate(varargin)
 %   kFold - Number of cross-validation folds
 %   PCAComponents - Number of PCA components, 0 for no PCA.
 %   criterionFraction - Threshold is at this fraction correct.
-
+%   evidenceIntegrationTime - How many milliseconds of the response to use
+%   in the classified. An empty matrix results in using all of it.
+%
 % Parameter struct type
 params.type = 'threshold';
 
@@ -26,3 +28,4 @@ params.kFold = 5;
 params.STANDARDIZE = true;
 params.PCAComponents = 60;
 params.criterionFraction = 0.75;
+params.evidenceIntegrationTime = [];

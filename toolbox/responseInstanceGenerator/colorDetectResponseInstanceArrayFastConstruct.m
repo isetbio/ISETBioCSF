@@ -58,12 +58,20 @@ oiBackground = oiCompute(oiBackground, backgroundScene);
 oiModulated = theOI;
 oiModulated = oiCompute(oiModulated, modulatedScene);
 
+%% Compute size of optical image (used in determining trialBlockSize later on)
+s = whos('oiModulated');
+oiSizeBytes = s.bytes;
+
 %% Generate the stimulus modulation function
 [stimulusTimeAxis, stimulusModulationFunction, ~] = gaussianTemporalWindowCreate(temporalParams);
 
 %% Compute the oiSequence
 theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, ...
                                 stimulusModulationFunction, 'composition', 'blend');
+
+% Clear oiModulated and oiBackground to save space
+varsToClear = {'oiBackground', 'oiModulated'};
+clear(varsToClear{:});
 
 %% Generate eye movement paths for all instances
 eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theMosaic.integrationTime);
@@ -72,11 +80,10 @@ theEMpaths = colorDetectMultiTrialEMPathGenerate(...
     'centeredPaths', true, ...
     'seed', currentSeed);
 
-
 % Determine optimal trialBlocks
-computeTrialBlockSizeForParforLoop(nTrials, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), eyeMovementsNum, displayTrialBlockPartitionDiagnostics);
+computeTrialBlockSizeForParforLoop(nTrials, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), oiSizeBytes, eyeMovementsNum, displayTrialBlockPartitionDiagnostics);
 if (trialBlockSize == -1)
-    trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), eyeMovementsNum, displayTrialBlockPartitionDiagnostics);
+    trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), oiSizeBytes, eyeMovementsNum, displayTrialBlockPartitionDiagnostics);
 end
 
 [isomerizations, photocurrents] = ...
@@ -153,7 +160,7 @@ end
 
 
 
-function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, emPathLength, displayDiagnostics)
+function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, oiSizeBytes, emPathLength, displayDiagnostics)
         
     % Determine system resources
     [numberOfCores, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
@@ -162,16 +169,17 @@ function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaic
     ramUsedByOSGBytes = 3.2;
     ramSizeGBytesAvailable = ramSizeGBytes - ramUsedByOSGBytes;
     
-    % Compute trialBlocksForParforLoop
-    
+    % Compute sizes of the large players
     obj_absorptions_memsize = coneMosaicPatternSize*emPathLength*sizeOfDoubleInBytes;
     obj_currents_memsize = obj_absorptions_memsize;
     absorptions_memsize = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2;
     photocurrents_memsize = absorptions_memsize;
+    oi_memsize = 2 * oiSizeBytes;
     
-    singleTrialMemoryGBytes = numberOfCores * (obj_absorptions_memsize  +  obj_currents_memsize + absorptions_memsize + photocurrents_memsize)/(1024^3);
+    % Compute trialBlocksSize
+    singleTrialMemoryGBytes = numberOfCores * (oi_memsize + obj_absorptions_memsize  +  obj_currents_memsize + absorptions_memsize + photocurrents_memsize)/(1024^3);
     
-    allowedRAMcompression = 0.8;
+    allowedRAMcompression = 1.0;
     trialBlockSize = floor(allowedRAMcompression*ramSizeGBytesAvailable/singleTrialMemoryGBytes);
     if (trialBlockSize > nTrials)
         trialBlockSize = nTrials;
