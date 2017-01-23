@@ -8,7 +8,7 @@ function theEMpaths = colorDetectMultiTrialEMPathGenerate(theConeMosaic, nTrials
 
 p = inputParser;
 p.addParameter('seed',1, @isnumeric);  
-p.addParameter('centeredPaths',false, @islogical);   
+p.addParameter('centeredEMPaths',false, @islogical);   
 p.parse(varargin{:});
 
 switch (emPathType)
@@ -27,7 +27,7 @@ switch (emPathType)
         error('Unknown emPathType: ''%s''. Valid choices: ''none'', ''frozen'', ''random''.', emPathType);
 end
 
-if (p.Results.centeredPaths)
+if (p.Results.centeredEMPaths)
     % find centers
     emPathCenters = mean(theEMpaths,2);
     % subtract them from the emPaths

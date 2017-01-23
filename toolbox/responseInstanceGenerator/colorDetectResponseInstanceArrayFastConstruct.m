@@ -17,8 +17,11 @@ function [responseInstanceArray,noiseFreeIsomerizations,noiseFreePhotocurrents] 
 %               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
 %               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
 %               If set to -1, the number of trial blocks is computed automatically based on the number of cores and system RAM.
+%  'centeredEMPaths' - true/false (default false) 
+%               Controls wether the eye movement paths start at (0,0) (default) or wether they are centered around (0,0)
 %  'useSinglePrecision' - true/false (default true) use single precision to represent isomerizations and photocurrent
-
+%  'displayTrialBlockPartitionDiagnostics' - true/false (default false)
+%               Controls wether to display how trials are partitioned into trial blocks
 % 7/10/16  npc Wrote it.
 
 %% Parse arguments
@@ -27,6 +30,7 @@ p.addParameter('seed',1, @isnumeric);
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('useSinglePrecision',true,@islogical);
 p.addParameter('trialBlockSize', [], @isnumeric);
+p.addParameter('centeredEMPaths',false, @islogical); 
 p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 
 p.parse(varargin{:});
@@ -77,7 +81,7 @@ clear(varsToClear{:});
 eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theMosaic.integrationTime);
 theEMpaths = colorDetectMultiTrialEMPathGenerate(...
     theMosaic, nTrials, eyeMovementsNum, temporalParams.emPathType, ...
-    'centeredPaths', true, ...
+    'centeredEMPaths', p.Results.centeredEMPaths, ...
     'seed', currentSeed);
 
 % Determine optimal trialBlocks
