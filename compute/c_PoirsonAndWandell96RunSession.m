@@ -3,12 +3,12 @@ function c_PoirsonAndWandell96RunSession()
 %
     % Parameters varied
     nTrainingSamples = 512;
-    spatialFrequency = 10;
-    meanLuminance = 200;
+    spatialFrequency = 2;  %. 2,10
+    meanLuminance = 200;  % 20,200
         
     % Actions to perform
-    computeResponses = true;
-    visualizeResponses = false;
+    computeResponses = false;
+    visualizeResponses = true;
     findPerformances = false;
            
     % Go!
@@ -77,7 +77,7 @@ function findPerformancesForDifferentEvidenceIntegrationTimes(spatialFrequency, 
     performanceSignal = 'isomerizations';
     
     % Examine a range of integration times
-    evidenceIntegrationTimes =   -([6 18 30 48 60 78 90 108 120 138 150 168 186 210]-1); % (5:10:250); %-([6 18 30 48 60 78 90 108 120 138 150 168 186 210]-1); % (5:10:250);
+    evidenceIntegrationTimes =   ([6 18 30 48 60 78 90 108 120 138 150 168 186 210]-1); % (5:10:250); %-([6 18 30 48 60 78 90 108 120 138 150 168 186 210]-1); % (5:10:250);
     for k = 1:numel(evidenceIntegrationTimes)
         evidenceIntegrationTime = evidenceIntegrationTimes(k);
         fprintf(2, 'Finding performance for ''%s'' EMpaths using an %s classifier operating on %2.1f milliseconds of the %s signals.\n', emPathType, classifier, evidenceIntegrationTime, performanceSignal);
