@@ -50,8 +50,16 @@ function c_PoirsonAndWandell96RunSession()
     end
     
     if (findPerformances)
-        findPerformancesForDifferentEvidenceIntegrationTimes(spatialFrequency, meanLuminance, nTrainingSamples);
-        %findThePerformances(spatialFrequency, meanLuminance, nTrainingSamples)
+        %findPerformancesForDifferentEvidenceIntegrationTimes(spatialFrequency, meanLuminance, nTrainingSamples);
+        
+        spatialFrequency = 2;  meanLuminance = 20;
+        findThePerformances(spatialFrequency, meanLuminance, nTrainingSamples);
+        
+        spatialFrequency = 2;  meanLuminance = 200;
+        findThePerformances(spatialFrequency, meanLuminance, nTrainingSamples);
+        
+        spatialFrequency = 10;  meanLuminance = 200;
+        findThePerformances(spatialFrequency, meanLuminance, nTrainingSamples);
     end
     
     tEnd = clock;
@@ -124,25 +132,25 @@ function findThePerformances(spatialFrequency, meanLuminance, nTrainingSamples)
             case 1 
                 % First column: mlpt on isomerizations 
                 % for all 3 path types
-                emPathTypes = {'none', 'frozen', 'random'};
+                emPathTypes = {'none', 'random'};
                 classifier = 'mlpt';
                 performanceSignal = 'isomerizations';
             case 2
                 % Second column: svm on isomerizations 
                 % for all 3 path types
-                emPathTypes = {'none', 'frozen', 'random'};
+                emPathTypes = {'none', 'random'};
                 classifier = 'svm';
                 performanceSignal = 'isomerizations';
             case 3
                 % Third column: svm on photocurrents 
                 % for the 2 non-static path types
-                emPathTypes = {'frozen', 'random'};
+                emPathTypes = {'random'};
                 classifier = 'svm';
                 performanceSignal = 'photocurrents';
             case 4
                 % Fourth column: svm on V1 filter bank (operating on photocurrents) 
                 % for the 2 non-static path types
-                emPathTypes = {'frozen', 'random'};
+                emPathTypes = {'random'};
                 classifier = 'svmV1FilterBank';
                 performanceSignal = 'photocurrents';
             otherwise

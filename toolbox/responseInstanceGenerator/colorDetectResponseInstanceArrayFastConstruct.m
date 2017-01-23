@@ -128,8 +128,14 @@ responseInstanceArray.photocurrentTimeAxis = photoCurrentTimeAxis(photocurrentsT
 
 %% Get noise-free responses
 %
-% Compute the noise-free isomerizations & photocurrents using the first emPath
-theEMpaths = theEMpaths(1,:,:);
+% Compute the noise-free isomerizations & photocurrents
+if strcmp(temporalParams.emPathType, 'frozen')
+    % use the first emPath if we have a frozen path
+    theEMpaths = theEMpaths(1,:,:);
+else
+    % use all zeros path otherwise
+    theEMpaths = theEMpaths(1,:,:)*0;
+end
 
 % Save original noise flags
 originalIsomerizationNoiseFlag = theMosaic.noiseFlag;
