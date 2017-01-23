@@ -17,7 +17,6 @@ function c_PoirsonAndWandell96RunSession()
     % Go!
     if (computeResponses)
         emPathType = 'frozen0';
-        
         spatialFrequency = 2;  meanLuminance = 20;
         computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
         
@@ -28,7 +27,6 @@ function c_PoirsonAndWandell96RunSession()
         computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
 
         emPathType = 'random';
-        
         spatialFrequency = 2;  meanLuminance = 20;
         computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
         
@@ -38,6 +36,17 @@ function c_PoirsonAndWandell96RunSession()
         spatialFrequency = 10;  meanLuminance = 200;
         computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
 
+        emPathType = 'frozen';
+        spatialFrequency = 2;  meanLuminance = 20;
+        computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
+        
+        spatialFrequency = 2;  meanLuminance = 200;
+        computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
+        
+        spatialFrequency = 10;  meanLuminance = 200;
+        computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
+
+        
     end
     
     if (visualizeResponses)
