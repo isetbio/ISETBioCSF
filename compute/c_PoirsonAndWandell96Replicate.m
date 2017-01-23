@@ -20,6 +20,7 @@ function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
 %       'emPathType' - choose from {'none', 'frozen', 'random'}. Type of emPath: 
 %           'none'   : results to 1 eye movement at (0,0)
 %           'frozen' : results to the identical emPath being applied to each computed instance
+%           'frozen0': all zeros path
 %           'random' : results in a different emPath being applied to each computed instance
 %       'freezeNoise' - true/false (default true).  Freezes isomerization and photocurrent noise so that results are reproducible
 %       'computeResponses' - true/false (default true).  Do the computations.
@@ -65,7 +66,7 @@ p.addParameter('meanLuminance', 200, @isnumeric);
 % RESPONSE COMPUTATION OPTIONS
 p.addParameter('imagePixels',500, @isnumeric);
 p.addParameter('nTrainingSamples',128, @isnumeric);
-p.addParameter('emPathType','frozen',@(x)ismember(x, {'none', 'frozen', 'random'}));
+p.addParameter('emPathType','frozen',@(x)ismember(x, {'none', 'frozen', 'frozen0', 'random'}));
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
