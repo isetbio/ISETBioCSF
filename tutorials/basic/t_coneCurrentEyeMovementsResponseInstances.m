@@ -40,6 +40,9 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %     'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
 %     'compute' - true/false (default true).  Do the computations.
 %     'computeMosaic' - true/false (default true). Compute a cone mosaic or load one (good for large hex mosaics which take a while to compute)
+%     'parforWorkersNum' - 0 .. 12 (default: 12). How many workers to use for the computations.
+%       use 0: for a serial for loop
+%       use > 0: for a parfor loop with desired number of workers
 %     'generatePlots' - true/false (default false).  Produce response
 %        visualizations.  Set to false when running big jobs on clusters or
 %        in parfor loops, as plotting doesn't seem to play well with those
@@ -67,6 +70,7 @@ p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('computeMosaic', true, @islogical);
+p.addParameter('parforWorkersNum', 12, @isnumeric);
 p.addParameter('overrideMosaicIntegrationTime', [], @isnumeric);
 p.addParameter('generatePlots',false,@islogical);
 p.addParameter('visualizeResponses',true,@islogical);
@@ -267,14 +271,8 @@ if (p.Results.compute)
     % under other circumstances.
     tic;
     stimDataForValidation = cell(nParforConditions,1);
-    
-    % % Set captured warning state to each worker's workspace
-    % warningState = warning;
-    % parfor kk = 1:nParforConditions 
-    %     warning(warningState);
-    % end
         
-    parfor kk = 1:nParforConditions   
+    parfor (kk = 1:nParforConditions, p.Results.parforWorkersNum)
         fprintf('Computing responses for condition %d/%d ...\n', kk,nParforConditions);
         
         % Get the parallel pool worker ID
