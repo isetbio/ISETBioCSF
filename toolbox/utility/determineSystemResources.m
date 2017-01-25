@@ -8,9 +8,12 @@ function [numberOfCores, ramSizeGBytes, sizeofDoubleInBytes] = determineSystemRe
         numberOfCores = feature('numCores');
         [s,q] = system(sprintf('free -h | gawk  ''/Mem:/{print $2}'''));
         if (s ~= 0)
-            error('Cannot determine system resources because gawk is not installed. Please install using ''sudo apt install gawk''.');
+            ramSizeGBytes = 16;
+            fprintf('We will better be able to determine available RAM if you install gawk: ''sudo apt install gawk''.\n');
+            fprintf('Assuming %d GB available\n',ramSizeGBytes);
+        else
+            ramSizeGBytes = str2double(strrep(q,'G',''));
         end
-        ramSizeGBytes = str2double(strrep(q,'G',''));
    else
        error('No windows support');
    end
