@@ -15,7 +15,10 @@ function ValidationFunction(runTimeParams)
     
     %% Basic validation
     validationData1 = t_colorGabor('generatePlots',runTimeParams.generatePlots);
-    UnitTest.validationData('validationData1',validationData1);
+    UnitTest.validationData('validationData1',validationData1, ...
+        'UsingTheFollowingVariableTolerancePairs', ...
+        'maxIsomerizations', 10e-10, ...
+        'minIsomerizations', 10e-10);
     
 end
 
