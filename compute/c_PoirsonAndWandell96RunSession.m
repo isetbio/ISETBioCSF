@@ -5,7 +5,10 @@ function c_PoirsonAndWandell96RunSession()
     nTrainingSamples = 512;
     
     % Freeze photon-isomerization & photocurrent noise
-    freezeNoise = true;
+    freezeNoise = false;
+    
+    % Compute the hex-mosaic or use existing one
+    computeMosaic = false;
     
     % Conditions to examine
     % Full set of conditions
@@ -17,13 +20,13 @@ function c_PoirsonAndWandell96RunSession()
     classifierTypeList   = {'svm'};
     
     % Actions to perform
-    computeResponses   = false;
-    visualizeResponses = false;
-    findPerformances   = true;
-    visualizePerformances = true;
+    computeResponses   = true;
+    visualizeResponses = ~true;
+    findPerformances   = ~true;
+    visualizePerformances = ~true;
     
     % Go !
-    batchJob(computeResponses, visualizeResponses, findPerformances, visualizePerformances, ...
+    batchJob(computeMosaic, computeResponses, visualizeResponses, findPerformances, visualizePerformances, ...
         nTrainingSamples, freezeNoise,  emPathTypesList, stimParamsList, ...
         classifierSignalList, classifierTypeList);
     
@@ -62,11 +65,14 @@ function c_PoirsonAndWandell96RunSession()
 end
 
 
-function batchJob(computeResponses, visualizeResponses, findPerformances, visualizePerformances, ...
+function batchJob(computeMosaic, computeResponses, visualizeResponses, findPerformances, visualizePerformances, ...
         nTrainingSamples, freezeNoise, emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList)
 
     % Start timing
     tBegin = clock;    
+    
+    % Only compute the mosaic once
+    mosaicAlreadyComputed = false;
     
     for emPathTypeIndex = 1:numel(emPathTypesList)
         % Get the emPathType
@@ -81,17 +87,23 @@ function batchJob(computeResponses, visualizeResponses, findPerformances, visual
                  % Inform the user regarding what we are currently working on
                  fprintf('Computing/visualizing responses for %2.2f c/deg, %d cd/m2 with ''%s'' emPaths.\n', ...
                             params.spatialFrequency, params.meanLuminance, emPathType);
-                        
-                c_PoirsonAndWandell96Replicate(...
+                    
+                 if (mosaicAlreadyComputed)
+                     computeMosaic = false;
+                 end
+                 
+                 c_PoirsonAndWandell96Replicate(...
                     'spatialFrequency', params.spatialFrequency, ...
                     'meanLuminance', params.meanLuminance, ...
                     'nTrainingSamples', nTrainingSamples, ...
                     'emPathType', emPathType, ...
                     'freezeNoise', freezeNoise, ...
+                    'computeMosaic', computeMosaic, ...
                     'computeResponses', computeResponses, ...
                     'visualizeResponses', visualizeResponses, ...
                     'findPerformance', false);
                 
+                 mosaicAlreadyComputed = true;
             end % if (computeResponses)
             
             % Find/visualize performance
