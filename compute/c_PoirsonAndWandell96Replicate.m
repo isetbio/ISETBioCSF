@@ -67,7 +67,7 @@ p.addParameter('meanLuminance', 200, @isnumeric);
 p.addParameter('imagePixels',500, @isnumeric);
 p.addParameter('nTrainingSamples',128, @isnumeric);
 p.addParameter('emPathType','frozen',@(x)ismember(x, {'none', 'frozen', 'frozen0', 'random'}));
-p.addParameter('freezeNoise',true,@islogical);
+p.addParameter('freezeNoise',true, @islogical);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
 % DIAGNOSTIC OPTIONS
@@ -171,9 +171,18 @@ rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
     'conePacking', conePacking, ...                       
     'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs*0.125, ... 
     'integrationTimeInSeconds', 6/1000, ...
-    'isomerizationNoise', 'frozen',...               % select from {'random', 'frozen', 'none'}
-    'osNoise', 'frozen', ...                        % select from {'random', 'frozen', 'none'}
+    'isomerizationNoise', 'random',...               % select from {'random', 'frozen', 'none'}
+    'osNoise', 'random', ...                         % select from {'random', 'frozen', 'none'}
     'osModel', 'Linear');
+
+if (p.Results.freezeNoise)
+    if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
+        rParams.mosaicParams.isomerizationNoise = 'frozen';
+    end
+    if (strcmp(rParams.mosaicParams.osNoise, 'random'))
+        rParams.mosaicParams.osNoise = 'frozen';
+    end
+end
         
 % Parameters that define the LMS instances we'll generate
 % Here, we are generating an L+M stimulus (azimuth = 45, elevation = 0);
