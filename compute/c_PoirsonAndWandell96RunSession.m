@@ -8,13 +8,9 @@ function c_PoirsonAndWandell96RunSession()
     % Full set of conditions
     [emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList] = assembleFullConditionsSet();
     
-    % Or do a subset, such as:
-    % Here we only assess performance on 
-    % - the frozen0 emPath 
-    % - using the isomerizations and
-    % - the mlpt classifier
-    emPathTypesList = {'frozen0'};
-    classifierSignalList = {'isomerizations'};
+    % Or select a subset, such as:
+    emPathTypesList = {'fronzen0', 'random'};
+    classifierSignalList = {'isomerizations', 'photocurrents'};
     classifierTypeList   = {'svm'};
     
     % Actions to perform
