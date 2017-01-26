@@ -1,106 +1,161 @@
 function c_PoirsonAndWandell96RunSession()
 % Conduct batch runs using the c_PoirsonAndWandel executive script
 %
-    % Parameters varied
+    % How many instances to generate
     nTrainingSamples = 512;
-    spatialFrequency = 2;  %. 2,10
-    meanLuminance = 200;  % 20,200
-        
+    
+    % Conditions to examine
+    % Full set of conditions
+    [emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList] = assembleFullConditionsSet();
+    
+    % Or do a subset, such as:
+    % Here we only assess performance on 
+    % - the frozen0 emPath 
+    % - using the isomerizations and
+    % - the mlpt classifier
+    emPathTypesList = {'frozen0'};
+    classifierSignalList = {'isomerizations'};
+    classifierTypeList   = {'svm'};
+    
     % Actions to perform
-    computeResponses = true;
+    computeResponses   = false;
     visualizeResponses = false;
-    findPerformances = false;
-    emPathType = 'random'; %select from 'random', 'frozen', 'frozen0', 'none'
+    findPerformances   = true;
+    visualizePerformances = true;
     
-    tBegin = clock;
+    % Go !
+    batchJob(computeResponses, visualizeResponses, findPerformances, visualizePerformances, ...
+        nTrainingSamples, emPathTypesList, stimParamsList, ...
+        classifierSignalList, classifierTypeList);
     
-    % Go!
-    if (computeResponses)
-        emPathType = 'frozen0';
-        spatialFrequency = 2;  meanLuminance = 20;
-        computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
-        
-        spatialFrequency = 2;  meanLuminance = 200;
-        computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
-        
-        spatialFrequency = 10;  meanLuminance = 200;
-        computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
-
+    if (1==2)
+        % Visualize some condition
+        spatialFrequency = 2;
+        meanLuminance = 200;
         emPathType = 'random';
-        spatialFrequency = 2;  meanLuminance = 20;
-        computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
-        
-        spatialFrequency = 2;  meanLuminance = 200;
-        computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
-        
-        spatialFrequency = 10;  meanLuminance = 200;
-        computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
-
-        emPathType = 'frozen';
-        spatialFrequency = 2;  meanLuminance = 20;
-        computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
-        
-        spatialFrequency = 2;  meanLuminance = 200;
-        computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
-        
-        spatialFrequency = 10;  meanLuminance = 200;
-        computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType);
-
-        
-    end
-    
-    if (visualizeResponses)
         c_PoirsonAndWandell96Replicate(...
-                'spatialFrequency', spatialFrequency, 'meanLuminance', meanLuminance, ...
-                'nTrainingSamples', nTrainingSamples, 'emPathType', 'random', ...
-                'computeResponses', false, 'visualizeResponses', true, ...
-                'displayTrialBlockPartitionDiagnostics', false,  ...
-                'findPerformance', false);
+                    'spatialFrequency', spatialFrequency, 'meanLuminance', meanLuminance, ...
+                    'nTrainingSamples', nTrainingSamples, 'emPathType', emPathType, ...
+                    'computeResponses', false, 'visualizeResponses', true, ...
+                    'displayTrialBlockPartitionDiagnostics', false,  ...
+                    'findPerformance', false);
     end
     
-    if (findPerformances)
-        %findPerformancesForDifferentEvidenceIntegrationTimes(spatialFrequency, meanLuminance, nTrainingSamples);
+    if (1==2)
+        % Optionally, assess performance as a function of integrated response
+        % Response integration times (in milliseconds) to examine
+        evidenceIntegrationTimes = ([6 18 30 48 60 78 90 108 120 138 150 168 186 210]-1); % (5:10:250); %-([6 18 30 48 60 78 90 108 120 138 150 168 186 210]-1); % (5:10:250);
+
+        % Stimulus & performance params to examine
+        spatialFrequency = 2;
+        meanLuminance = 200;
+        emPathType = 'frozen0';
+        classifier = 'mlpt';
+        performanceSignal = 'isomerizations';
         
-        spatialFrequency = 2;  meanLuminance = 20;
-        findThePerformances(spatialFrequency, meanLuminance, nTrainingSamples);
-        
-        spatialFrequency = 2;  meanLuminance = 200;
-        findThePerformances(spatialFrequency, meanLuminance, nTrainingSamples);
-        
-        spatialFrequency = 10;  meanLuminance = 200;
-        findThePerformances(spatialFrequency, meanLuminance, nTrainingSamples);
+        findPerformancesForDifferentEvidenceIntegrationTimes(...
+            spatialFrequency, meanLuminance, nTrainingSamples, ...
+            emPathType, classifier, performanceSignal, ...
+            evidenceIntegrationTimes);
     end
+    
+end
+
+
+function batchJob(computeResponses, visualizeResponses, findPerformances, visualizePerformances, ...
+        nTrainingSamples, emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList)
+
+    % Start timing
+    tBegin = clock;    
+    
+    for emPathTypeIndex = 1:numel(emPathTypesList)
+        % Get the emPathType
+        emPathType = emPathTypesList{emPathTypeIndex};
+        
+        for stimConditionIndex = 1:numel(stimParamsList)
+            % Get the stim params
+            params = stimParamsList{stimConditionIndex};
+            
+            % Compute responses
+            if (computeResponses) || (visualizeResponses)
+                 % Inform the user regarding what we are currently working on
+                 fprintf('Computing/visualizing responses for %2.2f c/deg, %d cd/m2 with ''%s'' emPaths.\n', ...
+                            params.spatialFrequency, params.meanLuminance, emPathType);
+                        
+                c_PoirsonAndWandell96Replicate(...
+                    'spatialFrequency', params.spatialFrequency, ...
+                    'meanLuminance', params.meanLuminance, ...
+                    'nTrainingSamples', nTrainingSamples, ...
+                    'emPathType', emPathType, ...
+                    'computeResponses', computeResponses, ...
+                    'visualizeResponses', visualizeResponses, ...
+                    'findPerformance', false);
+                
+            end % if (computeResponses)
+            
+            % Find/visualize performance
+            if (findPerformances) || (visualizePerformances)
+                for classifierTypeIndex = 1:numel(classifierTypeList)
+                    % Get the classifier name
+                    classifierTypeName = classifierTypeList{classifierTypeIndex};
+                    for classifierSignalIndex = 1:numel(classifierSignalList)
+                        % Get the signal name on which to measure performance
+                        performanceSignalName = classifierSignalList{classifierSignalIndex};
+                        
+                        % Inform the user regarding what we are currently working on
+                        fprintf('Finding/visualizing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on <strong>%s</strong>.\n', ...
+                            params.spatialFrequency, params.meanLuminance, emPathType, classifierTypeName, performanceSignalName);
+                        
+                        c_PoirsonAndWandell96Replicate(...
+                            'spatialFrequency', params.spatialFrequency, ...
+                            'meanLuminance', params.meanLuminance, ...
+                            'nTrainingSamples', nTrainingSamples, ...
+                            'emPathType', emPathType, ...
+                            'computeResponses', false, ...
+                            'visualizeResponses', false, ...
+                            'findPerformance', findPerformances, ...
+                            'visualizePerformance', visualizePerformances, ...
+                            'performanceSignal', performanceSignalName, ...
+                            'performanceClassifier', classifierTypeName ...
+                            );  % findPerformances
+                        
+                    end % classifierSignalIndex
+                end % classifierTypeIndex
+            end % if (findPerformances) || (visualizePerformances)
+            
+        end % stimConditionIndex
+    end % emPathTypeIndex
     
     tEnd = clock;
     timeLapsed = etime(tEnd,tBegin);
     fprintf('BATCH JOB: Completed in %.2f hours. \n', timeLapsed/60/60);
-
-    
 end
 
-function computeTheResponses(spatialFrequency, meanLuminance, nTrainingSamples, emPathType)   
+function [emPathTypesList, stimParamsList, ...
+         classifierSignalList, classifierTypeList] = assembleFullConditionsSet()
 
+    % emPathTypes to compute/analyze
+    emPathTypesList = {'frozen0', 'frozen', 'random'};
     
-    c_PoirsonAndWandell96Replicate(...
-        'spatialFrequency', spatialFrequency, ...
-        'meanLuminance', meanLuminance, ...
-        'nTrainingSamples', nTrainingSamples, ...
-        'computeResponses', true, ...
-        'emPathType', emPathType, ...
-        'visualizeResponses', false, ...
-        'findPerformance', false);
-    
+    % stimParams to compute/analyze
+    stimParamsList = {...
+        struct('spatialFrequency', 2, 'meanLuminance', 20) ...
+        struct('spatialFrequency', 2, 'meanLuminance', 200) ...
+        struct('spatialFrequency', 10, 'meanLuminance', 200) ...
+    };
+
+    % performance params to examine
+    classifierSignalList = {'isomerizations', 'photocurrents'};
+    classifierTypeList = {'mlpt', 'svm'};
 end
 
 
-function findPerformancesForDifferentEvidenceIntegrationTimes(spatialFrequency, meanLuminance, nTrainingSamples)
+% Method to assess performance as a function of the included response duration
+function findPerformancesForDifferentEvidenceIntegrationTimes(...
+    spatialFrequency, meanLuminance, nTrainingSamples, ...
+    emPathType, classifier, performanceSignal, ...
+    evidenceIntegrationTimes)
 
-    emPathType = 'random';
-    classifier = 'mlpt';
-    performanceSignal = 'isomerizations';
-    
-    % Examine a range of integration times
-    evidenceIntegrationTimes =   ([6 18 30 48 60 78 90 108 120 138 150 168 186 210]-1); % (5:10:250); %-([6 18 30 48 60 78 90 108 120 138 150 168 186 210]-1); % (5:10:250);
     for k = 1:numel(evidenceIntegrationTimes)
         evidenceIntegrationTime = evidenceIntegrationTimes(k);
         fprintf(2, 'Finding performance for ''%s'' EMpaths using an %s classifier operating on %2.1f milliseconds of the %s signals.\n', emPathType, classifier, evidenceIntegrationTime, performanceSignal);
@@ -130,56 +185,5 @@ function findPerformancesForDifferentEvidenceIntegrationTimes(spatialFrequency, 
                 'performanceSignal', performanceSignal, ...
                 'performanceClassifier', classifier, ...
                 'performanceEvidenceIntegrationTime', [] ....
-                );
-            
-            
+                );       
 end
-
-function findThePerformances(spatialFrequency, meanLuminance, nTrainingSamples)  
-    for tableColumn = 3:3  % 1:4
-        switch tableColumn
-            case 1 
-                % First column: mlpt on isomerizations 
-                % for all 3 path types
-                emPathTypes = {'none', 'random'};
-                classifier = 'mlpt';
-                performanceSignal = 'isomerizations';
-            case 2
-                % Second column: svm on isomerizations 
-                % for all 3 path types
-                emPathTypes = {'none', 'random'};
-                classifier = 'svm';
-                performanceSignal = 'isomerizations';
-            case 3
-                % Third column: svm on photocurrents 
-                % for the 2 non-static path types
-                emPathTypes = {'random'};
-                classifier = 'svm';
-                performanceSignal = 'photocurrents';
-            case 4
-                % Fourth column: svm on V1 filter bank (operating on photocurrents) 
-                % for the 2 non-static path types
-                emPathTypes = {'random'};
-                classifier = 'svmV1FilterBank';
-                performanceSignal = 'photocurrents';
-            otherwise
-                error('No params for table column: %d', tableColumn);
-        end % switch
-
-        for emPathTypeIndex = 1:numel(emPathTypes)
-            emPathType = emPathTypes{emPathTypeIndex};
-            fprintf(2, 'Finding performance for ''%s'' EMpaths using an %s classifier on the %s signals.\n', emPathType, classifier, performanceSignal);
-            c_PoirsonAndWandell96Replicate(...
-                'spatialFrequency', spatialFrequency, ...
-                'meanLuminance', meanLuminance, ...
-                'nTrainingSamples', nTrainingSamples, ...
-                'computeResponses', false, ...
-                'emPathType', emPathType, ...
-                'visualizeResponses', false, ...
-                'findPerformance', true, ...
-                'performanceSignal', performanceSignal, ...
-                'performanceClassifier', classifier ...
-                );
-        end %  for emPathTypeIndex
-    end % tableColumn
- end
