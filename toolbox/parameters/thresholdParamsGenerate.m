@@ -23,9 +23,11 @@ params.type = 'threshold';
 % Some reasonable parameters
 params.method = 'svm';
 params.signalSource = 'isomerizations';
+params.V1filterBank = [];
 params.nIntervals = 2;
 params.kFold = 5;
 params.STANDARDIZE = true;
 params.PCAComponents = 60;
 params.criterionFraction = 0.75;
 params.evidenceIntegrationTime = [];
+end

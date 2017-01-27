@@ -20,6 +20,7 @@ function [validationData,extraData] = t_colorDetectFindPerformance(varargin)
 %  'rParams' - Value the is the rParams structure to use.  Default empty,
 %     which then uses defaults produced by generation function.
 %   'testDirectionParams' - Value is the testDirectionParams structure to use
+%   'thresholdParams' - Parameters related to how we find thresholds from responses
 %   'freezeNoise' - true/false (default false).  Freezes all noise so that results are reproducible.
 %     If there is no noise set, this leaves it alone.
 %   'compute' - true/false (default true).  Do the computations.
@@ -200,7 +201,9 @@ if (p.Results.compute)
         % illustrates the classifier.
         [usePercentCorrect(kk),useStdErr(kk),h] = ...
             classifyForOneDirectionAndContrast(noStimData,stimData,thresholdParams, ...
-            'plotSvmBoundary',p.Results.generatePlots && p.Results.plotSvmBoundary,'plotPCAAxis1',p.Results.plotPCAAxis1,'plotPCAAxis2',p.Results.plotPCAAxis2);
+            'plotSvmBoundary', p.Results.generatePlots && p.Results.plotSvmBoundary, ...
+            'plotPCAAxis1', p.Results.plotPCAAxis1, ...
+            'plotPCAAxis2',p.Results.plotPCAAxis2);
         
         % Save classifier plot if we made one and then close the figure.
         if (p.Results.generatePlots && p.Results.plotSvmBoundary)
@@ -285,9 +288,6 @@ if (p.Results.generatePlots && p.Results.plotPsychometric)
                  thresholdParams.signalSource, thresholdParams.method, rParams.temporalParams.emPathType, thresholdParams.actualEvidenceIntegrationTime), ...
                 'FontSize',rParams.plotParams.titleFontSize);
         end
-        
-        
-       
         rwObject.write(sprintf('performanceData_%d',ii),hFig,paramsList,writeProgram,'Type','figure');
     end
 end
@@ -359,8 +359,7 @@ function [stimData, actualEvidenceIntegrationTime] = keepTimeBinsUsed(stimData, 
         timeBinsToKeep = numel(stimData.responseInstanceArray.timeAxis) - timeBinsToKeep + 1
         actualEvidenceIntegrationTime = -numel(timeBinsToKeep)*dt*1000;
     end
-    
-    
+      
     responseDimensionality = ndims(stimData.responseInstanceArray.theMosaicIsomerizations);
     if (responseDimensionality == 2)
         % nTrials x cones - do nothing

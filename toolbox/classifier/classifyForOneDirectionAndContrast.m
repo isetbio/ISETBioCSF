@@ -9,16 +9,26 @@ function [usePercentCorrect,useStdErr,h] = classifyForOneDirectionAndContrast(no
 %   'plotPCAAxis2' - Second PCA component to plot (default 2)
 %
 % 7/14/16  dhb, xd  Pulled this out.  Hoping it will work.
+% 1/17/17  npc      Added svmV1FilterBank classifier
 
-% Parse args
+% Parse args        
 p = inputParser;
 p.addRequired('noStimData',@isstruct);
 p.addRequired('stimData',@isstruct);
 p.addRequired('thresholdParams',@isstruct);
 p.addParameter('plotSvmBoundary',false,@islogical);
-p.addParameter('plotPCAAxis1',1,@isnumeric)
-p.addParameter('plotPCAAxis2',2,@isnumeric)
+p.addParameter('plotPCAAxis1',1,@isnumeric);
+p.addParameter('plotPCAAxis2',2,@isnumeric);
 p.parse(noStimData,stimData,thresholdParams,varargin{:});
+
+%% Transform the raw cone responses into V1 filter bank responses
+if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
+    if ((~isfield(thresholdParams, 'V1filterBank')) || (isfield(thresholdParams, 'V1filterBank')) && (isempty(thresholdParams.V1filterBank)))
+        error('thresholdParams must have a V1filterBank field when using the svmV1FilterBank classifier\n');
+    end
+    noStimData = transformDataWithV1FilterBank(noStimData, thresholdParams.V1filterBank);
+    stimData = transformDataWithV1FilterBank(stimData, thresholdParams.V1filterBank);
+end
 
 %% Put zero contrast response instances into data that we will pass to the SVM
 [classificationData,classes] = classificationDataNoStimDataInitialize(noStimData,thresholdParams);
@@ -30,15 +40,9 @@ p.parse(noStimData,stimData,thresholdParams,varargin{:});
 switch (thresholdParams.method)
     
     case 'svmV1FilterBank'
-        % SVM classification using responses from a V1 filter bank which
-        % operates on the raw cone signals
-        fprintf('\tComputing the V1 filter response of the responses ...');
-        theData = transformDataWithV1FilterBank(classificationData, filterBank);
-        fprintf('done\n');
-        
         % Perform SVM classification for this stimulus vs the zero contrast stimulus
         fprintf('\tRunning SVM ...');
-        [usePercentCorrect, useStdErr, svm] = classifyWithSVM(theData,classes,thresholdParams.kFold);
+        [usePercentCorrect, useStdErr, svm] = classifyWithSVM(classificationData,classes,thresholdParams.kFold);
         fprintf(' correct: %2.2f%%\n', usePercentCorrect*100);
         
     case 'svm'

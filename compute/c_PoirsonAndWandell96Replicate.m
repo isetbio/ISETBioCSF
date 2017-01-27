@@ -80,17 +80,12 @@ p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischa
 p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('visualizePerformance', false, @islogical);
 % PERFORMANCE COMPUTATION OPTIONS
-p.addParameter('performanceClassifier', 'svm', @(x)ismember(x, {'svm', 'mlpt', 'mlpe'}));
+p.addParameter('performanceClassifier', 'svm', @(x)ismember(x, {'svm', 'svmV1FilterBank', 'mlpt', 'mlpe'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
 p.addParameter('performanceEvidenceIntegrationTime', [], @isnumeric);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
 p.parse(varargin{:});
-
-% Get performance classifier options
-performanceSignal = p.Results.performanceSignal;
-performanceClassifier = p.Results.performanceClassifier;
-performanceEvidenceIntegrationTime = p.Results.performanceEvidenceIntegrationTime;
 
 % Ensure visualizationFormat has a valid value
 visualizationFormat = p.Results.visualizationFormat;
@@ -98,7 +93,6 @@ if (strcmp(visualizationFormat, 'montage')) || (strcmp(visualizationFormat, 'vid
 else
     error('visualizationFormat must be set to either ''montage'' or ''video''. Current value: ''%s''.', visualizationFormat);
 end
-
 
 % Start with default
 rParams = responseParamsGenerate;
@@ -243,31 +237,23 @@ if (p.Results.visualizeResponses)
 end % visualizeResponses
 
 
-%% Find performance, template max likeli
-thresholdParams.method = performanceClassifier;
-% Reduce # of trials used to make computation feasible
-thresholdParams.trialsUsed = 512;
-thresholdParams.evidenceIntegrationTime = performanceEvidenceIntegrationTime;
-thresholdParams.signalSource = performanceSignal;
+%% Find performance
+% Reduce # of trials used if computation is not feasible (ie. PCA)
+% Here we are using all of them
+thresholdParams.trialsUsed = p.Results.nTrainingSamples;
 
-if (p.Results.findPerformance)
-    rParams.plotParams = modifyStructParams(rParams.plotParams, ...
-        'axisFontSize', 12, ...
-        'labelFontSize', 14, ...
-        'lineWidth', 1.5);
-    
-    t_colorDetectFindPerformance(...
-        'rParams',rParams, ...
-        'testDirectionParams',testDirectionParams,...
-        'thresholdParams',thresholdParams, ...
-        'compute',true, ...
-        'parforWorkersNum', 0, ... % do a serial for loop
-        'plotSvmBoundary',false, ...
-        'plotPsychometric',true ...
-        );
+thresholdParams = modifyStructParams(thresholdParams, ...
+    'method', p.Results.performanceClassifier, ...
+    'evidenceIntegrationTime', p.Results.performanceEvidenceIntegrationTime, ...
+    'signalSource', p.Results.performanceSignal);
+
+if ((p.Results.findPerformance) && (strcmp(thresholdParams.method, 'svmV1FilterBank')))
+    % Generate V1 filter bank struct and add it to thresholdParams
+    V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams);
+    thresholdParams = modifyStructParams(thresholdParams, 'V1filterBank', V1filterBank);
 end
-       
-if (p.Results.visualizePerformance)
+
+if (p.Results.findPerformance) || (p.Results.visualizePerformance)
     rParams.plotParams = modifyStructParams(rParams.plotParams, ...
         'axisFontSize', 12, ...
         'labelFontSize', 14, ...
@@ -277,7 +263,7 @@ if (p.Results.visualizePerformance)
         'rParams',rParams, ...
         'testDirectionParams',testDirectionParams,...
         'thresholdParams',thresholdParams, ...
-        'compute',false, ...
+        'compute',p.Results.findPerformance, ...
         'parforWorkersNum', 0, ... % do a serial for loop
         'plotSvmBoundary',false, ...
         'plotPsychometric',true ...
