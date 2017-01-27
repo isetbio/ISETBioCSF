@@ -14,7 +14,7 @@ function c_PoirsonAndWandell96RunSession()
     % Or select a subset, such as:
     emPathTypesList = {'frozen0', 'random'};
     classifierSignalList = {'isomerizations', 'photocurrents'};
-    classifierTypeList   = {'svm'};
+    classifierTypeList   = {'svmV1FilterBank'};
     
     % Actions to perform
     computeResponses   = false;
@@ -26,6 +26,7 @@ function c_PoirsonAndWandell96RunSession()
     batchJob(computeResponses, visualizeResponses, findPerformances, visualizePerformances, ...
         nTrainingSamples, freezeNoise,  emPathTypesList, stimParamsList, ...
         classifierSignalList, classifierTypeList);
+
     
     if (1==2)
         % Visualize some condition
@@ -45,9 +46,9 @@ function c_PoirsonAndWandell96RunSession()
         % Optionally, assess performance as a function of integrated response
         % Response integration times (in milliseconds) to examine
         evidenceIntegrationTimes = ([6 18 30 48 60 78 90 108 120 138 150 168 186 210]-1); % (5:10:250); %-([6 18 30 48 60 78 90 108 120 138 150 168 186 210]-1); % (5:10:250);
-
+        evidenceIntegrationTimes = ([6 18 30 48 60 90 120 150 186 210]-1);
         % Stimulus & performance params to examine
-        spatialFrequency = 2;
+        spatialFrequency = 10;
         meanLuminance = 200;
         emPathType = 'frozen0';
         classifier = 'mlpt';
