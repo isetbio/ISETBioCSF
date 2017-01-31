@@ -8,7 +8,7 @@ function c_PoirsonAndWandell96RunSession()
     freezeNoise = false;
     
     % Compute the hex-mosaic or use existing one
-    computeMosaic = true;
+    computeMosaic = false;
     
     % Size of cone mosaic
     coneMosaicFOVDegs = 1.25;
