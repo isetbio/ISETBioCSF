@@ -1,5 +1,5 @@
-function visualizeSpatialScheme(spatialParams, mosaicParams, topLevelDirParams)
-
+function visualizeStimulusAndConeMosaic(spatialParams, mosaicParams, topLevelDirParams)
+    
     % Load the mosaic
     coneParamsList = {topLevelDirParams, mosaicParams};
     theProgram = 't_coneCurrentEyeMovementsResponseInstances';

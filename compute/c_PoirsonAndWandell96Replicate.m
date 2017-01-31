@@ -40,6 +40,7 @@ function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
 %
 %     RESPONSE MAP VISUALIZATION OPTIONS
 %       'visualizeResponses' - true/false (default true). Call the fancy visualize response routine.
+%       'visualizeSpatialScheme' - true/false (default false). Visualize the relationship between mosaic and stimulus.
 %       'visualizationFormat' - How to arrange visualized response maps.  Available options: 
 %            'montage' (default). Create a montage of all frames 
 %            'video'.             Animate through all frames. 
@@ -83,6 +84,7 @@ p.addParameter('displayTrialBlockPartitionDiagnostics', true, @islogical);
 p.addParameter('generatePlots',true,@islogical);
 % RESPONSE MAP VISUALIZATION OPTIONS
 p.addParameter('visualizeResponses', false,@islogical);
+p.addParameter('visualizeSpatialScheme', false, @islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('visualizePerformance', false, @islogical);
@@ -174,8 +176,8 @@ end
 
 % Modify mosaic parameters
 rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
-    'conePacking', coneMosaicPacking, ...                       
-    'fieldOfViewDegs', coneMosaicFOVDegs, ... 
+    'conePacking', p.Results.coneMosaicPacking, ...                       
+    'fieldOfViewDegs', p.Results.coneMosaicFOVDegs, ... 
     'integrationTimeInSeconds', 6/1000, ...
     'isomerizationNoise', 'random',...               % select from {'random', 'frozen', 'none'}
     'osNoise', 'random', ...                         % select from {'random', 'frozen', 'none'}
@@ -189,8 +191,6 @@ if (p.Results.freezeNoise)
         rParams.mosaicParams.osNoise = 'frozen';
     end
 end
-
-visualizeSpatialScheme(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams);
 
 % Parameters that define the LMS instances we'll generate
 % Here, we are generating an L+M stimulus (azimuth = 45, elevation = 0);
@@ -222,6 +222,7 @@ if (p.Results.computeResponses)
           'trialBlocks', -1, ...                    % automatically decide trialBlocks based on system resources
           'displayTrialBlockPartitionDiagnostics', p.Results.displayTrialBlockPartitionDiagnostics, ...
           'generatePlots', p.Results.generatePlots, ...
+          'visualizeSpatialScheme', p.Results.visualizeSpatialScheme, ...
           'visualizeResponses', p.Results.visualizeResponses, ... 
           'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
           'visualizationFormat', p.Results.visualizationFormat, ...

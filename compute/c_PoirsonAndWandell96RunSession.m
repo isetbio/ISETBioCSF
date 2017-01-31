@@ -5,10 +5,10 @@ function c_PoirsonAndWandell96RunSession()
     nTrainingSamples = 512;
     
     % Freeze photon-isomerization & photocurrent noise
-    freezeNoise = true;
+    freezeNoise = false;
     
     % Compute the hex-mosaic or use existing one
-    computeMosaic = false;
+    computeMosaic = true;
     
     % Size of cone mosaic
     coneMosaicFOVDegs = 1.25;
@@ -22,12 +22,13 @@ function c_PoirsonAndWandell96RunSession()
     
     % Actions to perform
     computeResponses   = true;
+    visualizeSpatialScheme = true;
     visualizeResponses = ~true;
     findPerformances   = ~true;
     visualizePerformances = ~true;
     
     % Go !
-    batchJob(computeMosaic, computeResponses, visualizeResponses, findPerformances, visualizePerformances, ...
+    batchJob(computeMosaic, computeResponses, visualizeSpatialScheme, visualizeResponses, findPerformances, visualizePerformances, ...
         nTrainingSamples, freezeNoise,  coneMosaicFOVDegs, emPathTypesList, stimParamsList, ...
         classifierSignalList, classifierTypeList);
     
@@ -52,7 +53,7 @@ function c_PoirsonAndWandell96RunSession()
 end
 
 
-function batchJob(computeMosaic, computeResponses, visualizeResponses, findPerformances, visualizePerformances, ...
+function batchJob(computeMosaic, computeResponses, visualizeSpatialScheme, visualizeResponses, findPerformances, visualizePerformances, ...
         nTrainingSamples, freezeNoise, coneMosaicFOVDegs, emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList)
 
     % Start timing
@@ -60,7 +61,7 @@ function batchJob(computeMosaic, computeResponses, visualizeResponses, findPerfo
     
     % Only compute the mosaic once
     mosaicAlreadyComputed = false;
-    
+        
     for emPathTypeIndex = 1:numel(emPathTypesList)
         % Get the emPathType
         emPathType = emPathTypesList{emPathTypeIndex};
@@ -89,6 +90,7 @@ function batchJob(computeMosaic, computeResponses, visualizeResponses, findPerfo
                     'coneMosaicFOVDegs', coneMosaicFOVDegs, ...
                     'computeResponses', computeResponses, ...
                     'visualizeResponses', visualizeResponses, ...
+                    'visualizeSpatialScheme', visualizeSpatialScheme , ...
                     'findPerformance', false);
                 
                  mosaicAlreadyComputed = true;

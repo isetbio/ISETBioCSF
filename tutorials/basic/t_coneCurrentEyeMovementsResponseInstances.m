@@ -74,6 +74,7 @@ p.addParameter('parforWorkersNum', 12, @isnumeric);
 p.addParameter('overrideMosaicIntegrationTime', [], @isnumeric);
 p.addParameter('generatePlots',false,@islogical);
 p.addParameter('visualizeResponses',true,@islogical);
+p.addParameter('visualizeSpatialScheme',false,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('workerID', [], @isnumeric);
@@ -83,6 +84,7 @@ p.parse(varargin{:});
 rParams = p.Results.rParams;
 testDirectionParams = p.Results.testDirectionParams;
 visualizationFormat = p.Results.visualizationFormat;
+visualizeSpatialScheme = p.Results.visualizeSpatialScheme;
 
 % Ensure visualizationFormat has a valid value
 if (strcmp(visualizationFormat, 'montage')) || (strcmp(visualizationFormat, 'video'))
@@ -170,6 +172,10 @@ if (p.Results.compute)
     if (~isempty(p.Results.overrideMosaicIntegrationTime))
         fprintf(2, 'NOTE: Overriding mosaic''s default integrationTime (%2.1fms) with %2.1fms\n', theMosaic.integrationTime*1000, p.Results.overrideMosaicIntegrationTime*1000);
         theMosaic.integrationTime = p.Results.overrideMosaicIntegrationTime;
+    end
+
+    if (visualizeSpatialScheme)
+        visualizeStimulusAndConeMosaic(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams);
     end
     
     %% Define color modulation list
