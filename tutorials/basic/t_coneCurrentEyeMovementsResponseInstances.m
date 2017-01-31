@@ -117,11 +117,6 @@ if (isempty(rParams))
     rParams.mosaicParams.osNoise = 'random';                    % Type outerSegment.validNoiseFlags to get valid values
     rParams.mosaicParams.osModel = 'Linear';
 end
-
-%% Set the emPathType
-% if (~isempty(p.Results.emPathType))
-%     rParams.temporalParams.emPathType = p.Results.emPathType;
-% end
     
 %% Fix random number generator so we can validate output exactly
 if (p.Results.freezeNoise)

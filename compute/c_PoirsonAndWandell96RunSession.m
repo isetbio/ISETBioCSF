@@ -5,19 +5,20 @@ function c_PoirsonAndWandell96RunSession()
     nTrainingSamples = 512;
     
     % Freeze photon-isomerization & photocurrent noise
-    freezeNoise = false;
+    freezeNoise = true;
     
     % Compute the hex-mosaic or use existing one
     computeMosaic = false;
+    
+    % Size of cone mosaic
+    coneMosaicFOVDegs = 1.25;
     
     % Conditions to examine
     % Full set of conditions
     [emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList] = assembleFullConditionsSet();
     
-    % Or select a subset, such as:
+    % Or override some, such as:
     emPathTypesList = {'frozen0', 'random'};
-    classifierSignalList = {'isomerizations', 'photocurrents'};
-    classifierTypeList   = {'svmV1FilterBank'};
     
     % Actions to perform
     computeResponses   = true;
@@ -27,23 +28,8 @@ function c_PoirsonAndWandell96RunSession()
     
     % Go !
     batchJob(computeMosaic, computeResponses, visualizeResponses, findPerformances, visualizePerformances, ...
-        nTrainingSamples, freezeNoise,  emPathTypesList, stimParamsList, ...
+        nTrainingSamples, freezeNoise,  coneMosaicFOVDegs, emPathTypesList, stimParamsList, ...
         classifierSignalList, classifierTypeList);
-
-    
-    if (1==2)
-        % Visualize some condition
-        spatialFrequency = 2;
-        meanLuminance = 200;
-        emPathType = 'random';
-        c_PoirsonAndWandell96Replicate(...
-            'spatialFrequency', spatialFrequency, 'meanLuminance', meanLuminance, ...
-            'nTrainingSamples', nTrainingSamples, 'emPathType', emPathType, ...
-            'freezeNoise', freezeNoise, ...
-            'computeResponses', false, 'visualizeResponses', true, ...
-            'displayTrialBlockPartitionDiagnostics', false,  ...
-            'findPerformance', false);
-    end
     
     if (1==2)
         % Optionally, assess performance as a function of integrated response
@@ -67,7 +53,7 @@ end
 
 
 function batchJob(computeMosaic, computeResponses, visualizeResponses, findPerformances, visualizePerformances, ...
-        nTrainingSamples, freezeNoise, emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList)
+        nTrainingSamples, freezeNoise, coneMosaicFOVDegs, emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList)
 
     % Start timing
     tBegin = clock;    
@@ -100,6 +86,7 @@ function batchJob(computeMosaic, computeResponses, visualizeResponses, findPerfo
                     'emPathType', emPathType, ...
                     'freezeNoise', freezeNoise, ...
                     'computeMosaic', computeMosaic, ...
+                    'coneMosaicFOVDegs', coneMosaicFOVDegs, ...
                     'computeResponses', computeResponses, ...
                     'visualizeResponses', visualizeResponses, ...
                     'findPerformance', false);
@@ -115,7 +102,10 @@ function batchJob(computeMosaic, computeResponses, visualizeResponses, findPerfo
                     for classifierSignalIndex = 1:numel(classifierSignalList)
                         % Get the signal name on which to measure performance
                         performanceSignalName = classifierSignalList{classifierSignalIndex};
-                        
+                        if (~strcmp(performanceSignalName, 'isomerizations')) && (strcmp(classifierTypeName, 'mlpt'))
+                            fprintf(2,'Finding performance using an <strong>%s</strong> classifier on <strong>%s</strong> is not feasible. Skipping...\n', classifierTypeName, performanceSignalName);
+                            continue;
+                        end
                         % Inform the user regarding what we are currently working on
                         fprintf('Finding/visualizing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on <strong>%s</strong>.\n', ...
                             params.spatialFrequency, params.meanLuminance, emPathType, classifierTypeName, performanceSignalName);
@@ -126,6 +116,7 @@ function batchJob(computeMosaic, computeResponses, visualizeResponses, findPerfo
                             'nTrainingSamples', nTrainingSamples, ...
                             'emPathType', emPathType, ...
                             'freezeNoise', freezeNoise, ...
+                            'coneMosaicFOVDegs', coneMosaicFOVDegs, ...
                             'computeResponses', false, ...
                             'visualizeResponses', false, ...
                             'findPerformance', findPerformances, ...
@@ -161,7 +152,7 @@ function [emPathTypesList, stimParamsList, ...
 
     % performance params to examine
     classifierSignalList = {'isomerizations', 'photocurrents'};
-    classifierTypeList = {'mlpt', 'svm'};
+    classifierTypeList = {'mlpt', 'svm', 'svmV1FilterBank'};
 end
 
 

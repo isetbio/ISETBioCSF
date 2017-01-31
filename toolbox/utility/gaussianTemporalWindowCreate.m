@@ -25,7 +25,14 @@ if (temporalParams.stimulusDurationInSeconds == temporalParams.stimulusSamplingI
 end
 
 nPositiveTimeSamples = ceil(0.5*temporalParams.stimulusDurationInSeconds/temporalParams.stimulusSamplingIntervalInSeconds);
-sampleTimes = linspace(-nPositiveTimeSamples*temporalParams.stimulusSamplingIntervalInSeconds, ...
+if (isfield(temporalParams, 'secondsForResponseStabilization'))
+    stabilizingTimeSamples = ceil(0.5*temporalParams.secondsForResponseStabilization/temporalParams.stimulusSamplingIntervalInSeconds);
+else
+    stabilizingTimeSamples = 0;
+end
+
+sampleTimes = linspace(...
+    -(nPositiveTimeSamples+stabilizingTimeSamples)*temporalParams.stimulusSamplingIntervalInSeconds, ...
     nPositiveTimeSamples*temporalParams.stimulusSamplingIntervalInSeconds, ...
     2*nPositiveTimeSamples+1);
 gaussianTemporalWindow = exp(-(sampleTimes.^2/temporalParams.windowTauInSeconds.^2));

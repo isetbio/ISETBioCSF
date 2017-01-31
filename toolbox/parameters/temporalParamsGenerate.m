@@ -9,6 +9,7 @@ function temporalParams = temporalParamsGenerate(varargin)
 %   stimulusSamplingIntervalInSeconds - How often we sample the stimulus time sequence.
 %   secondsToInclude - Portion of response movie to include for classification.
 %   secondsToIncludeOffset - Temporal offset of included window.
+%   secondsForResponseStabilization - extra time inserted at the onset to allow for photocurrent response stabilization
 %   emPathType - String, select from 'zero', 'frozen', 'dynamic'
 
 temporalParams.type = 'Temporal';
@@ -19,6 +20,7 @@ temporalParams.stimulusDurationInSeconds = 5*temporalParams.windowTauInSeconds;
 temporalParams.stimulusSamplingIntervalInSeconds = 1/temporalParams.frameRate;
 temporalParams.secondsToInclude = 0.050;
 temporalParams.secondsToIncludeOffset = 0;
+temporalParams.secondsForResponseStabilization = 0.00;
 temporalParams.emPathType = 'none';
 
 % Optional CRT raster effects.

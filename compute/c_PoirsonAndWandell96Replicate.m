@@ -13,15 +13,19 @@ function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
 %    STIMULUS OPTIONS
 %       'spatialFrequency': stimulus spatial frequency (default: 4 cpd)
 %       'meanLuminance': stimulus mean luminance (default: 200 cd/m2)
+%       'imagePixels' : how many pixels to use to represent the input stimulus
 %
 %    RESPONSE COMPUTATION OPTIONS
-%       'imagePixels' : how many pixels to use to represent the input stimulus
 %       'nTrainingSamples' - how many response instances to compute. default: 128
 %       'emPathType' - choose from {'none', 'frozen', 'random'}. Type of emPath: 
 %           'none'   : results to 1 eye movement at (0,0)
 %           'frozen' : results to the identical emPath being applied to each computed instance
 %           'frozen0': all zeros path
 %           'random' : results in a different emPath being applied to each computed instance
+%
+%     MOSAIC OPTIONS
+%       'coneMosaicPacking' - choose from {'hex' (default), 'hexReg', 'rect'}
+%       'coneMosaicFOVDegs - the spatial extent of the cone mosaic (default: 1.00 degs)     
 %       'freezeNoise' - true/false (default true).  Freezes isomerization and photocurrent noise so that results are reproducible
 %       'computeResponses' - true/false (default true).  Do the computations.
 %       'computeMosaic' - true/false (default true). Compute a cone mosaic or load one (good for large hex mosaics which take a while to compute)
@@ -63,13 +67,16 @@ p.addParameter('useScratchTopLevelDirName', false, @islogical);
 % STIMULUS OPTIONS
 p.addParameter('spatialFrequency', 4.0, @isnumeric);
 p.addParameter('meanLuminance', 200, @isnumeric);
+p.addParameter('imagePixels', 256, @isnumeric);
 % RESPONSE COMPUTATION OPTIONS
-p.addParameter('imagePixels',500, @isnumeric);
 p.addParameter('nTrainingSamples',128, @isnumeric);
 p.addParameter('emPathType','frozen',@(x)ismember(x, {'none', 'frozen', 'frozen0', 'random'}));
-p.addParameter('freezeNoise',true, @islogical);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
+% MOSAIC OPTIONS
+p.addParameter('freezeNoise',true, @islogical);
+p.addParameter('coneMosaicPacking', 'hex', @(x)ismember(x, {'hex', 'hexReg', 'rect'}));
+p.addParameter('coneMosaicFOVDegs', 1.0, @isnumeric);
 % DIAGNOSTIC OPTIONS
 p.addParameter('displayTrialBlockPartitionDiagnostics', true, @islogical);
 % VISUALIZATION OPTIONS
@@ -102,12 +109,15 @@ if (~p.Results.useScratchTopLevelDirName)
     rParams.topLevelDirParams.name = mfilename;
 end
 
-% Modify spatial params to match P&W '96
+% Modify spatial params to match P&W '96 - constant cycles condition
+cyclesBandwidthProduct = 3.8;
+gaussianFWHMDegs = cyclesBandwidthProduct/p.Results.spatialFrequency;
+    
 rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...
         'windowType', 'Gaussian', ...
         'cyclesPerDegree', p.Results.spatialFrequency, ...
-        'gaussianFWHMDegs', 1.9, ...
-        'fieldOfViewDegs', 10.0, ...             % In P&W 1996, in the constant cycle condition, this was 10 deg (Section 2.2, p 517)
+        'gaussianFWHMDegs', gaussianFWHMDegs, ...
+        'fieldOfViewDegs',3*gaussianFWHMDegs, ...             % In P&W 1996, in the constant cycle condition, this was 10 deg (Section 2.2, p 517)
         'viewingDistance', 0.75, ...            % vd in meters
         'ang', 0,  ...                          % orientation in radians
         'ph', 0, ...                            % spatial phase in radians
@@ -129,12 +139,16 @@ frameRate = 87;                                     % their CRT had 87 Hz refres
 windowTauInSeconds = 165/1000;
 stimulusSamplingIntervalInSeconds = 1/frameRate;
 stimulusDurationInSeconds = 1.5*windowTauInSeconds;
+% Allow around 100 milliseconds for response to stabilize
+responseStabilizationSeconds = ceil(100/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
 rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
     'frameRate', frameRate, ...
     'windowTauInSeconds', windowTauInSeconds, ...
     'stimulusSamplingIntervalInSeconds', stimulusSamplingIntervalInSeconds, ...
     'stimulusDurationInSeconds', stimulusDurationInSeconds, ...
+    'secondsForResponseStabilization', 60/1000, ...
     'secondsToInclude', 300/1000, ...
+    'secondsForResponseStabilization', responseStabilizationSeconds, ...
     'secondsToIncludeOffset', 0/1000, ...
     'emPathType', p.Results.emPathType ...
 );
@@ -159,11 +173,9 @@ if strcmp(rParams.temporalParams.emPathType, 'none')
 end
 
 % Modify mosaic parameters
-conePacking = 'hex';        % Hexagonal mosaic
-%conePacking = 'rect';       % Rectangular mosaic
 rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
-    'conePacking', conePacking, ...                       
-    'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs*0.125, ... 
+    'conePacking', coneMosaicPacking, ...                       
+    'fieldOfViewDegs', coneMosaicFOVDegs, ... 
     'integrationTimeInSeconds', 6/1000, ...
     'isomerizationNoise', 'random',...               % select from {'random', 'frozen', 'none'}
     'osNoise', 'random', ...                         % select from {'random', 'frozen', 'none'}
@@ -177,7 +189,9 @@ if (p.Results.freezeNoise)
         rParams.mosaicParams.osNoise = 'frozen';
     end
 end
-        
+
+visualizeSpatialScheme(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams);
+
 % Parameters that define the LMS instances we'll generate
 % Here, we are generating an L+M stimulus (azimuth = 45, elevation = 0);
 testDirectionParams = instanceParamsGenerate('instanceType', 'LMSPlane');
@@ -192,11 +206,6 @@ testDirectionParams = modifyStructParams(testDirectionParams, ...
     'highContrast', 0.1, ...
     'contrastScale', 'log' ...    % choose between 'linear' and 'log'  
 );
-
-% Parameters related to how we find thresholds from responses
-% Use default
-thresholdParams = thresholdParamsGenerate;
-   
 
 %% Compute response instances
 if (p.Results.computeResponses)
@@ -238,20 +247,20 @@ end % visualizeResponses
 
 
 %% Find performance
+% Parameters related to how we find thresholds from responses
+% Use default
+thresholdParams = thresholdParamsGenerate;
+   
 % Reduce # of trials used if computation is not feasible (ie. PCA)
 % Here we are using all of them
 thresholdParams.trialsUsed = p.Results.nTrainingSamples;
 
 thresholdParams = modifyStructParams(thresholdParams, ...
     'method', p.Results.performanceClassifier, ...
+    'STANDARDIZE', false, ...
+    'standardizeSVMpredictors', false, ...
     'evidenceIntegrationTime', p.Results.performanceEvidenceIntegrationTime, ...
     'signalSource', p.Results.performanceSignal);
-
-if ((p.Results.findPerformance) && (strcmp(thresholdParams.method, 'svmV1FilterBank')))
-    % Generate V1 filter bank struct and add it to thresholdParams
-    V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams);
-    thresholdParams = modifyStructParams(thresholdParams, 'V1filterBank', V1filterBank);
-end
 
 if (p.Results.findPerformance) || (p.Results.visualizePerformance)
     rParams.plotParams = modifyStructParams(rParams.plotParams, ...

@@ -27,6 +27,7 @@ params.V1filterBank = [];
 params.nIntervals = 2;
 params.kFold = 5;
 params.STANDARDIZE = true;
+params.standardizeSVMpredictors = false;
 params.PCAComponents = 60;
 params.criterionFraction = 0.75;
 params.evidenceIntegrationTime = [];

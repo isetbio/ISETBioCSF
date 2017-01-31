@@ -110,6 +110,16 @@ if (isempty(thresholdParams))
     thresholdParams = thresholdParamsGenerate;
 end
 
+%% svmV1FilterBank - related checks and computations
+if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (strcmp(thresholdParams.method, 'svmV1FilterBank'))
+    error('Currently, classification using the ''svmV1FilterBank'' method is only implemented for spatially-varying density hex mosaics.\n')
+end
+if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
+    % Generate V1 filter bank struct and add it to thresholdParams
+    V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams);
+    thresholdParams = modifyStructParams(thresholdParams, 'V1filterBank', V1filterBank);
+end
+
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 readProgram = 't_coneCurrentEyeMovementsResponseInstances';
