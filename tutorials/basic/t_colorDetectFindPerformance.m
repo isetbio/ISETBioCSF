@@ -330,14 +330,15 @@ function checkStructs(struct1Name, struct1, struct2Name, struct2, varargin)
         end
     end
     
-    compareStringFields = true;
     graphMismatchedData = false;
-    customTolerances = [];
-    tolerance = 1e-12;
+
+    defaultTolerance = 1e-12;
     structCheck = RecursivelyCompareStructs(...
         struct1Name, struct1, ...
         struct2Name, struct2, ...
-        tolerance, customTolerances, graphMismatchedData, compareStringFields, []);
+        'defaultTolerance', defaultTolerance, ...
+        'graphMismatchedData', graphMismatchedData);
+    
     if (~isempty(structCheck))
         % Oh oh, structs do not match. Print mismatched fields
         for k = 1:numel(structCheck)
