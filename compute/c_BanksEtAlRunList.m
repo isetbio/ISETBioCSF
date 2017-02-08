@@ -46,6 +46,14 @@ params.apertureBlur = true;
 params.coneDarkNoiseRate = [0 0 0];
 c_BanksEtAlReplicate(params);
 
+% With blur, no dark noise, with aperture blur and Davila-Geisler optics
+params.blur = true;
+params.apertureBlur = true;
+params.coneDarkNoiseRate = [0 0 0];
+params.opticsModel = 'DavilaGeisler';
+c_BanksEtAlReplicate(params);
+params = rmfield(params,'opticsModel');
+
 % Let's go to a space varying hex mosaic and put the S cones back in
 % and stick in some dark noise
 params.blur = true;
