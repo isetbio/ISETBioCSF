@@ -96,6 +96,9 @@ if (p.Results.generatePlots)
 end
 
 %% Create oi
+if (~strcmp('rParams.oiParams.opticsModel','WvfHuman'))
+    error('This routine only knows about WvfHuman optics model');
+end
 gaborOI = oiCreate('wvf human');
 gaborOI = oiSet(gaborOI,'h fov',rParams.spatialParams.fieldOfViewDegs);
 

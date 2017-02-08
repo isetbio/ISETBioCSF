@@ -1,20 +1,31 @@
 function theOI = colorDetectOpticalImageConstruct(oiParams)
-% theOI = colorDetectOpticalImageConstruct(oiParams)
+%colorDetectOpticalImageConstruct   Construct optical image object for use color detect simulations
+%   theOI = colorDetectOpticalImageConstruct(oiParams)
 %
-% Construct optical image object, for use in the color detect simulations.
+%   Construct optical image object, for use in the color detect simulations.
 %
-% The passed parameters structure controls features of the optical
-% image object, allowing us to explore the effect of these features on performance.
-%
-%   oiParams.fieldOfViewDegrees - specify field of view.
-%   oiParams.offAxis: true/false - do off axis vignetting or not
-%   oiParams.blur: true/false - do optical blurring or not
-%   oiParams.lens: true/false - put in human lens transmittance or not
-%
+%   The passed parameters structure controls features of the optical
+%   image object, allowing us to explore the effect of these features on performance.
+%     oiParams.fieldOfViewDegrees - specify field of view.
+%     oiParams.offAxis: true/false - do off axis vignetting or not
+%     oiParams.blur: true/false - do optical blurring or not
+%     oiParams.lens: true/false - put in human lens transmittance or not
+%     oiParams.opticsModel - which model of human optics to use.
+
 % 7/8/16  dhb  Wrote it.
 
 % Basic create and set field of view.
 theOI = oiCreate('wvf human');
+
+% Take opticsModel into account.
+switch (oiParams.opticsModel)
+    case 'WvfHuman'
+    case {'DavilaGeisler', 'DavilaGeislerLsfAsPsf', 'Westheimer', 'Williams'}
+        theOI = ptb.oiSetPbtOptics(theOI,oiParams.opticsModel');
+    otherwise
+        error('Unknown opticsModel string passed');
+end
+
 theOI = oiSet(theOI,'h fov',oiParams.fieldOfViewDegs);
 
 % Set the pupil diamter

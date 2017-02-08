@@ -1,12 +1,20 @@
 function oiParams = oiParamsGenerate(varargin)
+%oiParams  Properties related to computing the retinal image
 % oiParams = oiParamsGenerate(varargin)
-%oi
-% Properties related to computing the retinal image
+%
+% This function stores parameters relevant to the optics model used in the
+% calculations.
 %
 %  fieldOfViewDegs - Field of view computed
 %  offAxis - Boolean, compute falloff of intensity with position
 %  blur - Boolean, incorporate optical blurring
 %  lens - Boolean, incorporate filtering by lens
+%  opticsModel - String, what optics model to use
+%    'WvfHuman'           Default.  Isetbio standard wavefront based model of human optics.
+%    'DavilaGeisler'      PSF based on DavilaGeisler line spread function.
+%    'DavilaGeislerLsfAsPsf' - Take D/G lsf and treat it directly as a psf
+%    'Westheimer'         PSF based on Westheimer line spread function.
+%    'Williams'           PSF based on Williams et al. MTF
 %
 % Other parameters that are needed for the mosaic are
 %  fieldOfViewDegs - Field of view computed
@@ -15,7 +23,7 @@ function oiParams = oiParamsGenerate(varargin)
 % other parameters set elsewhere.
 %
 % See also
-%   responseParametersGenerate
+%   responseParametersGenerate, 
 
 oiParams.type = 'Optics';
 
@@ -23,3 +31,4 @@ oiParams.offAxis = false;
 oiParams.blur = true;
 oiParams.lens = true;
 oiParams.pupilDiamMm = 3;
+oiParams.opticsModel = 'WvfHuman';

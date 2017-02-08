@@ -17,6 +17,12 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'luminances' - vector (default [3.4 34 340]).  Luminances in cd/m2 to be investigated.
 %   'pupilDiamMm' - value (default 2).  Pupil diameter in mm.
 %   'blur' - true/false (default true). Incorporate lens blur.
+%   'opticsModel - string.  What optics model to use
+%       'WvfHuman'           Isetbio standard wavefront based model of human optics (default).
+%       'DavilaGeisler'      PSF based on DavilaGeisler line spread function.
+%       'DavilaGeislerLsfAsPsf' Take D/G lsf and treat it directly as a psf
+%       'Westheimer'         PSF based on Westheimer line spread function.
+%       'Williams'           PSF based on Williams et al. MTF  
 %   'innerSegmentSizeMicrons' - Diameter of the cone light-collecting area, in microns 
 %       Default: sizeForSquareApertureFromDiameterForCircularAperture(3.0), where 3 microns = 6 min arc for 300 mirons/degree in the human retina.
 %   'apertureBlur' - Blur by cone aperture? true/false (default false).
@@ -25,9 +31,9 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'coneDarkNoiseRate' - Vector of LMS dark (thermal) isomerization rate iso/sec (default [0,0,0]).
 %   'LMSRatio' - Ratio of LMS cones in mosaic.  Should sum to 1 (default [0.67 0.33 0]).
 %   'conePacking'   - how cones are packed spatially. 
-%       Choose from : 'rect', for a rectangular mosaic
-%                     'hex', for a hex mosaic with an eccentricity-varying cone spacing
-%                     'hexReg' for a hex mosaic witha regular cone spacing
+%       'rect'              Rectangular mosaic.
+%       'hex'               Hex mosaic with an eccentricity-varying cone spacing
+%       'hexReg'            Hex mosaic witha regular cone spacing (default).
 %   'imagePixels' - value (default 400).  Size of image pixel array
 %   'wavelengths' - vector (default [380 4 780).  Start, delta, end wavelength sampling.
 %   'nContrastsPerDirection' - value (default 20). Number of contrasts.
@@ -43,15 +49,17 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'generatePlots' - true/false (default true).  No plots are generated unless this is true.
 %   'visualizeResponses' - true/false (default false).  Do the fancy response visualization when generating responses.
 %   'visualizedResponseNormalization' - string (default 'submosaicBasedZscore'). How to normalize visualized responses
-%        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
+%        'submosaicBasedZscore'       [DHB Note:] Say what these do, please (default).
+%        'LMSabsoluteResponseBased'
+%        'LMabsoluteResponseBased'
+%        'MabsoluteResponseBased'
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotCSF' - true/false (default true).  Plot results.
 %   'freezeNoise' - true/false (default true). Freeze noise so calculations reproduce.
-%   'useTrialBlocks' - true/false (default -1).  Break response
-%        computations down into blocks?  If this is set to -1, then
-%        nTrialBlocks is passed down the chain as -1, which causes the
-%        underlying routines to try to be smart.  Otherwise if this is 1,
-%        the nTrialsPerBlock parameter is used.
+%   'useTrialBlocks' - true/false (default -1).  Break response computations down into blocks?
+%        If this is set to -1, then nTrialBlocks is passed down the chain
+%        as -1, which causes the underlying routines to try to be smart.
+%        Otherwise if this is 1, the nTrialsPerBlock parameter is used.
 %   'nTrialsPerBlock' - value (default 50).  Target number of trials per block.
 
 %% Parse input
@@ -63,13 +71,14 @@ p.addParameter('spatialPhaseDegs',0,@isnumeric);
 p.addParameter('luminances',[3.4 34 340],@isnumeric);
 p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
+p.addParameter('opticsModel','WvfHuman',@ischar);
 p.addParameter('innerSegmentSizeMicrons',sizeForSquareApertureFromDiameterForCircularAperture(3.0), @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
 p.addParameter('apertureBlur', false, @islogical);
 p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
 p.addParameter('mosaicRotationDegs', 0, @isnumeric);
 p.addParameter('coneDarkNoiseRate',[0 0 0], @isnumeric);
 p.addParameter('LMSRatio',[0.67 0.33 0],@isnumeric);
-p.addParameter('conePacking', 'hexReg');                 
+p.addParameter('conePacking', 'hexReg',@ischar);                 
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('wavelengths',[380 4 780],@isnumeric);
 p.addParameter('nContrastsPerDirection',20,@isnumeric);
@@ -133,8 +142,8 @@ for ll = 1:length(p.Results.luminances)
         % Banks et al. used a 2mm artificial pupil
         rParams.oiParams = modifyStructParams(rParams.oiParams, ...
         	'blur', p.Results.blur, ...
-            'pupilDiamMm', p.Results.pupilDiamMm ...    
-        );
+            'pupilDiamMm', p.Results.pupilDiamMm, ...
+            'opticsModel', p.Results.opticsModel);
               
         % Set background luminance
         %
