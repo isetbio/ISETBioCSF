@@ -42,7 +42,7 @@ p.addParameter('pupilDiamMm',3,@isnumeric);
 p.addParameter('durationMs',100,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('imagePixels',400,@isnumeric);
-p.addParameter('computeResponses',false,@islogical);
+p.addParameter('computeResponses',true,@islogical);
 p.addParameter('minContrast',1e-6,@isnumeric);
 p.addParameter('maxContrast',1e-2,@isnumeric);
 p.addParameter('nContrasts',30,@isnumeric);
