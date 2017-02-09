@@ -319,16 +319,21 @@ if (p.Results.generatePlots & p.Results.plotCSF)
     % Slide by eye to match our current calculations, and add as
     % appropriate so as not to clutter the figure.  A bit klugy as we add
     % more and more conditions, I fear.
-    banksFactor = 1/1.90;
+    % 
+    % Also add unshifted version for reference
+    banksFactor = 1/2.4;
     [A,B,C,D,E] = LoadDigitizedBanksFigure2;
     if (~rParams.oiParams.blur && ~rParams.mosaicParams.apertureBlur)
-        plot(A(:,1),A(:,2)*banksFactor,'r-','MarkerSize',rParams.plotParams.markerSize+markerBump,'LineWidth',rParams.plotParams.lineWidth+lineBump);
+        plot(A(:,1),A(:,2),'k:','LineWidth',0.5);
+        plot(A(:,1),A(:,2)*banksFactor,'r-','LineWidth',rParams.plotParams.lineWidth+lineBump);
     elseif (~rParams.oiParams.blur)
-        plot(B(:,1),B(:,2)*banksFactor,'r','MarkerSize',rParams.plotParams.markerSize+markerBump,'LineWidth',rParams.plotParams.lineWidth+lineBump);
+        plot(B(:,1),B(:,2),'k:','LineWidth',0.5);
+        plot(B(:,1),B(:,2)*banksFactor,'r','LineWidth',rParams.plotParams.lineWidth+lineBump);
     else
-        plot(C(:,1),C(:,2)*banksFactor,'r-','MarkerSize',rParams.plotParams.markerSize+markerBump,'LineWidth',rParams.plotParams.lineWidth+lineBump);
-        plot(D(:,1),D(:,2)*banksFactor,'b-','MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor','r','LineWidth',rParams.plotParams.lineWidth+lineBump);
-        plot(E(:,1),E(:,2)*banksFactor,'g-','MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor','r','LineWidth',rParams.plotParams.lineWidth+lineBump);
+        plot(C(:,1),C(:,2),'k:','LineWidth',0.5);
+        plot(C(:,1),C(:,2)*banksFactor,'r-','LineWidth',rParams.plotParams.lineWidth+lineBump);
+        plot(D(:,1),D(:,2)*banksFactor,'b-','LineWidth',rParams.plotParams.lineWidth+lineBump);
+        plot(E(:,1),E(:,2)*banksFactor,'g-','LineWidth',rParams.plotParams.lineWidth+lineBump);
     end
     
     set(gca,'XScale','log');
