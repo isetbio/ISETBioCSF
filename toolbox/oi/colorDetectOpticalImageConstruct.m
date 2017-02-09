@@ -21,7 +21,7 @@ theOI = oiCreate('wvf human');
 switch (oiParams.opticsModel)
     case 'WvfHuman'
     case {'DavilaGeisler', 'DavilaGeislerLsfAsPsf', 'Westheimer', 'Williams'}
-        theOI = ptb.oiSetPtbOptics(theOI,'opticsType',oiParams.opticsModel');
+        theOI = ptb.oiSetPtbOptics(theOI,'opticsType',oiParams.opticsModel);
     otherwise
         error('Unknown opticsModel string passed');
 end
