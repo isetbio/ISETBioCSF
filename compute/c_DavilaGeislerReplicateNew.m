@@ -114,7 +114,7 @@ end
 
 %% Loop over spatial frequency
 for ll = 1:length(p.Results.luminances)
-    for cc = 1:length(p.Results.cyclesPerDegree)
+    for dd = 1:length(p.Results.spotDiametersMinutes)
         
         % Get stimulus parameters correct
         %
@@ -124,7 +124,10 @@ for ll = 1:length(p.Results.luminances)
         spatialParams.fieldOfViewDegs = 1.1*p.Results.backgroundSizeDegs;
         spatialParams.row = p.Results.imagePixels;
         spatialParams.col = p.Results.imagePixels;
-        spatialParams.viewingDistance = 7.16;   
+        spatialParams.viewingDistance = 7.16;  
+                         
+        % Set background wavelength
+        rParams.backgroundParams.backgroundWavelengthsNm = [p.Results.wavelength];
         
         % Scale radiance to produce desired background levels
         deltaWl = 10;
@@ -159,14 +162,6 @@ for ll = 1:length(p.Results.luminances)
         	'blur', p.Results.blur, ...
             'pupilDiamMm', p.Results.pupilDiamMm, ...
             'opticsModel', p.Results.opticsModel);
-              
-        % Set background luminance
-        %
-        % We start with a base luminance that we know is about mid-gray on the
-        % monitor we specify.  To change luminance, we specify a scale factor.
-        % This is eventually applied both to the background luminance and to the
-        % monitor channel spectra, so that we don't get unintersting out of gamut errors.
-        rParams.backgroundParams.backgroundWavelengthsNm = [p.Results.wavelength];
         
         % Their stimulus intervals were 100 msec each.
         %
@@ -260,8 +255,8 @@ for ll = 1:length(p.Results.luminances)
         
         %% Fit psychometric functions
         if (p.Results.fitPsychometric)
-            banksEtAlReplicate.cyclesPerDegree(ll,cc) = p.Results.cyclesPerDegree(cc);
-            banksEtAlReplicate.mlptThresholds(ll,cc) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'instanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
+            banksEtAlReplicate.cyclesPerDegree(ll,dd) = p.Results.cyclesPerDegree(dd);
+            banksEtAlReplicate.mlptThresholds(ll,dd) = t_plotDetectThresholdsOnLMPlane('rParams',rParams,'instanceParams',testDirectionParams,'thresholdParams',thresholdParams, ...
                 'plotPsychometric',p.Results.generatePlots & p.Results.plotPsychometric,'plotEllipse',false);
             %close all;
         end
