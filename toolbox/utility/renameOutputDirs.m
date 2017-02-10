@@ -34,13 +34,12 @@ end
 
 function renameDirs(rootDir, srcPattern, destPattern)
     
-    % Get all dirs containing [STIM_TEMPORAL] in their filename
+    % Get all dirs containing the srcPattern in their filename
     allDirs = rdir([rootDir, sprintf('/**/%s*', srcPattern)]);
     for k = 1:numel(allDirs)
         sprintf('%s %d\n', allDirs(k).name, allDirs(k).isdir)
     end
 
-    
     % Parse list
     for k = 1:numel(allDirs)
         if (allDirs(k).isdir == true)
