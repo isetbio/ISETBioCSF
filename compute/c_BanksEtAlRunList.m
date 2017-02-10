@@ -6,9 +6,9 @@
 clear; close all;
 
 % Common parameters
-params.useScratchTopLevelDirName = false;
-params.computeResponses = false;
-params.findPerformance = false;
+params.useScratchTopLevelDirName = true;
+params.computeResponses = true;
+params.findPerformance = true;
 params.thresholdMethod = 'mlpt';
 params.fitPsychometric = false;
 params.nTrainingSamples = 2000;
