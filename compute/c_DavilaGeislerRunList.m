@@ -14,11 +14,11 @@ params.fitPsychometric = true;
 
 % Background for production should be 2.1, but can use smaller to make
 % tests run faster.
-params.spotDiametersMinutes = [0.5 1 5 10 20 40]);
+params.spotDiametersMinutes = [0.5 1 5 10 20 40];
 params.backgroundSizeDegs = 1;
 params.luminances = 10;
 
-params.nTrainingSamples = 2000;
+params.nTrainingSamples = 500;
 params.conePacking = 'hexReg';
 params.mosaicRotationDegs = 30;
 params.coneSpacingMicrons = 3;

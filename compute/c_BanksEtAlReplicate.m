@@ -309,7 +309,7 @@ if (p.Results.generatePlots & p.Results.plotCSF)
     legendStr = cell(length(p.Results.luminances),1);
     for ll = 1:length(p.Results.luminances)
         theColorIndex = rem(ll,length(theColors)) + 1;
-        plot(banksEtAlReplicate.cyclesPerDegree(ll,:),1./[banksEtAlReplicate.mlptThresholds(ll,:).thresholdContrasts]*banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1), ...
+        plot(banksEtAlReplicate.cyclesPerDegree(ll,:),1./([banksEtAlReplicate.mlptThresholds(ll,:).thresholdContrasts]*banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1)), ...
             [theColors(theColorIndex) 'o'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
         legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
     end
@@ -320,7 +320,7 @@ if (p.Results.generatePlots & p.Results.plotCSF)
     % more and more conditions, I fear.
     % 
     % Also add unshifted version for reference
-    banksFactor = 1/2.4;
+    banksFactor = 1;
     [A,B,C,D,E] = LoadDigitizedBanksFigure2;
     if (~rParams.oiParams.blur && ~rParams.mosaicParams.apertureBlur)
         plot(A(:,1),A(:,2),'k:','LineWidth',0.5);
@@ -339,7 +339,7 @@ if (p.Results.generatePlots & p.Results.plotCSF)
     set(gca,'YScale','log');
     xlabel('Log10 Spatial Frequency (cpd)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
     ylabel('Log10 Contrast Sensitivity', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-    xlim([1 100]); ylim([10 10000]);
+    xlim([1 100]); ylim([1 10000]);
     legend(legendStr,'Location','NorthEast','FontSize',rParams.plotParams.labelFontSize+fontBump);
     box off; grid on
     titleStr1 = 'Computational Observer CSF';

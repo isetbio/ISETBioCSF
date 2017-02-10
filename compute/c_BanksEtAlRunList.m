@@ -7,11 +7,12 @@ clear; close all;
 
 % Common parameters
 params.useScratchTopLevelDirName = false;
-params.computeResponses = true;
-params.findPerformance = true;
+params.computeResponses = false;
+params.findPerformance = false;
 params.thresholdMethod = 'mlpt';
-params.fitPsychometric = true;
+params.fitPsychometric = false;
 params.nTrainingSamples = 2000;
+
 params.conePacking = 'hexReg';
 params.mosaicRotationDegs = 30;
 params.coneSpacingMicrons = 3;
@@ -51,6 +52,14 @@ params.blur = true;
 params.apertureBlur = true;
 params.coneDarkNoiseRate = [0 0 0];
 params.opticsModel = 'DavilaGeisler';
+c_BanksEtAlReplicate(params);
+params = rmfield(params,'opticsModel');
+
+% With blur, no dark noise, with aperture blur and Davila-Geisler optics
+params.blur = true;
+params.apertureBlur = true;
+params.coneDarkNoiseRate = [0 0 0];
+params.opticsModel = 'DavilaGeislerLsfAsPsf';
 c_BanksEtAlReplicate(params);
 params = rmfield(params,'opticsModel');
 
