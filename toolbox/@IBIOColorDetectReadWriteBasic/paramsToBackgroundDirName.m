@@ -11,7 +11,7 @@ end
 
 switch (params.backgroundType)
     case 'monitor'
-        dirname = sprintf('[BACKGROUND]_lum%0.2f_lumFactor%0.1f_leakLum%0.1f',...
+        dirname = sprintf('BG_lum%0.2f_lumFactor%0.1f_leakLum%0.1f',...
             params.backgroundxyY(3),...
             params.lumFactor,...
             params.leakageLum);
@@ -19,7 +19,7 @@ switch (params.backgroundType)
         for ii = 1:length(params.backgroundWavelengthsNm)
             dirnameTmp = sprintf('%d_%0.1f',params.backgroundWavelengthsNm(ii),params.backgroundCornealPowerUW(ii));
             if (ii == 1)
-                dirname = ['[BACKGROUND]_' dirnameTmp];
+                dirname = ['BG_' dirnameTmp];
             else
                 dirname = [dirname '_' dirnameTmp];
             end
