@@ -12,7 +12,6 @@ function oiParams = oiParamsGenerate(varargin)
 %  opticsModel - String, what optics model to use
 %    'WvfHuman'           Default.  Isetbio standard wavefront based model of human optics.
 %    'DavilaGeisler'      PSF based on DavilaGeisler line spread function.
-%    'DavilaGeislerLsfAsPsf' - Take D/G lsf and treat it directly as a psf
 %    'Westheimer'         PSF based on Westheimer line spread function.
 %    'Williams'           PSF based on Williams et al. MTF
 %
