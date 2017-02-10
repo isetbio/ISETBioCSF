@@ -20,6 +20,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'opticsModel - string.  What optics model to use
 %       'WvfHuman'           Isetbio standard wavefront based model of human optics (default).
 %       'DavilaGeisler'      PSF based on DavilaGeisler line spread function.
+%       'DavilaGeislerLsfAsPsf' PSF obtained by taking DavilaGeisler LSF directly as the PSF.
 %       'Westheimer'         PSF based on Westheimer line spread function.
 %       'Williams'           PSF based on Williams et al. MTF  
 %   'innerSegmentSizeMicrons' - Diameter of the cone light-collecting area, in microns 

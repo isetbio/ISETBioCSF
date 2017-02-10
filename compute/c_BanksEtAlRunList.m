@@ -55,6 +55,14 @@ params.opticsModel = 'DavilaGeisler';
 c_BanksEtAlReplicate(params);
 params = rmfield(params,'opticsModel');
 
+% With blur, no dark noise, with aperture blur and Davila-Geisler lsf taken as psf optics
+params.blur = true;
+params.apertureBlur = true;
+params.coneDarkNoiseRate = [0 0 0];
+params.opticsModel = 'DavilaGeislerLsfAsPsf';
+c_BanksEtAlReplicate(params);
+params = rmfield(params,'opticsModel');
+
 % With blur, no dark noise, with aperture blur and Davila-Geisler optics
 params.blur = true;
 params.apertureBlur = true;
