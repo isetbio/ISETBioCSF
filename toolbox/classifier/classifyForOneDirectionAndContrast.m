@@ -41,7 +41,8 @@ switch (thresholdParams.method)
     case 'svmV1FilterBank'
         % Perform SVM classification for this stimulus vs the zero contrast stimulus
         fprintf('\tRunning SVM ...');
-        [usePercentCorrect, useStdErr, svm] = classifyWithSVM(classificationData,classes,thresholdParams.kFold,thresholdParams.standardizeSVMpredictors);
+        [usePercentCorrect, useStdErr, svm] = classifyWithSVM(classificationData,classes,thresholdParams.kFold,...
+            'standardizeSVMpredictors', thresholdParams.standardizeSVMpredictors);
         fprintf(' correct: %2.2f%%\n', usePercentCorrect*100);
         h = [];
         
@@ -149,6 +150,7 @@ switch (thresholdParams.method)
         % We only need to consider data where the two classes differ, so
         % find that subset and use below.
         index = find(templateClass0 ~= templateClass1);
+        
         ANALYTIC_LIKELY = true;
         if (ANALYTIC_LIKELY)
             logTemplateDiff = log(templateClass1(index))-log(templateClass0(index));
