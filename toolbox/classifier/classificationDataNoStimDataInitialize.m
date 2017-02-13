@@ -14,15 +14,20 @@ function [classificationData,classes] = classificationDataNoStimDataInitialize(n
 % See also
 %   classificationDataStimDataInsert
 
-nTrials = size(noStimData.responseInstanceArray.theMosaicIsomerizations,1);
-responseSize = numel(squeeze(noStimData.responseInstanceArray.theMosaicIsomerizations(1,:,:,:)));
+if (strcmp(thresholdParams.signalSource,'photocurrents'))
+    nTrials = size(noStimData.responseInstanceArray.theMosaicPhotocurrents,1);
+    responseSize = numel(squeeze(noStimData.responseInstanceArray.theMosaicPhotocurrents(1,:,:,:)));
+else
+    nTrials = size(noStimData.responseInstanceArray.theMosaicIsomerizations,1);
+    responseSize = numel(squeeze(noStimData.responseInstanceArray.theMosaicIsomerizations(1,:,:,:)));
+end
 
 if (thresholdParams.nIntervals == 1)
     classificationData = zeros(2*nTrials, responseSize);
     classes = zeros(2*nTrials, 1);
     for iTrial = 1:nTrials
         if (strcmp(thresholdParams.signalSource,'photocurrents'))
-            classificationData(iTrial,:) = reshape(squeeze(noStimData.responseInstanceArray.theMosaicPhotoCurrents(iTrial,:,:,:)), [1 responseSize]);
+            classificationData(iTrial,:) = reshape(squeeze(noStimData.responseInstanceArray.theMosaicPhotocurrents(iTrial,:,:,:)), [1 responseSize]);
         else
             classificationData(iTrial,:) = reshape(squeeze(noStimData.responseInstanceArray.theMosaicIsomerizations(iTrial,:,:,:)), [1 responseSize]);
         end

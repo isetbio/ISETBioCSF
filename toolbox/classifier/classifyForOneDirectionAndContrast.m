@@ -26,7 +26,7 @@ if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
     if ((~isfield(thresholdParams, 'V1filterBank')) || (isfield(thresholdParams, 'V1filterBank')) && (isempty(thresholdParams.V1filterBank)))
         error('thresholdParams must have a V1filterBank field when using the svmV1FilterBank classifier\n');
     end
-    [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams.V1filterBank,thresholdParams.STANDARDIZE);
+    [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams);
 end
 
 %% Put zero contrast response instances into data that we will pass to the SVM
