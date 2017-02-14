@@ -2,7 +2,7 @@ function c_PoirsonAndWandell96RunSession()
 % Conduct batch runs using the c_PoirsonAndWandel executive script
 %
     % How many instances to generate
-    nTrainingSamples = 128;
+    nTrainingSamples = 1024;
     
     nContrastsPerDirection = 12;
     lowContrast = 1e-4;
@@ -15,7 +15,7 @@ function c_PoirsonAndWandell96RunSession()
     computeMosaic = true;
     
     % Size of cone mosaic
-    coneMosaicFOVDegs = 0.25; %1.25;
+    coneMosaicFOVDegs = 1.25; %1.25;
     
     % Conditions to examine
     % Full set of conditions
@@ -30,7 +30,7 @@ function c_PoirsonAndWandell96RunSession()
 
     % performance params to examine
     classifierSignalList = {'photocurrents'};
-    classifierTypeList = 'svm'; % {'svmV1FilterBank'};
+    classifierTypeList = {'svmV1FilterBank'};
     
     % Actions to perform
     computeResponses   = true;
