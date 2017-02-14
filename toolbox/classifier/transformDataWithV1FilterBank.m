@@ -10,17 +10,25 @@ if (ndims(noStimData.responseInstanceArray.theMosaicIsomerizations) ~= 3)
     error('transformDataWithV1FilterBank not yet implemented for other than 3D response arrays, ndims = %d\n', ndims(noStimData.responseInstanceArray.theMosaicIsomerizations));
 end
 
-visualizeTransform = true;
-if (visualizeTransform)    
-    repIndex = 1;
+visualizeInputOutputSignals = false;
+if (visualizeInputOutputSignals)    
+    visualizedConeIndex = 1; % size(noStimData.responseInstanceArray.theMosaicPhotocurrents,2);
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
-        photocurrentsResponseNoStim = squeeze(noStimData.responseInstanceArray.theMosaicPhotocurrents(repIndex,:,:));
-        photocurrentsResponseStim = squeeze(stimData.responseInstanceArray.theMosaicPhotocurrents(repIndex,:,:));
+        photocurrentsResponseNoStim = squeeze(noStimData.responseInstanceArray.theMosaicPhotocurrents(:,visualizedConeIndex,:));
+        photocurrentsResponseStim = squeeze(stimData.responseInstanceArray.theMosaicPhotocurrents(:,visualizedConeIndex,:));
         photocurrentsRange = [min([min(photocurrentsResponseNoStim) min(photocurrentsResponseStim)]) max([max(photocurrentsResponseNoStim) max(photocurrentsResponseStim)])];
+        photocurrentsResponseNoiseFreeNoStim = squeeze(noStimData.noiseFreePhotocurrents(visualizedConeIndex,:));
+        photocurrentsResponseNoiseFreeStim = squeeze(stimData.noiseFreePhotocurrents(visualizedConeIndex,:));
+        photocurrentsResponseMeanNoStim = squeeze(mean(noStimData.responseInstanceArray.theMosaicPhotocurrents(:,visualizedConeIndex,:),1));
+        photocurrentsResponseMeanStim = squeeze(mean(stimData.responseInstanceArray.theMosaicPhotocurrents(:,visualizedConeIndex,:),1));
     else
-        isomerizationsResponseNoStim = squeeze(noStimData.responseInstanceArray.theMosaicIsomerizations(repIndex,:,:));
-        isomerizationsResponseStim = squeeze(stimData.responseInstanceArray.theMosaicIsomerizations(repIndex,:,:));
+        isomerizationsResponseNoStim = squeeze(noStimData.responseInstanceArray.theMosaicIsomerizations(:,visualizedConeIndex,:));
+        isomerizationsResponseStim = squeeze(stimData.responseInstanceArray.theMosaicIsomerizations(:,visualizedConeIndex,:));
         isomerizationsRange = [min([min(isomerizationsResponseNoStim) min(isomerizationsResponseStim)]) max([max(isomerizationsResponseNoStim) max(isomerizationsResponseStim)])];
+        isomerizationsResponseNoiseFreeNoStim = squeeze(noStimData.noiseFreeIsomerizations(visualizedConeIndex,:));
+        isomerizationsResponseNoiseFreeStim = squeeze(stimData.noiseFreeIsomerizations(visualizedConeIndex,:));
+        isomerizationsResponseMeanNoStim = squeeze(mean(noStimData.responseInstanceArray.theMosaicIsomerizations(:,visualizedConeIndex,:),1));
+        isomerizationsResponseMeanStim = squeeze(mean(stimData.responseInstanceArray.theMosaicIsomerizations(:,visualizedConeIndex,:),1));
     end
 end
 
@@ -58,6 +66,7 @@ netWeight = sqrt(...
 
 V1filterBank.cosPhasePoolingWeights = repmat(V1filterBank.cosPhasePoolingWeights, [nTrials 1 nTimeBins]);
 V1filterBank.sinPhasePoolingWeights = repmat(V1filterBank.sinPhasePoolingWeights, [nTrials 1 nTimeBins]);
+
 
 if (strcmp(thresholdParams.signalSource,'photocurrents'))
     cosFilterLinearActivation = squeeze(sum(noStimData.responseInstanceArray.theMosaicPhotocurrents .* V1filterBank.cosPhasePoolingWeights, spatialDimension));
@@ -97,32 +106,50 @@ else
         max([max(stimData.responseInstanceArray.theMosaicIsomerizations(:)) max(noStimData.responseInstanceArray.theMosaicIsomerizations(:))])];
 end
 
-
-if (visualizeTransform)
-    
+if (visualizeInputOutputSignals) 
     hFig = figure(1234); clf;
     set(hFig, 'Position', [10 10 1600 600]);
 
     subplot(1,4,1);
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
-        plot(1:nTimeBins, photocurrentsResponseNoStim, 'k-')
+        plot(1:nTimeBins, photocurrentsResponseNoStim, '-');
+        hold on;
+        plot(1:nTimeBins, photocurrentsResponseNoiseFreeNoStim, 'r-', 'LineWidth', 2.0);
+        plot(1:nTimeBins, photocurrentsResponseMeanNoStim, 'k-', 'LineWidth', 2.0);
+        hold off;
         set(gca, 'YLim', photocurrentsRange, 'XLim', [1 nTimeBins]);
-        title('photocurrents (noStim)');
+        title(sprintf('photocurrents for cone#: %d (noStim)', visualizedConeIndex));
+        colormap('lines')
     else
-        stairs(1:nTimeBins, isomerizationsResponseNoStim', 'k-')
+        plot(1:nTimeBins, isomerizationsResponseNoStim, '-')
+        hold on;
+        plot(1:nTimeBins, isomerizationsResponseNoiseFreeNoStim, 'r-', 'LineWidth', 2.0);
+        plot(1:nTimeBins, isomerizationsResponseMeanNoStim, 'k-', 'LineWidth', 2.0);
+        hold off;
         set(gca, 'YLim', isomerizationsRange,  'XLim', [1 nTimeBins]);
-        title('isomerizations (noStim)');
+        title(sprintf('isomerizations for cone#: %d (noStim)', visualizedConeIndex));
+        colormap('lines')
     end
 
     subplot(1,4,2);
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
-        plot(1:nTimeBins, photocurrentsResponseStim, 'k-')
+        plot(1:nTimeBins, photocurrentsResponseStim, '-');
+        hold on;
+        plot(1:nTimeBins, photocurrentsResponseNoiseFreeStim, 'r-', 'LineWidth', 2.0);
+        plot(1:nTimeBins, photocurrentsResponseMeanStim, 'k-', 'LineWidth', 2.0);
+        hold off;
         set(gca, 'YLim', photocurrentsRange,  'XLim', [1 nTimeBins]);
-        title('photocurrents (Stim)');
+        title(sprintf('photocurrents for cone#: %d (Stim)', visualizedConeIndex));
+        colormap('lines')
     else
-        stairs(1:nTimeBins, isomerizationsResponseStim', 'k-')
+        plot(1:nTimeBins, isomerizationsResponseStim, '-')
+        hold on;
+        plot(1:nTimeBins, isomerizationsResponseNoiseFreeStim, 'r-', 'LineWidth', 2.0);
+        plot(1:nTimeBins, isomerizationsResponseMeanStim, 'k-', 'LineWidth', 2.0);
+        hold off;
         set(gca, 'YLim', isomerizationsRange,  'XLim', [1 nTimeBins]);
-        title('isomerizations (Stim)');
+        title(sprintf('isomerizations for cone#: %d (Stim)', visualizedConeIndex));
+        colormap('lines')
     end
 
     subplot(1,4,3);
@@ -131,7 +158,7 @@ if (visualizeTransform)
         set(gca, 'YLim', photocurrentsBasedV1Range,  'XLim', [1 nTimeBins]);
         title('photocurrents-based V1 response (noStim)');
     else
-        stairs(1:nTimeBins, noStimData.responseInstanceArray.theMosaicIsomerizations', 'k-')
+        plot(1:nTimeBins, noStimData.responseInstanceArray.theMosaicIsomerizations, 'k-')
         set(gca, 'YLim', isomerizationsBasedV1Range,  'XLim', [1 nTimeBins]);
         title('isomerizations-based V1 response (noStim)');
     end
@@ -140,15 +167,15 @@ if (visualizeTransform)
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
         plot(1:nTimeBins, stimData.responseInstanceArray.theMosaicPhotocurrents, 'k-')
         set(gca, 'YLim', photocurrentsBasedV1Range,  'XLim', [1 nTimeBins]);
-        title(sprintf('iphotocurrents-based V1 response (c = %2.4f)', stimData.testContrast));
+        title(sprintf('photocurrents-based V1 response (c = %0.15f)', stimData.testContrast));
     else
-        stairs(1:nTimeBins, stimData.responseInstanceArray.theMosaicIsomerizations', 'k-')
+        plot(1:nTimeBins, stimData.responseInstanceArray.theMosaicIsomerizations, 'k-')
         set(gca, 'YLim', isomerizationsBasedV1Range,  'XLim', [1 nTimeBins]);
-        title(sprintf('isomerizations-based V1 response (c = %2.4f)', stimData.testContrast));
+        title(sprintf('isomerizations-based V1 response (c = %0.15f)', stimData.testContrast));
     end
 
     drawnow;
-end
+end % visualize input/output signals
 
 end
 
