@@ -1,4 +1,4 @@
-function theMosaic = colorDetectConeMosaicConstruct(mosaicParams)
+function theMosaic = colorDetectConeMosaicConstruct(mosaicParams, varargin)
 % colorDetectConeMosaicConstruct  Construct cone mosaic according to parameters structure
 %   theMosaic = colorDetectConeMosaicConstruct(mosaicParams)
 % 
@@ -10,12 +10,18 @@ function theMosaic = colorDetectConeMosaicConstruct(mosaicParams)
 %   mosaicParams.LMSRatio - vector with three entries summing to one
 %                           proportion of L, M, and S cones in mosaic
 %
-% THESE ARE NOT YET IMPLEMENTED
-%   mosaicParams.macular -  true/false, include macular pigment?
-%   mosaicParams.osModel - 'Linear','Biophys', which outer segment model
+% Key/Value pairs
+%       'visualizeMosaic' - true/false (default true). Wether to visualize the cone mosaic
+%
 %
 % 07/9/16  npc, dhb  Wrote it.
 % 12/8/16  npc       Update it after linearized os model.
+
+%% Parse arguments
+p = inputParser;
+p.addParameter('visualizeMosaic',true, @islogical);   
+p.parse(varargin{:});
+visualizeMosaic = p.Results.visualizeMosaic;
 
 if (ischar(mosaicParams.conePacking))
     if (strcmp(mosaicParams.conePacking, 'hex'))
@@ -90,8 +96,10 @@ end
 % stimulus, but space and time considerations may lead to it being smaller.
 if (isfield(mosaicParams, 'fieldOfViewDegs'))
     if (isa(theMosaic, 'coneMosaicHex'))
-        theMosaic.setSizeToFOVForHexMosaic(mosaicParams.fieldOfViewDegs)
-        theMosaic.visualizeGrid();
+        theMosaic.setSizeToFOVForHexMosaic(mosaicParams.fieldOfViewDegs);
+        if (visualizeMosaic)
+            theMosaic.visualizeGrid();
+        end
         theMosaic.displayInfo();
     else
         theMosaic.setSizeToFOV(mosaicParams.fieldOfViewDegs);

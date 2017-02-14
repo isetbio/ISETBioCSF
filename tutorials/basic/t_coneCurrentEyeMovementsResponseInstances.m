@@ -47,6 +47,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %        visualizations.  Set to false when running big jobs on clusters or
 %        in parfor loops, as plotting doesn't seem to play well with those
 %        conditions.
+%       'visualizeMosaic' - true/false (default true). Wether to visualize the cone mosaic
 %     'visualizeResponses' - true/false (default true). Call the fancy visualize response routine?
 %     'visualizationFormat' - How to arrange visualized maps. 
 %       Available options: 'montage', 'video'. Default is 'montage'
@@ -70,6 +71,7 @@ p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('computeMosaic', true, @islogical);
+p.addParameter('visualizeMosaic',true, @islogical); 
 p.addParameter('parforWorkersNum', 12, @isnumeric);
 p.addParameter('overrideMosaicIntegrationTime', [], @isnumeric);
 p.addParameter('generatePlots',false,@islogical);
@@ -157,7 +159,8 @@ if (p.Results.compute)
     
     if (p.Results.computeMosaic)
         % Create the cone mosaic
-        theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams);
+        theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams, ...
+            'visualizeMosaic', p.Results.visualizeMosaic);
         
         % Save cone mosaic
         coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};

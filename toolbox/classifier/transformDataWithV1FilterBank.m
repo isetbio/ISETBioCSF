@@ -1,7 +1,8 @@
 function [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams)
+% [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams)
+% Compute from the raw signal responses (isomerizations/photocurrents) the
+% energy response of a V1 quadrature pair filter bank
 %
-% 1/17/17   NPC  wrote it
-
 
 V1filterBank = thresholdParams.V1filterBank;
 standardize = thresholdParams.STANDARDIZE;
@@ -10,20 +11,32 @@ if (ndims(noStimData.responseInstanceArray.theMosaicIsomerizations) ~= 3)
     error('transformDataWithV1FilterBank not yet implemented for other than 3D response arrays, ndims = %d\n', ndims(noStimData.responseInstanceArray.theMosaicIsomerizations));
 end
 
+repsDimension = 1;
+spatialDimension = 2;
+temporalDimension = 3;
+
 visualizeInputOutputSignals = false;
 if (visualizeInputOutputSignals)    
-    visualizedConeIndex = 1; % size(noStimData.responseInstanceArray.theMosaicPhotocurrents,2);
+    
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
-        photocurrentsResponseNoStim = squeeze(noStimData.responseInstanceArray.theMosaicPhotocurrents(:,visualizedConeIndex,:));
-        photocurrentsResponseStim = squeeze(stimData.responseInstanceArray.theMosaicPhotocurrents(:,visualizedConeIndex,:));
+        visualizedConeIndex = 1:min([10 size(noStimData.responseInstanceArray.theMosaicPhotocurrents,2)]);
+        visualizedTrials = 1:min([50 size(noStimData.responseInstanceArray.theMosaicPhotocurrents, repsDimension)]);
+        N = numel(visualizedConeIndex) * numel(visualizedTrials);
+        T = size(noStimData.responseInstanceArray.theMosaicPhotocurrents, temporalDimension);
+        photocurrentsResponseNoStim = squeeze(reshape(noStimData.responseInstanceArray.theMosaicPhotocurrents(visualizedTrials,visualizedConeIndex,:), [N T]));
+        photocurrentsResponseStim = squeeze(reshape(stimData.responseInstanceArray.theMosaicPhotocurrents(visualizedTrials,visualizedConeIndex,:), [N T]));
         photocurrentsRange = [min([min(photocurrentsResponseNoStim) min(photocurrentsResponseStim)]) max([max(photocurrentsResponseNoStim) max(photocurrentsResponseStim)])];
         photocurrentsResponseNoiseFreeNoStim = squeeze(noStimData.noiseFreePhotocurrents(visualizedConeIndex,:));
         photocurrentsResponseNoiseFreeStim = squeeze(stimData.noiseFreePhotocurrents(visualizedConeIndex,:));
         photocurrentsResponseMeanNoStim = squeeze(mean(noStimData.responseInstanceArray.theMosaicPhotocurrents(:,visualizedConeIndex,:),1));
         photocurrentsResponseMeanStim = squeeze(mean(stimData.responseInstanceArray.theMosaicPhotocurrents(:,visualizedConeIndex,:),1));
     else
-        isomerizationsResponseNoStim = squeeze(noStimData.responseInstanceArray.theMosaicIsomerizations(:,visualizedConeIndex,:));
-        isomerizationsResponseStim = squeeze(stimData.responseInstanceArray.theMosaicIsomerizations(:,visualizedConeIndex,:));
+        visualizedConeIndex = 1:min([10 size(noStimData.responseInstanceArray.theMosaicIsomerizations,2)]);
+        visualizedTrials = 1:min([50 size(noStimData.responseInstanceArray.theMosaicIsomerizations, repsDimension)]);
+        N = numel(visualizedConeIndex) * numel(visualizedTrials);
+        T = size(noStimData.responseInstanceArray.theMosaicIsomerizations, temporalDimension);
+        isomerizationsResponseNoStim = squeeze(reshape(noStimData.responseInstanceArray.theMosaicIsomerizations(visualizedTrials,visualizedConeIndex,:), [N T]));
+        isomerizationsResponseStim = squeeze(reshape(stimData.responseInstanceArray.theMosaicIsomerizations(visualizedTrials,visualizedConeIndex,:), [N T]));
         isomerizationsRange = [min([min(isomerizationsResponseNoStim) min(isomerizationsResponseStim)]) max([max(isomerizationsResponseNoStim) max(isomerizationsResponseStim)])];
         isomerizationsResponseNoiseFreeNoStim = squeeze(noStimData.noiseFreeIsomerizations(visualizedConeIndex,:));
         isomerizationsResponseNoiseFreeStim = squeeze(stimData.noiseFreeIsomerizations(visualizedConeIndex,:));
@@ -33,9 +46,6 @@ if (visualizeInputOutputSignals)
 end
 
 % Compute mean (over repetitions and time) response from noStimData
-repsDimension = 1;
-spatialDimension = 2;
-temporalDimension = 3;
 if (strcmp(thresholdParams.signalSource,'photocurrents'))
     meanNoStimPhotocurrentsLevels = mean(mean(noStimData.responseInstanceArray.theMosaicPhotocurrents,temporalDimension),repsDimension);
 else
@@ -118,7 +128,7 @@ if (visualizeInputOutputSignals)
         plot(1:nTimeBins, photocurrentsResponseMeanNoStim, 'k-', 'LineWidth', 2.0);
         hold off;
         set(gca, 'YLim', photocurrentsRange, 'XLim', [1 nTimeBins]);
-        title(sprintf('photocurrents for cone#: %d (noStim)', visualizedConeIndex));
+        title(sprintf('photocurrents for cone#: %d - %d (noStim)', visualizedConeIndex(1), visualizedConeIndex(end)));
         colormap('lines')
     else
         plot(1:nTimeBins, isomerizationsResponseNoStim, '-')
@@ -127,7 +137,7 @@ if (visualizeInputOutputSignals)
         plot(1:nTimeBins, isomerizationsResponseMeanNoStim, 'k-', 'LineWidth', 2.0);
         hold off;
         set(gca, 'YLim', isomerizationsRange,  'XLim', [1 nTimeBins]);
-        title(sprintf('isomerizations for cone#: %d (noStim)', visualizedConeIndex));
+        title(sprintf('isomerizations for cone#: %d - %d (noStim)', visualizedConeIndex(1), visualizedConeIndex(end)));
         colormap('lines')
     end
 
@@ -139,7 +149,7 @@ if (visualizeInputOutputSignals)
         plot(1:nTimeBins, photocurrentsResponseMeanStim, 'k-', 'LineWidth', 2.0);
         hold off;
         set(gca, 'YLim', photocurrentsRange,  'XLim', [1 nTimeBins]);
-        title(sprintf('photocurrents for cone#: %d (Stim)', visualizedConeIndex));
+        title(sprintf('photocurrents for cone#: %d -%d (Stim)', visualizedConeIndex(1), visualizedConeIndex(end)));
         colormap('lines')
     else
         plot(1:nTimeBins, isomerizationsResponseStim, '-')
@@ -148,7 +158,7 @@ if (visualizeInputOutputSignals)
         plot(1:nTimeBins, isomerizationsResponseMeanStim, 'k-', 'LineWidth', 2.0);
         hold off;
         set(gca, 'YLim', isomerizationsRange,  'XLim', [1 nTimeBins]);
-        title(sprintf('isomerizations for cone#: %d (Stim)', visualizedConeIndex));
+        title(sprintf('isomerizations for cone#: %d - %d (Stim)', visualizedConeIndex(1), visualizedConeIndex(end)));
         colormap('lines')
     end
 
