@@ -10,8 +10,15 @@ function [classificationData,classes] = classificationDataStimDataInsert(classif
 
 % For each direction/contrast, insert stimulus data into the array that already has
 % the blank data in it.
-nTrials = size(stimData.responseInstanceArray.theMosaicIsomerizations,1);
-responseSize = numel(stimData.responseInstanceArray.theMosaicIsomerizations(1,:,:,:));
+
+if (strcmp(thresholdParams.signalSource,'photocurrents'))
+    nTrials = size(stimData.responseInstanceArray.theMosaicPhotocurrents,1);
+    responseSize = numel(stimData.responseInstanceArray.theMosaicPhotocurrents(1,:,:,:));
+else
+    nTrials = size(stimData.responseInstanceArray.theMosaicIsomerizations,1);
+    responseSize = numel(stimData.responseInstanceArray.theMosaicIsomerizations(1,:,:,:));
+end
+
 if (thresholdParams.nIntervals == 1)
     for iTrial = 1:nTrials
         % Put data into the right form for SVM.

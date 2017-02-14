@@ -104,8 +104,6 @@ photoCurrentTimeAxis = isomerizationsTimeAxis;
 %% Remove unwanted portions of the responses
 isomerizationsTimeIndicesToKeep = find(abs(isomerizationsTimeAxis-temporalParams.secondsToIncludeOffset) <= temporalParams.secondsToInclude/2);
 photocurrentsTimeIndicesToKeep = find(abs(photoCurrentTimeAxis-temporalParams.secondsToIncludeOffset) <= temporalParams.secondsToInclude/2);
-
-%% Reshape if we're using a hex mosaic
 if (isa(theMosaic , 'coneMosaicHex'))
      isomerizations = isomerizations(:,:,isomerizationsTimeIndicesToKeep);
      photocurrents = photocurrents(:,:,photocurrentsTimeIndicesToKeep);
@@ -152,7 +150,16 @@ theMosaic.os.noiseFlag = 'none';
                     'currentFlag', true, ...
                     'workDescription', 'noise-free responses', ...
                     'workerID', p.Results.workerID);
-                
+
+%% Remove unwanted portions of the noise-free responses
+if (isa(theMosaic , 'coneMosaicHex'))
+     noiseFreeIsomerizations = noiseFreeIsomerizations(:,:,isomerizationsTimeIndicesToKeep);
+     noiseFreePhotocurrents = noiseFreePhotocurrents(:,:,photocurrentsTimeIndicesToKeep);
+else
+     noiseFreeIsomerizations = noiseFreeIsomerizations(:,:,:,isomerizationsTimeIndicesToKeep);
+     noiseFreePhotocurrents = noiseFreePhotocurrents(:,:,:,photocurrentsTimeIndicesToKeep);
+end
+
 % Restore noiseFlags to none
 theMosaic.noiseFlag = originalIsomerizationNoiseFlag;
 theMosaic.os.noiseFlag = originalPootocurrentNoiseFlag;
