@@ -2,11 +2,11 @@ function c_PoirsonAndWandell96RunSession()
 % Conduct batch runs using the c_PoirsonAndWandel executive script
 %
     % How many instances to generate
-    nTrainingSamples = 1024;
+    nTrainingSamples = 128;
     
     nContrastsPerDirection = 12;
-    lowContrast = 1e-3;
-    highContrast = 2e-1;
+    lowContrast = 1e-4;
+    highContrast = 4e-1;
         
     % Freeze photon-isomerization & photocurrent noise
     freezeNoise = false;
@@ -15,33 +15,35 @@ function c_PoirsonAndWandell96RunSession()
     computeMosaic = true;
     
     % Size of cone mosaic
-    coneMosaicFOVDegs = 1.25; %1.25;
+    coneMosaicFOVDegs = 0.25; %1.25;
     
     % Conditions to examine
     % Full set of conditions
     [emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList] = assembleFullConditionsSet();
     
     % Or override some, such as:
-    emPathTypesList = {'random', 'frozen0'};
+    emPathTypesList = {'random'};
     
     stimParamsList = {...
-        struct('spatialFrequency', 2, 'meanLuminance', 200) ...
         struct('spatialFrequency', 10, 'meanLuminance', 200) ...
     };
 
     % performance params to examine
-    classifierSignalList = {'isomerizations'};
-    classifierTypeList = {'svmV1FilterBank'};
+    classifierSignalList = {'photocurrents'};
+    classifierTypeList = 'svm'; % {'svmV1FilterBank'};
     
     % Actions to perform
     computeResponses   = true;
-    visualizeSpatialScheme = true;
-    visualizeResponses = ~true;
     findPerformances   = true;
+    
+    % Visualization options
+    visualizeSpatialScheme = ~true;
+    visualizeResponses = ~true;
     visualizePerformances = ~true;
+    visualizeMosaic = ~true;
     
     % Go !
-    batchJob(computeMosaic, computeResponses, visualizeSpatialScheme, visualizeResponses, findPerformances, visualizePerformances, ...
+    batchJob(computeMosaic, computeResponses, visualizeMosaic, visualizeSpatialScheme, visualizeResponses, findPerformances, visualizePerformances, ...
         lowContrast, highContrast, nContrastsPerDirection, nTrainingSamples, freezeNoise,  coneMosaicFOVDegs, emPathTypesList, stimParamsList, ...
         classifierSignalList, classifierTypeList);
     
@@ -66,7 +68,7 @@ function c_PoirsonAndWandell96RunSession()
 end
 
 
-function batchJob(computeMosaic, computeResponses, visualizeSpatialScheme, visualizeResponses, findPerformances, visualizePerformances, ...
+function batchJob(computeMosaic, computeResponses, visualizeMosaic, visualizeSpatialScheme, visualizeResponses, findPerformances, visualizePerformances, ...
         lowContrast, highContrast, nContrastsPerDirection, nTrainingSamples, freezeNoise, coneMosaicFOVDegs, emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList)
 
     % Start timing
@@ -102,6 +104,7 @@ function batchJob(computeMosaic, computeResponses, visualizeSpatialScheme, visua
                     'nTrainingSamples', nTrainingSamples, ...
                     'emPathType', emPathType, ...
                     'freezeNoise', freezeNoise, ...
+                    'visualizeMosaic', visualizeMosaic, ...
                     'computeMosaic', computeMosaic, ...
                     'coneMosaicFOVDegs', coneMosaicFOVDegs, ...
                     'computeResponses', computeResponses, ...

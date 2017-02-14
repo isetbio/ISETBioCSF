@@ -195,19 +195,18 @@ function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaic
     ramSizeGBytesAvailable = ramSizeGBytes - ramUsedByOSGBytes;
     
     % Compute sizes of the large players
-    obj_absorptions_memsize = coneMosaicPatternSize*emPathLength*sizeOfDoubleInBytes;
+    obj_absorptions_memsize = 2*coneMosaicPatternSize*emPathLength*sizeOfDoubleInBytes;
     absorptions_memsize = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2;
     
-    obj_currents_memsize = obj_absorptions_memsize;
+    obj_currents_memsize = 2*obj_absorptions_memsize;
     photocurrents_memsize = absorptions_memsize;
     % oisizes (oiModulated, oiFixed, + mixture + currentOI + previousOI)
     oi_memsize = 5 * oiSizeBytes;
     
     % Compute trialBlocksSize
-    singleTrialMemoryGBytes = numberOfCores * (obj_absorptions_memsize+absorptions_memsize + max([oi_memsize (obj_currents_memsize+photocurrents_memsize)]))/(1024^3);
-    %singleTrialMemoryGBytes = numberOfCores * (obj_absorptions_memsize+absorptions_memsize + oi_memsize +obj_currents_memsize + photocurrents_memsize)/(1024^3);
+    singleTrialMemoryGBytes = numberOfCores * (obj_absorptions_memsize+absorptions_memsize + oi_memsize + obj_currents_memsize + photocurrents_memsize)/(1024^3);
     
-    allowedRAMcompression = 0.55;
+    allowedRAMcompression = 1.0;
     trialBlockSize = round(allowedRAMcompression*ramSizeGBytesAvailable/singleTrialMemoryGBytes);
     if (trialBlockSize > nTrials)
         trialBlockSize = nTrials;
@@ -226,10 +225,11 @@ function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaic
             if (iTrialBlock == numel(blockedTrialIndices))
                 lastTrialBlockSize = lastTrial-firstTrial+1;
             end
-            fprintf('trialBlock%d contains %d trials: %04d - %04d\n', iTrialBlock, numel(trialIndicesForThisBlock), firstTrial, lastTrial);
+            %fprintf('trialBlock%d contains %d trials: %04d - %04d\n', iTrialBlock, numel(trialIndicesForThisBlock), firstTrial, lastTrial);
         end
-        warndlg(...
-            sprintf('CoresNum = %d; SystemRAM = %2.2fGB; estimated peak RAM = %2.2fGB', numberOfCores, ramSizeGBytes, trialBlockSize*singleTrialMemoryGBytes+ramUsedByOSGBytes), ...
-            sprintf('%d trials in %d blocks, blockSize(1/last) = %d/%d', nTrials, numel(blockedTrialIndices), firstTrialBlockSize, lastTrialBlockSize));
+        fprintf('----------------------------------------------------------------------------------\n');
+        fprintf('<strong>CoresNum = %d; SystemRAM = %2.2fGB; estimated peak RAM = %2.2fGB</strong>\n', numberOfCores, ramSizeGBytes, trialBlockSize*singleTrialMemoryGBytes+ramUsedByOSGBytes);
+        fprintf('<strong>%d trials prganized in %d blocks, blockSize(1/last) = %d/%d</strong>\n', nTrials, numel(blockedTrialIndices), firstTrialBlockSize, lastTrialBlockSize);
+        fprintf('----------------------------------------------------------------------------------\n');
     end
 end
