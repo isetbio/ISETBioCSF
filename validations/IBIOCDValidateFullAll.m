@@ -24,6 +24,8 @@ function IBIOCDValidateFullAll(varargin)
 %% Close all figures so that we start with a clean slate
 close all;
 
+assert(false, 'Testing validation failure.');
+
 %% We will use preferences for the 'isetbioValidation' project
 thisProject = 'IBIOColorDetect';
 UnitTest.usePreferencesForProject(thisProject);
