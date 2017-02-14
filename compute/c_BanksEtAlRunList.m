@@ -6,12 +6,13 @@
 clear; close all;
 
 % Common parameters
-params.useScratchTopLevelDirName = true;
-params.computeResponses = true;
-params.findPerformance = true;
-params.thresholdMethod = 'mlpt';
+params.computeResponses = false;
+params.findPerformance = false;
 params.fitPsychometric = false;
+params.thresholdMethod = 'mlpt';
 params.nTrainingSamples = 2000;
+
+params.useScratchTopLevelDirName = false;
 
 params.conePacking = 'hexReg';
 params.mosaicRotationDegs = 30;
@@ -23,6 +24,7 @@ params.cyclesPerDegree = [10 20 30 40 50 60];
 params.luminances = [3.4 34 340];
 params.pupilDiamMm = 2;
 params.thresholdCriterionFraction = 0.701;
+params.highContrast = 1;
 params.freezeNoise = true;
 params.useTrialBlocks = true;
 params.generatePlots = true;
@@ -76,7 +78,7 @@ params = rmfield(params,'opticsModel');
 params.blur = true;
 params.apertureBlur = true;
 params.LMSRatio = [0.62 0.31 0.07];
-params.coneDarkNoiseRate = [300 300 00];
+params.coneDarkNoiseRate = [300 300 300];
 params.conePacking = 'hex';
 if (isfield(params,'innerSegmentSizeMicrons'))
     params = rmfield(params,'innerSegmentSizeMicrons');
@@ -94,7 +96,7 @@ params.thresholdPCA = 50;
 params.blur = true;
 params.apertureBlur = true;
 params.LMSRatio = [0.62 0.31 0.07];
-params.coneDarkNoiseRate = [300 300 00];
+params.coneDarkNoiseRate = [300 300 300];
 params.conePacking = 'hex';
 if (isfield(params,'innerSegmentSizeMicrons'))
     params = rmfield(params,'innerSegmentSizeMicrons');
@@ -112,7 +114,7 @@ params.thresholdPCA = 5;
 params.blur = true;
 params.apertureBlur = true;
 params.LMSRatio = [0.62 0.31 0.07];
-params.coneDarkNoiseRate = [300 300 00];
+params.coneDarkNoiseRate = [300 300 300];
 params.conePacking = 'hex';
 if (isfield(params,'innerSegmentSizeMicrons'))
     params = rmfield(params,'innerSegmentSizeMicrons');

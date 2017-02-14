@@ -6,11 +6,12 @@
 clear; close all;
 
 % Common parameters
+params.computeResponses = false;
+params.findPerformance = false;
+params.fitPsychometric = false;
+
 params.useScratchTopLevelDirName = false;
-params.computeResponses = true;
-params.findPerformance = true;
 params.thresholdMethod = 'mlpt';
-params.fitPsychometric = true;
 
 % Background for production should be 2.1, but can use smaller to make
 % tests run faster.
@@ -30,7 +31,7 @@ params.thresholdCriterionFraction = 0.701;
 params.freezeNoise = true;
 params.useTrialBlocks = true;
 params.generatePlots = true;
-params.plotCSF = true;
+params.plotSpatialSummation = true;
 params.visualizeResponses = false;
 
 % With blur, no dark noise, with aperture blur and Davila-Geisler optics
@@ -38,6 +39,6 @@ params.blur = true;
 params.apertureBlur = true;
 params.coneDarkNoiseRate = [0 0 0];
 params.opticsModel = 'DavilaGeisler';
-c_BanksEtAlReplicate(params);
+c_DavilaGeislerReplicate(params);
 params = rmfield(params,'opticsModel');
 

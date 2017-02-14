@@ -67,7 +67,7 @@ p = inputParser;
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
 p.addParameter('nTrainingSamples',500,@isnumeric);
 p.addParameter('spotDiametersMinutes',[0.5 1 5 10 20 40],@isnumeric);
-p.addParameter('backgroundSizeDegs',[2.1],@isnumeric);
+p.addParameter('backgroundSizeDegs',2.1,@isnumeric);
 p.addParameter('wavelength',550,@isnumeric);
 p.addParameter('luminances',[10],@isnumeric);
 p.addParameter('pupilDiamMm',3,@isnumeric);
@@ -276,17 +276,18 @@ if (p.Results.fitPsychometric)
     paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
     rwObject = IBIOColorDetectReadWriteBasic;
     writeProgram = mfilename;
-    rwObject.write('banksEtAlReplicate',banksEtAlReplicate,paramsList,writeProgram);
+    rwObject.write('davilaGeislerReplicate',davilaGeislerReplicate,paramsList,writeProgram);
     fprintf('done\n');
 end
 
 %% Read data back in
 fprintf('Reading performance data ...');
-nameParams = rParams.spatialParams;
-nameParams.spotSizeDegs = 0;
-nameParams.backgroundSizeDegs = 0;
-nameParams.fieldOfViewDegs = 0;
-paramsList = {rParams.topLevelDirParams, nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+% nameParams = rParams.spatialParams;
+% nameParams.spotSizeDegs = 0;
+% nameParams.backgroundSizeDegs = 0;
+% nameParams.fieldOfViewDegs = 0;
+% paramsList = {rParams.topLevelDirParams, nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
+paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
 rwObject = IBIOColorDetectReadWriteBasic;
 writeProgram = mfilename;
 davilaGeislerReplicate = rwObject.read('davilaGeislerReplicate',paramsList,writeProgram);
