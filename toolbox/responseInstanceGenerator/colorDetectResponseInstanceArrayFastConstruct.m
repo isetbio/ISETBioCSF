@@ -195,7 +195,7 @@ function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaic
     ramSizeGBytesAvailable = ramSizeGBytes - ramUsedByOSGBytes;
     
     % Compute sizes of the large players
-    obj_absorptions_memsize = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes;
+    obj_absorptions_memsize = coneMosaicPatternSize*emPathLength*sizeOfDoubleInBytes;
     absorptions_memsize = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2;
     
     obj_currents_memsize = obj_absorptions_memsize;
@@ -206,7 +206,7 @@ function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaic
     % Compute trialBlocksSize
     singleTrialMemoryGBytes = numberOfCores * (2*obj_absorptions_memsize+2*absorptions_memsize + oi_memsize + obj_currents_memsize + photocurrents_memsize)/(1024^3);
     
-    allowedRAMcompression = 0.5;
+    allowedRAMcompression = 1.0;
     trialBlockSize = round(allowedRAMcompression*ramSizeGBytesAvailable/singleTrialMemoryGBytes);
     if (trialBlockSize > nTrials)
         trialBlockSize = nTrials;
