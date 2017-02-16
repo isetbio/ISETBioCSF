@@ -2,7 +2,7 @@ function c_PoirsonAndWandell96RunSession()
 % Conduct batch runs using the c_PoirsonAndWandel executive script
 %
     % How many instances to generate
-    nTrainingSamples = 1024;
+    nTrainingSamples = 512;
     
     nContrastsPerDirection = 12;
     lowContrast = 1e-4;
@@ -12,10 +12,10 @@ function c_PoirsonAndWandell96RunSession()
     freezeNoise = false;
     
     % Compute the hex-mosaic or use existing one
-    computeMosaic = true;
+    computeMosaic = false;
     
     % Size of cone mosaic
-    coneMosaicFOVDegs = 1.25; %1.25;
+    coneMosaicFOVDegs = 1.25;
     
     % Conditions to examine
     % Full set of conditions
@@ -110,6 +110,7 @@ function batchJob(computeMosaic, computeResponses, visualizeMosaic, visualizeSpa
                     'computeResponses', computeResponses, ...
                     'visualizeResponses', visualizeResponses, ...
                     'visualizeSpatialScheme', visualizeSpatialScheme , ...
+                    'displayResponseComputationProgress', true, ...
                     'findPerformance', false);
                 
                  mosaicAlreadyComputed = true;
