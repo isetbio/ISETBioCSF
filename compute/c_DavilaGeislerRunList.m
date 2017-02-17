@@ -15,7 +15,7 @@ params.thresholdMethod = 'mlpt';
 
 % Background for production should be 2.1, but can use smaller to make
 % tests run faster.
-params.spotDiametersMinutes = [0.25 0.5 0.75 1 1.5 2 5 7.5 10 15 20 40 60];
+params.spotDiametersMinutes = [0.25 0.5 0.75 1 1.5 2 3 5 7.5 10 15 20 40 60];
 %params.spotDiametersMinutes = [0.25 0.5 0.75 1 1.5 2 3];
 params.backgroundSizeDegs = 1.5;
 params.luminances = 10;
