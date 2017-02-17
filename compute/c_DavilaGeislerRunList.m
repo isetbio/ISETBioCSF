@@ -49,3 +49,11 @@ params.opticsModel = 'DavilaGeisler';
 c_DavilaGeislerReplicate(params);
 params = rmfield(params,'opticsModel');
 
+% No blur, no dark noise, with aperture blur
+params.apertureBlur = true;
+params.coneDarkNoiseRate = [0 0 0];
+params.opticsModel = 'DavilaGeisler';
+c_DavilaGeislerReplicate(params);
+params = rmfield(params,'opticsModel');
+
+
