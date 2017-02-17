@@ -7,20 +7,19 @@ clear; close all;
 
 % Common parameters
 params.computeResponses = true;
-params.findPerformance = true;
-params.fitPsychometric = true;
+params.findPerformance = false;
+params.fitPsychometric = false;
 
 params.useScratchTopLevelDirName = false;
 params.thresholdMethod = 'mlpt';
 
 % Background for production should be 2.1, but can use smaller to make
 % tests run faster.
-params.spotDiametersMinutes = [0.25 0.5 0.75 1 2 5 7.5 10 15 20 40];
-params.backgroundSizeDegs = 1;
+params.spotDiametersMinutes = [0.25 0.5 0.75 1 1.5 2 5 7.5 10 15 20 40 60];
+%params.spotDiametersMinutes = [0.25 0.5 0.75 1 1.5 2 3];
+params.backgroundSizeDegs = 1.5;
 params.luminances = 10;
-
-params.nTrainingSamples = 500;
-params.conePacking = 'hexReg';
+ 
 params.mosaicRotationDegs = 30;
 params.coneSpacingMicrons = 3;
 params.innerSegmentSizeMicrons = sizeForSquareApertureFromDiameterForCircularAperture(params.coneSpacingMicrons);
@@ -33,6 +32,14 @@ params.useTrialBlocks = true;
 params.generatePlots = true;
 params.plotSpatialSummation = true;
 params.visualizeResponses = false;
+
+params.imagePixels = 1000;
+
+% Check that pixels per minute isn't insane, given smallest spot size
+% The D-G code sets the image to 1.1 times the background size at present
+imageSizeMinutes = 60*1.1*params.backgroundSizeDegs;
+minutesPerPixel = imageSizeMinutes/params.imagePixels;
+fprintf('Smallest spot diameter %g minutes, minutesPerPixel %g, pixels per spot %0.1f\n',min(params.spotDiametersMinutes),minutesPerPixel,min(params.spotDiametersMinutes)/minutesPerPixel);
 
 % With blur, no dark noise, with aperture blur and Davila-Geisler optics
 params.blur = true;

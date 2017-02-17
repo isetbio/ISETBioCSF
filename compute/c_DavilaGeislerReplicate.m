@@ -121,10 +121,10 @@ for ll = 1:length(p.Results.luminances)
         % Spatial 
         rParams.spatialParams.spotSizeDegs = p.Results.spotDiametersMinutes(dd)/60;
         rParams.spatialParams.backgroundSizeDegs = p.Results.backgroundSizeDegs;
-        spatialParams.fieldOfViewDegs = 1.1*p.Results.backgroundSizeDegs;
-        spatialParams.row = p.Results.imagePixels;
-        spatialParams.col = p.Results.imagePixels;
-        spatialParams.viewingDistance = 7.16;  
+        rParams.spatialParams.fieldOfViewDegs = 1.1*p.Results.backgroundSizeDegs;
+        rParams.spatialParams.row = p.Results.imagePixels;
+        rParams.spatialParams.col = p.Results.imagePixels;
+        rParams.spatialParams.viewingDistance = 7.16;  
                          
         % Set background wavelength
         rParams.backgroundParams.backgroundWavelengthsNm = [p.Results.wavelength];
@@ -311,6 +311,7 @@ if (p.Results.generatePlots && p.Results.plotSpatialSummation)
     spotAreasMin2 = pi*((p.Results.spotDiametersMinutes/2).^2);
     maxThresholdEnergies = maxSpotLuminanceCdM2*rParams.temporalParams.stimulusDurationInSeconds*spotAreasMin2;
     
+    % Davila-Geisler style plot
     hFig = figure; clf; hold on
     fontBump = 4;
     markerBump = -4;
@@ -324,11 +325,18 @@ if (p.Results.generatePlots && p.Results.plotSpatialSummation)
             [theColors(theColorIndex) 'o-'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
         legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
     end
+    
+    % Add Davila Geisler curve
+    downShift = 1.1;
+    A = LoadDigitizedDavilaGeislerFigure2;
+    A(:,2) = (10^-downShift)*A(:,2);
+    plot(A(:,1),A(:,2),'k:','LineWidth',1);
+    
     set(gca,'XScale','log');
     set(gca,'YScale','log');
     xlabel('Log10 Spot Area (square arc minutes)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
     ylabel('Log10 Threshold Energy', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-    xlim([1e-1 1e4]); ylim([1e-3 1]);
+    xlim([1e-2 1e4]); ylim([1e-3 1e3]);
     legend(legendStr,'Location','NorthWest','FontSize',rParams.plotParams.labelFontSize+fontBump);
     box off; grid on
     if (p.Results.blur)
@@ -337,6 +345,35 @@ if (p.Results.generatePlots && p.Results.plotSpatialSummation)
     else
         title(sprintf('Computational Observer CSF - no blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
         rwObject.write('davilaGeislerReplicateNoBlur',hFig,paramsList,writeProgram,'Type','figure');
+    end
+    
+    % Plot it the way we plot our data
+    hFig1 = figure;
+    set(gcf,'Position',[100 100 450 650]);
+    set(gca,'FontSize', rParams.plotParams.axisFontSize+fontBump);
+    legendStr = cell(length(p.Results.luminances),1);
+    for ll = 1:length(p.Results.luminances)
+        theColorIndex = rem(ll,length(theColors)) + 1;
+        plot(spotAreasMin2,[davilaGeislerReplicate.mlptThresholds(ll,:).thresholdContrasts], ...
+            [theColors(theColorIndex) 'o-'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
+        legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
+    end
+    
+    set(gca,'XScale','log');
+    set(gca,'YScale','log');
+     xlabel('Log10 Spot Area (square arc minutes)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+    ylabel('Log10 Threshold Contrast (arb. units)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+    xlim([1e-2 1e4]);
+    ylim([1e-7 1e-1]);
+    axis('square');
+    legend(legendStr,'Location','NorthWest','FontSize',rParams.plotParams.labelFontSize+fontBump);
+    box off; grid on
+    if (p.Results.blur)
+        title(sprintf('Computational Observer CSF - w/ blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
+        rwObject.write('davilaGeislerReplicateWithBlur1',hFig1,paramsList,writeProgram,'Type','figure');
+    else
+        title(sprintf('Computational Observer CSF - no blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
+        rwObject.write('davilaGeislerReplicateNoBlur1',hFig1,paramsList,writeProgram,'Type','figure');
     end
 end
 

@@ -34,7 +34,7 @@ options.Display     = 'off';
 %% Search grid specification for Palemedes
 gridLevels = 100;
 searchGrid.alpha = logspace(log10(stimLevels(1)),log10(stimLevels(end)),gridLevels);
-searchGrid.beta = 10.^linspace(-2,2,gridLevels);
+searchGrid.beta = 10.^linspace(-4,4,gridLevels);
 searchGrid.gamma = 0.5;
 searchGrid.lambda = 0.0;
 
