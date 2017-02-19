@@ -191,27 +191,25 @@ function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaic
     [numberOfCores, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
 
     % Subtract RAM used by the OS
-    ramUsedByOSGBytes = 3.2;
-    ramSizeGBytesAvailable = ramSizeGBytes - ramUsedByOSGBytes;
+    ramUsedByOSGBytes = 1.2;
+    absorptions_memsizeGBytes = nTrials*coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2/(1024^3);
+    photocurrents_memsizeGBytes = absorptions_memsizeGBytes;
+    obj_currents_memsizeGBytes = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/(1024^3);
     
+    ramSizeGBytesAvailable = ramSizeGBytes - ramUsedByOSGBytes - absorptions_memsizeGBytes - photocurrents_memsizeGBytes - obj_currents_memsizeGBytes;
     % Compute sizes of the large players
     
     % OIsizes (oiModulated, oiFixed, + mixture + currentOI + previousOI)
-    oi_memsize = 3 * oiSizeBytes;
+    oi_memsize = 5 * oiSizeBytes;
     
     % mosaic.compute temporary products
     computeTempProductsSize = coneMosaicPatternSize*emPathLength*sizeOfDoubleInBytes;
     
     % Absorptions
-    obj_absorptions_memsize = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes;
-    absorptions_memsize = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2;
-    
-    % Photocurrents
-    obj_currents_memsize = 0*obj_absorptions_memsize;
-    photocurrents_memsize = absorptions_memsize;
+    obj_absorptions_memsize = coneMosaicActivePatternSize*sizeOfDoubleInBytes;
     
     % Compute trialBlocksSize
-    singleTrialMemoryGBytes = numberOfCores * (max([computeTempProductsSize obj_absorptions_memsize+absorptions_memsize+max([oi_memsize obj_currents_memsize+photocurrents_memsize])]))/(1024^3);
+    singleTrialMemoryGBytes = numberOfCores * (max([computeTempProductsSize+oiSizeBytes obj_absorptions_memsize+oi_memsize]))/(1024^3);
     
     allowedRAMcompression = 1.0;
     trialBlockSize = round(allowedRAMcompression*ramSizeGBytesAvailable/singleTrialMemoryGBytes);
