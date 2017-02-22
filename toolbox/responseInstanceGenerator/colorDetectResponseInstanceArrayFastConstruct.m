@@ -188,28 +188,32 @@ end
 function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, oiSizeBytes, emPathLength, displayDiagnostics)
         
     % Determine system resources
-    [numberOfCores, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
+    [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
 
     % Subtract RAM used by the OS
     ramUsedByOSGBytes = 1.2;
-    absorptions_memsizeGBytes = nTrials*coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2/(1024^3);
-    photocurrents_memsizeGBytes = absorptions_memsizeGBytes;
-    obj_currents_memsizeGBytes = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/(1024^3);
+    ramSizeGBytesAvailable = ramSizeGBytes - ramUsedByOSGBytes;
     
-    ramSizeGBytesAvailable = ramSizeGBytes - ramUsedByOSGBytes - absorptions_memsizeGBytes - photocurrents_memsizeGBytes - obj_currents_memsizeGBytes;
     % Compute sizes of the large players
+    % mosaic.compute temporary products
+    computeTempProductsSizeGBytes = coneMosaicPatternSize*sizeOfDoubleInBytes/(1024^3)
+    
+    absorptions_memsizeGBytes = nTrials*coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2/(1024^3)
+    photocurrents_memsizeGBytes = absorptions_memsizeGBytes
+    
+    obj_currents_memsizeGBytes = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/(1024^3)
+    obj_absorptions_memsizeGBytes = coneMosaicActivePatternSize*sizeOfDoubleInBytes/(1024^3)
     
     % OIsizes (oiModulated, oiFixed, + mixture + currentOI + previousOI)
-    oi_memsize = 5 * oiSizeBytes;
-    
-    % mosaic.compute temporary products
-    computeTempProductsSize = coneMosaicPatternSize*emPathLength*sizeOfDoubleInBytes;
-    
-    % Absorptions
-    obj_absorptions_memsize = coneMosaicActivePatternSize*sizeOfDoubleInBytes;
+    oi_memsizeGBytes = (5 * oiSizeBytes)/(1024^3)
     
     % Compute trialBlocksSize
-    singleTrialMemoryGBytes = numberOfCores * (max([computeTempProductsSize+oiSizeBytes obj_absorptions_memsize+oi_memsize]))/(1024^3);
+    totalMemoryPerWorker = max(...
+        [ computeTempProductsSizeGBytes+obj_absorptions_memsizeGBytes+oi_memsizeGBytes  ...
+          absorptions_memsizeGBytes+photocurrents_memsizeGBytes+obj_currents_memsizeGBytes...
+        ])
+    singleTrialMemoryGBytes = numberOfWorkers * totalMemoryPerWorker
+    ramSizeGBytesAvailable
     
     allowedRAMcompression = 1.0;
     trialBlockSize = round(allowedRAMcompression*ramSizeGBytesAvailable/singleTrialMemoryGBytes);
@@ -233,7 +237,7 @@ function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaic
             %fprintf('trialBlock%d contains %d trials: %04d - %04d\n', iTrialBlock, numel(trialIndicesForThisBlock), firstTrial, lastTrial);
         end
         fprintf('----------------------------------------------------------------------------------\n');
-        fprintf('<strong>CoresNum = %d; SystemRAM = %2.2fGB; estimated peak RAM = %2.2fGB</strong>\n', numberOfCores, ramSizeGBytes, trialBlockSize*singleTrialMemoryGBytes+ramUsedByOSGBytes);
+        fprintf('<strong>CoresNum = %d; SystemRAM = %2.2fGB; estimated peak RAM = %2.2fGB</strong>\n', numberOfWorkers, ramSizeGBytes, trialBlockSize*singleTrialMemoryGBytes+ramUsedByOSGBytes);
         fprintf('<strong>%d trials prganized in %d blocks, blockSize(1/last) = %d/%d</strong>\n', nTrials, numel(blockedTrialIndices), firstTrialBlockSize, lastTrialBlockSize);
         fprintf('----------------------------------------------------------------------------------\n');
     end
