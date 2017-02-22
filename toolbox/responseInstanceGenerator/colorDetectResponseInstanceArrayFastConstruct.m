@@ -21,6 +21,7 @@ function [responseInstanceArray,noiseFreeIsomerizations,noiseFreePhotocurrents, 
 %               Controls wether the eye movement paths start at (0,0) (default) or wether they are centered around (0,0)
 %  'osImpulseResponseFunctions' - the LMS impulse response filters to be used (default: [])
 %  'osMeanCurrents' - the steady-state LMS currents caused by the mean absorption LMS rates
+%  'computeNoiseFreeSignals' - true/false (default true) wether to compute the noise free isomerizations and photocurrents
 %  'useSinglePrecision' - true/false (default true) use single precision to represent isomerizations and photocurrent
 %  'displayTrialBlockPartitionDiagnostics' - true/false (default false)
 %               Controls wether to display how trials are partitioned into trial blocks
@@ -35,12 +36,14 @@ p.addParameter('trialBlockSize', [], @isnumeric);
 p.addParameter('centeredEMPaths',false, @islogical); 
 p.addParameter('osImpulseResponseFunctions', [], @isnumeric);
 p.addParameter('osMeanCurrents', [], @isnumeric);
+p.addParameter('computeNoiseFreeSignals', true, @islogical);
 p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 
 p.parse(varargin{:});
 currentSeed = p.Results.seed;
 trialBlockSize = p.Results.trialBlockSize;
 displayTrialBlockPartitionDiagnostics = p.Results.displayTrialBlockPartitionDiagnostics;
+
 %% Start computation time measurement
 tic
 
@@ -130,9 +133,14 @@ responseInstanceArray.theMosaicEyeMovements = theEMpaths(:,isomerizationsTimeInd
 responseInstanceArray.timeAxis = isomerizationsTimeAxis(isomerizationsTimeIndicesToKeep);
 responseInstanceArray.photocurrentTimeAxis = photoCurrentTimeAxis(photocurrentsTimeIndicesToKeep);
 
-%% Get noise-free responses
-%
-% Compute the noise-free isomerizations & photocurrents
+
+if (~p.Results.computeNoiseFreeSignals)
+    noiseFreeIsomerizations = [];
+    noiseFreePhotocurrents = [];
+    return;
+end
+
+%% Compute the noise-free isomerizations & photocurrents
 if strcmp(temporalParams.emPathType, 'frozen')
     % use the first emPath if we have a frozen path
     theEMpaths = theEMpaths(1,:,:);
@@ -205,7 +213,7 @@ function trialBlockSize = computeTrialBlockSizeForParforLoop(nTrials, coneMosaic
     obj_absorptions_memsizeGBytes = coneMosaicActivePatternSize*sizeOfDoubleInBytes/(1024^3)
     
     % OIsizes (oiModulated, oiFixed, + mixture + currentOI + previousOI)
-    oi_memsizeGBytes = (5 * oiSizeBytes)/(1024^3)
+    oi_memsizeGBytes = (2 * oiSizeBytes)/(1024^3)
     
     % Compute trialBlocksSize
     totalMemoryPerWorker = max(...
