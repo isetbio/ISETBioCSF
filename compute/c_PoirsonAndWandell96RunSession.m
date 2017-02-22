@@ -2,11 +2,11 @@ function c_PoirsonAndWandell96RunSession()
 % Conduct batch runs using the c_PoirsonAndWandel executive script
 %
     % How many instances to generate
-    nTrainingSamples = 512;
+    nTrainingSamples = 1024;
     
     nContrastsPerDirection = 12;
-    lowContrast = 1e-4;
-    highContrast = 4e-1;
+    lowContrast = 5e-4;
+    highContrast = 5e-1;
         
     % Freeze photon-isomerization & photocurrent noise
     freezeNoise = false;
