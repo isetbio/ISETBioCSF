@@ -136,7 +136,7 @@ for ll = 1:length(p.Results.luminances)
         load T_xyz1931
         T_xyz = SplineCmf(S_xyz1931,683*T_xyz1931,S);
         radiancePerUW = AOMonochromaticCornealPowerToRadiance(wls,rParams.backgroundParams.backgroundWavelengthsNm,1,rParams.oiParams.pupilDiamMm,rParams.spatialParams.backgroundSizeDegs^2);
-        xyzPerUW = T_xyz*radiancePerUW;
+        xyzPerUW = T_xyz*radiancePerUW*(wls(2)-wls(1));
         desiredLumCdM2 = p.Results.luminances(ll);
         rParams.backgroundParams.backgroundCornealPowerUW = desiredLumCdM2/xyzPerUW(2);
         
@@ -316,18 +316,18 @@ if (p.Results.generatePlots && p.Results.plotSpatialSummation)
     fontBump = 4;
     markerBump = -4;
     set(gcf,'Position',[100 100 450 650]);
-    set(gca,'FontSize', rParams.plotParams.axisFontSize+fontBump);
+    set(gca,'FontSize', 14+fontBump);
     theColors = ['r' 'g' 'b'];
     legendStr = cell(length(p.Results.luminances),1);
     for ll = 1:length(p.Results.luminances)
         theColorIndex = rem(ll,length(theColors)) + 1;
         plot(spotAreasMin2,[davilaGeislerReplicate.mlptThresholds(ll,:).thresholdContrasts].*maxThresholdEnergies, ...
-            [theColors(theColorIndex) 'o-'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
+            [theColors(theColorIndex) 'o-'],'MarkerSize',12+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',3);  
         legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
     end
     
     % Add Davila Geisler curve
-    downShift = 1.1;
+    downShift = 0.8;
     A = LoadDigitizedDavilaGeislerFigure2;
     A(:,2) = (10^-downShift)*A(:,2);
     plot(A(:,1),A(:,2),'k:','LineWidth',1);
