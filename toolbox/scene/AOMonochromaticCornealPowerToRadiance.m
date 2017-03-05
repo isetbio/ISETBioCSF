@@ -1,11 +1,14 @@
 function radiance = AOMonochromaticCornealPowerToRadiance(wls,componentWavelengths,componentCornealPowerUW,pupilDiamMm,stimulusAreaDegs2)
 % radiance = AOMonochromaticCornealPowerToRadiance(wls,componentWavelengths,componentCornealPowerUW,pupilDiamMm,stimulusAreaDegs2)
 %
-% Convert stimulus description in terms of monochromatic component wavelengths and
-% their corneal power to an equivalent spectral radiance on wavelength
-% sampling vector wls.
+% Convert stimulus description in terms of monochromatic component
+% wavelengths and their corneal power to an equivalent spectral radiance on
+% wavelength sampling vector wls.
 %
-% Depends both on the area over which the power is spread in the pupil and the retinal area over which it is spread.
+% Depends both on the area over which the power is spread in the pupil and
+% the retinal area over which it is spread.
+%
+% Power is returned as Watts/[sr-m2-nm].
 
 % Get pupil area
 pupilAreaMm2 = pi*(pupilDiamMm/2)^2;
