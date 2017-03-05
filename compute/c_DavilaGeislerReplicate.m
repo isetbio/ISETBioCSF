@@ -375,6 +375,19 @@ if (p.Results.generatePlots && p.Results.plotSpatialSummation)
         title(sprintf('Computational Observer CSF - no blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
         rwObject.write('davilaGeislerReplicateNoBlur1',hFig1,paramsList,writeProgram,'Type','figure');
     end
+    
+    % Save data for plots in convenient form
+    plotData.spotAreasMin2 = spotAreasMin2;
+    plotData.thresholdEnergy = [davilaGeislerReplicate.mlptThresholds(:,:).thresholdContrasts].*maxThresholdEnergies;
+    plotData.thresholdContrasts = [davilaGeislerReplicate.mlptThresholds(:,:).thresholdContrasts];
+    plotData.digitizedAreasMin2 = A(:,1)';
+    plotData.digitizedEnergy = A(:,2)';
+    if (p.Results.blur)
+        rwObject.write('davilaGeislerReplicatePlotDataWithBlur',plotData,paramsList,writeProgram);
+        
+    else
+        rwObject.write('davilaGeislerReplicatePlotDataNoBlur',plotData,paramsList,writeProgram);
+    end
 end
 
 
