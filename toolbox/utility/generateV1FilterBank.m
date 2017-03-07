@@ -167,8 +167,7 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
             title('sin-phase V1 filter pooling weights (cone mosaic view)');
         colormap(gray(1024));
         drawnow;
-    end % plotFilterBank
-           
+    end % plotFilterBank       
 end
 
 
