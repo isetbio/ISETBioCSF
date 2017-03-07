@@ -65,7 +65,7 @@ classdef IBIOColorDetectReadWrite < handle
         data = read(obj,fileid,varargin);
         
         % Delete the data
-        delete(obj,fileid,varargin);
+        remove(obj,fileid,varargin);
         
         % Get me a scratch directory
         tempDir = tempdir(obj,varargin);

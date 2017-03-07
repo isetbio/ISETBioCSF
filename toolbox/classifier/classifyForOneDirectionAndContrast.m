@@ -21,12 +21,18 @@ p.addParameter('plotPCAAxis1',1,@isnumeric);
 p.addParameter('plotPCAAxis2',2,@isnumeric);
 p.parse(noStimData,stimData,thresholdParams,varargin{:});
 
+
+% Start timing
+tBegin = clock;
+
 %% Transform the raw cone responses into V1 filter bank responses
 if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
     if ((~isfield(thresholdParams, 'V1filterBank')) || (isfield(thresholdParams, 'V1filterBank')) && (isempty(thresholdParams.V1filterBank)))
         error('thresholdParams must have a V1filterBank field when using the svmV1FilterBank classifier\n');
     end
     [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams);
+elseif (strcmp(thresholdParams.method, 'svmSpaceTimeSeparable'))
+    [noStimData, stimData] = transformDataWithSeparableSpaceTimeComponents(noStimData, stimData, thresholdParams);
 end
 
 %% Put zero contrast response instances into data that we will pass to the SVM
@@ -46,6 +52,14 @@ switch (thresholdParams.method)
         fprintf(' correct: %2.2f%%\n', usePercentCorrect*100);
         h = [];
         
+    case 'svmSpaceTimeSeparable'
+        % Perform SVM classification for this stimulus vs the zero contrast stimulus
+        fprintf('\tRunning SVM ...');
+        [usePercentCorrect, useStdErr, svm] = classifyWithSVM(classificationData,classes,thresholdParams.kFold,...
+            'standardizeSVMpredictors', thresholdParams.standardizeSVMpredictors);
+        fprintf(' correct: %2.2f%%\n', usePercentCorrect*100);
+        h = [];
+
     case 'svm'
         % Friendly neighborhood SVM, with optional standardization and PCA
         % first
@@ -344,4 +358,9 @@ switch (thresholdParams.method)
         error('Unknown classification method');
 end
 
+tEnd = clock;
+timeLapsed = etime(tEnd,tBegin);
+fprintf('Classification for this condition completed in %.2f minutes. \n', timeLapsed/60);
+
+    
 end

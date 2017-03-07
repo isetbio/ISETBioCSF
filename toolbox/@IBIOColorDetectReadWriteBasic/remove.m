@@ -1,5 +1,5 @@
-function delete(obj,name,paramsList,theProgram,varargin)
-% delete(obj,name,paramsList,theProgram,varargin)
+function remove(obj,name,paramsList,theProgram,varargin)
+% remove(obj,name,paramsList,theProgram,varargin)
 %
 % Delete a data object.
 %
