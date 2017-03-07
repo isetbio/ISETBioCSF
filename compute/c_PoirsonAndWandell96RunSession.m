@@ -1,9 +1,11 @@
-function c_PoirsonAndWandell96RunSession()
+function c_PoirsonAndWandell96RunSession(runConfigID, nTrainingSamples, performanceClassifierTrainingSamples)
 % Conduct batch runs using the c_PoirsonAndWandel executive script
+% Example usage:
+%   c_PoirsonAndWandell96RunSession(1, 1024, 700)
 %
-    % How many instances to generate
-    nTrainingSamples = 1024;
-    
+%   The intermediate data (e.g. generated during PCA computing) for certain classifiers 
+%   may not fit in RAM, hence the different nTrainingSamples, performanceClassifierTrainingSamples
+%
     nContrastsPerDirection = 12;
     lowContrast = 5e-4;
     highContrast = 5e-1;
@@ -21,19 +23,32 @@ function c_PoirsonAndWandell96RunSession()
     % Full set of conditions
     [emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList] = assembleFullConditionsSet();
     
-    % Or override some, such as:
-    emPathTypesList = {'random'};
+    allRunConfigs = { ...
+        {'random',  struct('spatialFrequency', 2,  'meanLuminance', 20) } ... 
+        {'random',  struct('spatialFrequency', 2,  'meanLuminance', 200)} ...  
+        {'random',  struct('spatialFrequency', 10, 'meanLuminance', 200)} ...
+        {'frozen0', struct('spatialFrequency', 2,  'meanLuminance', 20) } ...
+        {'frozen0', struct('spatialFrequency', 2,  'meanLuminance', 200)} ...
+        {'frozen0', struct('spatialFrequency', 10, 'meanLuminance', 200)} ...
+        };
     
-    stimParamsList = {...
-        struct('spatialFrequency', 10, 'meanLuminance', 200) ...
-    };
+    theSelectedRunConfig = allRunConfigs{runConfigID};
+    
+    % Or override some, such as:
+    emPathTypesList = {theSelectedRunConfig{1}};
+    stimParamsList = {theSelectedRunConfig{2}};
 
     % performance params to examine
-    classifierSignalList = {'photocurrents'};
+    classifierSignalList = {'isomerizations', 'photocurrents'};
+ 
     classifierTypeList = {'svmV1FilterBank'};
     
+    
+    %classifierTypeList = {'svm'};
+    pcaComponentsNum = 60;
+    
     % Actions to perform
-    computeResponses   = true;
+    computeResponses   = ~true;
     findPerformances   = true;
     
     % Visualization options
@@ -42,10 +57,13 @@ function c_PoirsonAndWandell96RunSession()
     visualizePerformances = ~true;
     visualizeMosaic = ~true;
     
+    % Computation foptions
+    displayResponseComputationProgress = false;
+    
     % Go !
-    batchJob(computeMosaic, computeResponses, visualizeMosaic, visualizeSpatialScheme, visualizeResponses, findPerformances, visualizePerformances, ...
+    batchJob(computeMosaic, computeResponses, displayResponseComputationProgress, visualizeMosaic, visualizeSpatialScheme, visualizeResponses, findPerformances, visualizePerformances, ...
         lowContrast, highContrast, nContrastsPerDirection, nTrainingSamples, freezeNoise,  coneMosaicFOVDegs, emPathTypesList, stimParamsList, ...
-        classifierSignalList, classifierTypeList);
+        classifierSignalList, classifierTypeList, pcaComponentsNum, performanceClassifierTrainingSamples);
     
     if (1==2)
         % Optionally, assess performance as a function of integrated response
@@ -68,8 +86,8 @@ function c_PoirsonAndWandell96RunSession()
 end
 
 
-function batchJob(computeMosaic, computeResponses, visualizeMosaic, visualizeSpatialScheme, visualizeResponses, findPerformances, visualizePerformances, ...
-        lowContrast, highContrast, nContrastsPerDirection, nTrainingSamples, freezeNoise, coneMosaicFOVDegs, emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList)
+function batchJob(computeMosaic, computeResponses, displayResponseComputationProgress, visualizeMosaic, visualizeSpatialScheme, visualizeResponses, findPerformances, visualizePerformances, ...
+        lowContrast, highContrast, nContrastsPerDirection, nTrainingSamples, freezeNoise, coneMosaicFOVDegs, emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList, pcaComponentsNum, performanceClassifierTrainingSamples)
 
     % Start timing
     tBegin = clock;    
@@ -110,7 +128,7 @@ function batchJob(computeMosaic, computeResponses, visualizeMosaic, visualizeSpa
                     'computeResponses', computeResponses, ...
                     'visualizeResponses', visualizeResponses, ...
                     'visualizeSpatialScheme', visualizeSpatialScheme , ...
-                    'displayResponseComputationProgress', true, ...
+                    'displayResponseComputationProgress', displayResponseComputationProgress, ...
                     'findPerformance', false);
                 
                  mosaicAlreadyComputed = true;
@@ -128,10 +146,7 @@ function batchJob(computeMosaic, computeResponses, visualizeMosaic, visualizeSpa
                             fprintf(2,'Finding performance using an <strong>%s</strong> classifier on <strong>%s</strong> is not feasible. Skipping...\n', classifierTypeName, performanceSignalName);
                             continue;
                         end
-                        % Inform the user regarding what we are currently working on
-                        fprintf('Finding/visualizing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on <strong>%s</strong>.\n', ...
-                            params.spatialFrequency, params.meanLuminance, emPathType, classifierTypeName, performanceSignalName);
-                        
+
                         c_PoirsonAndWandell96Replicate(...
                             'spatialFrequency', params.spatialFrequency, ...
                             'meanLuminance', params.meanLuminance, ...
@@ -147,7 +162,9 @@ function batchJob(computeMosaic, computeResponses, visualizeMosaic, visualizeSpa
                             'findPerformance', findPerformances, ...
                             'visualizePerformance', visualizePerformances, ...
                             'performanceSignal', performanceSignalName, ...
-                            'performanceClassifier', classifierTypeName ...
+                            'performanceClassifier', classifierTypeName, ...
+                            'performanceClassifierTrainingSamples', performanceClassifierTrainingSamples, ...
+                            'pcaComponentsNum', pcaComponentsNum ...
                             );  % findPerformances
                         
                     end % classifierSignalIndex
@@ -177,7 +194,7 @@ function [emPathTypesList, stimParamsList, ...
 
     % performance params to examine
     classifierSignalList = {'isomerizations', 'photocurrents'};
-    classifierTypeList = {'mlpt', 'svm', 'svmV1FilterBank'};
+    classifierTypeList = {'mlpt', 'svm', 'svmSpaceTimeSeparable', 'svmV1FilterBank'};
 end
 
 
