@@ -21,7 +21,7 @@ function [validationData,extraData] = t_colorDetectFindPerformance(varargin)
 %     which then uses defaults produced by generation function.
 %   'testDirectionParams' - Value is the testDirectionParams structure to use
 %   'thresholdParams' - Parameters related to how we find thresholds from responses
-%   'freezeNoise' - true/false (default false).  Freezes all noise so that results are reproducible.
+%   'freezeNoise'- true/false (default false).  Freezes all noise so that results are reproducible.
 %     If there is no noise set, this leaves it alone.
 %   'compute' - true/false (default true).  Do the computations.
 %   'parforWorkersNum' - 0 .. 12 (default: 12). How many workers to use for the computations.
@@ -29,6 +29,7 @@ function [validationData,extraData] = t_colorDetectFindPerformance(varargin)
 %       use > 0: for a parfor loop with desired number of workers
 %   'generatePlots' - true/false (default true).  Produce any plots at
 %      all? Other plot options only have an effect if this is true.
+%   'visualizeSpatialScheme' - true/false (default false). Visualize the V1-filter bank
 %   'plotPsychometric' - true/false (default false).  Produce
 %       psychometric function output graphs.
 %   'plotSvmBoundary' - true/false (default false).  Plot classification boundary
@@ -49,6 +50,7 @@ p.addParameter('freezeNoise',false,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('parforWorkersNum', 12, @isnumeric);
 p.addParameter('generatePlots',true,@islogical);
+p.addParameter('visualizeSpatialScheme', false, @islogical);
 p.addParameter('plotPsychometric',false,@islogical);
 p.addParameter('plotSvmBoundary',false,@islogical);
 p.addParameter('plotPCAAxis1',1,@isnumeric)
@@ -116,7 +118,7 @@ if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (strcmp(thresholdParams
 end
 if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
     % Generate V1 filter bank struct and add it to thresholdParams
-    V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams);
+    V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme);
     thresholdParams = modifyStructParams(thresholdParams, 'V1filterBank', V1filterBank);
 end
 

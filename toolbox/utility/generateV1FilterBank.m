@@ -1,7 +1,6 @@
-function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLevelDirParams)
-
+function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLevelDirParams, plotV1FilterBank)
+    % Filter width
     filterWidthInDegrees = 0.5*spatialParams.fieldOfViewDegs;
-    plotV1FilterBank = true;
     
     % Load the mosaic
     coneParamsList = {topLevelDirParams, mosaicParams};
