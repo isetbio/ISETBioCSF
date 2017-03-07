@@ -130,6 +130,20 @@ constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.o
 %% Compute if desired
 if (p.Results.compute)
     
+    
+    % Inform the user regarding what we are currently working on
+    if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
+        fprintf('Computing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the raw <strong>%s</strong>.\n', ...
+    rParams.spatialParams.cyclesPerDegree, rParams.backgroundParams.backgroundxyY(3)*rParams.backgroundParams.lumFactor, rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
+    elseif (~strcmp(thresholdParams.method, 'mlpt'))
+        fprintf('Computing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the first %d PCA components of <strong>%s</strong>.\n', ...
+    rParams.spatialParams.cyclesPerDegree, rParams.backgroundParams.backgroundxyY(3)*rParams.backgroundParams.lumFactor, rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.PCAComponents, thresholdParams.signalSource);                  
+    else
+        fprintf('Computing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on  <strong>%s</strong>.\n', ...
+    rParams.spatialParams.cyclesPerDegree, rParams.backgroundParams.backgroundxyY(3)*rParams.backgroundParams.lumFactor, rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
+
+    end
+    
     % Read data for the no stimulus condition
     fprintf('Reading no stimulus data ... \n');
     colorModulationParamsTemp = rParams.colorModulationParams;
@@ -151,6 +165,12 @@ if (p.Results.compute)
         [noStimData, thresholdParams.actualEvidenceIntegrationTime] = keepTimeBinsUsed(noStimData, thresholdParams.evidenceIntegrationTime);
     end
     
+    if (strcmp(thresholdParams.signalSource,'isomerizations'))
+        noStimData.responseInstanceArray.theMosaicPhotocurrents = [];
+    else
+        noStimData.responseInstanceArray.theMosaicIsomerizations = [];
+    end
+        
     % Get out some data we'll want
     nTrials = numel(noStimData.responseInstanceArray);
     testConeContrasts = ancillaryData.testConeContrasts;
@@ -163,13 +183,6 @@ if (p.Results.compute)
     checkStructs('testDirectionParams', testDirectionParams, 'ancillaryParams.instanceParams', ancillaryData.instanceParams);
     fprintf('done\n');
     
-    % Do SVM for each test contrast and color direction.
-    %
-    % The work is done inside routine classifyForOneDirectionAndContrast.  We needed to
-    % encapsulate it there to make parfor happy.
-    %
-    % If you don't have a computer configured to work with parfor, you may need
-    % to change the parfor here to a plain for loop.
     tic
     parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
     for kk = 1:length(parforConditionStructs)
@@ -189,7 +202,8 @@ if (p.Results.compute)
     useStdErr = zeros(size(testConeContrasts,2),1);
     rState = rng;
     
-    parfor (kk = 1:nParforConditions, p.Results.parforWorkersNum)
+    %parfor (kk = 1:nParforConditions, p.Results.parforWorkersNum)
+    for kk = nParforConditions:-1:1
         rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         paramsList = thisConditionStruct.paramsList;
@@ -206,6 +220,11 @@ if (p.Results.compute)
             [stimData, ~] = keepTimeBinsUsed(stimData, thresholdParams.evidenceIntegrationTime);
         end
         
+        if (strcmp(thresholdParams.signalSource,'isomerizations'))
+            stimData.responseInstanceArray.theMosaicPhotocurrents = [];
+        else
+            stimData.responseInstanceArray.theMosaicIsomerizations = [];
+        end
         % Get performance for this condition.  Optional parameters control
         % whether or not the routine returns a handle to a plot that
         % illustrates the classifier.
@@ -224,7 +243,7 @@ if (p.Results.compute)
         end
     end
     rng(rState);
-    fprintf('Classification took %2.2f minutes\n', toc/60);
+    fprintf('Classification for all %d conditions took %2.2f minutes\n', nParforConditions, toc/60);
     clearvars('theData','useData','classificationData','classes');
     
     % Take the returned vector form of the performance data and put it back into the

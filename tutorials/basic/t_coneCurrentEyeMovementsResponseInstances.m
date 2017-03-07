@@ -87,6 +87,13 @@ rParams = p.Results.rParams;
 testDirectionParams = p.Results.testDirectionParams;
 visualizationFormat = p.Results.visualizationFormat;
 visualizeSpatialScheme = p.Results.visualizeSpatialScheme;
+parforWorkersNum = p.Results.parforWorkersNum;
+
+% Check the parforWorkersNum
+[numberOfWorkers, ~, ~] = determineSystemResources();
+if (numberOfWorkers < parforWorkersNum)
+    parforWorkersNum = numberOfWorkers;
+end
 
 % Ensure visualizationFormat has a valid value
 if (strcmp(visualizationFormat, 'montage')) || (strcmp(visualizationFormat, 'video'))
@@ -141,6 +148,9 @@ if (isempty(testDirectionParams))
     testDirectionParams = instanceParamsGenerate;
 end
 
+%% Unique identifier for temporary block data prefix
+blockDataPrefix = datestr(datetime('now'), 'yyyymmddTHHMMSS');
+
 %% The constant params list
 constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
 
@@ -170,6 +180,7 @@ if (p.Results.compute)
          fprintf('Loading a previously saved cone mosaic\n');
          coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
          theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
+         theMosaic.displayInfo();
     end
     
     if (~isempty(p.Results.overrideMosaicIntegrationTime))
@@ -222,35 +233,82 @@ if (p.Results.compute)
     end
     parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
     nParforConditions = length(parforConditionStructs);
-    parforRanSeeds = randi(1000000,nParforConditions,1)+1;
+    
+    nParforTrials = computeTrialBlockSize(testDirectionParams.trialsNum, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), rParams.temporalParams, theMosaic.integrationTime, p.Results.displayTrialBlockPartitionDiagnostics);
+    nParforTrialBlocks = numel(nParforTrials);
 
+    parforRanSeeds = randi(1000000,nParforConditions, nParforTrialBlocks)+1;
+    parforRanSeedsNoStim = randi(1000000,1, nParforTrialBlocks)+1;
+    
+
+    tBegin = clock;
+    
     % Generate data for the no stimulus condition
-    fprintf('Computing the null stimulus response ...\n');
+    fprintf('<strong> Computing the null stimulus response ... </strong> \n');
     stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
         colorModulationParamsNull.coneContrasts(1), colorModulationParamsNull.coneContrasts(2), colorModulationParamsNull.coneContrasts(3), colorModulationParamsNull.contrast);
-    [responseInstanceArray, noiseFreeIsomerizations, noiseFreePhotocurrents, osImpulseResponseFunctionsFromNullStimulus, meanCurrentsFromNullStimulus] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, ...
-        rParams.spatialParams, rParams.backgroundParams, colorModulationParamsNull, rParams.temporalParams, theOI, theMosaic, ...
-        'centeredEMPaths', p.Results.centeredEMPaths, ...
-        'osImpulseResponseFunctions', [], ...  % pass empty array, to compute the IR filters based on the null stimulus 
-        'osMeanCurrents', [], ...              % pass empty array, to compute the steady-state current based on the null stimulus 
-        'seed', 1, ...
-        'workerID', p.Results.workerID,...
-        'displayTrialBlockPartitionDiagnostics', p.Results.displayTrialBlockPartitionDiagnostics, ...
-        'trialBlockSize', []);   % use all trials since this is done outside the parfor loop
     
+    paramsList = constantParamsList;
+    paramsList{numel(paramsList)+1} = colorModulationParamsNull;
+    
+    % Create parallel pool
+    poolOBJ = gcp('nocreate');
+    if isempty(poolOBJ)
+        poolOBJ = parpool(parforWorkersNum);
+    else
+       oldPoolSize = poolOBJ.NumWorkers;
+       if (oldPoolSize ~= parforWorkersNum)
+           delete(poolOBJ);
+           poolOBJ = parpool(parforWorkersNum);
+       end
+    end
+    
+    % Parfor over trial blocks
+    parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
+        % Get the parallel pool worker ID
+        if (~isempty(p.Results.workerID))  
+            t = getCurrentTask();
+            workerID = t.ID;
+        else
+            workerID = [];
+        end
+        
+        [tmpData{trialBlock}, osImpulseResponseFunctionsFromNullStimulus{trialBlock}, meanCurrentsFromNullStimulus{trialBlock}]  = ...
+            colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nParforTrials(trialBlock), ...
+                rParams.spatialParams, rParams.backgroundParams, colorModulationParamsNull, rParams.temporalParams, theOI, theMosaic, ...
+                'centeredEMPaths', p.Results.centeredEMPaths, ...
+                'osImpulseResponseFunctions', [], ...  % pass empty array, to compute the IR filters based on the null stimulus 
+                'osMeanCurrents', [], ...              % pass empty array, to compute the steady-state current based on the null stimulus 
+                'seed', parforRanSeedsNoStim(1, trialBlock), ...
+                'workerID', workerID,...
+                'computeNoiseFreeSignals', true);
+                
+            % save data temporarily
+            rwObject.write(sprintf('%s_blockData_%d', blockDataPrefix, trialBlock), tmpData{trialBlock}, paramsList,theProgram);
+            % Empty it to save space
+            tmpData{trialBlock} = struct();
+    end % parfor trialBlock
+        
+    % Save the computed impulse responses for mean currents from the noStim esponses to be used for the stimData responses
+    osImpulseResponseFunctionsFromNullStimulus = osImpulseResponseFunctionsFromNullStimulus{1};
+    meanCurrentsFromNullStimulus = meanCurrentsFromNullStimulus{1};
+    
+    % Form noStimData structure
     noStimData = struct(...
         'testContrast', colorModulationParamsNull.contrast, ...
         'testConeContrasts', colorModulationParamsNull.coneContrasts, ...
         'stimulusLabel', stimulusLabel, ...
-        'responseInstanceArray',responseInstanceArray, ...
-        'noiseFreeIsomerizations',noiseFreeIsomerizations, ...
-        'noiseFreePhotocurrents', noiseFreePhotocurrents);
+        'responseInstanceArray', [], ...
+        'noiseFreeIsomerizations', [], ...
+        'noiseFreePhotocurrents', []);
     
+    % Reassemble the responseInstanceArray for all trials from the blocked trials temporary datafiles
+    [noStimData.responseInstanceArray, noStimData.noiseFreeIsomerizations, noStimData.noiseFreePhotocurrents] = ...
+            formResponseInstanceArrayForAllTrials(rwObject, nParforTrialBlocks, paramsList, theProgram, blockDataPrefix);
+        
     % Write the no cone contrast data and some extra facts we need
-    paramsList = constantParamsList;
-    paramsList{numel(paramsList)+1} = colorModulationParamsNull;
     rwObject.write('responseInstances',noStimData,paramsList,theProgram);
-      
+    
     % Save the other data we need for use by the classifier preprocessing subroutine
     ancillaryData = struct(...
         'testConeContrasts', testConeContrasts, ...
@@ -260,84 +318,92 @@ if (p.Results.compute)
     ancillaryData.parforConditionStructs = parforConditionStructs;
     rwObject.write('ancillaryData',ancillaryData,paramsList,theProgram);
     
+    tEnd = clock;
+    timeLapsed = etime(tEnd,tBegin);
+    fprintf('<strong> Finished null response computation in %2.1f minutes. </strong>\n', timeLapsed/60);
+    
+
     %% Generate data for all the examined stimuli
-    %
-    % It is possible that the parfor loop will not work for you, depending
-    % on your Matlab configuration.  In this case, change it to a for loop.
-   
     % Loop over color directions
-    %
-    % Note tha as the mosaic handle object (and any other handle objects)
-    % enter the parfor loop, a copy local to each worker is created.  This
-    % is the behavior we want, so that the isomerizations calculations for
-    % each loop iteration don't step on each other.  Also note that any
-    % changes to the mosaic object inside the loop do not get propagted
-    % back out -- the mosaic object itself is the same at the end of the
-    % parfor as at the start.  This is also OK here, but might be confusing
-    % under other circumstances.
-    tic;
     stimDataForValidation = cell(nParforConditions,1);
-        
-    parfor (kk = 1:nParforConditions, p.Results.parforWorkersNum)
-        fprintf('Computing responses for condition %d/%d ...\n', kk,nParforConditions);
-        
-        % Get the parallel pool worker ID
-        if (~isempty(p.Results.workerID))  
-            t = getCurrentTask();
-            workerID = t.ID;
-        else
-            workerID = [];
-        end
+    
+    for kk = 1:nParforConditions    
+        fprintf('<strong> Computing responses for condition %d/%d ...  </strong> \n', kk,nParforConditions);
         
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
         colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
         colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
         
+        paramsList = constantParamsList;
+        paramsList{numel(paramsList)+1} = colorModulationParamsTemp;
+            
         % Make noisy instances for each contrast
         stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.5f',...
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
-        [responseInstanceArray,noiseFreeIsomerizations, noiseFreePhotocurrents] = ...
-            colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, testDirectionParams.trialsNum, ...
-                rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic, ...
-                'centeredEMPaths', p.Results.centeredEMPaths, ...
-                'osImpulseResponseFunctions', osImpulseResponseFunctionsFromNullStimulus, ...  % use the IR filters computed from the null stimulus
-                'osMeanCurrents', meanCurrentsFromNullStimulus, ...                            % use the to steady-state currents computed from the null stimulus  
-                'seed', parforRanSeeds(kk), ...
-                'workerID', workerID, ...
-                'displayTrialBlockPartitionDiagnostics', false, ...
-                'trialBlockSize', p.Results.trialBlockSize);
-  
+        
+        % Parfor over blocks of trials
+        parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
+            % Get the parallel pool worker ID
+            if (~isempty(p.Results.workerID))  
+                t = getCurrentTask();
+                workerID = t.ID;
+            else
+                workerID = [];
+            end
+            
+            [tmpData{trialBlock}, ~, ~] = ...
+                colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nParforTrials(trialBlock), ...
+                    rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic, ...
+                    'centeredEMPaths', p.Results.centeredEMPaths, ...
+                    'osImpulseResponseFunctions', osImpulseResponseFunctionsFromNullStimulus, ...  % use the IR filters computed from the null stimulus
+                    'osMeanCurrents', meanCurrentsFromNullStimulus, ...                            % use the to steady-state currents computed from the null stimulus  
+                    'seed', parforRanSeeds(kk,trialBlock), ...
+                    'workerID', workerID, ...
+                    'computeNoiseFreeSignals', true);
+            
+            % Save data temporarily
+            rwObject.write(sprintf('%s_blockData_%d', blockDataPrefix, trialBlock), tmpData{trialBlock}, paramsList,theProgram);
+            % Empty it to save space
+            tmpData{trialBlock} = struct();
+        end % parfor trialBlock
+        
+        % Form stimData structure
         stimData = struct(...
             'testContrast', colorModulationParamsTemp.contrast, ...
             'testConeContrasts', colorModulationParamsTemp.coneContrasts, ...
             'stimulusLabel', stimulusLabel, ...
-            'responseInstanceArray',responseInstanceArray, ...
-            'noiseFreeIsomerizations',noiseFreeIsomerizations, ...
-            'noiseFreePhotocurrents', noiseFreePhotocurrents);
+            'responseInstanceArray', [], ...
+            'noiseFreeIsomerizations', [], ...
+            'noiseFreePhotocurrents', []);
         
+        % Reassemble the responseInstanceArray for all trials from the blocked trials temporary datafiles
+        [stimData.responseInstanceArray, stimData.noiseFreeIsomerizations, stimData.noiseFreePhotocurrents] = ...
+            formResponseInstanceArrayForAllTrials(rwObject, nParforTrialBlocks, paramsList, theProgram, blockDataPrefix);
+
         % Save some data for validation in first loop
         if (kk == 1)
             s = struct();
             savedTrial = 1;
-            s.theMosaicIsomerizations = squeeze(responseInstanceArray.theMosaicIsomerizations(savedTrial,:,:,:));
-            if (isempty(responseInstanceArray.theMosaicPhotocurrents))
+            s.theMosaicIsomerizations = squeeze(stimData.responseInstanceArray.theMosaicIsomerizations(savedTrial,:,:,:));
+            if (isempty(stimData.responseInstanceArray.theMosaicPhotocurrents))
                 s.theMosaicPhotocurrents = [];
             else
-                s.theMosaicPhotocurrents = squeeze(responseInstanceArray.theMosaicPhotocurrents(savedTrial,:,:,:));
+                s.theMosaicPhotocurrents = squeeze(stimData.responseInstanceArray.theMosaicPhotocurrents(savedTrial,:,:,:));
             end
-            s.theMosaicEyeMovements = squeeze(responseInstanceArray.theMosaicEyeMovements(savedTrial,:,:));
-            s.timeAxis = responseInstanceArray.timeAxis;
-            s.photocurrentTimeAxis = responseInstanceArray.photocurrentTimeAxis;
-            stimDataForValidation{kk} = s;
+            s.theMosaicEyeMovements = squeeze(stimData.responseInstanceArray.theMosaicEyeMovements(savedTrial,:,:));
+            s.timeAxis = stimData.responseInstanceArray.timeAxis;
+            s.photocurrentTimeAxis = stimData.responseInstanceArray.photocurrentTimeAxis;
+            stimDataForValidation = s;
         end
         
         % Save data for this color direction/contrast pair
-        paramsList = constantParamsList;
-        paramsList{numel(paramsList)+1} = colorModulationParamsTemp;
         rwObject.write('responseInstances',stimData,paramsList,theProgram);
-    end
-    fprintf('Finished generating responses in %2.2f minutes\n', toc/60);
+    end % for conditions
+    
+    tEnd = clock;
+    timeLapsed = etime(tEnd,tBegin);
+    fprintf('<strong> Finished response computation for all conditions in %2.1f hours. </strong>\n', timeLapsed/60/60);
     
     %% Validation data
     %
@@ -372,7 +438,7 @@ if (p.Results.generatePlots && p.Results.visualizeResponses)
     % Load the mosaic
     coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
     theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
-         
+
     % Load the response and ancillary data
     paramsList = constantParamsList;
     paramsList{numel(paramsList)+1} = colorModulationParamsNull;   
@@ -381,11 +447,12 @@ if (p.Results.generatePlots && p.Results.visualizeResponses)
     ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
     
     % Only keep the data we will visualize
-    noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations(1:instancesToVisualize,:,:);
+    idx = min([instancesToVisualize size(noStimData.responseInstanceArray.theMosaicIsomerizations,1)]);
+    noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations(1:idx,:,:);
     if (~isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
-        noStimData.responseInstanceArray.theMosaicPhotocurrents  = noStimData.responseInstanceArray.theMosaicPhotocurrents(1:instancesToVisualize,:,:);
+        noStimData.responseInstanceArray.theMosaicPhotocurrents  = noStimData.responseInstanceArray.theMosaicPhotocurrents(1:idx,:,:);
     end
-    noStimData.responseInstanceArray.theMosaicEyeMovements   = noStimData.responseInstanceArray.theMosaicEyeMovements(1:instancesToVisualize,:,:);
+    noStimData.responseInstanceArray.theMosaicEyeMovements   = noStimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
     rParams = ancillaryData.rParams;
     parforConditionStructs = ancillaryData.parforConditionStructs;
     nParforConditions = length(parforConditionStructs); 
@@ -400,11 +467,11 @@ if (p.Results.generatePlots && p.Results.visualizeResponses)
         paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
         stimData = rwObject.read('responseInstances',paramsList,theProgram);
         % Only keep the data we will visualize
-        stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(1:instancesToVisualize,:,:);
+        stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(1:idx,:,:);
         if (~isempty(stimData.responseInstanceArray.theMosaicPhotocurrents))
-            stimData.responseInstanceArray.theMosaicPhotocurrents  = stimData.responseInstanceArray.theMosaicPhotocurrents(1:instancesToVisualize,:,:);
+            stimData.responseInstanceArray.theMosaicPhotocurrents  = stimData.responseInstanceArray.theMosaicPhotocurrents(1:idx,:,:);
         end
-        stimData.responseInstanceArray.theMosaicEyeMovements   = stimData.responseInstanceArray.theMosaicEyeMovements(1:instancesToVisualize,:,:);
+        stimData.responseInstanceArray.theMosaicEyeMovements   = stimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
         visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, p.Results.visualizationFormat);
     end
 end
@@ -414,8 +481,8 @@ end
 %
 % Doesn't delete figures or parent directories.
 if (p.Results.delete)
-    rwObject.delete('responseInstances',paramsList,theProgram);
-    rwObject.delete('ancillaryData',paramsList,theProgram);
+    rwObject.remove('responseInstances',paramsList,theProgram);
+    rwObject.remove('ancillaryData',paramsList,theProgram);
     for kk = 1:nParforConditions 
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
@@ -425,7 +492,127 @@ if (p.Results.delete)
         paramsList{numel(paramsList)+1} = colorModulationParamsTemp;
     
        % paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
-        rwObject.delete('responseInstances',paramsList,theProgram);   
+        rwObject.remove('responseInstances',paramsList,theProgram);   
     end   
 end
 end
+
+function [responseInstanceArray, noiseFreeIsomerizations, noiseFreePhotocurrents] = formResponseInstanceArrayForAllTrials(rwObject, nParforTrialBlocks, paramsList, theProgram, blockDataPrefix)
+    fprintf('Importing data from %d blocks to build up the responseInstanceArray.\n', nParforTrialBlocks);
+    % Load all the block data
+    for trialBlock = 1:nParforTrialBlocks
+        blockDataFileName = sprintf('%s_blockData_%d', blockDataPrefix, trialBlock);
+        tmpData = rwObject.read(blockDataFileName, paramsList, theProgram, 'type', 'mat');
+        if (trialBlock == 1)
+            noiseFreeIsomerizations = tmpData.noiseFreeIsomerizations;
+            noiseFreePhotocurrents = tmpData.noiseFreePhotocurrents;
+            responseInstanceArray = struct();
+            responseInstanceArray.timeAxis = tmpData.responseInstanceArray.timeAxis;
+            responseInstanceArray.photocurrentTimeAxis = tmpData.responseInstanceArray.photocurrentTimeAxis;
+            responseInstanceArray.theMosaicEyeMovements = [];
+            responseInstanceArray.theMosaicIsomerizations = [];
+            responseInstanceArray.theMosaicPhotocurrents = [];
+        end
+        responseInstanceArray.theMosaicEyeMovements   = cat(1, responseInstanceArray.theMosaicEyeMovements,   tmpData.responseInstanceArray.theMosaicEyeMovements);
+        responseInstanceArray.theMosaicIsomerizations = cat(1, responseInstanceArray.theMosaicIsomerizations, tmpData.responseInstanceArray.theMosaicIsomerizations);
+        responseInstanceArray.theMosaicPhotocurrents  = cat(1, responseInstanceArray.theMosaicPhotocurrents,  tmpData.responseInstanceArray.theMosaicPhotocurrents);
+        % Delete the block data file
+        rwObject.remove(blockDataFileName,paramsList,theProgram);
+    end % trialBlock
+    fprintf('Done with building up the responseInstanceArray\n');
+end
+
+function nParforTrials = computeTrialBlockSize(nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, integrationTime, displayTrialBlockPartitionDiagnostics)
+        
+    % Determine system resources
+    [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
+
+    % Subtract RAM used by the OS
+    ramUsedByOSGBytes = 1.2;
+    ramSizeGBytesAvailable = ramSizeGBytes - ramUsedByOSGBytes;
+    
+    % Compute sizes of the large players
+    [stimulusTimeAxis, ~, ~] = gaussianTemporalWindowCreate(temporalParams);
+    
+    if (numel(stimulusTimeAxis) == 1)
+        stimulusSamplingInterval  = integrationTime;
+    else
+        stimulusSamplingInterval = stimulusTimeAxis(2)-stimulusTimeAxis(1);
+    end
+    
+    eyeMovementsNumPerOpticalImage = stimulusSamplingInterval/integrationTime;
+    emPathLength = round(eyeMovementsNumPerOpticalImage*numel(stimulusTimeAxis));
+    
+    % estimate sizes of the various matrices used
+    computeTempProductsSizeGBytes = coneMosaicPatternSize*sizeOfDoubleInBytes/(1024^3);
+    absorptions_memsizeGBytes = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/(1024^3);
+    photocurrents_memsizeGBytes = absorptions_memsizeGBytes;
+    obj_currents_memsizeGBytes = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2/(1024^3);
+    obj_absorptions_memsizeGBytes = coneMosaicActivePatternSize*sizeOfDoubleInBytes/2/(1024^3);
+    
+    playerSizes = [ computeTempProductsSizeGBytes+obj_absorptions_memsizeGBytes  ...
+          absorptions_memsizeGBytes+photocurrents_memsizeGBytes ...
+          obj_currents_memsizeGBytes
+        ];
+    singleTrialMemoryGBytes = numberOfWorkers * max(playerSizes);
+    
+    allowedRAMcompression = 0.9;
+    trialBlockSize = round(allowedRAMcompression*(ramSizeGBytesAvailable)/singleTrialMemoryGBytes);
+    trialBlockSize = min([nTrials max([1 trialBlockSize])]);
+
+    
+    totalMemoryPerWorker = singleTrialMemoryGBytes/numberOfWorkers * trialBlockSize;
+    totalMemoryUsed  = numberOfWorkers * totalMemoryPerWorker;
+    nParforTrialBlocks = floor(nTrials / trialBlockSize);
+    
+    if (nParforTrialBlocks < numberOfWorkers)
+        nParforTrialBlocks = numberOfWorkers;
+        trialBlockSize = max([1 floor(nTrials/nParforTrialBlocks)]);
+        totalMemoryPerWorker = singleTrialMemoryGBytes/numberOfWorkers * trialBlockSize;
+        totalMemoryUsed  = numberOfWorkers * totalMemoryPerWorker;
+    end
+    
+    nParforTrialsTmp = ones(1, nParforTrialBlocks) * trialBlockSize;
+
+    remainingTrials = nTrials - sum(nParforTrialsTmp);
+    if (remainingTrials > 0)
+        nParforTrialsTmp(end) = nParforTrialsTmp(end) + remainingTrials;
+    end
+    
+    
+    accumTrials = 0;
+    k = 1; keepGoing = true;
+    while (k <= numel(nParforTrialsTmp)) && (keepGoing)
+        if (accumTrials+nParforTrialsTmp(k) > nTrials)
+            if (nTrials > accumTrials)
+                nParforTrials(k) = nTrials - accumTrials;
+            end
+            keepGoing = false;
+        else
+            nParforTrials(k) = nParforTrialsTmp(k);
+            accumTrials = accumTrials+nParforTrials(k);
+            k = k + 1;
+        end
+    end
+
+
+    if (sum(nParforTrials) ~= nTrials)
+        nParforTrials
+        nTrials
+        trialBlockSize
+        nParforTrialBlocks
+        error('Error in logic of trial partitioning.')
+    end
+    
+    if (displayTrialBlockPartitionDiagnostics)
+        fprintf('<strong> %d workers, system RAM = %2.1fGBytes </strong> \n', numberOfWorkers, ramSizeGBytes), ...
+        fprintf('<strong> %d trials partitioned in %d blocks, each with %d trials (last has %d trials) </strong>\n', nTrials, numel(nParforTrials), nParforTrials(1), nParforTrials(end));
+        fprintf('<strong> RAM used : %2.1f GBytes (per worker), total: %2.1f GBytes </strong> \n\n', totalMemoryPerWorker, totalMemoryUsed);
+%     warndlg(...
+%         sprintf('%d trials partitioned in %d blocks, each with %d trials trialBlocks = %d', nTrials, numel(nParforTrials), trialBlockSize), ...
+%         sprintf('%d workers, system RAM: %2.1fGB, used RAM: %2.1fGB', numberOfWorkers, ramSizeGBytes, totalMemoryUsed) ...
+%             );
+    end
+    
+end
+
