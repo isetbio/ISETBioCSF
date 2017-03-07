@@ -173,6 +173,7 @@ end
 
 function V1filterBank = makeV1filters(spatialParams, filterWidthDegs, coneLocsDegs, xaxisDegs, yaxisDegs, coneDensity)
 
+    % filter width
     spatialParams.gaussianFWHMDegs = filterWidthDegs/2.0;
     
     % make the cos-phase filter
