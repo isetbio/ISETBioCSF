@@ -1,0 +1,276 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2016 The MathWorks, Inc.
+                   R2016b (9.1.0.441655) 64-bit (maci64)
+                             September 7, 2016
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+Resetting path to factory state.
+Adding "ToolboxToolbox" to path at "/Users/nicolas/Documents/MATLAB/ToolboxToolbox".
+Locating project "IBIOColorDetect" within "/Users/nicolas/Documents/MATLAB/projects".
+  Found at "/Users/nicolas/Documents/MATLAB/projects/IBIOColorDetect".
+Updating "ToolboxRegistry".
+Already up-to-date.
+Updating "IBIOColorDetect".
+Already up-to-date.
+Updating "signal".
+Updating "stats".
+Updating "images".
+Updating "optim".
+Updating "robotics".
+Updating "distcomp".
+Updating "isetbio".
+Already up-to-date.
+Updating "UnitTestToolbox".
+Already up-to-date.
+Updating "RemoteDataToolbox".
+Already up-to-date.
+Found "jsonlab_v1.2" and skipping update.
+Found "Palamedes_1.8.2" and skipping update.
+Adding "ToolboxToolbox" to path at "/Users/nicolas/Documents/MATLAB/ToolboxToolbox".
+Adding "IBIOColorDetect" to path at "/Users/nicolas/Documents/MATLAB/projects/IBIOColorDetect/toolbox".
+Adding "IBIOColorDetect" to path at "/Users/nicolas/Documents/MATLAB/projects/IBIOColorDetect/tutorials".
+Adding "IBIOColorDetect" to path at "/Users/nicolas/Documents/MATLAB/projects/IBIOColorDetect/compute".
+Adding "IBIOColorDetect" to path at "/Users/nicolas/Documents/MATLAB/projects/IBIOColorDetect/validations".
+Adding "signal" to path at "/Applications/MATLAB_R2016b.app/toolbox/signal".
+Adding "stats" to path at "/Applications/MATLAB_R2016b.app/toolbox/stats".
+Adding "images" to path at "/Applications/MATLAB_R2016b.app/toolbox/images".
+Adding "optim" to path at "/Applications/MATLAB_R2016b.app/toolbox/optim".
+Adding "robotics" to path at "/Applications/MATLAB_R2016b.app/toolbox/robotics".
+Adding "distcomp" to path at "/Applications/MATLAB_R2016b.app/toolbox/distcomp".
+Adding "isetbio" to path at "/Users/nicolas/Documents/MATLAB/toolboxes/isetbio".
+Adding "UnitTestToolbox" to path at "/Users/nicolas/Documents/MATLAB/toolboxes/UnitTestToolbox".
+Adding "RemoteDataToolbox" to path at "/Users/nicolas/Documents/MATLAB/toolboxes/RemoteDataToolbox".
+Adding "jsonlab_v1.2" to path at "/Users/nicolas/Documents/MATLAB/toolboxes/jsonlab_v1.2".
+Adding "Palamedes_1.8.2" to path at "/Users/nicolas/Documents/MATLAB/toolboxes/Palamedes_1.8.2".
+Checking for "IBIOColorDetect" local hook.
+  Running local hook "/Users/nicolas/Documents/MATLAB/localHookFolder/IBIOColorDetectLocalHook.m".
+  Hook success with status 0.
+Checking for "signal" local hook.
+Checking for "stats" local hook.
+Checking for "images" local hook.
+Checking for "optim" local hook.
+Checking for "robotics" local hook.
+Checking for "distcomp" local hook.
+Checking for "isetbio" local hook.
+  Running local hook "/Users/nicolas/Documents/MATLAB/localHookFolder/isetbioLocalHook.m".
+  Hook success with status 0.
+Checking for "UnitTestToolbox" local hook.
+Checking for "RemoteDataToolbox" local hook.
+Checking for "jsonlab_v1.2" local hook.
+Checking for "Palamedes_1.8.2" local hook.
+Looks good: 12 resolved toolboxes deployed OK.
+Computing/visualizing responses for 10.00 c/deg, 200 cd/m2 with 'frozen0' emPaths.
+Loading a previously saved cone mosaic
+<strong> 12 workers, system RAM = 128.0GBytes </strong> 
+<strong> 1024 trials partitioned in 12 blocks, each with 85 trials (last has 89 trials) </strong>
+<strong> RAM used : 2.6 GBytes (per worker), total: 31.3 GBytes </strong> 
+
+<strong> Computing the null stimulus response ... </strong> 
+Starting parallel pool (parpool) using the 'local' profile ... connected to 12 workers.
+<strong> Response instance array computation (85 instances) took 82.353 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.358 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.701 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.702 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.714 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.812 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.824 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.960 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.953 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.970 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 39.472 minutes. </strong> 
+<strong> Response instance array computation (89 instances) took 41.220 minutes. </strong> 
+Importing data from 12 blocks to build up the responseInstanceArray.
+Done with building up the responseInstanceArray
+<strong> Finished null response computation in 140.9 minutes. </strong>
+<strong> Computing responses for condition 1/12 ...  </strong> 
+<strong> Response instance array computation (85 instances) took 82.203 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.518 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.519 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.581 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.582 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.597 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.637 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.789 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.809 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.799 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 39.694 minutes. </strong> 
+<strong> Response instance array computation (89 instances) took 41.390 minutes. </strong> 
+Importing data from 12 blocks to build up the responseInstanceArray.
+Done with building up the responseInstanceArray
+<strong> Computing responses for condition 2/12 ...  </strong> 
+<strong> Response instance array computation (85 instances) took 82.658 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.667 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.722 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.902 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.905 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.913 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.921 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.943 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.963 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.974 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 37.518 minutes. </strong> 
+<strong> Response instance array computation (89 instances) took 39.100 minutes. </strong> 
+Importing data from 12 blocks to build up the responseInstanceArray.
+Done with building up the responseInstanceArray
+<strong> Computing responses for condition 3/12 ...  </strong> 
+<strong> Response instance array computation (85 instances) took 82.646 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.765 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.970 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.009 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.003 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.020 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.050 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.154 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.214 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.222 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 39.991 minutes. </strong> 
+<strong> Response instance array computation (89 instances) took 41.588 minutes. </strong> 
+Importing data from 12 blocks to build up the responseInstanceArray.
+Done with building up the responseInstanceArray
+<strong> Computing responses for condition 4/12 ...  </strong> 
+<strong> Response instance array computation (85 instances) took 82.445 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.658 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.091 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.114 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.122 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.132 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.137 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.144 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.169 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.207 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 40.045 minutes. </strong> 
+<strong> Response instance array computation (89 instances) took 41.602 minutes. </strong> 
+Importing data from 12 blocks to build up the responseInstanceArray.
+Done with building up the responseInstanceArray
+<strong> Computing responses for condition 5/12 ...  </strong> 
+<strong> Response instance array computation (85 instances) took 82.512 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.872 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.884 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.939 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.951 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.938 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.975 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.986 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.981 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.054 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 37.141 minutes. </strong> 
+<strong> Response instance array computation (89 instances) took 38.889 minutes. </strong> 
+Importing data from 12 blocks to build up the responseInstanceArray.
+Done with building up the responseInstanceArray
+<strong> Computing responses for condition 6/12 ...  </strong> 
+<strong> Response instance array computation (85 instances) took 82.730 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.913 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.984 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.079 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.094 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.115 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.118 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.301 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.337 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.336 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 39.794 minutes. </strong> 
+<strong> Response instance array computation (89 instances) took 41.502 minutes. </strong> 
+Importing data from 12 blocks to build up the responseInstanceArray.
+Done with building up the responseInstanceArray
+<strong> Computing responses for condition 7/12 ...  </strong> 
+<strong> Response instance array computation (85 instances) took 82.725 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.720 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.776 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.788 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.923 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.944 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.026 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.032 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.158 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.200 minutes. </strong> 
+Warning: Directory already exists.
+> In IBIOColorDetectReadWriteBasic/getid (line 89)
+  In IBIOColorDetectReadWriteBasic/write (line 42)
+  In parallel_function>make_general_channel/channel_general (line 914)
+  In remoteParallelFunction (line 38)
+<strong> Response instance array computation (85 instances) took 39.931 minutes. </strong> 
+<strong> Response instance array computation (89 instances) took 41.651 minutes. </strong> 
+Importing data from 12 blocks to build up the responseInstanceArray.
+Done with building up the responseInstanceArray
+<strong> Computing responses for condition 8/12 ...  </strong> 
+<strong> Response instance array computation (85 instances) took 79.854 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 79.869 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 79.966 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 80.066 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 80.079 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 80.110 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 80.128 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 80.153 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 80.221 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 80.244 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 39.624 minutes. </strong> 
+<strong> Response instance array computation (89 instances) took 41.368 minutes. </strong> 
+Importing data from 12 blocks to build up the responseInstanceArray.
+Done with building up the responseInstanceArray
+<strong> Computing responses for condition 9/12 ...  </strong> 
+<strong> Response instance array computation (85 instances) took 82.420 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.524 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.699 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.912 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.924 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.932 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.948 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.947 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.092 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.119 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 39.848 minutes. </strong> 
+<strong> Response instance array computation (89 instances) took 41.601 minutes. </strong> 
+Importing data from 12 blocks to build up the responseInstanceArray.
+Done with building up the responseInstanceArray
+<strong> Computing responses for condition 10/12 ...  </strong> 
+<strong> Response instance array computation (85 instances) took 82.673 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.201 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.258 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.324 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.322 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.336 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.339 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.360 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.423 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.524 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 39.768 minutes. </strong> 
+<strong> Response instance array computation (89 instances) took 41.451 minutes. </strong> 
+Importing data from 12 blocks to build up the responseInstanceArray.
+Done with building up the responseInstanceArray
+<strong> Computing responses for condition 11/12 ...  </strong> 
+<strong> Response instance array computation (85 instances) took 79.474 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 79.525 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 79.669 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 79.860 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 79.905 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 79.924 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 79.917 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 80.000 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 80.033 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 80.100 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 39.817 minutes. </strong> 
+<strong> Response instance array computation (89 instances) took 41.605 minutes. </strong> 
+Importing data from 12 blocks to build up the responseInstanceArray.
+Done with building up the responseInstanceArray
+<strong> Computing responses for condition 12/12 ...  </strong> 
+<strong> Response instance array computation (85 instances) took 82.672 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 82.732 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.055 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.069 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.086 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.076 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.091 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.191 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.244 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 83.248 minutes. </strong> 
+<strong> Response instance array computation (85 instances) took 39.776 minutes. </strong> 
+<strong> Response instance array computation (89 instances) took 41.634 minutes. </strong> 
+Importing data from 12 blocks to build up the responseInstanceArray.
+Done with building up the responseInstanceArray
+<strong> Finished response computation for all conditions in 30.7 hours. </strong>
+Computation of isomerization & photocurrent responses was completed in 1842.276481 minutes. 
+BATCH JOB: Completed in 30.70 hours. 
