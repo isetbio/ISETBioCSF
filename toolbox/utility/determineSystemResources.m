@@ -19,7 +19,7 @@ function [numberOfCores, ramSizeGBytes, sizeofDoubleInBytes] = determineSystemRe
    end
 
    if (employStandardHostComputerResources)
-        numberOfWorkers = 4; 
+        numberOfCores = 4; 
         ramSizeGBytes = 16;
    end
     
