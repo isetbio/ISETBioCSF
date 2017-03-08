@@ -5,6 +5,8 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 % ability to handle AO spots as well as Gabor modulations on monitors.
 %
 % Key/value pairs
+%   'employStandardHostComputerResources' - true/false (default false). Only validation scripts should set this to true, so as to produce
+%               identical sequences of random numbers. All other scripts should set it (leave it) to false.
 %  'rParams' - Value the is the rParams structure to use.  Default empty,
 %        which then uses defaults produced by generation function.
 %   'contrastParams - structure (default empty). Value is the contrastParams structure to use.
@@ -27,6 +29,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %% Parse input
 p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
+p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('contrastParams',[],@isemptyorstruct);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
@@ -87,6 +90,12 @@ end
 if (isempty(contrastParams))
     contrastParams = instanceParamsGenerate('instanceType','contrasts');
 end
-[validationData, extraData] = t_coneCurrentEyeMovementsResponseInstances('rParams',rParams,'testDirectionParams',contrastParams, 'freezeNoise', p.Results.freezeNoise, 'generatePlots',p.Results.generatePlots, 'visualizedResponseNormalization', p.Results.visualizedResponseNormalization);
+
+[validationData, extraData] = t_coneCurrentEyeMovementsResponseInstances(...
+   'employStandardHostComputerResources', p.Results.employStandardHostComputerResources, ...
+    'testDirectionParams',contrastParams, ...
+    'freezeNoise', p.Results.freezeNoise, ...
+    'generatePlots',p.Results.generatePlots, ...
+    'visualizedResponseNormalization', p.Results.visualizedResponseNormalization);
 
 

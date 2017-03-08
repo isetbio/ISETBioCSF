@@ -32,10 +32,6 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %     'testDirectionParams - Value is the testDirectionParams structure to use
 %     'centeredEMPaths' - true/false (default false) 
 %               Controls wether the eye movement paths start at (0,0) (default) or wether they are centered around (0,0)
-%     'trialBlockSize' - How many blocks to split the testDirectionParams.trialsNum into. Default: [], which results in nTrials  (no blocking). 
-%               This only has an effect with @coneMosaicHex mosaics and when nTrials>1 and it is useful with 
-%               large mosaics x lots of trials, in which case the absorptions matrix does not fit in the RAM.
-%               If set to -1, the number of trial blocks is computed automatically based on the number of cores and system RAM.
 %     'displayTrialBlockPartitionDiagnostics', true/false. Wether to display trial block diagnostics.
 %     'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
 %     'compute' - true/false (default true).  Do the computations.
@@ -43,6 +39,8 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %     'parforWorkersNum' - 0 .. 12 (default: 12). How many workers to use for the computations.
 %       use 0: for a serial for loop
 %       use > 0: for a parfor loop with desired number of workers
+%     'employStandardHostComputerResources' - true/false (default false). Only validation scripts should set this to true, so as to produce
+%               identical sequences of random numbers. All other scripts should set it (leave it) to false.
 %     'generatePlots' - true/false (default false).  Produce response
 %        visualizations.  Set to false when running big jobs on clusters or
 %        in parfor loops, as plotting doesn't seem to play well with those
@@ -66,13 +64,13 @@ p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
 p.addParameter('centeredEMPaths',false, @islogical); 
-p.addParameter('trialBlockSize', [], @isnumeric);
 p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('computeMosaic', true, @islogical);
 p.addParameter('visualizeMosaic',true, @islogical); 
 p.addParameter('parforWorkersNum', 12, @isnumeric);
+p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('overrideMosaicIntegrationTime', [], @isnumeric);
 p.addParameter('generatePlots',false,@islogical);
 p.addParameter('visualizeResponses',true,@islogical);
@@ -234,7 +232,7 @@ if (p.Results.compute)
     parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
     nParforConditions = length(parforConditionStructs);
     
-    nParforTrials = computeTrialBlockSize(testDirectionParams.trialsNum, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), rParams.temporalParams, theMosaic.integrationTime, p.Results.displayTrialBlockPartitionDiagnostics);
+    nParforTrials = computeTrialBlocks(testDirectionParams.trialsNum, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), rParams.temporalParams, theMosaic.integrationTime, p.Results.displayTrialBlockPartitionDiagnostics, p.Results.employStandardHostComputerResources);
     nParforTrialBlocks = numel(nParforTrials);
 
     parforRanSeeds = randi(1000000,nParforConditions, nParforTrialBlocks)+1;
@@ -522,13 +520,15 @@ function [responseInstanceArray, noiseFreeIsomerizations, noiseFreePhotocurrents
     fprintf('Done with building up the responseInstanceArray\n');
 end
 
-function nParforTrials = computeTrialBlockSize(nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, integrationTime, displayTrialBlockPartitionDiagnostics)
+function nParforTrials = computeTrialBlocks(nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, integrationTime, displayTrialBlockPartitionDiagnostics, employStandardHostComputerResources)
         
     % Determine system resources
     [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
 
-    numberOfWorkers = 4; 
-    ramSizeGBytes = 16;
+    if (employStandardHostComputerResources)
+        numberOfWorkers = 4; 
+        ramSizeGBytes = 16;
+    end
     
     % Subtract RAM used by the OS
     ramUsedByOSGBytes = 1.2;
@@ -578,10 +578,13 @@ function nParforTrials = computeTrialBlockSize(nTrials, coneMosaicPatternSize, c
     nParforTrialsTmp = ones(1, nParforTrialBlocks) * trialBlockSize;
 
     remainingTrials = nTrials - sum(nParforTrialsTmp);
-    if (remainingTrials > 0)
-        nParforTrialsTmp(end) = nParforTrialsTmp(end) + remainingTrials;
+    if (remainingTrials > 0) 
+        if remainingTrials > round(trialBlockSize*0.2)
+            nParforTrialsTmp(end+1) = remainingTrials;
+        else
+            nParforTrialsTmp(end) = nParforTrialsTmp(end) + remainingTrials;
+        end
     end
-    
     
     accumTrials = 0;
     k = 1; keepGoing = true;
@@ -598,7 +601,6 @@ function nParforTrials = computeTrialBlockSize(nTrials, coneMosaicPatternSize, c
         end
     end
 
-
     if (sum(nParforTrials) ~= nTrials)
         nParforTrials
         nTrials
@@ -611,11 +613,6 @@ function nParforTrials = computeTrialBlockSize(nTrials, coneMosaicPatternSize, c
         fprintf('<strong> %d workers, system RAM = %2.1fGBytes </strong> \n', numberOfWorkers, ramSizeGBytes), ...
         fprintf('<strong> %d trials partitioned in %d blocks, each with %d trials (last has %d trials) </strong>\n', nTrials, numel(nParforTrials), nParforTrials(1), nParforTrials(end));
         fprintf('<strong> RAM used : %2.1f GBytes (per worker), total: %2.1f GBytes </strong> \n\n', totalMemoryPerWorker, totalMemoryUsed);
-%     warndlg(...
-%         sprintf('%d trials partitioned in %d blocks, each with %d trials trialBlocks = %d', nTrials, numel(nParforTrials), trialBlockSize), ...
-%         sprintf('%d workers, system RAM: %2.1fGB, used RAM: %2.1fGB', numberOfWorkers, ramSizeGBytes, totalMemoryUsed) ...
-%             );
     end
-    
 end
 

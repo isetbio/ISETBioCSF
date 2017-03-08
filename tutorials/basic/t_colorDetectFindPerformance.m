@@ -388,7 +388,7 @@ function [stimData, actualEvidenceIntegrationTime] = keepTimeBinsUsed(stimData, 
         actualEvidenceIntegrationTime = numel(timeBinsToKeep)*dt*1000;
     else
         % emN -> em1
-        timeBinsToKeep = numel(stimData.responseInstanceArray.timeAxis) - timeBinsToKeep + 1
+        timeBinsToKeep = numel(stimData.responseInstanceArray.timeAxis) - timeBinsToKeep + 1;
         actualEvidenceIntegrationTime = -numel(timeBinsToKeep)*dt*1000;
     end
       

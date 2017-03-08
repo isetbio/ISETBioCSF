@@ -8,6 +8,9 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 % the isochromatic thresholds studied by Banks et al.
 %
 % Key/value pairs
+%   'employStandardHostComputerResources', - true/false (default false). 
+%       Validation scripts should set this to true, so as to produce identical sequences of random numbers. 
+%       All other scripts should set it (leave it) to false.
 %   'useScratchTopLevelDirName'- true/false (default false). 
 %      When true, the top level output directory is [scratch]. 
 %      When false, it is the name of this script.
@@ -64,6 +67,7 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 
 %% Parse input
 p = inputParser;
+p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
 p.addParameter('nTrainingSamples',500,@isnumeric);
 p.addParameter('cyclesPerDegree',[3 5 10 20 40 50],@isnumeric);
@@ -244,7 +248,7 @@ for ll = 1:length(p.Results.luminances)
                'visualizeResponses',p.Results.visualizeResponses, ...
                'generatePlots',p.Results.generatePlots,...
                'freezeNoise',p.Results.freezeNoise,...
-               'trialBlockSize',trialBlockSize);
+               'employStandardHostComputerResources', p.Results.employStandardHostComputerResources);
         end
         
         %% Find performance, template max likeli
