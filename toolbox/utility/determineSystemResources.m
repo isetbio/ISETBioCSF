@@ -1,4 +1,4 @@
-function [numberOfCores, ramSizeGBytes, sizeofDoubleInBytes] = determineSystemResources()
+function [numberOfCores, ramSizeGBytes, sizeofDoubleInBytes] = determineSystemResources(employStandardHostComputerResources)
 
    if (ismac)
         numberOfCores = feature('numCores');
@@ -18,6 +18,11 @@ function [numberOfCores, ramSizeGBytes, sizeofDoubleInBytes] = determineSystemRe
        error('No windows support');
    end
 
+   if (employStandardHostComputerResources)
+        numberOfWorkers = 4; 
+        ramSizeGBytes = 16;
+   end
+    
    aDouble = double(1.0);
    attr = whos('aDouble');
    sizeofDoubleInBytes = attr.bytes;

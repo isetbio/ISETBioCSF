@@ -88,7 +88,7 @@ visualizeSpatialScheme = p.Results.visualizeSpatialScheme;
 parforWorkersNum = p.Results.parforWorkersNum;
 
 % Check the parforWorkersNum
-[numberOfWorkers, ~, ~] = determineSystemResources();
+[numberOfWorkers, ~, ~] = determineSystemResources(p.Results.employStandardHostComputerResources);
 if (numberOfWorkers < parforWorkersNum)
     parforWorkersNum = numberOfWorkers;
 end
@@ -523,12 +523,7 @@ end
 function nParforTrials = computeTrialBlocks(nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, integrationTime, displayTrialBlockPartitionDiagnostics, employStandardHostComputerResources)
         
     % Determine system resources
-    [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
-
-    if (employStandardHostComputerResources)
-        numberOfWorkers = 4; 
-        ramSizeGBytes = 16;
-    end
+    [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources(employStandardHostComputerResources);
     
     % Subtract RAM used by the OS
     ramUsedByOSGBytes = 1.2;
