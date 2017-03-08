@@ -401,7 +401,7 @@ if (p.Results.compute)
     
     tEnd = clock;
     timeLapsed = etime(tEnd,tBegin);
-    fprintf('<strong> Finished response computation for all conditions in %2.1f hours. </strong>\n', timeLapsed/60/60);
+    fprintf('<strong> Finished response computation for all conditions in %2.3f hours. </strong>\n', timeLapsed/60/60);
     
     %% Validation data
     %
