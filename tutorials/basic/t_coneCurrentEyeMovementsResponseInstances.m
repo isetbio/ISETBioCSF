@@ -527,6 +527,9 @@ function nParforTrials = computeTrialBlockSize(nTrials, coneMosaicPatternSize, c
     % Determine system resources
     [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources();
 
+    numberOfWorkers = 4; 
+    ramSizeGBytes = 16;
+    
     % Subtract RAM used by the OS
     ramUsedByOSGBytes = 1.2;
     ramSizeGBytesAvailable = ramSizeGBytes - ramUsedByOSGBytes;
