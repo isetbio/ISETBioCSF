@@ -1,4 +1,4 @@
-function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
+function [validationData, extraData, detectionThresholdContrast] = c_PoirsonAndWandell96Replicate(varargin)
 %
 % Compute thresholds to replicate the Poirson and Wandell 96 paper.
 % We are finding thresholds for spatio-temporal stimuli defined in the full 3D LMS space.
@@ -118,6 +118,11 @@ if (strcmp(visualizationFormat, 'montage')) || (strcmp(visualizationFormat, 'vid
 else
     error('visualizationFormat must be set to either ''montage'' or ''video''. Current value: ''%s''.', visualizationFormat);
 end
+
+% Returned arguments
+validationData = [];
+extraData = [];
+detectionThresholdContrast = [];
 
 % Start with default
 rParams = responseParamsGenerate;
@@ -278,6 +283,7 @@ else
     thresholdParams.trialsUsed = p.Results.performanceClassifierTrainingSamples; % p.Results.nTrainingSamples;
 end
 
+
 thresholdParams = modifyStructParams(thresholdParams, ...
     'method', p.Results.performanceClassifier, ...
     'STANDARDIZE', false, ...
@@ -301,7 +307,22 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance)
         'plotSvmBoundary',false, ...
         'plotPsychometric',true ...
         );
+    
+    % Fit psychometric functions
+    if (p.Results.fitPsychometric)
+      d = t_plotDetectThresholdsOnLMPlane(...
+          'rParams',rParams, ...
+          'instanceParams',testDirectionParams, ...
+          'thresholdParams',thresholdParams, ...
+          'plotPsychometric',p.Results.visualizePerformance, ...
+          'plotEllipse',false);
+      
+      detectionThresholdContrast = d.thresholdContrasts;
+    end
+        
 end
 
+
+        
 end
 
