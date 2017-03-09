@@ -27,7 +27,6 @@ params.LMSRatio = [0.67 0.33 0];
 params.pupilDiamMm = 3;
 params.thresholdCriterionFraction = 0.701;
 params.freezeNoise = true;
-params.useTrialBlocks = true;
 params.generatePlots = true;
 params.plotSpatialSummation = true;
 params.visualizeResponses = false;
@@ -45,7 +44,7 @@ params.blur = true;
 params.apertureBlur = true;
 params.coneDarkNoiseRate = [0 0 0];
 params.opticsModel = 'DavilaGeisler';
-c_DavilaGeislerReplicate(params);
+%c_DavilaGeislerReplicate(params);
 params = rmfield(params,'opticsModel');
 
 % No blur, no dark noise, with aperture blur
