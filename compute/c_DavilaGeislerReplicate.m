@@ -56,11 +56,6 @@ function [validationData, extraData] = c_DavilaGeislerReplicate(varargin)
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotSpatialSummation' - true/false (default true).  Plot results.
 %   'freezeNoise' - true/false (default true). Freeze noise so calculations reproduce.
-%   'useTrialBlocks' - true/false (default -1).  Break response computations down into blocks?
-%        If this is set to -1, then nTrialBlocks is passed down the chain
-%        as -1, which causes the underlying routines to try to be smart.
-%        Otherwise if this is 1, the nTrialsPerBlock parameter is used.
-%   'nTrialsPerBlock' - value (default 50).  Target number of trials per block.
 
 %% Parse input
 p = inputParser;
@@ -98,8 +93,6 @@ p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischa
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotSpatialSummation',true,@islogical);
 p.addParameter('freezeNoise',true,@islogical);
-p.addParameter('useTrialBlocks',-1,@islogical);
-p.addParameter('nTrialsPerBlock',50,@isnumeric);
 p.parse(varargin{:});
 
 %% Get the parameters we need
@@ -224,18 +217,6 @@ for ll = 1:length(p.Results.luminances)
         thresholdParams.PCAComponents = p.Results.thresholdPCA;
 
         %% Compute response instances
-        if (p.Results.useTrialBlocks)
-            if (p.Results.useTrialBlocks == -1)
-                % Automatically compute trials in each block based on system resources (RAM size and number of cores)
-                trialBlockSize = -1;
-            else
-                % Use this many trials in each block
-                trialBlockSize = p.Results.nTrialsPerBlock;
-            end
-        else
-            % Use all the trials
-            trialBlockSize = [];
-        end
         if (p.Results.computeResponses)
            t_coneCurrentEyeMovementsResponseInstances(...
                'rParams',rParams,...
@@ -244,8 +225,7 @@ for ll = 1:length(p.Results.luminances)
                'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
                'visualizeResponses',p.Results.visualizeResponses, ...
                'generatePlots',p.Results.generatePlots,...
-               'freezeNoise',p.Results.freezeNoise,...
-               'trialBlockSize',trialBlockSize);
+               'freezeNoise',p.Results.freezeNoise);
         end
         
         %% Find performance, template max likeli
