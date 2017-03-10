@@ -161,7 +161,7 @@ rParams.backgroundParams = modifyStructParams(rParams.backgroundParams, ...
 frameRate = 87;                                     % their CRT had 87 Hz refresh rate
 windowTauInSeconds = 165/1000;
 stimulusSamplingIntervalInSeconds = 1/frameRate;
-stimulusDurationInSeconds = 4.5*windowTauInSeconds;
+stimulusDurationInSeconds = 3.5*windowTauInSeconds;
 % Allow around 100 milliseconds for response to stabilize
 responseStabilizationSeconds = ceil(100/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
 rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
