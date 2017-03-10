@@ -205,5 +205,13 @@ function V1filterBank = makeV1filters(spatialParams, filterWidthDegs, coneLocsDe
     
     V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingWeights / max(abs(V1filterBank.cosPhasePoolingWeights(:))) * maxCos;
     V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights / max(abs(V1filterBank.sinPhasePoolingWeights(:))) * maxSin;
+    
+    % Normalize with respect to total energy over space
+    netWeight = 1/sqrt(2.0) * sqrt(sum(V1filterBank.cosPhasePoolingWeights(:).^2) + sum(V1filterBank.sinPhasePoolingWeights(:).^2));
+    V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingWeights/netWeight;
+    V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights/netWeight;
+    
+    V1filterBank.activationFunction = 'energy'
+    %V1filterBank.activationFunction = 'half-wave-rect'  % half-wave rect
 end
 
