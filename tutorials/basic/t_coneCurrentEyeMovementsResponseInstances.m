@@ -254,11 +254,8 @@ if (p.Results.compute)
     if isempty(poolOBJ)
         poolOBJ = parpool(parforWorkersNum);
     else
-       oldPoolSize = poolOBJ.NumWorkers;
-       if (oldPoolSize ~= parforWorkersNum)
-           delete(poolOBJ);
-           poolOBJ = parpool(parforWorkersNum);
-       end
+       delete(poolOBJ);
+       poolOBJ = parpool(parforWorkersNum);
     end
     
     % Parfor over trial blocks
@@ -307,6 +304,9 @@ if (p.Results.compute)
     % Write the no cone contrast data and some extra facts we need
     rwObject.write('responseInstances',noStimData,paramsList,theProgram);
     
+    % Clear to save RAM
+    clear 'noStimData';
+    
     % Save the other data we need for use by the classifier preprocessing subroutine
     ancillaryData = struct(...
         'testConeContrasts', testConeContrasts, ...
@@ -339,7 +339,7 @@ if (p.Results.compute)
         % Make noisy instances for each contrast
         stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.5f',...
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
-        
+    
         % Parfor over blocks of trials
         parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
             % Get the parallel pool worker ID
@@ -397,6 +397,9 @@ if (p.Results.compute)
         
         % Save data for this color direction/contrast pair
         rwObject.write('responseInstances',stimData,paramsList,theProgram);
+        
+        % Clear to save RAM
+        clear 'stimData';
     end % for conditions
     
     tEnd = clock;
@@ -409,6 +412,11 @@ if (p.Results.compute)
     % parfor loop (and is in fact a bit hard to save outside the parfor
     % loop)
     if (nargout > 0)
+        % Reload the no-stim data
+        paramsList = constantParamsList;
+        paramsList{numel(paramsList)+1} = colorModulationParamsNull;   
+        noStimData = rwObject.read('responseInstances',paramsList,theProgram);
+    
         savedTrial = 1;
         noStimValidationData.theMosaicIsomerizations = squeeze(noStimData.responseInstanceArray.theMosaicIsomerizations(savedTrial,:,:,:));
         if (isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
@@ -419,6 +427,7 @@ if (p.Results.compute)
         noStimValidationData.theMosaicEyeMovements = squeeze(noStimData.responseInstanceArray.theMosaicEyeMovements(savedTrial,:,:));
         noStimValidationData.timeAxis = noStimData.responseInstanceArray.timeAxis;
         noStimValidationData.photocurrentTimeAxis = noStimData.responseInstanceArray.photocurrentTimeAxis;
+        clear 'noStimData';
         
         validationData.noStimData = noStimValidationData;
         validationData.stimData = stimDataForValidation;
