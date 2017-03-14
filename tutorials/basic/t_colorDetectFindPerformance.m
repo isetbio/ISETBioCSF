@@ -113,12 +113,12 @@ if (isempty(thresholdParams))
 end
 
 %% svmV1FilterBank - related checks and computations
-if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (strcmp(thresholdParams.method, 'svmV1FilterBank'))
+if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && ((strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(v1FilterBankType, 'svmV1FilterBankFullWaveRectAF')))
     error('Currently, classification using the ''svmV1FilterBank'' method is only implemented for spatially-varying density hex mosaics.\n')
 end
-if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
+if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF'))
     % Generate V1 filter bank struct and add it to thresholdParams
-    V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme);
+    V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams.method);
     thresholdParams = modifyStructParams(thresholdParams, 'V1filterBank', V1filterBank);
 end
 
@@ -134,7 +134,7 @@ if (p.Results.compute)
     
     
     % Inform the user regarding what we are currently working on
-    if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
+    if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF'))
         fprintf('Computing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the raw <strong>%s</strong>.\n', ...
     rParams.spatialParams.cyclesPerDegree, rParams.backgroundParams.backgroundxyY(3)*rParams.backgroundParams.lumFactor, rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
     elseif (~strcmp(thresholdParams.method, 'mlpt'))
