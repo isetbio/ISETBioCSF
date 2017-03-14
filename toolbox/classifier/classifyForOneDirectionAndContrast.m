@@ -26,7 +26,7 @@ p.parse(noStimData,stimData,thresholdParams,varargin{:});
 tBegin = clock;
 
 %% Transform the raw cone responses into V1 filter bank responses
-if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
+if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF'))
     if ((~isfield(thresholdParams, 'V1filterBank')) || (isfield(thresholdParams, 'V1filterBank')) && (isempty(thresholdParams.V1filterBank)))
         error('thresholdParams must have a V1filterBank field when using the svmV1FilterBank classifier\n');
     end
@@ -44,7 +44,7 @@ end
 %% Decide what type of classifier we are running
 switch (thresholdParams.method)
     
-    case 'svmV1FilterBank'
+    case {'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF'}
         % Perform SVM classification for this stimulus vs the zero contrast stimulus
         fprintf('\tRunning SVM ...');
         [usePercentCorrect, useStdErr, svm] = classifyWithSVM(classificationData,classes,thresholdParams.kFold,...

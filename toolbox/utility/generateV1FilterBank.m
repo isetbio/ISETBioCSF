@@ -1,4 +1,4 @@
-function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLevelDirParams, plotV1FilterBank)
+function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLevelDirParams, plotV1FilterBank, v1FilterBankType)
     % Filter width
     filterWidthInDegrees = 0.5*spatialParams.fieldOfViewDegs;
     
@@ -55,7 +55,7 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
     end  % switch
     
     % Generate the V1 filter bank        
-    V1filterBank = makeV1filters(spatialParams, filterWidthInDegrees, coneLocsInDegs, xaxis, yaxis, coneDensity);
+    V1filterBank = makeV1filters(spatialParams, filterWidthInDegrees, coneLocsInDegs, xaxis, yaxis, coneDensity, v1FilterBankType);
 
     % Plot it
     if (plotV1FilterBank)
@@ -170,7 +170,7 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
 end
 
 
-function V1filterBank = makeV1filters(spatialParams, filterWidthDegs, coneLocsDegs, xaxisDegs, yaxisDegs, coneDensity)
+function V1filterBank = makeV1filters(spatialParams, filterWidthDegs, coneLocsDegs, xaxisDegs, yaxisDegs, coneDensity, v1FilterBankType)
 
     % filter width
     spatialParams.gaussianFWHMDegs = filterWidthDegs/2.0;
@@ -211,7 +211,11 @@ function V1filterBank = makeV1filters(spatialParams, filterWidthDegs, coneLocsDe
     V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingWeights/netWeight;
     V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights/netWeight;
     
-    V1filterBank.activationFunction = 'energy'
-    %V1filterBank.activationFunction = 'half-wave-rect'  % half-wave rect
+    if (strcmp(v1FilterBankType, 'svmV1FilterBank'))
+        V1filterBank.activationFunction = 'energy';
+    elseif (strcmp(v1FilterBankType, 'svmV1FilterBankFullWaveRectAF'))
+        V1filterBank.activationFunction = 'fullWaveRectifier';
+    end
+    
 end
 
