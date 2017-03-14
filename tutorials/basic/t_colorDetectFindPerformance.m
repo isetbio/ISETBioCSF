@@ -157,6 +157,12 @@ if (p.Results.compute)
     ancillaryData = rwObject.read('ancillaryData',paramsList,readProgram);
     noStimData = rwObject.read('responseInstances',paramsList,readProgram);
     
+    if (strcmp(thresholdParams.signalSource,'isomerizations'))
+        noStimData.responseInstanceArray.theMosaicPhotocurrents = [];
+    else
+        noStimData.responseInstanceArray.theMosaicIsomerizations = [];
+    end
+    
     % Only keep the trials we will use
     if isfield(thresholdParams, 'trialsUsed')
         noStimData.responseInstanceArray = keepTrialsUsed(noStimData.responseInstanceArray, thresholdParams.trialsUsed);
@@ -167,11 +173,6 @@ if (p.Results.compute)
         [noStimData, thresholdParams.actualEvidenceIntegrationTime] = keepTimeBinsUsed(noStimData, thresholdParams.evidenceIntegrationTime);
     end
     
-    if (strcmp(thresholdParams.signalSource,'isomerizations'))
-        noStimData.responseInstanceArray.theMosaicPhotocurrents = [];
-    else
-        noStimData.responseInstanceArray.theMosaicIsomerizations = [];
-    end
         
     % Get out some data we'll want
     nTrials = numel(noStimData.responseInstanceArray);
@@ -212,6 +213,12 @@ if (p.Results.compute)
         fprintf('Reading stimulus data for condition %d of %d... \n', kk,nParforConditions);
         stimData = rwObject.read('responseInstances',paramsList,readProgram);
         
+        if (strcmp(thresholdParams.signalSource,'isomerizations'))
+            stimData.responseInstanceArray.theMosaicPhotocurrents = [];
+        else
+            stimData.responseInstanceArray.theMosaicIsomerizations = [];
+        end
+        
         % Only keep the data we will use
         if isfield(thresholdParams, 'trialsUsed')
             stimData.responseInstanceArray = keepTrialsUsed(stimData.responseInstanceArray, thresholdParams.trialsUsed);
@@ -222,11 +229,6 @@ if (p.Results.compute)
             [stimData, ~] = keepTimeBinsUsed(stimData, thresholdParams.evidenceIntegrationTime);
         end
         
-        if (strcmp(thresholdParams.signalSource,'isomerizations'))
-            stimData.responseInstanceArray.theMosaicPhotocurrents = [];
-        else
-            stimData.responseInstanceArray.theMosaicIsomerizations = [];
-        end
         % Get performance for this condition.  Optional parameters control
         % whether or not the routine returns a handle to a plot that
         % illustrates the classifier.
@@ -372,9 +374,12 @@ function checkStructs(struct1Name, struct1, struct2Name, struct2, varargin)
 end
 
 function responseInstanceArray = keepTrialsUsed(responseInstanceArray, trialsUsed)
-    fprintf('Classifying based on %d of the computed %d trials\n', trialsUsed, size(responseInstanceArray.theMosaicIsomerizations,1));
-    responseInstanceArray.theMosaicIsomerizations = responseInstanceArray.theMosaicIsomerizations(1:trialsUsed,:,:,:);
+    if (~isempty(responseInstanceArray.theMosaicIsomerizations))
+        fprintf('Classifying based on %d of the computed %d trials\n', trialsUsed, size(responseInstanceArray.theMosaicIsomerizations,1));
+        responseInstanceArray.theMosaicIsomerizations = responseInstanceArray.theMosaicIsomerizations(1:trialsUsed,:,:,:);
+    end
     if ~isempty(responseInstanceArray.theMosaicPhotocurrents)
+        fprintf('Classifying based on %d of the computed %d trials\n', trialsUsed, size(responseInstanceArray.theMosaicPhotocurrents,1));
         responseInstanceArray.theMosaicPhotocurrents = responseInstanceArray.theMosaicPhotocurrents(1:trialsUsed,:,:,:);
     end
 end
@@ -391,32 +396,41 @@ function [stimData, actualEvidenceIntegrationTime] = keepTimeBinsUsed(stimData, 
         timeBinsToKeep = numel(stimData.responseInstanceArray.timeAxis) - timeBinsToKeep + 1;
         actualEvidenceIntegrationTime = -numel(timeBinsToKeep)*dt*1000;
     end
-      
-    responseDimensionality = ndims(stimData.responseInstanceArray.theMosaicIsomerizations);
-    if (responseDimensionality == 2)
-        % nTrials x cones - do nothing
-    elseif (responseDimensionality == 3)
-        % nTrials X non-null cones x time bins
-        stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(:,:,timeBinsToKeep);
-        if ~isempty(stimData.responseInstanceArray.theMosaicPhotocurrents)
+    
+    if (~isempty(responseInstanceArray.theMosaicIsomerizations))
+        responseDimensionality = ndims(stimData.responseInstanceArray.theMosaicIsomerizations);
+    
+        if (responseDimensionality == 2)
+            % nTrials x cones - do nothing
+        elseif (responseDimensionality == 3)
+            % nTrials X non-null cones x time bins
+            stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(:,:,timeBinsToKeep);
+            stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations(:,timeBinsToKeep);
+        elseif (responseDimensionality == 4)
+            % nTrials X cone rows x cone cols x time bins
+            stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(:,:,:,timeBinsToKeep);
+            stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations(:,:,timeBinsToKeep);
+        else
+            error('Response dimensionality: %d', responseDimensionality);
+        end
+    end
+    
+    if (~isempty(responseInstanceArray.theMosaicPhotocurrents))
+        responseDimensionality = ndims(stimData.responseInstanceArray.theMosaicPhotocurrents);
+    
+        if (responseDimensionality == 2)
+            % nTrials x cones - do nothing
+        elseif (responseDimensionality == 3)
+            % nTrials X non-null cones x time bins
             stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(:,:,timeBinsToKeep);
-        end
-        stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations(:,timeBinsToKeep);
-        if (~isempty(stimData.noiseFreePhotocurrents))
             stimData.noiseFreePhotocurrents = stimData.noiseFreePhotocurrents(:,timeBinsToKeep);
-        end
-    elseif (responseDimensionality == 4)
-        % nTrials X cone rows x cone cols x time bins
-        stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(:,:,:,timeBinsToKeep);
-        if ~isempty(stimData.responseInstanceArray.theMosaicPhotocurrents)
+        elseif (responseDimensionality == 4)
+            % nTrials X cone rows x cone cols x time bins
             stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(:,:,:,timeBinsToKeep);
-        end
-        stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations(:,:,timeBinsToKeep);
-        if (~isempty(stimData.noiseFreePhotocurrents))
             stimData.noiseFreePhotocurrents = stimData.noiseFreePhotocurrents(:,:,timeBinsToKeep);
+        else
+            error('Response dimensionality: %d', responseDimensionality);
         end
-    else
-        error('Response dimensionality: %d', responseDimensionality);
     end
     
 end
