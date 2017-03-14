@@ -6,7 +6,7 @@ function [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stim
 
 fprintf('Transforming data via projection to the spatial components of a V1-based filter bank (energy)\n');
 
-visualizeTransformedSignals = true;
+visualizeTransformedSignals = false;
 repsDimension = 1;
 spatialDimension = 2;
 temporalDimension = 3;
@@ -39,25 +39,38 @@ else
 end
 
 % Compute the energy response of the V1 filter bank
+<<<<<<< HEAD
 V1filterBank.cosPhasePoolingWeights = repmat(V1filterBank.cosPhasePoolingWeights, [nTrials 1 nTimeBins]);
 V1filterBank.sinPhasePoolingWeights = repmat(V1filterBank.sinPhasePoolingWeights, [nTrials 1 nTimeBins]);
+=======
+V1filterBank = thresholdParams.V1filterBank;
+standardize = thresholdParams.STANDARDIZE;
+>>>>>>> 957267c8a36fe14ffa8de760f88a583ca7fa5910
 
 if (strcmp(thresholdParams.signalSource,'photocurrents'))
-    cosFilterLinearActivation = squeeze(sum(noStimData.responseInstanceArray.theMosaicPhotocurrents .* V1filterBank.cosPhasePoolingWeights, spatialDimension));
-    sinFilterLinearActivation = squeeze(sum(noStimData.responseInstanceArray.theMosaicPhotocurrents .* V1filterBank.sinPhasePoolingWeights, spatialDimension));
+    cosFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicPhotocurrents, V1filterBank.cosPhasePoolingWeights), spatialDimension));
+    sinFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicPhotocurrents, V1filterBank.sinPhasePoolingWeights), spatialDimension));
+    %cosFilterLinearActivation = squeeze(sum(noStimData.responseInstanceArray.theMosaicPhotocurrents .* repmat(V1filterBank.cosPhasePoolingWeights, [nTrials 1 nTimeBins]), spatialDimension));
+    %sinFilterLinearActivation = squeeze(sum(noStimData.responseInstanceArray.theMosaicPhotocurrents .* repmat(V1filterBank.sinPhasePoolingWeights, [nTrials 1 nTimeBins]), spatialDimension));
     if strcmp(V1filterBank.activationFunction, 'energy')
         noStimData.responseInstanceArray.theMosaicPhotocurrents = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
     else
         noStimData.responseInstanceArray.theMosaicPhotocurrents = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
     end
     
-    cosFilterLinearActivation = squeeze(sum(stimData.responseInstanceArray.theMosaicPhotocurrents .* V1filterBank.cosPhasePoolingWeights, spatialDimension));
-    sinFilterLinearActivation = squeeze(sum(stimData.responseInstanceArray.theMosaicPhotocurrents .* V1filterBank.sinPhasePoolingWeights, spatialDimension));
+    cosFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData.responseInstanceArray.theMosaicPhotocurrents, V1filterBank.cosPhasePoolingWeights), spatialDimension));
+    sinFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData.responseInstanceArray.theMosaicPhotocurrents, V1filterBank.sinPhasePoolingWeights), spatialDimension));
+    %cosFilterLinearActivation = squeeze(sum(stimData.responseInstanceArray.theMosaicPhotocurrents .* repmat(V1filterBank.cosPhasePoolingWeights, [nTrials 1 nTimeBins]), spatialDimension));
+    %sinFilterLinearActivation = squeeze(sum(stimData.responseInstanceArray.theMosaicPhotocurrents .* repmat(V1filterBank.sinPhasePoolingWeights, [nTrials 1 nTimeBins]), spatialDimension));
     if strcmp(V1filterBank.activationFunction, 'energy')
         stimData.responseInstanceArray.theMosaicPhotocurrents = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
     elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
         stimData.responseInstanceArray.theMosaicPhotocurrents = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
     end
+    
+    % Clear some RAM space
+    clear 'cosFilterLinearActivation'
+    clear 'sinFilterLinearActivation'
     
     if (standardize)
         % zero mean, unit std
@@ -69,23 +82,30 @@ if (strcmp(thresholdParams.signalSource,'photocurrents'))
         min([min(stimData.responseInstanceArray.theMosaicPhotocurrents(:)) min(noStimData.responseInstanceArray.theMosaicPhotocurrents(:))]) ...
         max([max(stimData.responseInstanceArray.theMosaicPhotocurrents(:)) max(noStimData.responseInstanceArray.theMosaicPhotocurrents(:))])];
 else
-    size(noStimData.responseInstanceArray.theMosaicIsomerizations)
-    size(V1filterBank.cosPhasePoolingWeights)
-    cosFilterLinearActivation = squeeze(sum(noStimData.responseInstanceArray.theMosaicIsomerizations .* V1filterBank.cosPhasePoolingWeights, spatialDimension));
-    sinFilterLinearActivation = squeeze(sum(noStimData.responseInstanceArray.theMosaicIsomerizations .* V1filterBank.sinPhasePoolingWeights, spatialDimension));
+    cosFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicIsomerizations, V1filterBank.cosPhasePoolingWeights), spatialDimension));
+    sinFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicIsomerizations, V1filterBank.sinPhasePoolingWeights), spatialDimension));
+    
+    %cosFilterLinearActivation = squeeze(sum(noStimData.responseInstanceArray.theMosaicIsomerizations .* repmat(V1filterBank.cosPhasePoolingWeights, [nTrials 1 nTimeBins]), spatialDimension));
+    %sinFilterLinearActivation = squeeze(sum(noStimData.responseInstanceArray.theMosaicIsomerizations .* repmat(V1filterBank.sinPhasePoolingWeights, [nTrials 1 nTimeBins]), spatialDimension));
     if strcmp(V1filterBank.activationFunction, 'energy')
         noStimData.responseInstanceArray.theMosaicIsomerizations = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
     elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
         noStimData.responseInstanceArray.theMosaicIsomerizations = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
     end
     
-    cosFilterLinearActivation = squeeze(sum(stimData.responseInstanceArray.theMosaicIsomerizations .* V1filterBank.cosPhasePoolingWeights, spatialDimension));
-    sinFilterLinearActivation = squeeze(sum(stimData.responseInstanceArray.theMosaicIsomerizations .* V1filterBank.sinPhasePoolingWeights, spatialDimension));
+    cosFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData.responseInstanceArray.theMosaicIsomerizations, V1filterBank.cosPhasePoolingWeights), spatialDimension));
+    sinFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData.responseInstanceArray.theMosaicIsomerizations, V1filterBank.sinPhasePoolingWeights), spatialDimension));
+    %cosFilterLinearActivation = squeeze(sum(stimData.responseInstanceArray.theMosaicIsomerizations .* repmat(V1filterBank.cosPhasePoolingWeights, [nTrials 1 nTimeBins]), spatialDimension));
+    %sinFilterLinearActivation = squeeze(sum(stimData.responseInstanceArray.theMosaicIsomerizations .* repmat(V1filterBank.sinPhasePoolingWeights, [nTrials 1 nTimeBins]), spatialDimension));
     if strcmp(V1filterBank.activationFunction, 'energy')
         stimData.responseInstanceArray.theMosaicIsomerizations  = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
     elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
         stimData.responseInstanceArray.theMosaicIsomerizations  = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
     end
+    
+    % Clear some RAM space
+    clear 'cosFilterLinearActivation'
+    clear 'sinFilterLinearActivation'
     
     if (standardize)
         % zero mean, unit std
