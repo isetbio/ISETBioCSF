@@ -21,6 +21,12 @@ else
     end
 end
 
+V1filterBank = thresholdParams.V1filterBank;
+standardize = thresholdParams.STANDARDIZE;
+if (~ismember(V1filterBank.activationFunction, {'energy', 'fullWaveRectifier'}))
+    error('V1filterBank.activationFunction must be set to either ''energy'' or ''fullWaveRectifier''.\n')
+end
+
 % Subtract the noStimData so that zero modulation gives zero response for both isomerizations and photocurrrents
 [noStimData, stimData] = subtractMeanOfNoStimData(noStimData, stimData, thresholdParams.signalSource, repsDimension, temporalDimension);
 
@@ -33,9 +39,6 @@ else
 end
 
 % Compute the energy response of the V1 filter bank
-V1filterBank = thresholdParams.V1filterBank;
-standardize = thresholdParams.STANDARDIZE;
-
 V1filterBank.cosPhasePoolingWeights = repmat(V1filterBank.cosPhasePoolingWeights, [nTrials 1 nTimeBins]);
 V1filterBank.sinPhasePoolingWeights = repmat(V1filterBank.sinPhasePoolingWeights, [nTrials 1 nTimeBins]);
 
@@ -52,7 +55,7 @@ if (strcmp(thresholdParams.signalSource,'photocurrents'))
     sinFilterLinearActivation = squeeze(sum(stimData.responseInstanceArray.theMosaicPhotocurrents .* V1filterBank.sinPhasePoolingWeights, spatialDimension));
     if strcmp(V1filterBank.activationFunction, 'energy')
         stimData.responseInstanceArray.theMosaicPhotocurrents = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
-    else
+    elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
         stimData.responseInstanceArray.theMosaicPhotocurrents = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
     end
     
@@ -72,7 +75,7 @@ else
     sinFilterLinearActivation = squeeze(sum(noStimData.responseInstanceArray.theMosaicIsomerizations .* V1filterBank.sinPhasePoolingWeights, spatialDimension));
     if strcmp(V1filterBank.activationFunction, 'energy')
         noStimData.responseInstanceArray.theMosaicIsomerizations = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
-    else
+    elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
         noStimData.responseInstanceArray.theMosaicIsomerizations = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
     end
     
@@ -80,7 +83,7 @@ else
     sinFilterLinearActivation = squeeze(sum(stimData.responseInstanceArray.theMosaicIsomerizations .* V1filterBank.sinPhasePoolingWeights, spatialDimension));
     if strcmp(V1filterBank.activationFunction, 'energy')
         stimData.responseInstanceArray.theMosaicIsomerizations  = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
-    else
+    elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
         stimData.responseInstanceArray.theMosaicIsomerizations  = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
     end
     
@@ -122,7 +125,7 @@ if (visualizeTransformedSignals)
         set(gca, 'YLim', isomerizationsBasedV1Range,  'XLim', [noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(nTimeBins)]);
         title(sprintf('C = %2.5f%%\nisomerizations-based V1 filterresponse', stimData.testContrast*100));
     end
-    ylabel('V1 filter bank energy');
+    ylabel(sprintf('V1 filter bank output (%s)', V1filterBank.activationFunction));
     xlabel('time (ms)'); 
     set(gca, 'FontSize', 14);
     
