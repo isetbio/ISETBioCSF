@@ -83,7 +83,7 @@ else
 end
 
 % Visualize transformed signals
-visualizeTransformedSignals = false;
+visualizeTransformedSignals = true;
 if (visualizeTransformedSignals) 
     hFig = figure(1234); clf;
     set(hFig, 'Position', [10 10 400 800]);
@@ -94,14 +94,14 @@ if (visualizeTransformedSignals)
             min([min(stimData.responseInstanceArray.theMosaicPhotocurrents(:)) min(noStimData.responseInstanceArray.theMosaicPhotocurrents(:))]) ...
             max([max(stimData.responseInstanceArray.theMosaicPhotocurrents(:)) max(noStimData.responseInstanceArray.theMosaicPhotocurrents(:))])];
         plot(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicPhotocurrents, 'k-')
-        set(gca, 'YLim', photocurrentsBasedV1Range,  'XLim', [noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(nTimeBins)]);
+        set(gca, 'YLim', photocurrentsBasedV1Range,  'XLim', [noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)]);
         title(sprintf('NO-STIM\nphotocurrents-based V1 filter response'));
     else
         isomerizationsBasedV1Range = [ ...
             min([min(stimData.responseInstanceArray.theMosaicIsomerizations(:)) min(noStimData.responseInstanceArray.theMosaicIsomerizations(:))]) 
             max([max(stimData.responseInstanceArray.theMosaicIsomerizations(:)) max(noStimData.responseInstanceArray.theMosaicIsomerizations(:))])];
         plot(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicIsomerizations, 'k-')
-        set(gca, 'YLim', isomerizationsBasedV1Range,  'XLim', [noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(nTimeBins)]);
+        set(gca, 'YLim', isomerizationsBasedV1Range,  'XLim', [noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)]);
         title(sprintf('NO-STIM\nisomerizations-based V1 filter response'));
     end
     ylabel('V1 filter bank energy');
@@ -110,11 +110,11 @@ if (visualizeTransformedSignals)
     subplot(2,1,2);
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
         plot(stimData.responseInstanceArray.timeAxis, stimData.responseInstanceArray.theMosaicPhotocurrents, 'k-')
-        set(gca, 'YLim', photocurrentsBasedV1Range,  'XLim', [noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(nTimeBins)]);
+        set(gca, 'YLim', photocurrentsBasedV1Range,  'XLim', [noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)]);
         title(sprintf('C = %2.5f%%\nphotocurrents-based V1 filter response', stimData.testContrast*100));
     else
         plot(stimData.responseInstanceArray.timeAxis, stimData.responseInstanceArray.theMosaicIsomerizations, 'k-')
-        set(gca, 'YLim', isomerizationsBasedV1Range,  'XLim', [noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(nTimeBins)]);
+        set(gca, 'YLim', isomerizationsBasedV1Range,  'XLim', [noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)]);
         title(sprintf('C = %2.5f%%\nisomerizations-based V1 filterresponse', stimData.testContrast*100));
     end
     ylabel(sprintf('V1 filter bank output (%s)', V1filterBank.activationFunction));
