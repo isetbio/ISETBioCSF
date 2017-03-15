@@ -7,8 +7,8 @@ function runPoirsonAndWandell96Job()
     
     % Actions to perform
     computeMosaic = false;
-    computeResponses   = true;
-    findPerformances   = true;
+    computeResponses   = ~true;
+    findPerformances   = ~true;
     
     % Visualization options
     visualizeSpatialScheme = ~true;
@@ -17,22 +17,64 @@ function runPoirsonAndWandell96Job()
     visualizeMosaic = ~true;
     
     nTrials = 1024*4;
-    performanceClassifierTrainingSamples = 1024*4;
+    performanceClassifierTrainingSamples = nTrials;
     
-    
-    % Redo findPerformance (first for energy, then for half-wave-rect), then use below comparison plots
-    for configID = [2 5]
-    
-        classifierSignalList = {'isomerizations', 'photocurrents'};
+    doSummaryPlots = true;
+    if (~doSummaryPlots)
+        
+        for configID = [3]
+            classifierSignalList = {'isomerizations', 'photocurrents'};
+            classifierTypeList = {'svmV1FilterBankFullWaveRectAF'};
+
+            c_PoirsonAndWandell96RunSession(configID, nTrials, performanceClassifierTrainingSamples, ...
+                computeMosaic, computeResponses, findPerformances, visualizeResponses, visualizePerformances, ...
+                visualizeMosaic, visualizeSpatialScheme, classifierSignalList, classifierTypeList, pcaComponentsNum);
+
+        end
+    else
+        % Summary plots
+        
+        configID = 2;
+        classifierSignalList = {'isomerizations'};
         classifierTypeList = {'svmV1FilterBank'};
         
-        c_PoirsonAndWandell96RunSession(configID, nTrials, performanceClassifierTrainingSamples, ...
+
+        performanceClassifierTrainingSamplesExamined = [256 704 4096];
+        for k = 1:numel(performanceClassifierTrainingSamplesExamined)
+            d = c_PoirsonAndWandell96RunSession(configID, nTrials, performanceClassifierTrainingSamplesExamined(k), ...
             computeMosaic, computeResponses, findPerformances, visualizeResponses, visualizePerformances, ...
             visualizeMosaic, visualizeSpatialScheme, classifierSignalList, classifierTypeList, pcaComponentsNum);
-
+            isomerizationThresholds(k) = d{1}.detectionThresholdContrast;
+            photocurrentThresholds(k) = d{2}.detectionThresholdContrast;
+        end
+        
+        classifierSignalList = {'isomerizations'};
+        classifierTypeList = {'mlpt'};
+        performanceClassifierTrainingSamplesExamined = [704];
+        for k = 1:numel(performanceClassifierTrainingSamplesExamined)
+            d = c_PoirsonAndWandell96RunSession(configID, nTrials, performanceClassifierTrainingSamplesExamined(k), ...
+            computeMosaic, computeResponses, findPerformances, visualizeResponses, visualizePerformances, ...
+            visualizeMosaic, visualizeSpatialScheme, classifierSignalList, classifierTypeList, pcaComponentsNum);
+            isomerizationThresholds(k) = d{1}.detectionThresholdContrast;
+            photocurrentThresholds(k) = d{2}.detectionThresholdContrast;
+        end
+        
+        figure(1);
+        clf;
+        plot(1:numel(performanceClassifierTrainingSamplesExamined), isomerizationThresholds, 'rs-', 'MarkerSize', 14, 'LineWidth', 1.5);
+        hold on;
+        plot(1:numel(performanceClassifierTrainingSamplesExamined), photocurrentThresholds, 'bs-', 'MarkerSize', 14, 'LineWidth', 1.5);
+        set(gca, 'XTick', 1:numel(performanceClassifierTrainingSamplesExamined), 'XTickLabels', performanceClassifierTrainingSamplesExamined);
+        set(gca, 'FontSize', 12);
+        axis 'square'
+        xlabel('training samples');
+        ylabel('detection threshold contrast');
+        legend({'isomerizations', 'photocurrents'});
+        title('classifier: svmV1FilterBank');
+        drawnow;
     end
-    return;
     
+    return;
     
     % Compare emRandom vs emFrozen0
     configID1 = 4; configID2 = 1;
