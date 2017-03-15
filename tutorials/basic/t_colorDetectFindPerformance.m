@@ -113,7 +113,7 @@ if (isempty(thresholdParams))
 end
 
 %% svmV1FilterBank - related checks and computations
-if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && ((strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(v1FilterBankType, 'svmV1FilterBankFullWaveRectAF')))
+if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && ((strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')))
     error('Currently, classification using the ''svmV1FilterBank'' method is only implemented for spatially-varying density hex mosaics.\n')
 end
 if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF'))
@@ -132,7 +132,6 @@ constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.o
 %% Compute if desired
 if (p.Results.compute)
     
-    
     % Inform the user regarding what we are currently working on
     if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF'))
         fprintf('Computing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the raw <strong>%s</strong>.\n', ...
@@ -143,7 +142,6 @@ if (p.Results.compute)
     else
         fprintf('Computing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on  <strong>%s</strong>.\n', ...
     rParams.spatialParams.cyclesPerDegree, rParams.backgroundParams.backgroundxyY(3)*rParams.backgroundParams.lumFactor, rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
-
     end
     
     % Read data for the no stimulus condition
@@ -172,7 +170,6 @@ if (p.Results.compute)
     if (~isempty(thresholdParams.evidenceIntegrationTime))
         [noStimData, thresholdParams.actualEvidenceIntegrationTime] = keepTimeBinsUsed(noStimData, thresholdParams.evidenceIntegrationTime);
     end
-    
         
     % Get out some data we'll want
     nTrials = numel(noStimData.responseInstanceArray);
