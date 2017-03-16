@@ -57,6 +57,18 @@ switch (params.instanceType)
         params.lowContrast = 0.001;
         params.highContrast = 0.15;
         params.contrastScale = 'log';    
+       
+    case 'pedestalIncrements'
+        % Define how many noisy data instances to generate
+        params.trialsNum = 100;
+        params.scaleIntoMonitorGamut = true;
+        
+        % Number of contrasts to run
+        % Choose between 'linear' and 'log'
+        params.nContrastsPerDirection = 5;
+        params.lowContrast = 0.001;
+        params.highContrast = 0.15;
+        params.contrastScale = 'log';    
         
     case 'LMSPlane'
         % Define how many noisy data instances to generate

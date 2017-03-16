@@ -134,14 +134,14 @@ if (p.Results.compute)
     
     % Inform the user regarding what we are currently working on
     if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF'))
-        fprintf('Computing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the raw <strong>%s</strong>.\n', ...
-    rParams.spatialParams.cyclesPerDegree, rParams.backgroundParams.backgroundxyY(3)*rParams.backgroundParams.lumFactor, rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
+        fprintf('Computing performance for <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the raw <strong>%s</strong>.\n', ...
+        rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
     elseif (~strcmp(thresholdParams.method, 'mlpt'))
-        fprintf('Computing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the first %d PCA components of <strong>%s</strong>.\n', ...
-    rParams.spatialParams.cyclesPerDegree, rParams.backgroundParams.backgroundxyY(3)*rParams.backgroundParams.lumFactor, rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.PCAComponents, thresholdParams.signalSource);                  
+        fprintf('Computing performance for <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the first %d PCA components of <strong>%s</strong>.\n', ...
+        rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.PCAComponents, thresholdParams.signalSource);                  
     else
-        fprintf('Computing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on  <strong>%s</strong>.\n', ...
-    rParams.spatialParams.cyclesPerDegree, rParams.backgroundParams.backgroundxyY(3)*rParams.backgroundParams.lumFactor, rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
+        fprintf('Computing performance for <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on  <strong>%s</strong>.\n', ...
+    	rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
     end
     
     % Read data for the no stimulus condition
@@ -352,7 +352,7 @@ function checkStructs(struct1Name, struct1, struct2Name, struct2, varargin)
     
     graphMismatchedData = false;
 
-    defaultTolerance = 1e-12;
+    defaultTolerance = 1e-6;
     structCheck = RecursivelyCompareStructs(...
         struct1Name, struct1, ...
         struct2Name, struct2, ...

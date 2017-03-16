@@ -7,6 +7,7 @@ function spatialParams = spatialParamsGenerate(varargin)
 %   'spatialType' - String (default 'Gabor') Type of spatial pattern
 %     'Gabor' - Gabor pattern
 %     'spot' - Spatial spot on background
+%     'pedestalDisk' - Disk on background
 %   'windowType' - String (default 'Gaussian') Type of spatial pattern.
 %     May not have an effect for all spatial types.
 %     'Gaussian' - Gaussian spatial window (true Gabor)
@@ -56,6 +57,7 @@ switch (spatialParams.spatialType)
         spatialParams.ang = 0;
         spatialParams.ph = 0;
         spatialParams.viewingDistance = 0.75;
+        
     case 'spot'
         spatialParams.spotSizeDegs = 0.05;
         spatialParams.backgroundSizeDegs = 2;
@@ -66,6 +68,16 @@ switch (spatialParams.spatialType)
             error('Image should be square');
         end
         spatialParams.viewingDistance = 0.75;
+        
+    case 'pedestalDisk'
+        spatialParams.windowType = p.Results.windowType;
+        spatialParams.windowType = 'softCircle';
+        spatialParams.fieldOfViewDegs = 4;
+        spatialParams.pedestalDiameterDegs = 2;
+        spatialParams.row = 128;
+        spatialParams.col = 128;
+        spatialParams.viewingDistance = 0.75;
+        
     otherwise
-        error('Unknown spatial type passed');
+        error('Unknown spatial type passed: ''%s''.', spatialParams.spatialType);
 end

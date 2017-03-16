@@ -66,6 +66,9 @@ oiModulated = oiCompute(oiModulated, modulatedScene);
 theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, ...
                                 stimulusModulationFunction, 'composition', 'blend');
 
+%%  Visualize the oiSequence
+%theOIsequence.visualize('format', 'montage');
+
 % Clear oiModulated and oiBackground to save space
 varsToClear = {'oiBackground', 'oiModulated'};
 clear(varsToClear{:});

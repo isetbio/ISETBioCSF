@@ -226,6 +226,15 @@ if (p.Results.compute)
             % contrasts argument for this call, we won't use the returned
             % contrasts for this case below.
             testConeContrasts = NaN*zeros(3,1);
+            
+        case 'pedestalIncrements'
+            if (strcmp(testDirectionParams.contrastScale, 'linear'))
+                testContrasts = linspace(testDirectionParams.lowContrast, testDirectionParams.highContrast, testDirectionParams.nContrastsPerDirection);
+            else
+                testContrasts = logspace(log10(testDirectionParams.lowContrast), log10(testDirectionParams.highContrast), testDirectionParams.nContrastsPerDirection);
+            end
+            testConeContrasts = ones(3,1);
+            
         otherwise
             error('Unknown test instance type passed');
     end

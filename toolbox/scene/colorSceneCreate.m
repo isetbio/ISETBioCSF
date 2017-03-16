@@ -56,7 +56,7 @@ switch(spatialParams.spatialType)
         % Make the spatial pattern as a Gabor and convert to a modulation around the mean (mean == 0)
         spatialPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams,colorModulationParams.contrast));
         spatialModulation = spatialPattern-1;
-        
+
     case 'spot'
         % Check that color modulation/background type is one we understand
         % for spots
@@ -70,7 +70,19 @@ switch(spatialParams.spatialType)
         
         % Make the grayscale spot pattern
         spotPattern = drawSpot(spatialParams);
+       
+    case 'pedestalDisk'
+        % Check that color modulation/background type is one we understand for pedestalDisks
+        switch (colorModulationParams.modulationType)
+            case 'monitor'
+            case 'AO'
+                error('Cannot do a pedestalDisk with AO color modulation/background parameters');
+            otherwise
+                error('Unknown color modulation/background type specified');
+        end
         
+        % Make the spatial pattern (range: -1 .. 1)
+        spatialModulation = pedestalModulationDisk(spatialParams, colorModulationParams.contrast);
     otherwise
         error('Unknown spatial type specified');
 end
@@ -213,6 +225,24 @@ switch (colorModulationParams.modulationType)
         % This combines the image we build and the display properties.
         theScene = sceneFromFile(patternRGB,'rgb',[],display);
         theScene = sceneSet(theScene, 'h fov', fieldOfViewDegs);
+        
+        debug = false;
+        if (debug)
+            figure(122); clf;
+            subplot(1,2,1);
+            imagesc(sceneGet(theScene, 'RGB'));
+            title('RGB rendition');
+            axis 'image'
+
+            subplot(1,2,2);
+            imagesc(sceneGet(theScene, 'luminance'));
+            title('luminance map');
+            axis 'image'
+            colormap(gray(1024))
+            drawnow
+            pause
+        end
+        
         
     case 'AO'
         % Wavelength sampling
