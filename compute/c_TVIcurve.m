@@ -4,16 +4,16 @@ function [detectionThresholdContrast, pedestalLuminanceList] = c_TVIcurve(vararg
 p = inputParser;
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
 % STIMULUS OPTIONS
-p.addParameter('imagePixels', 256, @isnumeric);
+p.addParameter('imagePixels', 128, @isnumeric);
 p.addParameter('fieldOfViewDegs', 0.8, @isnumeric);
 p.addParameter('nContrastsPerPedestalLuminance', 12, @isnumeric);
-p.addParameter('lowContrast', 0.05, @isnumeric); 
-p.addParameter('highContrast', 0.5, @isnumeric);
+p.addParameter('lowContrast', 0.0001, @isnumeric); 
+p.addParameter('highContrast', 0.1, @isnumeric);
 p.addParameter('nPedestalLuminanceLevels', 10, @isnumeric);
 p.addParameter('lowPedestalLuminance', 3.3, @isnumeric); 
 p.addParameter('highPedestalLuminance', 125, @isnumeric);
 % RESPONSE COMPUTATION OPTIONS
-p.addParameter('nTrainingSamples',256, @isnumeric);
+p.addParameter('nTrainingSamples',512, @isnumeric);
 p.addParameter('emPathType','frozen0',@(x)ismember(x, {'none', 'frozen', 'frozen0', 'random'}));
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
@@ -78,7 +78,7 @@ rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...
 frameRate = 60;          
 windowTauInSeconds = 165/1000;
 stimulusSamplingIntervalInSeconds = 1/frameRate;
-stimulusDurationInSeconds = (3.5-2.0)*windowTauInSeconds;
+stimulusDurationInSeconds = 3.0*windowTauInSeconds;
 % Allow around 100 milliseconds for response to stabilize
 responseStabilizationSeconds = ceil(100/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
 rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
@@ -143,7 +143,8 @@ thresholdParams = modifyStructParams(thresholdParams, ...
 
 % Start timing
 tBegin = clock;
-
+x = [];
+y = [];
 % Loop over pedestal luminances
 pedestalLuminanceList = logspace(log10(p.Results.lowPedestalLuminance), log10(p.Results.highPedestalLuminance), p.Results.nPedestalLuminanceLevels);
 for pedestalLuminanceIndex = 1:numel(pedestalLuminanceList)
@@ -192,40 +193,68 @@ for pedestalLuminanceIndex = 1:numel(pedestalLuminanceList)
     end % visualizeResponses
 
     %% Compute/Visualize performance
-    if (p.Results.findPerformance) || (p.Results.visualizePerformance)
+    if (p.Results.findPerformance) || (p.Results.visualizePerformance) || (p.Results.fitPsychometric)
         rParams.plotParams = modifyStructParams(rParams.plotParams, ...
             'axisFontSize', 12, ...
             'labelFontSize', 14, ...
             'lineWidth', 1.5);
 
-        t_colorDetectFindPerformance(...
-            'rParams',rParams, ...
-            'testDirectionParams',testLuminanceParams,...
-            'thresholdParams',thresholdParams, ...
-            'compute',p.Results.findPerformance, ...
-            'visualizeSpatialScheme', p.Results.visualizeSpatialScheme, ...
-            'plotSvmBoundary',false, ...
-            'plotPsychometric',true ...
-            );
-
+        if (p.Results.findPerformance) || (p.Results.visualizePerformance) 
+            t_colorDetectFindPerformance(...
+                'rParams',rParams, ...
+                'testDirectionParams',testLuminanceParams,...
+                'thresholdParams',thresholdParams, ...
+                'compute',p.Results.findPerformance, ...
+                'visualizeSpatialScheme', p.Results.visualizeSpatialScheme, ...
+                'plotSvmBoundary',false, ...
+                'plotPsychometric',true ...
+                );
+        end
+        
         % Fit psychometric functions
         if (p.Results.fitPsychometric)
-          d = t_plotDetectThresholdsOnLMPlane(...
+          d = t_plotDetectThresholds(...
               'rParams',rParams, ...
-              'instanceParams',testDirectionParams, ...
+              'instanceParams',testLuminanceParams, ...
               'thresholdParams',thresholdParams, ...
-              'plotPsychometric',p.Results.visualizePerformance, ...
-              'plotEllipse',false);
-
+              'plotPsychometric',p.Results.visualizePerformance);
           detectionThresholdContrast{pedestalLuminanceIndex} = d.thresholdContrasts;
         end
     end % if (p.Results.findPerformance) || (p.Results.visualizePerformance)
-
 end % pedestalLuminanceIndex
 
 tEnd = clock;
 timeLapsed = etime(tEnd,tBegin);
 fprintf('Full computation was completed in %f minutes. \n', timeLapsed/60, pedestalLuminance);
+ 
+
+if (p.Results.findPerformance) || (p.Results.visualizePerformance) || (p.Results.fitPsychometric)
+    detectionThresholdContrast = cell2mat(detectionThresholdContrast);
+
+    hFig = figure(1000); clf;
+        set(hFig, 'Position', [10 10 671 614], 'Color', [1 1 1]);
+        plot(pedestalLuminanceList,detectionThresholdContrast, 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
+        xlabel('pedestal luminance (cd/m2)', 'FontWeight', 'bold');
+        ylabel('detection contrast', 'FontWeight', 'bold');
         
+        hold on;
+        signal = pedestalLuminanceList;
+        noise = sqrt(signal);
+        snRatio = signal ./ noise;
+        threshold = 1.0 ./ snRatio;
+        threshold = threshold / max(threshold) * max(detectionThresholdContrast);
+        plot(signal,  threshold, 'bs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [0.8 0.8 1.0]);
+
+        hL = legend({'experiment: isomerizations-based performance', 'theory: sqrt(signal)/signal'});
+        set(hL, 'FontSize', 14);
+        hLPos = get(hL, 'Position');
+        set(hL, 'Position', [hLPos(1) hLPos(2) hLPos(3) hLPos(4)*1.5]);
+        set(gca, 'FontSize', 14);
+        grid on;
+        box off;
+        axis 'square'
+        drawnow
+end
+       
 end
 

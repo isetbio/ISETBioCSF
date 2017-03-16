@@ -130,6 +130,10 @@ if (nargout > 0)
     validationData.testConeContrasts = testConeContrasts;
     validationData.thresholdContrasts = thresholdContrasts;
     validationData.thresholdConeContrasts = thresholdConeContrasts;
+    validationData.fitContrasts = fitContrasts;
+    validationData.fitFractionCorrect = fitFractionCorrect;
+    validationData.thePerformance = thePerformance;
+    validationData.theStandardError = theStandardError;
 end
 
 %% Plot psychometric functions

@@ -169,7 +169,6 @@ rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
     'windowTauInSeconds', windowTauInSeconds, ...
     'stimulusSamplingIntervalInSeconds', stimulusSamplingIntervalInSeconds, ...
     'stimulusDurationInSeconds', stimulusDurationInSeconds, ...
-    'secondsForResponseStabilization', 60/1000, ...
     'secondsToInclude', stimulusDurationInSeconds, ...
     'secondsForResponseStabilization', responseStabilizationSeconds, ...
     'secondsToIncludeOffset', 0/1000, ...
@@ -271,15 +270,14 @@ end % visualizeResponses
 
 %% Find performance
 % Parameters related to how we find thresholds from responses
-% Use default
+% Start with default
 thresholdParams = thresholdParamsGenerate;
    
 % Reduce # of trials used if computation is not feasible (ie. PCA)
-% Here we are using all of them
 if (isempty(p.Results.performanceClassifierTrainingSamples))
     thresholdParams.trialsUsed = p.Results.nTrainingSamples;
 else
-    thresholdParams.trialsUsed = p.Results.performanceClassifierTrainingSamples; % p.Results.nTrainingSamples;
+    thresholdParams.trialsUsed = p.Results.performanceClassifierTrainingSamples;
 end
 
 
@@ -318,8 +316,7 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance)
       
       detectionThresholdContrast = d.thresholdContrasts;
     end
-        
-end
+end % if (p.Results.findPerformance) || (p.Results.visualizePerformance)
 
 
         
