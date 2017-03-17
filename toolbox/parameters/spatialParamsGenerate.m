@@ -72,8 +72,8 @@ switch (spatialParams.spatialType)
     case 'pedestalDisk'
         spatialParams.windowType = p.Results.windowType;
         spatialParams.windowType = 'softCircle';
-        spatialParams.fieldOfViewDegs = 4;
-        spatialParams.pedestalDiameterDegs = 2;
+        spatialParams.fieldOfViewDegs = 0.8;
+        spatialParams.testDiameterDegs = 0.4;
         spatialParams.row = 128;
         spatialParams.col = 128;
         spatialParams.viewingDistance = 0.75;

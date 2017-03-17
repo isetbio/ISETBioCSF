@@ -1,12 +1,21 @@
 function pedestalModulationDisk = pedestalModulationDisk(spatialParams, contrast)
 
-    border = min([min([spatialParams.row spatialParams.col])-1 max([0 0.5*(spatialParams.fieldOfViewDegs - spatialParams.pedestalDiameterDegs)/spatialParams.fieldOfViewDegs*spatialParams.row])]);
-    i1 = border;
-    i2 = spatialParams.row - (border);
-    j1 = border;
-    j2 = spatialParams.col - (border);
+    x = (0:(spatialParams.col-1))/((spatialParams.col-1))*spatialParams.fieldOfViewDegs;
+    x = x - mean(x); y = x;
+    [X,Y] = meshgrid(x,y);
+   
+    % Make a hard edge disk
+    pedestalModulationDisk = zeros(size(X));
+    pedestalModulationDisk(sqrt(X.^2 + Y.^2) <= spatialParams.testDiameterDegs/2) = 1;
     
-    pedestalModulationDisk = zeros(spatialParams.row, spatialParams.col);
-    pedestalModulationDisk(i1:i2, j1:j2) = contrast;
+    % Make the edges softer
+    sigma = round(spatialParams.col/50);
+    pedestalModulationDisk = conv2(pedestalModulationDisk, ones(sigma,sigma), 'same');
+    
+    % Adjust to peak contrast
+    pedestalModulationDisk = pedestalModulationDisk / max(pedestalModulationDisk(:)) * contrast;
 end
 
+
+    
+    

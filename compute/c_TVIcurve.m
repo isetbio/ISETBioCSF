@@ -6,9 +6,10 @@ p.addParameter('useScratchTopLevelDirName', false, @islogical);
 % STIMULUS OPTIONS
 p.addParameter('imagePixels', 128, @isnumeric);
 p.addParameter('fieldOfViewDegs', 0.8, @isnumeric);
+p.addParameter('testDiameterDegs', 0.4, @isnumeric);
 p.addParameter('nContrastsPerPedestalLuminance', 12, @isnumeric);
-p.addParameter('lowContrast', 0.0001, @isnumeric); 
-p.addParameter('highContrast', 0.1, @isnumeric);
+p.addParameter('lowContrast', 1e-4, @isnumeric);  % 3e-4
+p.addParameter('highContrast', 0.1, @isnumeric);  % 0.3
 p.addParameter('nPedestalLuminanceLevels', 10, @isnumeric);
 p.addParameter('lowPedestalLuminance', 3.3, @isnumeric); 
 p.addParameter('highPedestalLuminance', 125, @isnumeric);
@@ -35,7 +36,7 @@ p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischa
 p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('visualizePerformance', false, @islogical);
 % PERFORMANCE COMPUTATION OPTIONS
-p.addParameter('performanceClassifier', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF', 'mlpt', 'mlpe'}));
+p.addParameter('performanceClassifier', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'mlpt', 'mlpe'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
 p.addParameter('performanceClassifierTrainingSamples', [], @isnumeric);
 p.addParameter('performanceEvidenceIntegrationTime', [], @isnumeric);
@@ -67,7 +68,7 @@ end
 % Modify spatial params
 rParams.spatialParams = spatialParamsGenerate('spatialType','pedestalDisk');
 rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...
-        'pedestalDiameterDegs', p.Results.fieldOfViewDegs/2, ...
+        'testDiameterDegs', p.Results.testDiameterDegs, ...
         'fieldOfViewDegs', p.Results.fieldOfViewDegs, ... 
         'viewingDistance', 0.75, ...            % vd in meters
         'row', p.Results.imagePixels, ...
@@ -143,8 +144,7 @@ thresholdParams = modifyStructParams(thresholdParams, ...
 
 % Start timing
 tBegin = clock;
-x = [];
-y = [];
+
 % Loop over pedestal luminances
 pedestalLuminanceList = logspace(log10(p.Results.lowPedestalLuminance), log10(p.Results.highPedestalLuminance), p.Results.nPedestalLuminanceLevels);
 for pedestalLuminanceIndex = 1:numel(pedestalLuminanceList)
@@ -226,34 +226,53 @@ end % pedestalLuminanceIndex
 tEnd = clock;
 timeLapsed = etime(tEnd,tBegin);
 fprintf('Full computation was completed in %f minutes. \n', timeLapsed/60, pedestalLuminance);
- 
 
 if (p.Results.findPerformance) || (p.Results.visualizePerformance) || (p.Results.fitPsychometric)
     detectionThresholdContrast = cell2mat(detectionThresholdContrast);
 
     hFig = figure(1000); clf;
-        set(hFig, 'Position', [10 10 671 614], 'Color', [1 1 1]);
-        plot(pedestalLuminanceList,detectionThresholdContrast, 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
-        xlabel('pedestal luminance (cd/m2)', 'FontWeight', 'bold');
-        ylabel('detection contrast', 'FontWeight', 'bold');
-        
-        hold on;
-        signal = pedestalLuminanceList;
-        noise = sqrt(signal);
-        snRatio = signal ./ noise;
-        threshold = 1.0 ./ snRatio;
-        threshold = threshold / max(threshold) * max(detectionThresholdContrast);
-        plot(signal,  threshold, 'bs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [0.8 0.8 1.0]);
+    set(hFig, 'Position', [10 10 670 1300], 'Color', [1 1 1]);
+    
+    subplot(2,1,1)
+    plot(log(pedestalLuminanceList), log(detectionThresholdContrast), 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
+    xlabel('log pedestal luminance (cd/m2)', 'FontWeight', 'bold');
+    ylabel('log threshold contrast', 'FontWeight', 'bold');
 
-        hL = legend({'experiment: isomerizations-based performance', 'theory: sqrt(signal)/signal'});
-        set(hL, 'FontSize', 14);
-        hLPos = get(hL, 'Position');
-        set(hL, 'Position', [hLPos(1) hLPos(2) hLPos(3) hLPos(4)*1.5]);
-        set(gca, 'FontSize', 14);
-        grid on;
-        box off;
-        axis 'square'
-        drawnow
+    %hold on;
+    signal = pedestalLuminanceList;
+    noise = sqrt(signal);
+    snRatio = signal ./ noise;
+    threshold = 1.0 ./ snRatio;
+    thresholdContrastTheory = threshold / max(threshold) * max(detectionThresholdContrast);
+    %plot(signal,  thresholdContrastTheory, 'bs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [0.8 0.8 1.0]);
+    % hold off
+    %hL = legend({sprintf('threshold contrast: %s (%s)',thresholdParams.signalSource, thresholdParams.method), 'theory: sqrt(signal)/signal'});
+    title(sprintf('threshold contrast for \n%s (%s)\n',thresholdParams.signalSource, thresholdParams.method));
+    set(gca, 'FontSize', 14);
+    grid on;
+    box off;
+    axis 'square'
+    
+    
+    subplot(2,1,2);
+    thresholdDeltaLuminance = pedestalLuminanceList .* detectionThresholdContrast;
+    plot(log(pedestalLuminanceList), log(thresholdDeltaLuminance), 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
+    title(sprintf('threshold delta-luminance for \n%s (%s)\n',thresholdParams.signalSource, thresholdParams.method))
+    xlabel('log pedestal luminance (cd/m2)', 'FontWeight', 'bold');
+    ylabel('log threshold delta luminance', 'FontWeight', 'bold');
+    set(gca, 'FontSize', 14);
+    grid on;
+    box off;
+    axis 'square'
+    drawnow
+
+    
+    paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
+    theProgram = mfilename;
+    rwObject = IBIOColorDetectReadWriteBasic;
+    data = 0;
+    rwObject.write('c_TCIcurveSummary', data, paramsList, theProgram, ...
+        'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
 end
        
 end

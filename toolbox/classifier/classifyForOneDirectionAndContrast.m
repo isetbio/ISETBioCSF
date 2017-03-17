@@ -33,6 +33,8 @@ if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParam
     [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams);
 elseif (strcmp(thresholdParams.method, 'svmSpaceTimeSeparable'))
     [noStimData, stimData] = transformDataWithSeparableSpaceTimeComponents(noStimData, stimData, thresholdParams);
+elseif (strcmp(thresholdParams.method, 'svmGaussianRF'))
+    [noStimData, stimData] = transformDataWithSpatialPoolingFilter(noStimData, stimData, thresholdParams);
 end
 
 %% Put zero contrast response instances into data that we will pass to the SVM
@@ -44,9 +46,9 @@ end
 %% Decide what type of classifier we are running
 switch (thresholdParams.method)
     
-    case {'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF'}
+    case {'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF', 'svmGaussianRF'}
         % Perform SVM classification for this stimulus vs the zero contrast stimulus
-        fprintf('\tRunning SVM ...');
+        fprintf('\tRunning SVM with spatial filter ...');
         [usePercentCorrect, useStdErr, svm] = classifyWithSVM(classificationData,classes,thresholdParams.kFold,...
             'standardizeSVMpredictors', thresholdParams.standardizeSVMpredictors);
         fprintf(' correct: %2.2f%%\n', usePercentCorrect*100);

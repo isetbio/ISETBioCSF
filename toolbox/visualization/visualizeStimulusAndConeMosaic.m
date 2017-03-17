@@ -28,7 +28,7 @@ function visualizeStimulusAndConeMosaic(spatialParams, mosaicParams, topLevelDir
      hFig = figure(98765); clf;
      set(hFig, 'Position', [10 10 2450 1125]);
     
-     switch(spatialParams.spatialType)
+    switch(spatialParams.spatialType)
         case 'Gabor'  
             % Make the stimulus spatial modulation
             
@@ -36,14 +36,18 @@ function visualizeStimulusAndConeMosaic(spatialParams, mosaicParams, topLevelDir
             spatialModulation = spatialPattern-1;
             spatialModulation = spatialModulation/max(abs(spatialModulation(:)));
             
-            xaxis = (0:(size(spatialModulation,2)-1))/size(spatialModulation,2) * spatialParams.fieldOfViewDegs;
-            xaxis = xaxis - mean(xaxis);
-            yaxis = (0:(size(spatialModulation,1)-1))/size(spatialModulation,1) * spatialParams.fieldOfViewDegs;
-            yaxis = yaxis - mean(yaxis);
-             
-         otherwise
-     end
+        case 'pedestalDisk'  
+           spatialModulation = pedestalModulationDisk(spatialParams, 1.0);
+           
+        otherwise
+            error('Do not know how to visualize ''%s''.', spatialParams.spatialType);
+    end
     
+    xaxis = (0:(size(spatialModulation,2)-1))/size(spatialModulation,2) * spatialParams.fieldOfViewDegs;
+    xaxis = xaxis - mean(xaxis);
+    yaxis = (0:(size(spatialModulation,1)-1))/size(spatialModulation,1) * spatialParams.fieldOfViewDegs;
+    yaxis = yaxis - mean(yaxis);
+            
     subplot('Position', subplotPosVectors(1,1).v);
     imagesc(xaxis, yaxis, spatialModulation);
     axis 'xy';

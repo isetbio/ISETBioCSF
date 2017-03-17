@@ -45,15 +45,15 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
             spatialModulation = spatialPattern-1;
             spatialModulation = spatialModulation/max(abs(spatialModulation(:)));
             
-            xaxis = (0:(size(spatialModulation,2)-1))/size(spatialModulation,2) * spatialParams.fieldOfViewDegs;
-            xaxis = xaxis - mean(xaxis);
-            yaxis = (0:(size(spatialModulation,1)-1))/size(spatialModulation,1) * spatialParams.fieldOfViewDegs;
-            yaxis = yaxis - mean(yaxis);
-            
         otherwise
             error('Currently generating V1 filter banks for Gabor stimuli only.');
     end  % switch
     
+    xaxis = (0:(size(spatialModulation,2)-1))/size(spatialModulation,2) * spatialParams.fieldOfViewDegs;
+    xaxis = xaxis - mean(xaxis);
+    yaxis = (0:(size(spatialModulation,1)-1))/size(spatialModulation,1) * spatialParams.fieldOfViewDegs;
+    yaxis = yaxis - mean(yaxis);
+            
     % Generate the V1 filter bank        
     V1filterBank = makeV1filters(spatialParams, filterWidthInDegrees, coneLocsInDegs, xaxis, yaxis, coneDensity, v1FilterBankType);
 
@@ -64,8 +64,6 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
 
         subplot('Position', subplotPosVectors(1,1).v);
             imagesc(xaxis, yaxis, spatialModulation);
-            axis 'xy';
-            axis 'image';
             hold on;
             % V1 RF envelope in cyan
             contour(xaxis, yaxis, V1filterBank.RFprofile, zLevels(zLevels>0), 'Color', 'c', 'LineWidth', 1.0, 'LineStyle', '-');
@@ -74,19 +72,19 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
             y = mosaicParams.fieldOfViewDegs * [-0.5 -0.5 0.5 0.5 -0.5];
             plot(x,y, 'g-', 'LineWidth', 1.5);
             hold off
-            set(gca, 'XLim', spatialParams.fieldOfViewDegs/2*[-1 1], 'YLim', spatialParams.fieldOfViewDegs/2*[-1 1]);
+            axis 'xy'; axis 'image'
+            set(gca, 'XLim', max([mosaicParams.fieldOfViewDegs spatialParams.fieldOfViewDegs])/2*[-1 1], 'YLim', max([mosaicParams.fieldOfViewDegs spatialParams.fieldOfViewDegs])/2*[-1 1]);
             set(gca, 'FontSize', 14, 'XTickLabels', {});
             ylabel('degrees');
             title('stimulus, cone mosaic, and V1 RF profile (stimulus view)');
 
          subplot('Position', subplotPosVectors(2,1).v);
             imagesc(xaxis, yaxis, spatialModulation);
-            axis 'xy';
-            axis 'image'
             hold on;
             plot(squeeze(coneLocsInDegs(:,1)), squeeze(coneLocsInDegs(:,2)), 'r.', 'MarkerSize', 10);
             hold off;
-            set(gca, 'XLim', mosaicParams.fieldOfViewDegs/2*[-1 1]*1.02, 'YLim', mosaicParams.fieldOfViewDegs/2*[-1 1]*1.02);
+            axis 'xy'; axis 'image'
+            set(gca, 'XLim', max([mosaicParams.fieldOfViewDegs spatialParams.fieldOfViewDegs])/2*[-1 1]*1.02, 'YLim', max([mosaicParams.fieldOfViewDegs spatialParams.fieldOfViewDegs])/2*[-1 1]*1.02);
             set(gca, 'FontSize', 14, 'XTickLabels', {});
             ylabel('degrees');
             title('stimulus and cone mosaic (cone mosaic view)', 'FontSize', 16);
@@ -105,7 +103,7 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
             contour(xaxis, yaxis, V1filterBank.cosPhasePoolingProfile, zLevels(zLevels<0), 'Color', 'b', 'LineWidth', 1.0, 'LineStyle', '-');
             plot(x,y, 'g-', 'LineWidth', 1.5);
             hold off
-            set(gca, 'XLim', spatialParams.fieldOfViewDegs/2*[-1 1], 'YLim', spatialParams.fieldOfViewDegs/2*[-1 1], 'XTickLabels', {});
+            set(gca, 'XLim', max([mosaicParams.fieldOfViewDegs spatialParams.fieldOfViewDegs])/2*[-1 1], 'YLim', max([mosaicParams.fieldOfViewDegs spatialParams.fieldOfViewDegs])/2*[-1 1], 'XTickLabels', {});
             set(gca, 'FontSize', 16);
             title('stimulus, cone mosaic and cos-phase V1 filter profile (stimulus view)');
 
@@ -123,7 +121,7 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
             contour(xaxis, yaxis, V1filterBank.sinPhasePoolingProfile, zLevels(zLevels<0), 'Color', 'b', 'LineWidth', 1.0, 'LineStyle', '-');
             plot(x,y, 'g-', 'LineWidth', 1.5);
             hold off
-            set(gca, 'XLim', spatialParams.fieldOfViewDegs/2*[-1 1], 'YLim', spatialParams.fieldOfViewDegs/2*[-1 1], 'XTickLabels', {}, 'YTickLabels', {});
+            set(gca, 'XLim', max([mosaicParams.fieldOfViewDegs spatialParams.fieldOfViewDegs])/2*[-1 1], 'YLim', max([mosaicParams.fieldOfViewDegs spatialParams.fieldOfViewDegs])/2*[-1 1], 'XTickLabels', {}, 'YTickLabels', {});
             set(gca, 'FontSize', 14);
             title('stimulus, cone mosaic, and sin-phase V1 filter profile (stimulus view)');
 
@@ -143,7 +141,7 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
             axis 'xy';
             axis 'image'
             hold off;
-            set(gca, 'Color', [0 0 0], 'XLim', mosaicParams.fieldOfViewDegs/2*[-1 1]*1.02, 'YLim', mosaicParams.fieldOfViewDegs/2*[-1 1]*1.02, 'XTickLabels', {});
+            set(gca, 'Color', [0 0 0], 'XLim', max([mosaicParams.fieldOfViewDegs spatialParams.fieldOfViewDegs])/2*[-1 1]*1.02, 'YLim', max([mosaicParams.fieldOfViewDegs spatialParams.fieldOfViewDegs])/2*[-1 1]*1.02, 'XTickLabels', {});
             set(gca, 'FontSize', 14);
             title('cos-phase V1 filter pooling weights (cone mosaic view)');
 
@@ -161,7 +159,7 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
             axis 'xy';
             axis 'image'
             hold off;
-            set(gca, 'Color', [0 0 0], 'XLim', mosaicParams.fieldOfViewDegs/2*[-1 1]*1.02, 'YLim', mosaicParams.fieldOfViewDegs/2*[-1 1]*1.02, 'XTickLabels', {}, 'YTickLabels', {});
+            set(gca, 'Color', [0 0 0], 'XLim', max([mosaicParams.fieldOfViewDegs spatialParams.fieldOfViewDegs])/2*[-1 1]*1.02, 'YLim', max([mosaicParams.fieldOfViewDegs spatialParams.fieldOfViewDegs])/2*[-1 1]*1.02, 'XTickLabels', {}, 'YTickLabels', {});
             set(gca, 'FontSize', 14);
             title('sin-phase V1 filter pooling weights (cone mosaic view)');
         colormap(gray(1024));

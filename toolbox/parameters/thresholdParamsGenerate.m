@@ -24,6 +24,7 @@ params.type = 'threshold';
 params.method = 'svm';
 params.signalSource = 'isomerizations';
 params.V1filterBank = [];
+params.spatialPoolingKernel = [];
 params.nIntervals = 2;
 params.kFold = 5;
 params.STANDARDIZE = true;
