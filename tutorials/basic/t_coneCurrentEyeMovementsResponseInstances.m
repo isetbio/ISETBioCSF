@@ -45,7 +45,8 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %        visualizations.  Set to false when running big jobs on clusters or
 %        in parfor loops, as plotting doesn't seem to play well with those
 %        conditions.
-%       'visualizeMosaic' - true/false (default true). Wether to visualize the cone mosaic
+%     -'visualizeMosaic' - true/false (default true). Wether to visualize the cone mosaic
+%     'visualizeSpatialScheme' - true/false (default false). Visualize the relationship between mosaic and stimulus.
 %     'visualizeResponses' - true/false (default true). Call the fancy visualize response routine?
 %     'visualizationFormat' - How to arrange visualized maps. 
 %       Available options: 'montage', 'video'. Default is 'montage'
@@ -236,19 +237,15 @@ if (p.Results.compute)
             testConeContrasts = ones(3,1);
             
         otherwise
-            error('Unknown test instance type passed');
+            error('Unknown test instance type passed: ''%s''.', testDirectionParams.instanceType);
     end
+    
     parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
     nParforConditions = length(parforConditionStructs);
-    
     nParforTrials = computeTrialBlocks(testDirectionParams.trialsNum, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), rParams.temporalParams, theMosaic.integrationTime, p.Results.displayTrialBlockPartitionDiagnostics, p.Results.employStandardHostComputerResources);
     nParforTrialBlocks = numel(nParforTrials);
-
     parforRanSeeds = randi(1000000,nParforConditions, nParforTrialBlocks)+1;
     parforRanSeedsNoStim = randi(1000000,1, nParforTrialBlocks)+1;
-    
-
-    tBegin = clock;
     
     % Generate data for the no stimulus condition
     fprintf('<strong> Computing the null stimulus response ... </strong> \n');
@@ -266,6 +263,9 @@ if (p.Results.compute)
        delete(poolOBJ);
        poolOBJ = parpool(parforWorkersNum);
     end
+    
+    % Start timing the null reponses computation
+    tBegin = clock;
     
     % Parfor over trial blocks
     parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
@@ -329,10 +329,12 @@ if (p.Results.compute)
     timeLapsed = etime(tEnd,tBegin);
     fprintf('<strong> Finished null response computation in %2.1f minutes. </strong>\n', timeLapsed/60);
     
-
     %% Generate data for all the examined stimuli
     % Loop over color directions
     stimDataForValidation = cell(nParforConditions,1);
+    
+    % Start timing the stim reponses computation
+    tBegin = clock;
     
     for kk = 1:nParforConditions    
         fprintf('<strong> Computing responses for condition %d/%d ...  </strong> \n', kk,nParforConditions);
@@ -409,7 +411,7 @@ if (p.Results.compute)
         
         % Clear to save RAM
         clear 'stimData';
-    end % for conditions
+    end % for kk = conditions
     
     tEnd = clock;
     timeLapsed = etime(tEnd,tBegin);
@@ -538,8 +540,7 @@ function [responseInstanceArray, noiseFreeIsomerizations, noiseFreePhotocurrents
     fprintf('Done with building up the responseInstanceArray\n');
 end
 
-function nParforTrials = computeTrialBlocks(nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, integrationTime, displayTrialBlockPartitionDiagnostics, employStandardHostComputerResources)
-        
+function nParforTrials = computeTrialBlocks(nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, integrationTime, displayTrialBlockPartitionDiagnostics, employStandardHostComputerResources)      
     % Determine system resources
     [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources(employStandardHostComputerResources);
     
