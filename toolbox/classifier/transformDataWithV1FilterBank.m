@@ -1,4 +1,4 @@
-function [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams)
+function [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams, paramsList, visualizeSignals)
 % [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams)
 % Compute from the raw signal responses (isomerizations/photocurrents) the
 % energy response of a V1 quadrature pair filter bank
@@ -83,13 +83,20 @@ else
 end
 
 % Visualize transformed signals
-visualizeSignals = true;
 if (visualizeSignals) 
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
-            visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicPhotocurrents, stimData.responseInstanceArray.theMosaicPhotocurrents, thresholdParams.signalSource, stimData.testContrast*100, 'V1 filter bank');
-        else
-            visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicIsomerizations, stimData.responseInstanceArray.theMosaicIsomerizations, thresholdParams.signalSource, stimData.testContrast*100, 'V1 filter bank');
-    end
+        hFig = visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicPhotocurrents, stimData.responseInstanceArray.theMosaicPhotocurrents, thresholdParams.signalSource, stimData.testContrast*100, 'V1 filter bank');
+    else
+        hFig = visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicIsomerizations, stimData.responseInstanceArray.theMosaicIsomerizations, thresholdParams.signalSource, stimData.testContrast*100, 'V1 filter bank');
+    end    
+
+    % Save figure
+    theProgram = mfilename;
+    rwObject = IBIOColorDetectReadWriteBasic;
+    data = 0;
+    fileName = sprintf('%s-based_%s_outputs', thresholdParams.signalSource, thresholdParams.method);
+    rwObject.write(fileName, data, paramsList, theProgram, ...
+           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
 end % visualize transformed signals
 
 end

@@ -1,4 +1,4 @@
-function [noStimData, stimData] = transformDataWithSpatialPoolingFilter(noStimData, stimData, thresholdParams)
+function [noStimData, stimData] = transformDataWithSpatialPoolingFilter(noStimData, stimData, thresholdParams, paramsList, visualizeSignals)
 
     fprintf('Transforming data via projection to the spatial pooling kernel\n');
     
@@ -18,7 +18,6 @@ function [noStimData, stimData] = transformDataWithSpatialPoolingFilter(noStimDa
     temporalDimension = 3;
     [noStimData, stimData] = subtractMeanOfNoStimData(noStimData, stimData, thresholdParams.signalSource, repsDimension, temporalDimension);
 
-        
     spatialPoolingKernel = thresholdParams.spatialPoolingKernel;
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
         spatialKernelLinearActivation = squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicPhotocurrents, spatialPoolingKernel.poolingWeights), spatialDimension));
@@ -47,13 +46,20 @@ function [noStimData, stimData] = transformDataWithSpatialPoolingFilter(noStimDa
     end
     
     % Visualize transformed signals
-    visualizeSignals = true;
     if (visualizeSignals) 
         if (strcmp(thresholdParams.signalSource,'photocurrents'))
-            visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicPhotocurrents, stimData.responseInstanceArray.theMosaicPhotocurrents, thresholdParams.signalSource, stimData.testContrast*100, 'Spatial pooling filter');
+            hFig = visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicPhotocurrents, stimData.responseInstanceArray.theMosaicPhotocurrents, thresholdParams.signalSource, stimData.testContrast*100, 'Spatial pooling filter');
         else
-            visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicIsomerizations, stimData.responseInstanceArray.theMosaicIsomerizations, thresholdParams.signalSource, stimData.testContrast*100, 'Spatial pooling filter');
+            hFig = visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicIsomerizations, stimData.responseInstanceArray.theMosaicIsomerizations, thresholdParams.signalSource, stimData.testContrast*100, 'Spatial pooling filter');
         end
+        
+        % Save figure
+        theProgram = mfilename;
+        rwObject = IBIOColorDetectReadWriteBasic;
+        data = 0;
+        fileName = sprintf('%s-based_%s_outputs', thresholdParams.signalSource, thresholdParams.method);
+        rwObject.write(fileName, data, paramsList, theProgram, ...
+           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
     end
 end
 

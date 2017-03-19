@@ -29,7 +29,8 @@ function [validationData,extraData] = t_colorDetectFindPerformance(varargin)
 %       use > 0: for a parfor loop with desired number of workers
 %   'generatePlots' - true/false (default true).  Produce any plots at
 %      all? Other plot options only have an effect if this is true.
-%   'visualizeSpatialScheme' - true/false (default false). Visualize the V1-filter bank
+%   'visualizeSpatialScheme' - true/false (default false). Visualize the post-receptoral spatial pooling scheme
+%   'visualizeTransformedSignals' - true/false (default false). Visualize the output of the post-receptoral spatial pooling scheme
 %   'plotPsychometric' - true/false (default false).  Produce
 %       psychometric function output graphs.
 %   'plotSvmBoundary' - true/false (default false).  Plot classification boundary
@@ -51,6 +52,7 @@ p.addParameter('compute',true,@islogical);
 p.addParameter('parforWorkersNum', 12, @isnumeric);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
+p.addParameter('visualizeTransformedSignals', false, @islogical);
 p.addParameter('plotPsychometric',false,@islogical);
 p.addParameter('plotSvmBoundary',false,@islogical);
 p.addParameter('plotPCAAxis1',1,@isnumeric)
@@ -139,8 +141,7 @@ writeProgram = mfilename;
 constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
 
 %% Compute if desired
-if (p.Results.compute)
-    
+if (p.Results.compute)   
     % Inform the user regarding what we are currently working on
     if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')) || (strcmp(thresholdParams.method, 'svmGaussianRF'))
         fprintf('Computing performance for <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the raw <strong>%s</strong>.\n', ...
@@ -240,6 +241,8 @@ if (p.Results.compute)
         % illustrates the classifier.
         [usePercentCorrect(kk),useStdErr(kk),h] = ...
             classifyForOneDirectionAndContrast(noStimData,stimData,thresholdParams, ...
+            'paramsList', paramsList, ...
+            'visualizeTransformedSignals', p.Results.visualizeTransformedSignals, ...
             'plotSvmBoundary', p.Results.generatePlots && p.Results.plotSvmBoundary, ...
             'plotPCAAxis1', p.Results.plotPCAAxis1, ...
             'plotPCAAxis2',p.Results.plotPCAAxis2);
