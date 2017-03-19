@@ -236,7 +236,7 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance) || (p.Results
     set(hFig, 'Position', [10 10 670 1300], 'Color', [1 1 1]);
     
     subplot(2,1,1)
-    plot(log(pedestalLuminanceList), log(detectionThresholdContrast), 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
+    plot(log10(pedestalLuminanceList), log10(detectionThresholdContrast), 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
     xlabel('log pedestal luminance (cd/m2)', 'FontWeight', 'bold');
     ylabel('log threshold contrast', 'FontWeight', 'bold');
 
@@ -246,7 +246,7 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance) || (p.Results
     snRatio = signal ./ noise;
     threshold = 1.0 ./ snRatio;
     thresholdContrastTheory = threshold / max(threshold) * max(detectionThresholdContrast);
-    %plot(signal,  thresholdContrastTheory, 'bs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [0.8 0.8 1.0]);
+    %plot(log10(signal),  log10(thresholdContrastTheory), 'bs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [0.8 0.8 1.0]);
     % hold off
     %hL = legend({sprintf('threshold contrast: %s (%s)',thresholdParams.signalSource, thresholdParams.method), 'theory: sqrt(signal)/signal'});
     title(sprintf('threshold contrast for \n%s (%s)\n',thresholdParams.signalSource, thresholdParams.method));
@@ -258,7 +258,7 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance) || (p.Results
     
     subplot(2,1,2);
     thresholdDeltaLuminance = pedestalLuminanceList .* detectionThresholdContrast;
-    plot(log(pedestalLuminanceList), log(thresholdDeltaLuminance), 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
+    plot(log10(pedestalLuminanceList), log10(thresholdDeltaLuminance), 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
     title(sprintf('threshold delta-luminance for \n%s (%s)\n',thresholdParams.signalSource, thresholdParams.method))
     xlabel('log pedestal luminance (cd/m2)', 'FontWeight', 'bold');
     ylabel('log threshold delta luminance', 'FontWeight', 'bold');
