@@ -378,8 +378,6 @@ if (p.Results.compute)
                     'seed', parforRanSeeds(kk,trialBlock), ...
                     'workerID', workerID, ...
                     'computeNoiseFreeSignals', true);
-            kkkkkk = osImpulseResponses{trialBlock};
-            [kk trialBlock max(kkkkkk(:))]
             
             % Save data temporarily
             rwObject.write(sprintf('%s_blockData_%d', blockDataPrefix, trialBlock), tmpData{trialBlock}, paramsList,theProgram);
