@@ -1,4 +1,4 @@
-function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstances(varargin)
+function [validationData, extraData, varargout] = t_coneCurrentEyeMovementsResponseInstances(varargin)
 % T_CONECURRENTEYEMOVEMENTRESPONSES  Generate response instances for a given stimulus condition.
 %     [validationData, extraData] = T_CONECURRENTEYEMOVEMENTRESPONSES(varargin)
 % 
@@ -105,6 +105,9 @@ if (strcmp(visualizationFormat, 'montage')) || (strcmp(visualizationFormat, 'vid
 else
     error('visualizationFormat must be set to either ''montage'' or ''video''. Current value: ''%s''.', visualizationFormat);
 end
+
+% Initialize varargout
+varargout = {};
 
 %% Clear
 if (nargin == 0)
@@ -359,7 +362,6 @@ if (p.Results.compute)
         stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.5f',...
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
     
-        
         osImpulseResponses = {};
         osMeanCurrents = {};
         
@@ -523,6 +525,7 @@ if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visual
         dT = noStimData.responseInstanceArray.timeAxis(2)-noStimData.responseInstanceArray.timeAxis(1);
         timeAxis = (0:(size(noStimImpulseResponses,1)-1))*dT;
         
+        varargout{1} = noStimImpulseResponses;
         for kk = 1:nParforConditions
             fprintf('Importing STIM data for condition %d/%d\n', kk, nParforConditions);
             thisConditionStruct = parforConditionStructs{kk};

@@ -190,7 +190,7 @@ for pedestalLuminanceIndex = 1:numel(pedestalLuminanceList)
     
     %% Visualize response instances
     if ((p.Results.visualizeResponses) || (p.Results.visualizeOuterSegmentFilters))
-    t_coneCurrentEyeMovementsResponseInstances(...
+    [~,~, osImpulseResponses] = t_coneCurrentEyeMovementsResponseInstances(...
           'rParams',rParams,...
           'testDirectionParams',testLuminanceParams,...
           'freezeNoise', p.Results.freezeNoise, ...
@@ -201,6 +201,12 @@ for pedestalLuminanceIndex = 1:numel(pedestalLuminanceList)
           'generatePlots', true, ...
           'visualizeResponses', p.Results.visualizeResponses, ...
           'visualizeOuterSegmentFilters', p.Results.visualizeOuterSegmentFilters);
+      
+      pedestalLuminanceIndex
+      size(osImpulseResponses)
+      size(squeeze(max(osImpulseResponses, [], 1)))
+      irAmplitudes(pedestalLuminanceIndex,:) = squeeze(max(osImpulseResponses, [], 1))
+
     end % visualizeResponses
 
     %% Compute/Visualize performance
@@ -239,7 +245,32 @@ tEnd = clock;
 timeLapsed = etime(tEnd,tBegin);
 fprintf('Full computation was completed in %f minutes. \n', timeLapsed/60, pedestalLuminance);
 
-if (p.Results.findPerformance) || (p.Results.visualizePerformance) || (p.Results.fitPsychometric)
+if (p.Results.visualizeOuterSegmentFilters)
+    hFig = figure(999); clf;
+    set(hFig, 'Position', [10 10 540 500], 'Color', [1 1 1]);
+    plot(log10(pedestalLuminanceList), log10(irAmplitudes(:,1)), 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [0.6 0.6 0.6]);
+    hold on
+    plot(log10(pedestalLuminanceList), log10(irAmplitudes(:,2)), 'gs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [0.6 0.6 0.6]);
+    plot(log10(pedestalLuminanceList), log10(irAmplitudes(:,3)), 'bs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [0.6 0.6 0.6]);
+    set(gca, 'FontSize', 14);
+    set(gca, 'XLim', [log10(pedestalLuminanceList(1)*0.95) log10(pedestalLuminanceList(end)*1.05)]);
+    grid on;
+    box off;
+    axis 'square'
+    xlabel('log pedestal luminance (cd/m2)', 'FontWeight', 'bold');
+    ylabel('log outer segment impulse response amplitude',  'FontWeight', 'bold');
+    
+    paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams};
+    theProgram = mfilename;
+    rwObject = IBIOColorDetectReadWriteBasic;
+    data = 0;
+    rwObject.write('os_ImpulseResponseSummary', data, paramsList, theProgram, ...
+        'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+    
+end
+
+
+if (p.Results.findPerformance) || (p.Results.visualizePerformance)
     detectionThresholdContrast = cell2mat(detectionThresholdContrast);
 
     hFig = figure(1000); clf;
@@ -247,19 +278,9 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance) || (p.Results
     
     subplot(2,1,1)
     plot(log10(pedestalLuminanceList), log10(detectionThresholdContrast), 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
-    set(gca, 'XLim', [log10(pedestalLuminanceList(1)*0.95) log10(pedestalLuminanceList(end)*1.05)]);
+    set(gca, 'XLim', [log10(pedestalLuminanceList(1)*0.95) log10(pedestalLuminanceList(end)*1.05)], 'YLim', [-3.4 -0.9]);
     xlabel('log pedestal luminance (cd/m2)', 'FontWeight', 'bold');
     ylabel('log threshold contrast', 'FontWeight', 'bold');
-
-    %hold on;
-    signal = pedestalLuminanceList;
-    noise = sqrt(signal);
-    snRatio = signal ./ noise;
-    threshold = 1.0 ./ snRatio;
-    thresholdContrastTheory = threshold / max(threshold) * max(detectionThresholdContrast);
-    %plot(log10(signal),  log10(thresholdContrastTheory), 'bs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [0.8 0.8 1.0]);
-    % hold off
-    %hL = legend({sprintf('threshold contrast: %s (%s)',thresholdParams.signalSource, thresholdParams.method), 'theory: sqrt(signal)/signal'});
     title(sprintf('threshold contrast for \n%s (%s)\n',thresholdParams.signalSource, thresholdParams.method));
     set(gca, 'FontSize', 14);
     grid on;
@@ -270,7 +291,7 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance) || (p.Results
     subplot(2,1,2);
     thresholdDeltaLuminance = pedestalLuminanceList .* detectionThresholdContrast;
     plot(log10(pedestalLuminanceList), log10(thresholdDeltaLuminance), 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
-    set(gca, 'XLim', [log10(pedestalLuminanceList(1)*0.95) log10(pedestalLuminanceList(end)*1.05)]);
+    set(gca, 'XLim', [log10(pedestalLuminanceList(1)*0.95) log10(pedestalLuminanceList(end)*1.05)], 'YLim', [-2.0 0.2]);
     title(sprintf('threshold delta-luminance for \n%s (%s)\n',thresholdParams.signalSource, thresholdParams.method))
     xlabel('log pedestal luminance (cd/m2)', 'FontWeight', 'bold');
     ylabel('log threshold delta luminance', 'FontWeight', 'bold');
