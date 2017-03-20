@@ -47,7 +47,8 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %        conditions.
 %     -'visualizeMosaic' - true/false (default true). Wether to visualize the cone mosaic
 %     'visualizeSpatialScheme' - true/false (default false). Visualize the relationship between mosaic and stimulus.
-%     'visualizeResponses' - true/false (default true). Call the fancy visualize response routine?
+%     'visualizeResponses' - true/false (default true). Call the fancy visualize response routine
+%     'visualizeOuterSegmentFilters' - true/false (default false). Visualize the outer segment impulse response functions.
 %     'visualizationFormat' - How to arrange visualized maps. 
 %       Available options: 'montage', 'video'. Default is 'montage'
 %     'visualizedResponseNormalization' - How to normalize visualized responses
@@ -75,6 +76,7 @@ p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('overrideMosaicIntegrationTime', [], @isnumeric);
 p.addParameter('generatePlots',false,@islogical);
 p.addParameter('visualizeResponses',true,@islogical);
+p.addParameter('visualizeOuterSegmentFilters',false, @islogical);
 p.addParameter('visualizeSpatialScheme',false,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('visualizationFormat', 'montage', @ischar);
@@ -354,6 +356,9 @@ if (p.Results.compute)
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
     
         
+        osImpulseResponses = {};
+        osMeanCurrents = {};
+        
         % Parfor over blocks of trials
         parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
             % Get the parallel pool worker ID
@@ -373,6 +378,8 @@ if (p.Results.compute)
                     'seed', parforRanSeeds(kk,trialBlock), ...
                     'workerID', workerID, ...
                     'computeNoiseFreeSignals', true);
+            kkkkkk = osImpulseResponses{trialBlock};
+            [kk trialBlock max(kkkkkk(:))]
             
             % Save data temporarily
             rwObject.write(sprintf('%s_blockData_%d', blockDataPrefix, trialBlock), tmpData{trialBlock}, paramsList,theProgram);
@@ -453,49 +460,81 @@ if (p.Results.compute)
 end
 
 %% Visualize
-if (p.Results.generatePlots && p.Results.visualizeResponses)
+if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visualizeOuterSegmentFilters))
 
-    % How many istances to visualize
-    instancesToVisualize = 5;
-    
-    % Load the mosaic
-    coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
-    theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
+    if (p.Results.visualizeResponses)
+        % How many istances to visualize
+        instancesToVisualize = 5;
 
-    % Load the response and ancillary data
-    paramsList = constantParamsList;
-    paramsList{numel(paramsList)+1} = colorModulationParamsNull;   
-    fprintf('Importing NOSTIM data and ancillary data\n');
-    noStimData = rwObject.read('responseInstances',paramsList,theProgram);
-    ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
-    
-    % Only keep the data we will visualize
-    idx = min([instancesToVisualize size(noStimData.responseInstanceArray.theMosaicIsomerizations,1)]);
-    noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations(1:idx,:,:);
-    if (~isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
-        noStimData.responseInstanceArray.theMosaicPhotocurrents  = noStimData.responseInstanceArray.theMosaicPhotocurrents(1:idx,:,:);
-    end
-    noStimData.responseInstanceArray.theMosaicEyeMovements   = noStimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
-    rParams = ancillaryData.rParams;
-    parforConditionStructs = ancillaryData.parforConditionStructs;
-    nParforConditions = length(parforConditionStructs); 
-    for kk = nParforConditions:-nParforConditions+1:1
-        fprintf('Importing STIM data for condition %d/%d\n', kk, nParforConditions);
-        thisConditionStruct = parforConditionStructs{kk};
-        colorModulationParamsTemp = rParams.colorModulationParams;
-        colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
-        colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
+        % Load the mosaic
+        coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
+        theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
 
+        % Load the response and ancillary data
         paramsList = constantParamsList;
-        paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
-        stimData = rwObject.read('responseInstances',paramsList,theProgram);
+        paramsList{numel(paramsList)+1} = colorModulationParamsNull;   
+        fprintf('Importing NOSTIM data and ancillary data\n');
+        noStimData = rwObject.read('responseInstances',paramsList,theProgram);
+        ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
+    
         % Only keep the data we will visualize
-        stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(1:idx,:,:);
-        if (~isempty(stimData.responseInstanceArray.theMosaicPhotocurrents))
-            stimData.responseInstanceArray.theMosaicPhotocurrents  = stimData.responseInstanceArray.theMosaicPhotocurrents(1:idx,:,:);
+        idx = min([instancesToVisualize size(noStimData.responseInstanceArray.theMosaicIsomerizations,1)]);
+        noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations(1:idx,:,:);
+        if (~isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
+            noStimData.responseInstanceArray.theMosaicPhotocurrents  = noStimData.responseInstanceArray.theMosaicPhotocurrents(1:idx,:,:);
         end
-        stimData.responseInstanceArray.theMosaicEyeMovements   = stimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
-        visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, p.Results.visualizationFormat);
+        noStimData.responseInstanceArray.theMosaicEyeMovements   = noStimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
+        rParams = ancillaryData.rParams;
+        parforConditionStructs = ancillaryData.parforConditionStructs;
+        nParforConditions = length(parforConditionStructs); 
+        for kk = nParforConditions:-nParforConditions+1:1
+            fprintf('Importing STIM data for condition %d/%d\n', kk, nParforConditions);
+            thisConditionStruct = parforConditionStructs{kk};
+            colorModulationParamsTemp = rParams.colorModulationParams;
+            colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
+            colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
+
+            paramsList = constantParamsList;
+            paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
+            stimData = rwObject.read('responseInstances',paramsList,theProgram);
+            % Only keep the data we will visualize
+            stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(1:idx,:,:);
+            if (~isempty(stimData.responseInstanceArray.theMosaicPhotocurrents))
+                stimData.responseInstanceArray.theMosaicPhotocurrents  = stimData.responseInstanceArray.theMosaicPhotocurrents(1:idx,:,:);
+            end
+            stimData.responseInstanceArray.theMosaicEyeMovements   = stimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
+            visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, p.Results.visualizationFormat);
+        end
+    end
+    
+    if (p.Results.visualizeOuterSegmentFilters)
+        % Load the response data
+        paramsList = constantParamsList;
+        paramsList{numel(paramsList)+1} = colorModulationParamsNull;   
+        fprintf('Importing NOSTIM data\n');
+        ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
+        rParams = ancillaryData.rParams;
+        parforConditionStructs = ancillaryData.parforConditionStructs;
+        nParforConditions = length(parforConditionStructs);   
+        noStimData = rwObject.read('responseInstances',paramsList,theProgram);
+        noStimImpulseResponses = noStimData.osImpulseResponses;
+        dT = noStimData.responseInstanceArray.timeAxis(2)-noStimData.responseInstanceArray.timeAxis(1);
+        timeAxis = (0:(size(noStimImpulseResponses,1)-1))*dT;
+        
+        for kk = 1:nParforConditions
+            fprintf('Importing STIM data for condition %d/%d\n', kk, nParforConditions);
+            thisConditionStruct = parforConditionStructs{kk};
+            colorModulationParamsTemp = rParams.colorModulationParams;
+            colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
+            colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
+
+            paramsList = constantParamsList;
+            paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
+            stimData = rwObject.read('responseInstances',paramsList,theProgram);
+            stimImpulseResponses(kk,:,:) = stimData.osImpulseResponses;
+        end % kk
+        
+        visualizeOuterSegmentImpulseResponseFunctions(timeAxis, noStimImpulseResponses, stimImpulseResponses, constantParamsList);
     end
 end
 

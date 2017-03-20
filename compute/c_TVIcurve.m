@@ -31,6 +31,7 @@ p.addParameter('generatePlots',true,@islogical);
 % RESPONSE MAP VISUALIZATION OPTIONS
 p.addParameter('visualizeMosaic',true, @islogical); 
 p.addParameter('visualizeResponses', false,@islogical);
+p.addParameter('visualizeOuterSegmentFilters', false,@islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
 p.addParameter('visualizeTransformedSignals',false, @islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
@@ -180,7 +181,7 @@ for pedestalLuminanceIndex = 1:numel(pedestalLuminanceList)
     end % if (p.Results.computeResponses)
     
     %% Visualize response instances
-    if (p.Results.visualizeResponses) 
+    if ((p.Results.visualizeResponses) || (p.Results.visualizeOuterSegmentFilters))
     t_coneCurrentEyeMovementsResponseInstances(...
           'rParams',rParams,...
           'testDirectionParams',testLuminanceParams,...
@@ -190,7 +191,8 @@ for pedestalLuminanceIndex = 1:numel(pedestalLuminanceList)
           'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
           'visualizationFormat', p.Results.visualizationFormat, ...
           'generatePlots', true, ...
-          'visualizeResponses', true);
+          'visualizeResponses', p.Results.visualizeResponses, ...
+          'visualizeOuterSegmentFilters', p.Results.visualizeOuterSegmentFilters);
     end % visualizeResponses
 
     %% Compute/Visualize performance
@@ -214,7 +216,7 @@ for pedestalLuminanceIndex = 1:numel(pedestalLuminanceList)
         end
         
         % Fit psychometric functions
-        if (p.Results.fitPsychometric)
+        if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.visualizePerformance))
           d = t_plotDetectThresholds(...
               'rParams',rParams, ...
               'instanceParams',testLuminanceParams, ...
