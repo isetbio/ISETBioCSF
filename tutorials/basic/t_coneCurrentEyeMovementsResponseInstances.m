@@ -36,6 +36,9 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %     'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
 %     'compute' - true/false (default true).  Do the computations.
 %     'computeMosaic' - true/false (default true). Compute a cone mosaic or load one (good for large hex mosaics which take a while to compute)
+%     'ramPercentageEmployed' [>0 .. <=1]. Percentage of RAM to use for the computations. 
+%       Use 0.5, if you want to run 2 simultaneous instances of MATLAB (touse all cores for example).
+%       Use 1.0, otherwise
 %     'parforWorkersNum' - 0 .. 12 (default: 12). How many workers to use for the computations.
 %       use 0: for a serial for loop
 %       use > 0: for a parfor loop with desired number of workers
@@ -45,7 +48,7 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %        visualizations.  Set to false when running big jobs on clusters or
 %        in parfor loops, as plotting doesn't seem to play well with those
 %        conditions.
-%     -'visualizeMosaic' - true/false (default true). Wether to visualize the cone mosaic
+%     'visualizeMosaic' - true/false (default true). Wether to visualize the cone mosaic
 %     'visualizeSpatialScheme' - true/false (default false). Visualize the relationship between mosaic and stimulus.
 %     'visualizeResponses' - true/false (default true). Call the fancy visualize response routine
 %     'visualizeOuterSegmentFilters' - true/false (default false). Visualize the outer segment impulse response functions.
@@ -70,7 +73,8 @@ p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('computeMosaic', true, @islogical);
-p.addParameter('visualizeMosaic',true, @islogical); 
+p.addParameter('visualizeMosaic',true, @islogical);
+p.addParameter('ramPercentageEmployed', 1.0, @isnumeric);
 p.addParameter('parforWorkersNum', 12, @isnumeric);
 p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('overrideMosaicIntegrationTime', [], @isnumeric);
@@ -244,7 +248,7 @@ if (p.Results.compute)
     
     parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
     nParforConditions = length(parforConditionStructs);
-    nParforTrials = computeTrialBlocks(testDirectionParams.trialsNum, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), rParams.temporalParams, theMosaic.integrationTime, p.Results.displayTrialBlockPartitionDiagnostics, p.Results.employStandardHostComputerResources);
+    nParforTrials = computeTrialBlocks(p.Results.ramPercentageEmployed, testDirectionParams.trialsNum, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), rParams.temporalParams, theMosaic.integrationTime, p.Results.displayTrialBlockPartitionDiagnostics, p.Results.employStandardHostComputerResources);
     nParforTrialBlocks = numel(nParforTrials);
     parforRanSeeds = randi(1000000,nParforConditions, nParforTrialBlocks)+1;
     parforRanSeedsNoStim = randi(1000000,1, nParforTrialBlocks)+1;
@@ -498,9 +502,9 @@ if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visual
             % Only keep the data we will visualize
             stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(1:idx,:,:);
             if (~isempty(stimData.responseInstanceArray.theMosaicPhotocurrents))
-                stimData.responseInstanceArray.theMosaicPhotocurrents  = stimData.responseInstanceArray.theMosaicPhotocurrents(1:idx,:,:);
+                stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(1:idx,:,:);
             end
-            stimData.responseInstanceArray.theMosaicEyeMovements   = stimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
+            stimData.responseInstanceArray.theMosaicEyeMovements = stimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
             visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, p.Results.visualizationFormat);
         end
     end
@@ -582,9 +586,11 @@ function [responseInstanceArray, noiseFreeIsomerizations, noiseFreePhotocurrents
     fprintf('Done with building up the responseInstanceArray\n');
 end
 
-function nParforTrials = computeTrialBlocks(nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, integrationTime, displayTrialBlockPartitionDiagnostics, employStandardHostComputerResources)      
+function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, integrationTime, displayTrialBlockPartitionDiagnostics, employStandardHostComputerResources)      
     % Determine system resources
     [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources(employStandardHostComputerResources);
+    
+    ramSizeGBytes = ramPercentageEmployed * ramSizeGBytes;
     
     % Subtract RAM used by the OS
     ramUsedByOSGBytes = 1.2;

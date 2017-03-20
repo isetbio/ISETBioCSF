@@ -13,14 +13,17 @@ p.addParameter('highContrast', 0.1, @isnumeric);  % 0.3
 p.addParameter('nPedestalLuminanceLevels', 10, @isnumeric);
 p.addParameter('lowPedestalLuminance', 3.3, @isnumeric); 
 p.addParameter('highPedestalLuminance', 125, @isnumeric);
+p.addParameter('pedestalLuminanceListIndicesUsed', [], @isnumeric);
 % RESPONSE COMPUTATION OPTIONS
 p.addParameter('nTrainingSamples',512, @isnumeric);
 p.addParameter('emPathType','frozen0',@(x)ismember(x, {'none', 'frozen', 'frozen0', 'random'}));
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
+p.addParameter('ramPercentageEmployed', 1.0, @isnumeric);
 p.addParameter('parforWorkersNum', 12, @isnumeric);
 % MOSAIC OPTIONS
 p.addParameter('freezeNoise',true, @islogical);
+p.addParameter('osNoise', 'random', @(x)ismember(x, {'random', 'frozen', 'none'}));
 p.addParameter('coneMosaicPacking', 'hex', @(x)ismember(x, {'hex', 'hexReg', 'rect'}));
 p.addParameter('coneMosaicFOVDegs', 1.0, @isnumeric);
 % DIAGNOSTIC OPTIONS
@@ -101,7 +104,7 @@ rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
     'fieldOfViewDegs', p.Results.coneMosaicFOVDegs, ... 
     'integrationTimeInSeconds', 6/1000, ...
     'isomerizationNoise', 'random',...               % select from {'random', 'frozen', 'none'}
-    'osNoise', 'random', ...                         % select from {'random', 'frozen', 'none'}
+    'osNoise', p.Results.osNoise, ...                % select from {'random', 'frozen', 'none'}
     'osModel', 'Linear');
 
 if (p.Results.freezeNoise)
@@ -149,6 +152,10 @@ tBegin = clock;
 
 % Loop over pedestal luminances
 pedestalLuminanceList = logspace(log10(p.Results.lowPedestalLuminance), log10(p.Results.highPedestalLuminance), p.Results.nPedestalLuminanceLevels);
+if (~isempty(p.Results.pedestalLuminanceListIndicesUsed))
+    pedestalLuminanceList = pedestalLuminanceList(p.Results.pedestalLuminanceListIndicesUsed);
+end
+    
 for pedestalLuminanceIndex = 1:numel(pedestalLuminanceList)
     
     %% Background params
@@ -170,6 +177,7 @@ for pedestalLuminanceIndex = 1:numel(pedestalLuminanceList)
               'compute',p.Results.computeResponses, ...
               'computeMosaic', p.Results.computeMosaic, ... 
               'visualizeMosaic', p.Results.visualizeMosaic, ...
+              'ramPercentageEmployed', p.Results.ramPercentageEmployed, ...
               'parforWorkersNum', p.Results.parforWorkersNum, ...  % no more than these many workers
               'displayTrialBlockPartitionDiagnostics', p.Results.displayTrialBlockPartitionDiagnostics, ...
               'generatePlots', p.Results.generatePlots, ...
@@ -235,10 +243,11 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance) || (p.Results
     detectionThresholdContrast = cell2mat(detectionThresholdContrast);
 
     hFig = figure(1000); clf;
-    set(hFig, 'Position', [10 10 670 1300], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 450 900], 'Color', [1 1 1]);
     
     subplot(2,1,1)
     plot(log10(pedestalLuminanceList), log10(detectionThresholdContrast), 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
+    set(gca, 'XLim', [log10(pedestalLuminanceList(1)*0.95) log10(pedestalLuminanceList(end)*1.05)]);
     xlabel('log pedestal luminance (cd/m2)', 'FontWeight', 'bold');
     ylabel('log threshold contrast', 'FontWeight', 'bold');
 
@@ -261,6 +270,7 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance) || (p.Results
     subplot(2,1,2);
     thresholdDeltaLuminance = pedestalLuminanceList .* detectionThresholdContrast;
     plot(log10(pedestalLuminanceList), log10(thresholdDeltaLuminance), 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
+    set(gca, 'XLim', [log10(pedestalLuminanceList(1)*0.95) log10(pedestalLuminanceList(end)*1.05)]);
     title(sprintf('threshold delta-luminance for \n%s (%s)\n',thresholdParams.signalSource, thresholdParams.method))
     xlabel('log pedestal luminance (cd/m2)', 'FontWeight', 'bold');
     ylabel('log threshold delta luminance', 'FontWeight', 'bold');
