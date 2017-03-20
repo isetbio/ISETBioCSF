@@ -34,7 +34,7 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
            'topMargin',      0.005);
        
        hFig = figure(1); clf;
-       set(hFig, 'Position', [10 10 2250 1450]);
+       set(hFig, 'Position', [10 10 2050 1230]);
     end
     
     switch(spatialParams.spatialType)

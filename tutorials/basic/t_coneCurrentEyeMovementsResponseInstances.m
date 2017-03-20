@@ -107,7 +107,7 @@ else
 end
 
 % Initialize varargout
-varargout = {};
+varargout{1} = [];
 
 %% Clear
 if (nargin == 0)
@@ -184,11 +184,11 @@ if (p.Results.compute)
         coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
         rwObject.write('coneMosaic', theMosaic, coneParamsList, theProgram, 'type', 'mat');
     else
-         % Load a previously saved cone mosaic
-         fprintf('Loading a previously saved cone mosaic\n');
-         coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
-         theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
-         theMosaic.displayInfo();
+        % Load a previously saved cone mosaic
+        fprintf('Loading a previously saved cone mosaic\n');
+        coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
+        theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
+        theMosaic.displayInfo();
     end
     
     if (~isempty(p.Results.overrideMosaicIntegrationTime))
@@ -463,6 +463,25 @@ if (p.Results.compute)
     end
 end
 
+if (p.Results.visualizeSpatialScheme)
+    if (p.Results.computeMosaic)
+        % Create the cone mosaic
+        theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams, ...
+            'visualizeMosaic', p.Results.visualizeMosaic);
+        
+        % Save cone mosaic
+        coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
+        rwObject.write('coneMosaic', theMosaic, coneParamsList, theProgram, 'type', 'mat');
+    else
+        % Load a previously saved cone mosaic
+        fprintf('Loading a previously saved cone mosaic\n');
+        coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
+        theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
+        theMosaic.displayInfo();
+    end
+    visualizeStimulusAndConeMosaic(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams);
+end
+    
 %% Visualize
 if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visualizeOuterSegmentFilters))
 
