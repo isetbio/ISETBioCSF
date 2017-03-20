@@ -247,7 +247,7 @@ fprintf('Full computation was completed in %f minutes. \n', timeLapsed/60, pedes
 
 if (p.Results.visualizeOuterSegmentFilters)
     hFig = figure(999); clf;
-    set(hFig, 'Position', [10 10 540 500], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 450 450], 'Color', [1 1 1]);
     plot(log10(pedestalLuminanceList), log10(irAmplitudes(:,1)), 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [0.6 0.6 0.6]);
     hold on
     plot(log10(pedestalLuminanceList), log10(irAmplitudes(:,2)), 'gs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [0.6 0.6 0.6]);
