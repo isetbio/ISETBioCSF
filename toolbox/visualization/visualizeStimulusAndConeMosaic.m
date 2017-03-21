@@ -57,7 +57,7 @@ function visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, paramsList)
     axis 'xy';
     axis 'image'
     hold on;
-    plot(squeeze(coneLocsInDegs(:,1)), squeeze(coneLocsInDegs(:,2)), 'r.', 'MarkerSize', 10);
+    plot(squeeze(coneLocsInDegs(:,1)), squeeze(coneLocsInDegs(:,2)), 'k.', 'MarkerSize', 8);
     hold off;
     set(gca, 'CLim', [0 1], 'YTickLabel', {}, 'XLim', mosaicFOV(1)/2*[-1 1]*1.02, 'YLim', mosaicFOV(2)/2*[-1 1]*1.02);
     set(gca, 'FontSize', 14);
