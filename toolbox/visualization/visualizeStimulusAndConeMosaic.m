@@ -34,7 +34,7 @@ function visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, paramsList)
            'topMargin',      0.02);
        
     hFig = figure(98765); clf;
-    set(hFig, 'Position', [10 10 1200 700]);
+    set(hFig, 'Position', [10 10 1200 700], 'Color', [1 1 1]);
             
     subplot('Position', subplotPosVectors(1,1).v);
     imagesc(xaxis, yaxis, illumMap);
