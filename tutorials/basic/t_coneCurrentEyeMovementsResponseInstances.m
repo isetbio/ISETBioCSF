@@ -91,7 +91,6 @@ p.parse(varargin{:});
 rParams = p.Results.rParams;
 testDirectionParams = p.Results.testDirectionParams;
 visualizationFormat = p.Results.visualizationFormat;
-visualizeSpatialScheme = p.Results.visualizeSpatialScheme;
 parforWorkersNum = p.Results.parforWorkersNum;
 
 % Check the parforWorkersNum
@@ -275,7 +274,6 @@ if (p.Results.compute)
     
     % Parfor over trial blocks
     parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
-    
         % Get the parallel pool worker ID
         t = getCurrentTask();
         if (~isempty(p.Results.workerID))  
@@ -293,7 +291,8 @@ if (p.Results.compute)
                 'seed', parforRanSeedsNoStim(1, trialBlock), ...
                 'workerID', workerID,...
                 'computeNoiseFreeSignals', true, ....
-                'visualizeSpatialScheme', (p.Results.visualizeSpatialScheme & (trialBlock == 1))...
+                'visualizeSpatialScheme', (p.Results.visualizeSpatialScheme & (trialBlock == 1)), ...
+                'paramsList', paramsList...
                 );
                 
             % save data temporarily
@@ -367,7 +366,6 @@ if (p.Results.compute)
         
         % Parfor over blocks of trials
         parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
-
             % Get the parallel pool worker ID
             t = getCurrentTask();
             
@@ -386,7 +384,8 @@ if (p.Results.compute)
                     'seed', parforRanSeeds(kk,trialBlock), ...
                     'workerID', workerID, ...
                     'computeNoiseFreeSignals', true, ...
-                    'visualizeSpatialScheme', (p.Results.visualizeSpatialScheme & (trialBlock == 1)));
+                    'visualizeSpatialScheme', (p.Results.visualizeSpatialScheme & (trialBlock == 1)), ...
+                    'paramsList', paramsList);
             
             % Save data temporarily
             rwObject.write(sprintf('%s_blockData_%d', blockDataPrefix, trialBlock), tmpData{trialBlock}, paramsList,theProgram);

@@ -19,6 +19,8 @@ function [responseStruct, osImpulseResponseFunctions, osMeanCurrents] = colorDet
 %  'osMeanCurrents' - the steady-state LMS currents caused by the mean absorption LMS rates
 %  'computeNoiseFreeSignals' - true/false (default true) wether to compute the noise free isomerizations and photocurrents
 %  'useSinglePrecision' - true/false (default true) use single precision to represent isomerizations and photocurrent
+%  'visualizeSpatialScheme' - true/false (default false) wether to co-visualize the optical image and the cone mosaic
+%  'paramsList' - the paramsList associated for this direction (used for exporting response figures to the right directory)
 % 7/10/16  npc Wrote it.
 
 %% Parse arguments
@@ -31,6 +33,7 @@ p.addParameter('osImpulseResponseFunctions', [], @isnumeric);
 p.addParameter('osMeanCurrents', [], @isnumeric);
 p.addParameter('computeNoiseFreeSignals', true, @islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
+p.addParameter('paramsList', {}, @iscell);
 p.parse(varargin{:});
 currentSeed = p.Results.seed;
 
@@ -69,9 +72,11 @@ theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, ...
 %%  Visualize the oiSequence
 %theOIsequence.visualize('format', 'montage');
 
-p.Results.visualizeSpatialScheme
+%% Co-visualize the optical image and the cone mosaic
 if (p.Results.visualizeSpatialScheme)
-    visualizeStimulusAndConeMosaic(theMosaic, oiModulated);
+    [~, timeBinOfPeakModulation] = max(abs(stimulusModulationFunction));
+    thePeakOI = theOIsequence.frameAtIndex(timeBinOfPeakModulation);
+    visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, p.Results.paramsList);
 end
     
 % Clear oiModulated and oiBackground to save space
