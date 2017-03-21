@@ -196,9 +196,6 @@ if (p.Results.compute)
         theMosaic.integrationTime = p.Results.overrideMosaicIntegrationTime;
     end
 
-    if (visualizeSpatialScheme)
-        visualizeStimulusAndConeMosaic(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams);
-    end
     
     %% Define color modulation list
     switch (testDirectionParams.instanceType)
@@ -278,14 +275,15 @@ if (p.Results.compute)
     
     % Parfor over trial blocks
     parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
+    
         % Get the parallel pool worker ID
+        t = getCurrentTask();
         if (~isempty(p.Results.workerID))  
-            t = getCurrentTask();
             workerID = t.ID;
         else
             workerID = [];
         end
-        
+
         [tmpData{trialBlock}, osImpulseResponseFunctionsFromNullStimulus{trialBlock}, meanCurrentsFromNullStimulus{trialBlock}]  = ...
             colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nParforTrials(trialBlock), ...
                 rParams.spatialParams, rParams.backgroundParams, colorModulationParamsNull, rParams.temporalParams, theOI, theMosaic, ...
@@ -294,7 +292,9 @@ if (p.Results.compute)
                 'osMeanCurrents', [], ...              % pass empty array, to compute the steady-state current based on the null stimulus 
                 'seed', parforRanSeedsNoStim(1, trialBlock), ...
                 'workerID', workerID,...
-                'computeNoiseFreeSignals', true);
+                'computeNoiseFreeSignals', true, ....
+                'visualizeSpatialScheme', (p.Results.visualizeSpatialScheme & (trialBlock == 1))...
+                );
                 
             % save data temporarily
             rwObject.write(sprintf('%s_blockData_%d', blockDataPrefix, trialBlock), tmpData{trialBlock}, paramsList,theProgram);
@@ -367,9 +367,11 @@ if (p.Results.compute)
         
         % Parfor over blocks of trials
         parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
+
             % Get the parallel pool worker ID
+            t = getCurrentTask();
+            
             if (~isempty(p.Results.workerID))  
-                t = getCurrentTask();
                 workerID = t.ID;
             else
                 workerID = [];
@@ -383,7 +385,8 @@ if (p.Results.compute)
                     'osMeanCurrents', meanCurrentsFromNullStimulus, ...                            % use the to steady-state currents computed from the null stimulus  
                     'seed', parforRanSeeds(kk,trialBlock), ...
                     'workerID', workerID, ...
-                    'computeNoiseFreeSignals', true);
+                    'computeNoiseFreeSignals', true, ...
+                    'visualizeSpatialScheme', (p.Results.visualizeSpatialScheme & (trialBlock == 1)));
             
             % Save data temporarily
             rwObject.write(sprintf('%s_blockData_%d', blockDataPrefix, trialBlock), tmpData{trialBlock}, paramsList,theProgram);
@@ -461,25 +464,6 @@ if (p.Results.compute)
         extraData.ancillaryData = ancillaryData;
         extraData.p.Results = p.Results;
     end
-end
-
-if (p.Results.visualizeSpatialScheme)
-    if (p.Results.computeMosaic)
-        % Create the cone mosaic
-        theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams, ...
-            'visualizeMosaic', p.Results.visualizeMosaic);
-        
-        % Save cone mosaic
-        coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
-        rwObject.write('coneMosaic', theMosaic, coneParamsList, theProgram, 'type', 'mat');
-    else
-        % Load a previously saved cone mosaic
-        fprintf('Loading a previously saved cone mosaic\n');
-        coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
-        theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
-        theMosaic.displayInfo();
-    end
-    visualizeStimulusAndConeMosaic(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams);
 end
     
 %% Visualize

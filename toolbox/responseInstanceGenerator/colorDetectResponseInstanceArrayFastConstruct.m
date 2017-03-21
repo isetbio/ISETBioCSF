@@ -30,7 +30,7 @@ p.addParameter('centeredEMPaths',false, @islogical);
 p.addParameter('osImpulseResponseFunctions', [], @isnumeric);
 p.addParameter('osMeanCurrents', [], @isnumeric);
 p.addParameter('computeNoiseFreeSignals', true, @islogical);
-
+p.addParameter('visualizeSpatialScheme', false, @islogical);
 p.parse(varargin{:});
 currentSeed = p.Results.seed;
 
@@ -69,6 +69,11 @@ theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, ...
 %%  Visualize the oiSequence
 %theOIsequence.visualize('format', 'montage');
 
+p.Results.visualizeSpatialScheme
+if (p.Results.visualizeSpatialScheme)
+    visualizeStimulusAndConeMosaic(theMosaic, oiModulated);
+end
+    
 % Clear oiModulated and oiBackground to save space
 varsToClear = {'oiBackground', 'oiModulated'};
 clear(varsToClear{:});
