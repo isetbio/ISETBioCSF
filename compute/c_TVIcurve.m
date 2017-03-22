@@ -153,9 +153,12 @@ thresholdParams = modifyStructParams(thresholdParams, ...
     'evidenceIntegrationTime', p.Results.performanceEvidenceIntegrationTime, ...
     'signalSource', p.Results.performanceSignal);
 
-if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')) || (strcmp(thresholdParams.method, 'svmGaussianRF'))
+if (strcmp(thresholdParams.method, 'svm')) || ...
+   (strcmp(thresholdParams.method, 'svmV1FilterBank')) || ...
+   (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')) || ...
+   (strcmp(thresholdParams.method, 'svmGaussianRF'))
      thresholdParams = modifyStructParams(thresholdParams, ...
-         'useRBFKernel', false);
+         'useRBFKernel', false);   % set to true to use a nonlinear (radial basis function) - based SVM
 end
 
 % Start timing
@@ -281,39 +284,75 @@ if (p.Results.visualizeOuterSegmentFilters)
 end
 
 
+plotType = 'loglog';
+%plotType = 'linear';
+
 if (p.Results.findPerformance) || (p.Results.visualizePerformance)
     detectionThresholdContrast = cell2mat(detectionThresholdContrast);
-    thresholdDeltaLuminance = pedestalLuminanceList .* detectionThresholdContrast;
+    thresholdLuminance = pedestalLuminanceList .* (detectionThresholdContrast);
     
     pupilAreaMM2 = pi * (p.Results.pupilDiamMm/2)^2;
     pedestalIlluminanceList = LumToTrolands(pedestalLuminanceList, pupilAreaMM2);
-    thresholdDeltaIlluminance = LumToTrolands(thresholdDeltaLuminance, pupilAreaMM2);
+    thresholdIlluminance = LumToTrolands(thresholdLuminance, pupilAreaMM2);
+    
+    YLimContrast = [0.01 1000];
+    YLimIlluminance = [0.1 10000];
+    XLimIlluminance = [0.11 10000];
+    
+    if (strcmp(plotType, 'loglog'))
+        pedestalIlluminanceList = log10(pedestalIlluminanceList);
+        detectionThresholdContrast = log10(detectionThresholdContrast);
+        thresholdIlluminance = log10(thresholdIlluminance);
+        XLimIlluminance = log10(XLimIlluminance);
+        YLimContrast = log10(YLimContrast);
+        contrastTicks = log10([0.01:0.01:0.2]);
+        YLimIlluminance = log10(YLimIlluminance);
+        IlluminanceTicks = log10(1:10);
+    else 
+        contrastTicks = [0.01:0.01:0.2];
+        illuminanceTicks = 1:10;
+    end
     
     hFig = figure(1000); clf;
     set(hFig, 'Position', [10 10 450 900], 'Color', [1 1 1]);
     
-    subplot(2,1,1)
-    plot(log10(pedestalIlluminanceList), log10(detectionThresholdContrast), 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
-    set(gca, 'XLim', [log10(pedestalIlluminanceList(1)*0.95) log10(pedestalIlluminanceList(end)*1.05)], 'YLim', [-3.4 -0.9]);
-    xlabel('log pedestal illuminance (Td)', 'FontWeight', 'bold');
-    ylabel('log threshold contrast', 'FontWeight', 'bold');
-    title(sprintf('threshold contrast for \n%s (%s)\n',thresholdParams.signalSource, thresholdParams.method));
+    
+    subplot(2,1,1);
+    plot(pedestalIlluminanceList, thresholdIlluminance, 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
+    axis 'equal'
+    set(gca, 'XLim', XLimIlluminance, 'YLim', YLimIlluminance, 'XTick', -5:5, 'YTick', -5:5);
+    title(sprintf('%s (%s)',thresholdParams.signalSource, thresholdParams.method))
+    if (strcmp(plotType, 'loglog'))
+        xlabel('log pedestal (adapting) illuminance (Td)', 'FontWeight', 'bold');
+        ylabel('log threshold test illuminance (Td)', 'FontWeight', 'bold');
+    else
+        xlabel('pedestal (adapting) illuminance (Td)', 'FontWeight', 'bold');
+        ylabel('threshold test illuminance (Td)', 'FontWeight', 'bold');
+    end
     set(gca, 'FontSize', 14);
     grid on;
-    box off;
-    axis 'square'
+    box on;
     
     
-    subplot(2,1,2);
-    plot(log10(pedestalIlluminanceList), log10(thresholdDeltaIlluminance), 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
-    set(gca, 'XLim', [log10(pedestalIlluminanceList(1)*0.95) log10(pedestalIlluminanceList(end)*1.05)]);
-    title(sprintf('threshold delta-luminance for \n%s (%s)\n',thresholdParams.signalSource, thresholdParams.method))
-    xlabel('log pedestal illuminance (Td)', 'FontWeight', 'bold');
-    ylabel('log threshold delta illuminance (Td)', 'FontWeight', 'bold');
+    subplot(2,1,2)
+    plot(pedestalIlluminanceList, detectionThresholdContrast, 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
+    axis 'equal'
+    set(gca, 'XLim', XLimIlluminance, 'YLim', YLimContrast, 'XTick', -5:5, 'YTick', -5:5);
+    if (strcmp(plotType, 'loglog'))
+        xlabel('log pedestal (adapting) illuminance (Td)', 'FontWeight', 'bold');
+        ylabel('log threshold contrast', 'FontWeight', 'bold');
+    else
+        xlabel('pedestal (adapting) illuminance (Td)', 'FontWeight', 'bold');
+        ylabel('threshold contrast', 'FontWeight', 'bold');
+    end
+    title(sprintf('%s (%s)',thresholdParams.signalSource, thresholdParams.method));
     set(gca, 'FontSize', 14);
     grid on;
-    box off;
-    axis 'square'
+    box on;
+    
+    
+    
+    
     drawnow
 
     
