@@ -83,6 +83,7 @@ switch(spatialParams.spatialType)
         
         % Make the spatial pattern (range: -1 .. 1)
         spatialModulation = pedestalModulationDisk(spatialParams, colorModulationParams.contrast);
+
     otherwise
         error('Unknown spatial type specified: ''%s''.', spatialParams.spatialType);
 end

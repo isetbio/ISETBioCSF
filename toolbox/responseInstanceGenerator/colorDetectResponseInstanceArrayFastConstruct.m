@@ -63,14 +63,24 @@ oiModulated = theOI;
 oiModulated = oiCompute(oiModulated, modulatedScene);
 
 %% Generate the stimulus modulation function
-[stimulusTimeAxis, stimulusModulationFunction, ~] = gaussianTemporalWindowCreate(temporalParams);
+if (isnan(temporalParams.windowTauInSeconds))
+    [stimulusTimeAxis, stimulusModulationFunction, ~] = squareTemporalWindowCreate(temporalParams);
+else
+    [stimulusTimeAxis, stimulusModulationFunction, ~] = gaussianTemporalWindowCreate(temporalParams);
+end
 
 %% Compute the oiSequence
-theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, ...
-                                stimulusModulationFunction, 'composition', 'blend');
+if (strcmp(spatialParams.spatialType, 'pedestalDisk'))
+    theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, stimulusModulationFunction, ...
+        'composition', 'xor');
+else
+    theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, stimulusModulationFunction, ...
+        'composition', 'blend');
+end
+
 
 %%  Visualize the oiSequence
-%theOIsequence.visualize('format', 'montage');
+%theOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
 
 %% Co-visualize the optical image and the cone mosaic
 if (p.Results.visualizeSpatialScheme)
@@ -143,7 +153,7 @@ end
 
 % Save original noise flags
 originalIsomerizationNoiseFlag = theMosaic.noiseFlag;
-originalPootocurrentNoiseFlag = theMosaic.os.noiseFlag;
+originalPhotocurrentNoiseFlag = theMosaic.os.noiseFlag;
 
 % Set noiseFlags to none
 theMosaic.noiseFlag = 'none';
@@ -170,7 +180,7 @@ end
 
 % Restore noiseFlags to none
 theMosaic.noiseFlag = originalIsomerizationNoiseFlag;
-theMosaic.os.noiseFlag = originalPootocurrentNoiseFlag;
+theMosaic.os.noiseFlag = originalPhotocurrentNoiseFlag;
 
 % Store
 responseStruct.noiseFreeIsomerizations = squeeze(responseStruct.noiseFreeIsomerizations);
@@ -186,6 +196,3 @@ else
 end
 
 end
-
-
-

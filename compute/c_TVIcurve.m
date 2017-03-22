@@ -3,15 +3,19 @@ function [detectionThresholdContrast, pedestalLuminanceList] = c_TVIcurve(vararg
 %% Parse input
 p = inputParser;
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
-% STIMULUS OPTIONS
+% STIMULUS OPTIONS - SPATIAL
 p.addParameter('imagePixels', 128, @isnumeric);
 p.addParameter('fieldOfViewDegs', 0.8, @isnumeric);
 p.addParameter('testDiameterDegs', 0.4, @isnumeric);
+% STIMULUS OPTIONS - TEMPORAL
+p.addParameter('stimulusTemporalEnvelope', 'Gaussian', @(x)ismember(x, {'Gaussian', 'square'}));
+p.addParameter('stimulusDurationSecs', 495/1000, @isnumeric);
+% STIMULUS OPTIONS - CONTRAST/LUMINANCE
 p.addParameter('nContrastsPerPedestalLuminance', 12, @isnumeric);
-p.addParameter('lowContrast', 1e-4, @isnumeric);  % 3e-4
-p.addParameter('highContrast', 0.1, @isnumeric);  % 0.3
+p.addParameter('lowContrast', 3e-3, @isnumeric);  
+p.addParameter('highContrast', 0.1, @isnumeric); 
 p.addParameter('nPedestalLuminanceLevels', 10, @isnumeric);
-p.addParameter('lowPedestalLuminance', 3.3, @isnumeric); 
+p.addParameter('lowPedestalLuminance', 3.3, @isnumeric);         % Fred's model developed in luminance range: 500-20,000 R*/cone/sec], which corresponds to luminance range: 3.3 - 125 cd/m2
 p.addParameter('highPedestalLuminance', 125, @isnumeric);
 p.addParameter('pedestalLuminanceListIndicesUsed', [], @isnumeric);
 % RESPONSE COMPUTATION OPTIONS
@@ -63,7 +67,6 @@ else
     error('visualizationFormat must be set to either ''montage'' or ''video''. Current value: ''%s''.', visualizationFormat);
 end
 
-
 % Start with default params
 rParams = responseParamsGenerate;
 
@@ -83,18 +86,28 @@ rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...
     
 
 % Modify temporal params 
-frameRate = 60;          
-windowTauInSeconds = 165/1000;
-stimulusSamplingIntervalInSeconds = 1/frameRate;
-stimulusDurationInSeconds = 3.0*windowTauInSeconds;
-% Allow around 100 milliseconds for response to stabilize
-responseStabilizationSeconds = ceil(100/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
+
+stimulusDurationInSeconds = p.Results.stimulusDurationSecs;
+if (strcmp(p.Results.stimulusTemporalEnvelope, 'Gaussian'))
+    frameRate = 60;
+    windowTauInSeconds = stimulusDurationInSeconds/3.0;
+    stimulusSamplingIntervalInSeconds = 1/frameRate;
+    secondsToInclude = stimulusDurationInSeconds;
+elseif (strcmp(p.Results.stimulusTemporalEnvelope, 'square'))
+    frameRate = 400;
+    windowTauInSeconds = nan;
+    stimulusSamplingIntervalInSeconds = 1/frameRate;
+    secondsToInclude = (stimulusDurationInSeconds+50)/1000;
+end
+
+% Allow around 80 milliseconds for response to stabilize
+responseStabilizationSeconds = ceil(80/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
 rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
     'frameRate', frameRate, ...
     'windowTauInSeconds', windowTauInSeconds, ...
     'stimulusSamplingIntervalInSeconds', stimulusSamplingIntervalInSeconds, ...
     'stimulusDurationInSeconds', stimulusDurationInSeconds, ...
-    'secondsToInclude', stimulusDurationInSeconds, ...
+    'secondsToInclude', secondsToInclude, ...
     'secondsForResponseStabilization', responseStabilizationSeconds, ...
     'secondsToIncludeOffset', 0/1000, ...
     'emPathType', p.Results.emPathType ...

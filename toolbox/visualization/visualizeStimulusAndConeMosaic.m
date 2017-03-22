@@ -11,7 +11,8 @@ function visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, paramsList)
     coneLocsInDegs(:,2) = coneLocsInMeters(:,2) / theMosaic.height * theMosaic.fov(2);
     
     support = oiGet(thePeakOI, 'spatial support', 'microns');
-    micronsPerDegree = 290;
+    micronsPerDegree = oiGet(thePeakOI, 'width')*1e6 / oiGet(thePeakOI, 'hfov'); % 290;
+
     xaxis = support(1,:,1)/micronsPerDegree;
     yaxis = support(:,1,2)/micronsPerDegree;
     illumMap = oiCalculateIlluminance(thePeakOI);
@@ -46,7 +47,7 @@ function visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, paramsList)
     y = mosaicFOV(2) * [-0.5 -0.5 0.5 0.5 -0.5];
     plot(x,y, 'g-', 'LineWidth', 1.5);
     hold off
-    set(gca, 'CLim', [0 1], 'XLim', mosaicFOV(1)/2*[-1 1]*1.02, 'YLim', mosaicFOV(2)/2*[-1 1]*1.02);
+    set(gca, 'CLim', [0 1], 'XLim', mosaicFOV(1)/2*[-1 1]*1.1, 'YLim', mosaicFOV(2)/2*[-1 1]*1.1);
     set(gca, 'FontSize', 14);
     xlabel('degrees');
     ylabel('degrees');
@@ -59,7 +60,7 @@ function visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, paramsList)
     hold on;
     plot(squeeze(coneLocsInDegs(:,1)), squeeze(coneLocsInDegs(:,2)), 'k.', 'MarkerSize', 8);
     hold off;
-    set(gca, 'CLim', [0 1], 'YTickLabel', {}, 'XLim', mosaicFOV(1)/2*[-1 1]*1.02, 'YLim', mosaicFOV(2)/2*[-1 1]*1.02);
+    set(gca, 'CLim', [0 1], 'YTickLabel', {}, 'XLim', mosaicFOV(1)/2*[-1 1]*1.1, 'YLim', mosaicFOV(2)/2*[-1 1]*1.1);
     set(gca, 'FontSize', 14);
     xlabel('degrees');
     title('retinal stimulus and cone mosaic', 'FontSize', 16);
