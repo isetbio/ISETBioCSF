@@ -153,6 +153,10 @@ thresholdParams = modifyStructParams(thresholdParams, ...
     'evidenceIntegrationTime', p.Results.performanceEvidenceIntegrationTime, ...
     'signalSource', p.Results.performanceSignal);
 
+if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')) || (strcmp(thresholdParams.method, 'svmGaussianRF'))
+     thresholdParams = modifyStructParams(thresholdParams, ...
+         'useRBFKernel', false);
+end
 
 % Start timing
 tBegin = clock;

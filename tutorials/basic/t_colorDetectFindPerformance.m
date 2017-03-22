@@ -126,15 +126,13 @@ if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParam
     % Generate V1 filter bank struct and add it to thresholdParams
     V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams.method);
     thresholdParams = modifyStructParams(thresholdParams, ...
-        'V1filterBank', V1filterBank, ...
-        'useRBFKernel', true);
+        'V1filterBank', V1filterBank);
 end
 
 if (strcmp(thresholdParams.method, 'svmGaussianRF'))
     spatialPoolingKernel = generateSpatialPoolingKernel(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams.method);
     thresholdParams = modifyStructParams(thresholdParams, ...
-        'spatialPoolingKernel', spatialPoolingKernel, ...
-        'useRBFKernel', true);
+        'spatialPoolingKernel', spatialPoolingKernel);
 end
 
 %% Set up the rw object for this program
