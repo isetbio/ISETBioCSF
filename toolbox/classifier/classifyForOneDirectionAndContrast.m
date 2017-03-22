@@ -50,19 +50,12 @@ end
 %% Decide what type of classifier we are running
 switch (thresholdParams.method)
     
-    case {'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF', 'svmGaussianRF'}
+    case {'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF', 'svmGaussianRF', 'svmSpaceTimeSeparable'}
         % Perform SVM classification for this stimulus vs the zero contrast stimulus
-        fprintf('\tRunning SVM with spatial filter ...');
+        fprintf('\tRunning special SVM ...');
         [usePercentCorrect, useStdErr, svm] = classifyWithSVM(classificationData,classes,thresholdParams.kFold,...
-            'standardizeSVMpredictors', thresholdParams.standardizeSVMpredictors);
-        fprintf(' correct: %2.2f%%\n', usePercentCorrect*100);
-        h = [];
-        
-    case 'svmSpaceTimeSeparable'
-        % Perform SVM classification for this stimulus vs the zero contrast stimulus
-        fprintf('\tRunning SVM ...');
-        [usePercentCorrect, useStdErr, svm] = classifyWithSVM(classificationData,classes,thresholdParams.kFold,...
-            'standardizeSVMpredictors', thresholdParams.standardizeSVMpredictors);
+            'standardizeSVMpredictors', thresholdParams.standardizeSVMpredictors, ...
+            'useRBFKernel', thresholdParams.useRBFKernel);
         fprintf(' correct: %2.2f%%\n', usePercentCorrect*100);
         h = [];
 

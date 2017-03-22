@@ -242,8 +242,7 @@ switch (colorModulationParams.modulationType)
             drawnow
             pause
         end
-        
-        
+
     case 'AO'
         % Wavelength sampling
         wls = (colorModulationParams.startWl:colorModulationParams.deltaWl:colorModulationParams.endWl)';
@@ -281,8 +280,6 @@ switch (colorModulationParams.modulationType)
     otherwise
         error('Unknown color modulation/background type specified');
 end
-
-
 
 end
 

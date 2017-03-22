@@ -49,20 +49,21 @@ function hFig = visualizeTransformedSignals(timeAxis, noStimResponses, stimRespo
     set(gca, 'FontSize', 14);
      
     subplot('Position', subplotPosVectors(2,1).v);
+    YLim = [minY-0.1*abs(minY) maxY+0.1*abs(maxY)];
     patch('Faces', f, 'Vertices', noStimResponsesRange, 'FaceColor', [0.5 0.5 0.5], 'FaceAlpha', 0.5);
-    set(gca, 'YLim', [minY-0.1*abs(minY) maxY+0.1*abs(maxY)],  'XLim', [timeAxis(1) timeAxis(end)]);
+    set(gca, 'YLim', responseRange,  'XLim', [timeAxis(1) timeAxis(end)]);
     box off; grid on
     ylabel(sprintf('%s output\n(%s-based)', spatialFilterName, signalSource), 'FontWeight', 'bold');
-    title(sprintf('quantile=%2.2f', q));
+    title(sprintf('quantile=%2.2f - %2.2f', q, 1-q));
     set(gca, 'FontSize', 14);
     xlabel('time (ms)', 'FontWeight', 'bold');
     
     subplot('Position', subplotPosVectors(2,2).v);
     patch('Faces', f, 'Vertices', stimResponsesRange, 'FaceColor', [1 0.2 0.3], 'FaceAlpha', 0.5);
     hold off;
-    set(gca, 'YLim', [minY-0.1*abs(minY) maxY+0.1*abs(maxY)],  'XLim', [timeAxis(1) timeAxis(end)]);
+    set(gca, 'YLim', responseRange,  'XLim', [timeAxis(1) timeAxis(end)]);
     box off; grid on
-    title(sprintf('quantile=%2.2f', q));
+    title(sprintf('quantile=%2.2f - %2.2f', q, 1-q));
     set(gca, 'FontSize', 14);
     xlabel('time (ms)', 'FontWeight', 'bold');
     drawnow;

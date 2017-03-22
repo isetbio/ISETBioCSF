@@ -22,6 +22,7 @@ params.type = 'threshold';
 
 % Some reasonable parameters
 params.method = 'svm';
+params.useRBFKernel = false;
 params.signalSource = 'isomerizations';
 params.V1filterBank = [];
 params.spatialPoolingKernel = [];
