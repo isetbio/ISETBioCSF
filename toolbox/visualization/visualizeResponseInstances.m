@@ -1,9 +1,89 @@
-function visualizeResponseInstances(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum, format)
-         
+function hFigs = visualizeResponseInstances(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum, format)
+
     instancesNum = size(stimData.responseInstanceArray.theMosaicIsomerizations,1);
     if (instancesNum < 1)
         return;
     end
+    
+    % NEW
+    hFigs = visualizeNoiseFreeXTResponseInstances(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum, format);
+    
+    % OLD
+    %visualizeXYTResponseInstances(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum, format);
+    
+end
+
+function hFig = visualizeNoiseFreeXTResponseInstances(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum, format)
+
+    % stimData.osImpulseResponses
+    
+    hFig{1} = figure(1); clf;
+    set(hFig{1}, 'Position', [10 10 950 710], 'Color', [1 1 1]);
+    hold on
+    plot(stimData.osImpulseResponseTimeAxis, stimData.osImpulseResponses(:,1), 'r-');
+    plot(stimData.osImpulseResponseTimeAxis, stimData.osImpulseResponses(:,2), 'g-');
+    plot(stimData.osImpulseResponseTimeAxis, stimData.osImpulseResponses(:,3), 'b-');
+    title('os impulse response functions');
+    drawnow;
+    
+%     
+    % transform isomerization counts to isomerization rate
+    stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations / theMosaic.integrationTime;
+    noStimData.noiseFreeIsomerizations = noStimData.noiseFreeIsomerizations / theMosaic.integrationTime;
+    
+    isomerizationsRange = [...
+        min([min(noStimData.noiseFreeIsomerizations(:)) min(stimData.noiseFreeIsomerizations(:))]) ...
+        max([max(noStimData.noiseFreeIsomerizations(:)) max(stimData.noiseFreeIsomerizations(:))]) ];
+    photocurrentsRange = [...
+        min([min(noStimData.noiseFreePhotocurrents(:)) min(stimData.noiseFreePhotocurrents(:))]) ...
+        max([max(noStimData.noiseFreePhotocurrents(:)) max(stimData.noiseFreePhotocurrents(:))]) ];
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', 2, ...
+           'colsNum', 2, ...
+           'heightMargin',   0.1, ...
+           'widthMargin',    0.01, ...
+           'leftMargin',     0.05, ...
+           'rightMargin',    0.001, ...
+           'bottomMargin',   0.05, ...
+           'topMargin',      0.04);
+       
+    hFig{2} = figure(2); clf;
+    set(hFig{2}, 'Position', [10 10 1100 820], 'Color', [1 1 1]);
+    subplot('Position', subplotPosVectors(1,1).v);
+    imagesc(noStimData.responseInstanceArray.timeAxis, 1:size(noStimData.noiseFreeIsomerizations,1), noStimData.noiseFreeIsomerizations);
+    set(gca, 'CLim', isomerizationsRange, 'FontSize', 12);
+    title(sprintf('NULL stim\nnoise-free isomerization rate (R*/cone/sec)'));
+    ylabel('cone #');
+    
+    subplot('Position', subplotPosVectors(1,2).v);
+    imagesc(stimData.responseInstanceArray.timeAxis, 1:size(stimData.noiseFreeIsomerizations,1), stimData.noiseFreeIsomerizations);
+    set(gca, 'CLim', isomerizationsRange, 'YTickLabel', {}, 'FontSize', 12);
+    title(sprintf('Stim\nnoise-free isomerization rate (R*/cone/sec)'));
+    colorbar
+    
+    subplot('Position', subplotPosVectors(2,1).v);
+    imagesc(noStimData.responseInstanceArray.timeAxis, 1:size(noStimData.noiseFreePhotocurrents,1), noStimData.noiseFreePhotocurrents);
+    set(gca, 'CLim', photocurrentsRange, 'FontSize', 12);
+    ylabel('cone #');
+    xlabel('time (seconds)');
+    title(sprintf('NULL stim\nnoise-free photocurrents (pAmps)'));
+    
+    subplot('Position', subplotPosVectors(2,2).v);
+    imagesc(stimData.responseInstanceArray.timeAxis, 1:size(stimData.noiseFreePhotocurrents,1), stimData.noiseFreePhotocurrents);
+    set(gca, 'CLim', photocurrentsRange, 'YTickLabel', {}, 'FontSize', 12);
+    xlabel('time (seconds)');
+    title(sprintf('Stim\nnoise-free photocurrents (pAmps)'));
+    colorbar
+    
+    colormap(gray(1024));
+    drawnow;
+
+end
+
+
+function visualizeXYTResponseInstances(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum, format)
+    instancesNum = size(stimData.responseInstanceArray.theMosaicIsomerizations,1);
     
     if (isa(theMosaic, 'coneMosaicHex'))
         nonNullCones = theMosaic.pattern(theMosaic.pattern>1);

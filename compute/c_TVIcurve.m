@@ -21,6 +21,8 @@ p.addParameter('pedestalLuminanceListIndicesUsed', [], @isnumeric);
 % RESPONSE COMPUTATION OPTIONS
 p.addParameter('nTrainingSamples',512, @isnumeric);
 p.addParameter('emPathType','frozen0',@(x)ismember(x, {'none', 'frozen', 'frozen0', 'random'}));
+p.addParameter('responseStabilizationMilliseconds', 80, @isnumeric);
+p.addParameter('responseExtinctionMilliseconds', 200, @isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
 p.addParameter('ramPercentageEmployed', 1.0, @isnumeric);
@@ -32,6 +34,7 @@ p.addParameter('freezeNoise',true, @islogical);
 p.addParameter('osNoise', 'random', @(x)ismember(x, {'random', 'frozen', 'none'}));
 p.addParameter('coneMosaicPacking', 'hex', @(x)ismember(x, {'hex', 'hexReg', 'rect'}));
 p.addParameter('coneMosaicFOVDegs', 1.0, @isnumeric);
+p.addParameter('integrationTime', 6.0/1000, @isnumeric);
 % DIAGNOSTIC OPTIONS
 p.addParameter('displayTrialBlockPartitionDiagnostics', true, @islogical);
 p.addParameter('displayResponseComputationProgress', false, @islogical);
@@ -86,22 +89,23 @@ rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...
     
 
 % Modify temporal params 
-
 stimulusDurationInSeconds = p.Results.stimulusDurationSecs;
 if (strcmp(p.Results.stimulusTemporalEnvelope, 'Gaussian'))
     frameRate = 60;
     windowTauInSeconds = stimulusDurationInSeconds/3.0;
     stimulusSamplingIntervalInSeconds = 1/frameRate;
-    secondsToInclude = stimulusDurationInSeconds;
 elseif (strcmp(p.Results.stimulusTemporalEnvelope, 'square'))
-    frameRate = 400;
-    windowTauInSeconds = nan;
+    frameRate = 200;
+    windowTauInSeconds = nan; % square-wave
     stimulusSamplingIntervalInSeconds = 1/frameRate;
-    secondsToInclude = (stimulusDurationInSeconds+50)/1000;
 end
 
 % Allow around 80 milliseconds for response to stabilize
-responseStabilizationSeconds = ceil(80/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
+responseStabilizationSeconds = ceil(p.Results.responseStabilizationMilliseconds/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
+% Allow around 200 milliseconds for response to return to 0
+responseExtinctionSeconds = ceil(p.Results.responseExtinctionMilliseconds/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
+secondsToInclude = responseStabilizationSeconds+stimulusDurationInSeconds+responseExtinctionSeconds;
+    
 rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
     'frameRate', frameRate, ...
     'windowTauInSeconds', windowTauInSeconds, ...
@@ -109,6 +113,7 @@ rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
     'stimulusDurationInSeconds', stimulusDurationInSeconds, ...
     'secondsToInclude', secondsToInclude, ...
     'secondsForResponseStabilization', responseStabilizationSeconds, ...
+    'secondsForResponseExtinction', responseExtinctionSeconds, ...
     'secondsToIncludeOffset', 0/1000, ...
     'emPathType', p.Results.emPathType ...
 );
@@ -121,7 +126,7 @@ rParams.oiParams = modifyStructParams(rParams.oiParams, ...
 rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
     'conePacking', p.Results.coneMosaicPacking, ...                       
     'fieldOfViewDegs', p.Results.coneMosaicFOVDegs, ... 
-    'integrationTimeInSeconds', 6/1000, ...
+    'integrationTimeInSeconds', p.Results.integrationTime, ...
     'isomerizationNoise', 'random',...               % select from {'random', 'frozen', 'none'}
     'osNoise', p.Results.osNoise, ...                % select from {'random', 'frozen', 'none'}
     'osModel', 'Linear');
@@ -216,7 +221,7 @@ for pedestalLuminanceIndex = 1:numel(pedestalLuminanceList)
     end % if (p.Results.computeResponses)
     
     %% Visualize response instances
-    if ((p.Results.visualizeResponses) || (p.Results.visualizeOuterSegmentFilters))
+    if ((p.Results.visualizeResponses) || (p.Results.visualizeOuterSegmentFilters)) || (p.Results.visualizeSpatialScheme)
     [~,~, osImpulseResponses] = t_coneCurrentEyeMovementsResponseInstances(...
           'rParams',rParams,...
           'testDirectionParams',testLuminanceParams,...

@@ -21,6 +21,7 @@ temporalParams.stimulusSamplingIntervalInSeconds = 1/temporalParams.frameRate;
 temporalParams.secondsToInclude = 0.050;
 temporalParams.secondsToIncludeOffset = 0;
 temporalParams.secondsForResponseStabilization = 0.00;
+temporalParams.secondsForResponseExtinction = 0.00;
 temporalParams.emPathType = 'none';
 
 % Optional CRT raster effects.

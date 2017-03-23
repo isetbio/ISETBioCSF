@@ -4,7 +4,7 @@ function [sampleTimes, squareTemporalWindow, rasterModulation] = squareTemporalW
 
 if (temporalParams.stimulusDurationInSeconds == temporalParams.stimulusSamplingIntervalInSeconds)
     sampleTimes = [0];
-    gaussianTemporalWindow = 1;
+    squareTemporalWindow = 1;
     rasterModulation = 1;
     return;
 end
@@ -16,10 +16,16 @@ else
     stabilizingTimeSamples = 0;
 end
 
+if (isfield(temporalParams, 'secondsForResponseExtinction'))
+    extinctionTimeSamples = ceil(0.5*temporalParams.secondsForResponseExtinction/temporalParams.stimulusSamplingIntervalInSeconds);
+else
+    extinctionTimeSamples = 0;
+end
+
 sampleTimes = linspace(...
     -(nPositiveTimeSamples+stabilizingTimeSamples)*temporalParams.stimulusSamplingIntervalInSeconds, ...
-    (nPositiveTimeSamples+stabilizingTimeSamples)*temporalParams.stimulusSamplingIntervalInSeconds, ...
-    2*nPositiveTimeSamples+1+2*stabilizingTimeSamples);
+    (nPositiveTimeSamples+extinctionTimeSamples)*temporalParams.stimulusSamplingIntervalInSeconds, ...
+    2*nPositiveTimeSamples+1+stabilizingTimeSamples+extinctionTimeSamples);
 
 squareTemporalWindow = zeros(1,numel(sampleTimes));
 squareTemporalWindow(abs(sampleTimes) <= temporalParams.stimulusDurationInSeconds/2) = 1;

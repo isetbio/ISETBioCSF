@@ -1,4 +1,4 @@
-function [responseStruct, osImpulseResponseFunctions, osMeanCurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic, varargin)
+function [responseStruct, osImpulseResponseFunctions, osImpulseReponseFunctionTimeAxis, osMeanCurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic, varargin)
 % [responseStruct, osImpulseResponseFunctions, osMeanCurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
 % 
 % Construct an array of nTrials response instances given the
@@ -110,6 +110,17 @@ theEMpaths = colorDetectMultiTrialEMPathGenerate(...
                     'currentFlag', true, ...
                     'workDescription', sprintf('%d trials of noisy responses', nTrials),...
                     'workerID', p.Results.workerID);
+                
+if (isempty(p.Results.osImpulseResponseFunctions))
+    % Since we compute the impulse response functions, the 
+    % mosaic.interpFilterTimeAxis has already being computed for us
+    osImpulseReponseFunctionTimeAxis = theMosaic.interpFilterTimeAxis;
+else
+    % Since we do not compute the impulse response functions, the
+    % mosaic.interpFilterTimeAxis is not computed, so compute it here
+    osImpulseReponseFunctionTimeAxis = (0:(size(p.Results.osImpulseResponseFunctions,1)-1))*theMosaic.integrationTime;
+end
+
 isomerizationsTimeAxis = theMosaic.timeAxis + theOIsequence.timeAxis(1);
 photoCurrentTimeAxis = isomerizationsTimeAxis;
  
