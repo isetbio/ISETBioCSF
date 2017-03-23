@@ -3,36 +3,39 @@ function runTVIcurveJob()
     close all;
     
     % Set 
-    nTrainingSamples = 256;
+    nTrainingSamples = 128;
     
-    lowContrast =  3e-4;
+    lowContrast =  3e-3;
     highContrast = 0.3;
-    nContrastsPerPedestalLuminance = 10;
+    nContrastsPerPedestalLuminance = 11;
     
-
     lowPedestalLuminance = 3.3;
     highPedestalLuminance = 450;
     nPedestalLuminanceLevels = 12;
         
-    fieldOfViewDegs = 1.5; % 2.0;
-    testDiameterDegs = [3.5 10 50]/60;  % Geisler 1979 paper
+    fieldOfViewDegs = 1.5;
+    testDiameterDegs = [3.5 10 50]/60;      % spot diameters in Geisler 1979 paper
     testDiameterDegs = testDiameterDegs(3);
     
-    stimulusDurationSecs = 30/1000;
-    stimulusTemporalEnvelope = 'square';   % choose between 'square', and 'Gaussian'
+    stimulusDurationSecs = 30/1000;         % 30 milliseconds, as in Geisler 1979
+    stimulusTemporalEnvelope = 'square';    % choose between 'square', and 'Gaussian'
     
     coneMosaicFOVDegs = fieldOfViewDegs*0.95;
+    coneIntegrationTime = 5/1000;
     osNoise = 'random';
+    
+    responseStabilizationMilliseconds = 100;
+    responseExtinctionMilliseconds = 400;
     
     computeMosaic = ~true;
     computeResponses = true;
     ramPercentageEmployed = 0.5;
-    pedestalLuminanceListIndicesUsed = nPedestalLuminanceLevels/2 + (1:nPedestalLuminanceLevels/2);
+    pedestalLuminanceListIndicesUsed = 1:(nPedestalLuminanceLevels/2);
     
-    visualizeResponses = ~true;
+    visualizeResponses = true;
     visualizeOuterSegmentFilters = ~true;
-    findPerformance = ~true;
-    visualizePerformance = true;
+    findPerformance = true;
+    visualizePerformance = ~true;
     visualizeSpatialScheme = true;
     
     if (computeResponses) || (visualizeResponses) || (visualizeOuterSegmentFilters)
@@ -51,7 +54,10 @@ function runTVIcurveJob()
             'stimulusDurationSecs', stimulusDurationSecs, ...
             'computeMosaic',computeMosaic, ...
             'coneMosaicFOVDegs', coneMosaicFOVDegs, ...
+            'integrationTime', coneIntegrationTime, ...
             'osNoise', osNoise, ...
+            'responseStabilizationMilliseconds', responseStabilizationMilliseconds, ...
+            'responseExtinctionMilliseconds', responseExtinctionMilliseconds, ...
             'computeResponses', computeResponses, ...
             'ramPercentageEmployed', ramPercentageEmployed, ...
             'nTrainingSamples', nTrainingSamples, ...
@@ -78,7 +84,10 @@ function runTVIcurveJob()
             'stimulusTemporalEnvelope', stimulusTemporalEnvelope, ...
             'stimulusDurationSecs', stimulusDurationSecs, ...
             'coneMosaicFOVDegs', coneMosaicFOVDegs, ...
+            'integrationTime', coneIntegrationTime, ...
             'osNoise', osNoise, ...
+            'responseStabilizationMilliseconds', responseStabilizationMilliseconds, ...
+            'responseExtinctionMilliseconds', responseExtinctionMilliseconds, ...
             'nTrainingSamples', nTrainingSamples, ...
             'computeResponses', false, ...
             'visualizeSpatialScheme', visualizeSpatialScheme, ...
