@@ -59,7 +59,6 @@ p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
 p.parse(varargin{:});
 
-
 % Return params
 detectionThresholdContrast = {};
 
@@ -162,12 +161,17 @@ else
     thresholdParams.trialsUsed = p.Results.performanceClassifierTrainingSamples;
 end
 
+% Adjust pca components num
+pcaComponentsNum = p.Results.pcaComponentsNum;
+if (strcmp(p.Results.performanceClassifier, 'svmSpaceTimeSeparable'))
+    pcaComponentsNum = 4;
+end
 
 thresholdParams = modifyStructParams(thresholdParams, ...
     'method', p.Results.performanceClassifier, ...
     'STANDARDIZE', false, ...
     'standardizeSVMpredictors', false, ...
-    'PCAComponents', p.Results.pcaComponentsNum, ...
+    'PCAComponents', pcaComponentsNum, ...
     'evidenceIntegrationTime', p.Results.performanceEvidenceIntegrationTime, ...
     'signalSource', p.Results.performanceSignal);
 

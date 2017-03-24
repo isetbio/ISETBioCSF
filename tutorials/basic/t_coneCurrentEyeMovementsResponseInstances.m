@@ -249,7 +249,7 @@ if (p.Results.compute)
     nParforConditions = length(parforConditionStructs);
     nParforTrials = computeTrialBlocks(p.Results.ramPercentageEmployed, testDirectionParams.trialsNum, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), rParams.temporalParams, theMosaic.integrationTime, p.Results.displayTrialBlockPartitionDiagnostics, p.Results.employStandardHostComputerResources);
     nParforTrialBlocks = numel(nParforTrials);
-    parforRanSeeds = randi(1000000,nParforConditions, nParforTrialBlocks)+1;
+    parforRanSeeds = randi(1000000, nParforConditions, nParforTrialBlocks)+1;
     parforRanSeedsNoStim = randi(1000000,1, nParforTrialBlocks)+1;
     
     % Generate data for the no stimulus condition
@@ -305,6 +305,7 @@ if (p.Results.compute)
     %osImpulseReponseFunctionTimeAxis = osImpulseReponseFunctionTimeAxis{1};
     %osImpulseResponseFunctionsFromNullStimulus = osImpulseResponseFunctionsFromNullStimulus{1};
     %meanCurrentsFromNullStimulus = meanCurrentsFromNullStimulus{1};
+    
     
     % Form noStimData structure
     noStimData = struct(...
@@ -472,8 +473,6 @@ end
 if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visualizeOuterSegmentFilters))
 
     if (p.Results.visualizeResponses)
-        % How many istances to visualize
-        instancesToVisualize = 5;
 
         % Load the mosaic
         coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
@@ -486,17 +485,23 @@ if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visual
         noStimData = rwObject.read('responseInstances',paramsList,theProgram);
         ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
     
+        % How many istances to visualize
+        instancesToVisualize = size(noStimData.responseInstanceArray.theMosaicIsomerizations,1); % 5;
+
         % Only keep the data we will visualize
-        idx = min([instancesToVisualize size(noStimData.responseInstanceArray.theMosaicIsomerizations,1)]);
-        noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations(1:idx,:,:);
-        if (~isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
-            noStimData.responseInstanceArray.theMosaicPhotocurrents  = noStimData.responseInstanceArray.theMosaicPhotocurrents(1:idx,:,:);
+        if (instancesToVisualize ~= size(noStimData.responseInstanceArray.theMosaicIsomerizations,1))
+            idx = min([instancesToVisualize size(noStimData.responseInstanceArray.theMosaicIsomerizations,1)]);
+            noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations(1:idx,:,:);
+            if (~isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
+                noStimData.responseInstanceArray.theMosaicPhotocurrents  = noStimData.responseInstanceArray.theMosaicPhotocurrents(1:idx,:,:);
+            end
+            noStimData.responseInstanceArray.theMosaicEyeMovements = noStimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
         end
-        noStimData.responseInstanceArray.theMosaicEyeMovements = noStimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
+        
         rParams = ancillaryData.rParams;
         parforConditionStructs = ancillaryData.parforConditionStructs;
         nParforConditions = length(parforConditionStructs); 
-        for kk = nParforConditions:-nParforConditions+1:1
+        for kk = 1:nParforConditions
             fprintf('Importing STIM data for condition %d/%d\n', kk, nParforConditions);
             thisConditionStruct = parforConditionStructs{kk};
             colorModulationParamsTemp = rParams.colorModulationParams;
@@ -506,25 +511,44 @@ if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visual
             paramsList = constantParamsList;
             paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
             stimData = rwObject.read('responseInstances',paramsList,theProgram);
-            % Only keep the data we will visualize
-            stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(1:idx,:,:);
-            if (~isempty(stimData.responseInstanceArray.theMosaicPhotocurrents))
-                stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(1:idx,:,:);
+            
+            if (instancesToVisualize ~= size(noStimData.responseInstanceArray.theMosaicIsomerizations,1))
+                % Only keep the data we will visualize
+                stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(1:idx,:,:);
+                if (~isempty(stimData.responseInstanceArray.theMosaicPhotocurrents))
+                    stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(1:idx,:,:);
+                end
+                stimData.responseInstanceArray.theMosaicEyeMovements = stimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
             end
-            stimData.responseInstanceArray.theMosaicEyeMovements = stimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
+            
+            % Call the figures generation routine
             hFigs = visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, p.Results.visualizationFormat);
         
-            % Save figure
+            % Save figures produced
             theProgram = mfilename;
             rwObject = IBIOColorDetectReadWriteBasic;
             data = 0;
             fileName = sprintf('osImpulseResponses');
             rwObject.write(fileName, data, paramsList, theProgram, ...
                 'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{1}, 'FigureType', 'pdf');
-            fileName = sprintf('noiseFreeResponses');
+            
+            fileName = sprintf('noiseFreeXTResponses');
             rwObject.write(fileName, data, paramsList, theProgram, ...
                 'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{2}, 'FigureType', 'pdf');
+            
+            fileName = sprintf('noiseFreeXYResponses');
+            rwObject.write(fileName, data, paramsList, theProgram, ...
+                'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{3}, 'FigureType', 'pdf');
  
+            fileName = sprintf('peakConeIsomerizationResponseInstances');
+            rwObject.write(fileName, data, paramsList, theProgram, ...
+                'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{4}, 'FigureType', 'pdf');
+            
+            fileName = sprintf('peakConePhotocurrentResponseInstances');
+            rwObject.write(fileName, data, paramsList, theProgram, ...
+                'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{5}, 'FigureType', 'pdf');
+            
+            
         end
     end
     
