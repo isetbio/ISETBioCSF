@@ -3,12 +3,13 @@ function runTVIcurveJob()
     close all;
     
     % Set 
-    nTrainingSamples = 128;
-    freezeNoise = true
-     
-    lowContrast =  3e-3;
+    nTrainingSamples = 4;
+    freezeNoise = false;
+    emPathType = 'frozen0';
+    
+    lowContrast =  1e-3;
     highContrast = 0.3;
-    nContrastsPerPedestalLuminance = 11;
+    nContrastsPerPedestalLuminance = 12;
     
     lowPedestalLuminance = 3.3;
     highPedestalLuminance = 450;
@@ -16,7 +17,7 @@ function runTVIcurveJob()
         
     fieldOfViewDegs = 1.5;
     testDiameterDegs = [3.5 10 50]/60;      % spot diameters in Geisler 1979 paper
-    testDiameterDegs = testDiameterDegs(3);
+    testDiameterDegs = testDiameterDegs(1);
     
     stimulusDurationSecs = 30/1000;         % 30 milliseconds, as in Geisler 1979
     stimulusTemporalEnvelope = 'square';    % choose between 'square', and 'Gaussian'
@@ -28,11 +29,24 @@ function runTVIcurveJob()
     responseStabilizationMilliseconds = 100;
     responseExtinctionMilliseconds = 400;
     
+    
+    computationIntance = 0;
+    if (computationIntance == 0)
+        % All conditions in 1 MATLAB session
+        ramPercentageEmployed = 1.0;  % use all the RAM
+        pedestalLuminanceListIndicesUsed = 1:nPedestalLuminanceLevels;
+    elseif (computationIntance == 1)
+        % First half of the conditions in session 1 of 2 parallel MATLAB sessions
+        ramPercentageEmployed = 0.5;  % use 1/2 the RAM
+        pedestalLuminanceListIndicesUsed = 0 + (1:(nPedestalLuminanceLevels/2));
+    elseif (computationIntance == 2)
+        % Second half of the conditions in session 2 of 2 parallel MATLAB sessions
+        ramPercentageEmployed = 0.5;  % use 1/2 the RAM
+        pedestalLuminanceListIndicesUsed = nPedestalLuminanceLevels/2 + (1:(nPedestalLuminanceLevels/2));
+    end
+    
     computeMosaic = ~true;
     computeResponses = ~true;
-    ramPercentageEmployed = 0.5;
-    pedestalLuminanceListIndicesUsed = 1:nPedestalLuminanceLevels;%/2 + (1:(nPedestalLuminanceLevels/2));
-    
     visualizeResponses = true;
     visualizeOuterSegmentFilters = ~true;
     findPerformance = ~true;
@@ -57,6 +71,7 @@ function runTVIcurveJob()
             'coneMosaicFOVDegs', coneMosaicFOVDegs, ...
             'integrationTime', coneIntegrationTime, ...
             'osNoise', osNoise, ...
+            'emPathType', emPathType, ...
             'responseStabilizationMilliseconds', responseStabilizationMilliseconds, ...
             'responseExtinctionMilliseconds', responseExtinctionMilliseconds, ...
             'freezeNoise', freezeNoise, ...
@@ -88,6 +103,7 @@ function runTVIcurveJob()
             'coneMosaicFOVDegs', coneMosaicFOVDegs, ...
             'integrationTime', coneIntegrationTime, ...
             'osNoise', osNoise, ...
+            'emPathType', emPathType, ...
             'responseStabilizationMilliseconds', responseStabilizationMilliseconds, ...
             'responseExtinctionMilliseconds', responseExtinctionMilliseconds, ...
             'nTrainingSamples', nTrainingSamples, ...
