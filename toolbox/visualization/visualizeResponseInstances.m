@@ -241,14 +241,14 @@ function hFig = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData)
            'topMargin',      0.03);
        
     hFig{2} = figure(2); clf;
-    set(hFig{2}, 'Position', [10 10 770 850], 'Color', [1 1 1]);
+    set(hFig{2}, 'Position', [10 10 770 900], 'Color', [1 1 1]);
     subplot('Position', subplotPosVectors(1,1).v);
     imagesc(1000*noStimData.responseInstanceArray.timeAxis, 1:size(noStimData.noiseFreeIsomerizations,1), noStimData.noiseFreeIsomerizations);
     set(gca, 'CLim', isomerizationsRange, 'FontSize', 14);
     ylabel('cone #');
     hcb = colorbar('northoutside');
     colorTitleHandle = get(hcb,'Title');
-    set(colorTitleHandle ,'String', 'isomerization rates (R*/cone/sec)');
+    set(colorTitleHandle ,'String', sprintf('isomerization rates (R*/cone/sec)'));
     set(hcb, 'FontSize', 12);
     
     subplot('Position', subplotPosVectors(1,2).v);
@@ -257,7 +257,7 @@ function hFig = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData)
     
     hcb = colorbar('northoutside');
     colorTitleHandle = get(hcb,'Title');
-    set(colorTitleHandle ,'String', 'isomerization rates (R*/cone/sec)');
+    set(colorTitleHandle ,'String', sprintf('isomerization rates (R*/cone/sec)'));
     set(hcb, 'FontSize', 12);
     
     subplot('Position', subplotPosVectors(2,1).v);
@@ -267,7 +267,7 @@ function hFig = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData)
     xlabel('time (msec)');
     hcb = colorbar('northoutside');
     colorTitleHandle = get(hcb,'Title');
-    set(colorTitleHandle ,'String', 'photocurrents (pAmps)');
+    set(colorTitleHandle ,'String', sprintf('photocurrents (pAmps)'));
     set(hcb, 'FontSize', 12);
     
     
@@ -277,7 +277,7 @@ function hFig = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData)
     xlabel('time (msec)');
     hcb = colorbar('northoutside');
     colorTitleHandle = get(hcb,'Title');
-    set(colorTitleHandle ,'String', 'photocurrents (pAmps)');
+    set(colorTitleHandle ,'String', sprintf('photocurrents (pAmps)'));
     set(hcb, 'FontSize', 12);
     
     colormap(gray(1024));
@@ -291,49 +291,45 @@ function hFig = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData)
            'colsNum', 2, ...
            'heightMargin',   0.07, ...
            'widthMargin',    0.01, ...
-           'leftMargin',     0.01, ...
+           'leftMargin',     0.04, ...
            'rightMargin',    0.001, ...
            'bottomMargin',   0.02, ...
-           'topMargin',      0.04);
+           'topMargin',      0.01);
        
         hFig{3} = figure(3); clf;
-        set(hFig{3}, 'Position', [10 10 590 850], 'Color', [1 1 1]);
+        set(hFig{3}, 'Position', [10 10 770 900], 'Color', [1 1 1]);
     
         subplot('Position', subplotPosVectors(1,2).v);
         timeBinOfPeakIsomerizationResponse = renderHexActivationMap(theMosaic, stimData.noiseFreeIsomerizations, isomerizationsRange, []);
-        set(gca, 'XTickLabel', {});
-        set(gca, 'YTickLabel', {});
+        set(gca, 'XTickLabel', {}, 'YTickLabel', {}, 'FontSize', 14);
         hcb = colorbar('northoutside');
         colorTitleHandle = get(hcb,'Title');
-        set(colorTitleHandle ,'String', sprintf('isomerization rates (R*/cone/sec)\nat %2.2f msec', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakIsomerizationResponse)));
+        %set(colorTitleHandle ,'String', sprintf('isomerization rates (R*/cone/sec) at %2.2f msec', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakIsomerizationResponse)));
         set(hcb, 'FontSize', 12);
     
         subplot('Position', subplotPosVectors(1,1).v);
         renderHexActivationMap(theMosaic, noStimData.noiseFreeIsomerizations, isomerizationsRange, timeBinOfPeakIsomerizationResponse);
-        set(gca, 'XTickLabel', {});
-        set(gca, 'YTickLabel', {});
+        set(gca, 'XTickLabel', {}, 'YTickLabel', {}, 'FontSize', 14);
         hcb = colorbar('northoutside');
         colorTitleHandle = get(hcb,'Title');
-        set(colorTitleHandle ,'String', sprintf('isomerization rates (R*/cone/sec)\nat %2.2f msec ', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakIsomerizationResponse)));
+        %set(colorTitleHandle ,'String', sprintf('isomerization rates (R*/cone/sec) at %2.2f msec', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakIsomerizationResponse)));
         set(hcb, 'FontSize', 12);
     
         subplot('Position', subplotPosVectors(2,2).v);
         timeBinOfPeakPhotocurrentResponse = renderHexActivationMap(theMosaic, stimData.noiseFreePhotocurrents, photocurrentsRange, []);
-        set(gca, 'YTickLabel', {});
-        set(gca, 'XTickLabel', {});
+        set(gca, 'XTickLabel', {}, 'YTickLabel', {}, 'FontSize', 14);
         hcb = colorbar('northoutside');
         colorTitleHandle = get(hcb,'Title');
-        set(colorTitleHandle ,'String', sprintf('photocurrents (pAmps)\nat %2.2f msec', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakPhotocurrentResponse)));
+        %set(colorTitleHandle ,'String', sprintf('photocurrents (pAmps) at %2.2f msec', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakPhotocurrentResponse)));
         set(hcb, 'FontSize', 12);
         
         
         subplot('Position', subplotPosVectors(2,1).v);
         renderHexActivationMap(theMosaic, noStimData.noiseFreePhotocurrents, photocurrentsRange, timeBinOfPeakPhotocurrentResponse);
-        set(gca, 'YTickLabel', {});
-        set(gca, 'XTickLabel', {});
+        set(gca, 'XTickLabel', {}, 'YTickLabel', {}, 'FontSize', 14);
         hcb = colorbar('northoutside');
         colorTitleHandle = get(hcb,'Title');
-        set(colorTitleHandle ,'String', sprintf('photocurrents (pAmps)\nat %2.2f msec', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakPhotocurrentResponse)));
+        %set(colorTitleHandle ,'String', sprintf('photocurrents (pAmps) at %2.2f msec', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakPhotocurrentResponse)));
         set(hcb, 'FontSize', 12);
     
         colormap(gray(1024));
@@ -368,8 +364,8 @@ function timeBinOfPeakResponse = renderHexActivationMap(theMosaic, signal, signa
     edgeColor = 'none';
     lineWidth = 1.0;
     renderPatchArray(apertureOutline, mosaicXaxis, mosaicYaxis, hexMap, edgeColor, lineWidth);
-    axis 'image'; axis 'xy'; box 'on';
-    set(gca, 'CLim', signalRange, 'Color', [0 0 0], 'FontSize', 12);
+    axis 'image'; axis 'xy'; %box 'on';
+    set(gca, 'CLim', signalRange, 'Color', [0 0 0]);
 end
 
 function visualizeXYTResponseInstances(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum, format)
