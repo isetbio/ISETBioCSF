@@ -2,59 +2,50 @@ function runTVIcurveJob()
 
     close all;
     
-    computationIntance = 2;  % 0, 1 or 2
-    
-    freezeNoise = false;
-    
-    % Set 
-    nTrainingSamples = 512;
-    
-    lowPedestalLuminance = 3.3;
-    highPedestalLuminance = 450;
-    nPedestalLuminanceLevels = 12;
-        
+    computationIntance = 0;  % 0, 1 or 2
+       
     emPathType = 'random'; % 'random'; %'frozen0';  % random
     
-    testDiameterDegs = [3.5 10 50]/60;      % spot diameters in Geisler 1979 paper
-    sizeIndex = 2;
-    testDiameterDegs = testDiameterDegs(sizeIndex);
 
+        
+    sizeIndex = 1;
+    testDiameterDegs = [3.5 10 50]/60;      % spot diameters in Geisler 1979 paper
+    testDiameterDegs = testDiameterDegs(sizeIndex);
     
-    if (sizeIndex == 3)
-        fieldOfViewDegs = 1.2;
-        lowContrast =  1e-3;
-        highContrast = 0.3;
-        nContrastsPerPedestalLuminance = 12;
-        
-        lowContrast =  3e-3;
-        nContrastsPerPedestalLuminance = 11;
-        nTrainingSamples = 128;
-        freezeNoise = true;
-        summaryCurveMarkerType = 'o';
-        summaryCurveLegend = sprintf('ISETbio (%2.0f'')', testDiameterDegs*60);
-        nTrainingSamples = 128
-        emPathType = 'frozen0'
-        
-    elseif (sizeIndex == 2)
-        fieldOfViewDegs = 0.75;
-        lowContrast = 0.01;
-        highContrast = 1.0;
-        nContrastsPerPedestalLuminance = 12;
-        summaryCurveMarkerType = 's';
-        summaryCurveLegend = sprintf('ISETbio (%2.0f'')', testDiameterDegs*60);
-        
-    elseif (sizeIndex == 1)
-        fieldOfViewDegs = 0.25;
+    if (sizeIndex == 1)
+        fieldOfViewDegs = 0.2;
         lowContrast =  2e-2;
         highContrast = 4;
         nContrastsPerPedestalLuminance = 12;
         summaryCurveMarkerType = '^';
         summaryCurveLegend = sprintf('ISETbio (%2.1f'')', testDiameterDegs*60);
-        nTrainingSamples = 512
+        nTrainingSamples = 48
+        
+    elseif (sizeIndex == 2)
+        fieldOfViewDegs = 0.5;
+        lowContrast = 0.01;
+        highContrast = 1.0;
+        nContrastsPerPedestalLuminance = 12;
+        nTrainingSamples = 512;
+        
+        summaryCurveMarkerType = 's';
+        summaryCurveLegend = sprintf('ISETbio (%2.0f'')', testDiameterDegs*60);
+        
+    elseif (sizeIndex == 3)
+        fieldOfViewDegs = 1.2;
+        highContrast = 0.3;
+        lowContrast =  3e-3;
+        nContrastsPerPedestalLuminance = 11;
+        summaryCurveMarkerType = 'o';
+        summaryCurveLegend = sprintf('ISETbio (%2.0f'')', testDiameterDegs*60);
+        nTrainingSamples = 128
     end
     
+    lowPedestalLuminance = 3.3;
+    highPedestalLuminance = 450;
+    nPedestalLuminanceLevels = 12;
     
-    
+    freezeNoise = false;
     stimulusDurationSecs = 30/1000;         % 30 milliseconds, as in Geisler 1979
     stimulusTemporalEnvelope = 'square';    % choose between 'square', and 'Gaussian'
     
@@ -68,12 +59,6 @@ function runTVIcurveJob()
     spatialPoolingKernelParams.type = 'GaussianRF';
     spatialPoolingKernelParams.shrinkageFactor = 0.20;
     spatialPoolingKernelParams.adjustForConeDensity = true;
-    
-    % V1 spatial kernel
-    %spatialPoolingKernelParams.type = 'GaborStimulusMatchedQuadraturePhase';
-    %spatialPoolingKernelParams.activationFunction = 'energy';
-    %spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
-    %spatialPoolingKernelParams.adjustForConeDensity = true;
     
     if (computationIntance == 0)
         % All conditions in 1 MATLAB session
@@ -89,7 +74,7 @@ function runTVIcurveJob()
         pedestalLuminanceListIndicesUsed = nPedestalLuminanceLevels/2 + (1:(nPedestalLuminanceLevels/2));
     end
     
-    computeMosaic = ~true;
+    computeMosaic = true;
     computeResponses = true;
     visualizeResponses = true;
     visualizeOuterSegmentFilters = true;
