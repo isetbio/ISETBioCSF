@@ -26,34 +26,18 @@ function visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, paramsList)
     illumMap = 0.5 + 0.5*(illumMap-illumRange(1))/(illumRange(2)-illumRange(1));
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', 1, ...
-           'colsNum', 2, ...
+           'colsNum', 1, ...
            'heightMargin',   0.02, ...
            'widthMargin',    0.02, ...
            'leftMargin',     0.04, ...
            'rightMargin',    0.006, ...
-           'bottomMargin',   0.02, ...
-           'topMargin',      0.02);
+           'bottomMargin',   0.07, ...
+           'topMargin',      0.04);
        
     hFig = figure(98765); clf;
-    set(hFig, 'Position', [10 10 1200 700], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 700 780], 'Color', [1 1 1]);
             
     subplot('Position', subplotPosVectors(1,1).v);
-    imagesc(xaxis, yaxis, illumMap);
-    axis 'xy';
-    axis 'image';
-    hold on;
-    % outline mosaic extent in green
-    x = mosaicFOV(1) * [-0.5 0.5 0.5 -0.5 -0.5];
-    y = mosaicFOV(2) * [-0.5 -0.5 0.5 0.5 -0.5];
-    plot(x,y, 'g-', 'LineWidth', 1.5);
-    hold off
-    set(gca, 'CLim', [0 1], 'XLim', mosaicFOV(1)/2*[-1 1]*1.1, 'YLim', mosaicFOV(2)/2*[-1 1]*1.1);
-    set(gca, 'FontSize', 14);
-    xlabel('degrees');
-    ylabel('degrees');
-    title(sprintf('retinal stimulus\n(illuminance: %f - %f)', minIllum, maxIllum));
-    
-    subplot('Position', subplotPosVectors(1,2).v);
     imagesc(xaxis, yaxis, illumMap);
     axis 'xy';
     axis 'image'
@@ -61,9 +45,9 @@ function visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, paramsList)
     plot(squeeze(coneLocsInDegs(:,1)), squeeze(coneLocsInDegs(:,2)), 'k.', 'MarkerSize', 8);
     hold off;
     set(gca, 'CLim', [0 1], 'YTickLabel', {}, 'XLim', mosaicFOV(1)/2*[-1 1]*1.1, 'YLim', mosaicFOV(2)/2*[-1 1]*1.1);
-    set(gca, 'FontSize', 14);
+    set(gca, 'FontSize', 18);
     xlabel('degrees');
-    title('retinal stimulus and cone mosaic', 'FontSize', 16);
+    title(sprintf('retinal stimulus (illuminance: %f - %f)\nand cone locations', minIllum, maxIllum), 'FontSize', 16);
     colormap(gray(1024));
     drawnow;
     
