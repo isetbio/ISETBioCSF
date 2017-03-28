@@ -36,31 +36,39 @@ function hFig = visualizeSingleConeResponseInstances(theMosaic, stimData, noStim
         % find the cone indices for this submosaic
         submosaicConeIndices = find(nonNullCones==submosaicIndex+1);
         
-        % find the current submosaic's cone that has the max noise-free delta (stim - noStim) photocurrent signal
-        submosaicNoiseFreeDeltaPhotocurrents = stimData.noiseFreePhotocurrents(submosaicConeIndices,:) - noStimData.noiseFreePhotocurrents(submosaicConeIndices,:);
-        
-        [maxDeltaPhotocurrent, idx] = max(submosaicNoiseFreeDeltaPhotocurrents(:));
-        [coneIndexOfPeakResponse, timeBinOfPeakResponse(submosaicIndex)] = ind2sub(size(submosaicNoiseFreeDeltaPhotocurrents), idx);
-        
-        submosaicInstances        = noStimData.responseInstanceArray.theMosaicIsomerizations(:,submosaicConeIndices,:);
-        submosaicNoiseFreeSignals = noStimData.noiseFreeIsomerizations(submosaicConeIndices,:);
-        isomerizationNoStimResponseInstances(submosaicIndex,:,:) = submosaicInstances(:, coneIndexOfPeakResponse, :);
-        isomerizationNoStimNoiseFreeResponse(submosaicIndex,:) = submosaicNoiseFreeSignals(coneIndexOfPeakResponse,:);
-        
-        submosaicInstances        = noStimData.responseInstanceArray.theMosaicPhotocurrents(:,submosaicConeIndices,:);
-        submosaicNoiseFreeSignals = noStimData.noiseFreePhotocurrents(submosaicConeIndices,:);
-        photocurrentNoStimResponseInstances(submosaicIndex,:,:) = submosaicInstances(:, coneIndexOfPeakResponse, :);
-        photocurrentNoStimNoiseFreeResponse(submosaicIndex,:) = submosaicNoiseFreeSignals(coneIndexOfPeakResponse,:);
-        
-        submosaicInstances        = stimData.responseInstanceArray.theMosaicIsomerizations(:,submosaicConeIndices,:);
-        submosaicNoiseFreeSignals = stimData.noiseFreeIsomerizations(submosaicConeIndices,:);
-        isomerizationStimResponseInstances(submosaicIndex,:,:) = submosaicInstances(:, coneIndexOfPeakResponse, :);
-        isomerizationStimNoiseFreeResponse(submosaicIndex,:) = submosaicNoiseFreeSignals(coneIndexOfPeakResponse,:);
-        
-        submosaicInstances        = stimData.responseInstanceArray.theMosaicPhotocurrents(:,submosaicConeIndices,:);
-        submosaicNoiseFreeSignals = stimData.noiseFreePhotocurrents(submosaicConeIndices,:);
-        photocurrentStimResponseInstances(submosaicIndex,:,:) = submosaicInstances(:, coneIndexOfPeakResponse, :);
-        photocurrentStimNoiseFreeResponse(submosaicIndex,:) = submosaicNoiseFreeSignals(coneIndexOfPeakResponse,:);
+        if (~isempty(submosaicConeIndices))
+            % We have at least one cone of this type
+            submosaicDataIsValid(submosaicIndex) = true;
+            
+            % find the current submosaic's cone that has the max noise-free delta (stim - noStim) photocurrent signal
+            submosaicNoiseFreeDeltaPhotocurrents = stimData.noiseFreePhotocurrents(submosaicConeIndices,:) - noStimData.noiseFreePhotocurrents(submosaicConeIndices,:);
+
+            [maxDeltaPhotocurrent, idx] = max(submosaicNoiseFreeDeltaPhotocurrents(:));
+            [coneIndexOfPeakResponse, timeBinOfPeakResponse(submosaicIndex)] = ind2sub(size(submosaicNoiseFreeDeltaPhotocurrents), idx);
+
+            submosaicInstances        = noStimData.responseInstanceArray.theMosaicIsomerizations(:,submosaicConeIndices,:);
+            submosaicNoiseFreeSignals = noStimData.noiseFreeIsomerizations(submosaicConeIndices,:);
+            isomerizationNoStimResponseInstances(submosaicIndex,:,:) = submosaicInstances(:, coneIndexOfPeakResponse, :);
+            isomerizationNoStimNoiseFreeResponse(submosaicIndex,:) = submosaicNoiseFreeSignals(coneIndexOfPeakResponse,:);
+
+            submosaicInstances        = noStimData.responseInstanceArray.theMosaicPhotocurrents(:,submosaicConeIndices,:);
+            submosaicNoiseFreeSignals = noStimData.noiseFreePhotocurrents(submosaicConeIndices,:);
+            photocurrentNoStimResponseInstances(submosaicIndex,:,:) = submosaicInstances(:, coneIndexOfPeakResponse, :);
+            photocurrentNoStimNoiseFreeResponse(submosaicIndex,:) = submosaicNoiseFreeSignals(coneIndexOfPeakResponse,:);
+
+            submosaicInstances        = stimData.responseInstanceArray.theMosaicIsomerizations(:,submosaicConeIndices,:);
+            submosaicNoiseFreeSignals = stimData.noiseFreeIsomerizations(submosaicConeIndices,:);
+            isomerizationStimResponseInstances(submosaicIndex,:,:) = submosaicInstances(:, coneIndexOfPeakResponse, :);
+            isomerizationStimNoiseFreeResponse(submosaicIndex,:) = submosaicNoiseFreeSignals(coneIndexOfPeakResponse,:);
+
+            submosaicInstances        = stimData.responseInstanceArray.theMosaicPhotocurrents(:,submosaicConeIndices,:);
+            submosaicNoiseFreeSignals = stimData.noiseFreePhotocurrents(submosaicConeIndices,:);
+            photocurrentStimResponseInstances(submosaicIndex,:,:) = submosaicInstances(:, coneIndexOfPeakResponse, :);
+            photocurrentStimNoiseFreeResponse(submosaicIndex,:) = submosaicNoiseFreeSignals(coneIndexOfPeakResponse,:);
+        else
+            % We do not have any cones of this type
+            submosaicDataIsValid(submosaicIndex) = false;
+        end
     end
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -77,101 +85,105 @@ function hFig = visualizeSingleConeResponseInstances(theMosaic, stimData, noStim
     opacity = 0.2;
     
     for signalIndex = 1:2
+        
         hFig{signalIndex} = figure(4+signalIndex); clf;
         set(hFig{signalIndex}, 'Position', [10 10 900 950], 'Color', [1 1 1]);
     
         for submosaicIndex = 1:3
             
-            % NULL STIMULUS
-            subplot('Position', subplotPosVectors(submosaicIndex,1).v);
-            hold on
-            if (signalIndex == 1)
-                for instanceIndex = 1:nTrials
-                    scatter(1000*noStimData.responseInstanceArray.timeAxis, squeeze(isomerizationNoStimResponseInstances(submosaicIndex,instanceIndex,:)), 'ks', 'MarkerEdgeColor', [0.2 0.2 0.2], 'MarkerFaceColor', [0.2 0.2 0.2], 'LineWidth', 1.0);
+            if (submosaicDataIsValid(submosaicIndex))
+                % NULL STIMULUS
+                subplot('Position', subplotPosVectors(submosaicIndex,1).v);
+                hold on
+                if (signalIndex == 1)
+                    for instanceIndex = 1:nTrials
+                        scatter(1000*noStimData.responseInstanceArray.timeAxis, squeeze(isomerizationNoStimResponseInstances(submosaicIndex,instanceIndex,:)), 'ks', 'MarkerEdgeColor', [0.2 0.2 0.2], 'MarkerFaceColor', [0.2 0.2 0.2], 'LineWidth', 1.0);
+                    end
+                    plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(isomerizationNoStimNoiseFreeResponse(submosaicIndex,:)), 'r-', 'LineWidth', 1.5);
+                    alpha(opacity);
+                else
+                    for instanceIndex = 1:nTrials
+                        h = plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(photocurrentNoStimResponseInstances(submosaicIndex,instanceIndex,:)), '-', 'Color', [0.2 0.2 0.2],'LineWidth', 1.0);
+                        h.Color(4) = opacity;
+                    end
+                    plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(photocurrentNoStimNoiseFreeResponse(submosaicIndex,:)), 'r-', 'LineWidth', 1.5);
                 end
-                plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(isomerizationNoStimNoiseFreeResponse(submosaicIndex,:)), 'r-', 'LineWidth', 1.5);
-                alpha(opacity);
-            else
-                for instanceIndex = 1:nTrials
-                    h = plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(photocurrentNoStimResponseInstances(submosaicIndex,instanceIndex,:)), '-', 'Color', [0.2 0.2 0.2],'LineWidth', 1.0);
-                    h.Color(4) = opacity;
+                hold off
+
+                if (signalIndex == 1)
+                    set(gca, 'YLim', isomerizationsRange, 'XLim', 1000*[noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)], 'FontSize', 12);
+                    if (submosaicIndex == 1)
+                        title(sprintf('NULL stim (nTrials = %d)\npeak L-cone isomerization responses', nTrials));
+                    elseif (submosaicIndex == 2)
+                        title(sprintf('NULL stim (nTrials = %d)\npeak M-cone isomerization responses', nTrials));
+                    elseif (submosaicIndex == 3)
+                        title(sprintf('NULL stim (nTrials = %d)\npeak S-cone isomerization responses', nTrials));
+                    end
+                    ylabel('R*/cone/sec');
+                else
+                    set(gca, 'YLim',photocurrentsRange, 'XLim', 1000*[noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)], 'FontSize', 12);
+                    if (submosaicIndex == 1)
+                        title(sprintf('NULL stim (nTrials = %d)\npeak L-cone photocurrent responses', nTrials));
+                    elseif (submosaicIndex == 2)
+                        title(sprintf('NULL stim (nTrials = %d)\npeak M-cone photocurrent responses', nTrials));
+                    elseif (submosaicIndex == 3)
+                        title(sprintf('NULL stim (nTrials = %d)\npeak S-cone photocurrent responses', nTrials));
+                    end
+                    ylabel('pAmps');
                 end
-                plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(photocurrentNoStimNoiseFreeResponse(submosaicIndex,:)), 'r-', 'LineWidth', 1.5);
-            end
-            hold off
-            
-            if (signalIndex == 1)
-                set(gca, 'YLim', isomerizationsRange, 'XLim', 1000*[noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)], 'FontSize', 12);
-                if (submosaicIndex == 1)
-                    title(sprintf('NULL stim (nTrials = %d)\npeak L-cone isomerization responses', nTrials));
-                elseif (submosaicIndex == 2)
-                    title(sprintf('NULL stim (nTrials = %d)\npeak M-cone isomerization responses', nTrials));
-                elseif (submosaicIndex == 3)
-                    title(sprintf('NULL stim (nTrials = %d)\npeak S-cone isomerization responses', nTrials));
+
+                if (submosaicIndex == 3)
+                    xlabel('time (msec)');
                 end
-                ylabel('R*/cone/sec');
-            else
-                set(gca, 'YLim',photocurrentsRange, 'XLim', 1000*[noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)], 'FontSize', 12);
-                if (submosaicIndex == 1)
-                    title(sprintf('NULL stim (nTrials = %d)\npeak L-cone photocurrent responses', nTrials));
-                elseif (submosaicIndex == 2)
-                    title(sprintf('NULL stim (nTrials = %d)\npeak M-cone photocurrent responses', nTrials));
-                elseif (submosaicIndex == 3)
-                    title(sprintf('NULL stim (nTrials = %d)\npeak S-cone photocurrent responses', nTrials));
+
+                % STIMULUS
+                subplot('Position', subplotPosVectors(submosaicIndex,2).v);
+                hold on
+                if (signalIndex == 1)
+                    for instanceIndex = 1:nTrials
+                        scatter(1000*noStimData.responseInstanceArray.timeAxis, squeeze(isomerizationStimResponseInstances(submosaicIndex,instanceIndex,:)), 'ks', 'MarkerEdgeColor', [0.2 0.2 0.2], 'MarkerFaceColor', [0.2 0.2 0.2], 'LineWidth', 1.0);
+                    end
+                    plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(isomerizationStimNoiseFreeResponse(submosaicIndex,:)), 'r-', 'LineWidth', 1.5);
+                    alpha(opacity);
+                else
+                    for instanceIndex = 1:nTrials
+                        h = plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(photocurrentStimResponseInstances(submosaicIndex,instanceIndex,:)), '-', 'Color', [0.2 0.2 0.2], 'LineWidth', 1.0);
+                        h.Color(4) = opacity;
+                    end
+                    plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(photocurrentStimNoiseFreeResponse(submosaicIndex,:)), 'r-', 'LineWidth', 1.5);
                 end
-                ylabel('pAmps');
-            end
-            
-            if (submosaicIndex == 3)
-                xlabel('time (msec)');
-            end
-        
-            % STIMULUS
-            subplot('Position', subplotPosVectors(submosaicIndex,2).v);
-            hold on
-            if (signalIndex == 1)
-                for instanceIndex = 1:nTrials
-                    scatter(1000*noStimData.responseInstanceArray.timeAxis, squeeze(isomerizationStimResponseInstances(submosaicIndex,instanceIndex,:)), 'ks', 'MarkerEdgeColor', [0.2 0.2 0.2], 'MarkerFaceColor', [0.2 0.2 0.2], 'LineWidth', 1.0);
+                hold off
+
+                if (signalIndex == 1)
+                    set(gca, 'YLim', isomerizationsRange, 'XLim', 1000*[noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)], 'FontSize', 12);
+                    set(gca, 'YTickLabel', {});
+                    if (submosaicIndex == 1)
+                        title(sprintf('Stim (nTrials = %d)\npeak L-cone isomerization responses', nTrials));
+                    elseif (submosaicIndex == 2)
+                        title(sprintf('Stim (nTrials = %d)\npeak M-cone isomerization responses (R*/cone/sec)', nTrials));
+                    elseif (submosaicIndex == 3)
+                        title(sprintf('Stim (nTrials = %d)\npeak S-cone isomerization responses (R*/cone/sec)', nTrials));
+                    end
+                else
+                    set(gca, 'YLim', photocurrentsRange, 'XLim', 1000*[noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)], 'FontSize', 12);
+                    set(gca, 'YTickLabel', {});
+                    if (submosaicIndex == 1)
+                        title(sprintf('Stim (nTrials = %d)\npeak L-cone photocurrent responses', nTrials));
+                    elseif (submosaicIndex == 2)
+                        title(sprintf('Stim (nTrials = %d)\npeak M-cone photocurrent responses', nTrials));
+                    elseif (submosaicIndex == 3)
+                        title(sprintf('Stim (nTrials = %d)\npeak S-cone photocurrent responses', nTrials));
+                    end
                 end
-                plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(isomerizationStimNoiseFreeResponse(submosaicIndex,:)), 'r-', 'LineWidth', 1.5);
-                alpha(opacity);
-            else
-                for instanceIndex = 1:nTrials
-                    h = plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(photocurrentStimResponseInstances(submosaicIndex,instanceIndex,:)), '-', 'Color', [0.2 0.2 0.2], 'LineWidth', 1.0);
-                    h.Color(4) = opacity;
+
+                if (submosaicIndex == 3)
+                    xlabel('time (msec)');
                 end
-                plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(photocurrentStimNoiseFreeResponse(submosaicIndex,:)), 'r-', 'LineWidth', 1.5);
-            end
-            hold off
-            
-            if (signalIndex == 1)
-                set(gca, 'YLim', isomerizationsRange, 'XLim', 1000*[noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)], 'FontSize', 12);
-                set(gca, 'YTickLabel', {});
-                if (submosaicIndex == 1)
-                    title(sprintf('Stim (nTrials = %d)\npeak L-cone isomerization responses', nTrials));
-                elseif (submosaicIndex == 2)
-                    title(sprintf('Stim (nTrials = %d)\npeak M-cone isomerization responses (R*/cone/sec)', nTrials));
-                elseif (submosaicIndex == 3)
-                    title(sprintf('Stim (nTrials = %d)\npeak S-cone isomerization responses (R*/cone/sec)', nTrials));
-                end
-            else
-                set(gca, 'YLim', photocurrentsRange, 'XLim', 1000*[noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)], 'FontSize', 12);
-                set(gca, 'YTickLabel', {});
-                if (submosaicIndex == 1)
-                    title(sprintf('Stim (nTrials = %d)\npeak L-cone photocurrent responses', nTrials));
-                elseif (submosaicIndex == 2)
-                    title(sprintf('Stim (nTrials = %d)\npeak M-cone photocurrent responses', nTrials));
-                elseif (submosaicIndex == 3)
-                    title(sprintf('Stim (nTrials = %d)\npeak S-cone photocurrent responses', nTrials));
-                end
-            end
-            
-            if (submosaicIndex == 3)
-                xlabel('time (msec)');
-            end
+            end  % submosaicDataIsValid(submosaicIndex)
         end % submosaicIndex
-        drawnow;
     end % signalIndex
+    drawnow;
+    
 end
 
 
