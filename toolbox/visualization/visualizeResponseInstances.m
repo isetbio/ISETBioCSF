@@ -338,7 +338,6 @@ function hFig = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData)
     
         colormap(gray(1024));
         drawnow;
-        pause
     end
 end
 
