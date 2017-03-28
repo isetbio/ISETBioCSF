@@ -50,10 +50,13 @@ p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischa
 p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('visualizePerformance', false, @islogical);
 % PERFORMANCE COMPUTATION OPTIONS
-p.addParameter('performanceClassifier', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'mlpt', 'mlpe'}));
+p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
+p.addParameter('performanceClassifier', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'mlpt', 'mlpe', 'mlgtGaussianRF'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
 p.addParameter('performanceClassifierTrainingSamples', [], @isnumeric);
 p.addParameter('performanceEvidenceIntegrationTime', [], @isnumeric);
+p.addParameter('summaryCurveMarkerType', 'o', @ischar);
+p.addParameter('summaryCurveLegend', '', @ischar);
 p.addParameter('pcaComponentsNum', 60, @isnumeric);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
@@ -125,6 +128,7 @@ rParams.oiParams = modifyStructParams(rParams.oiParams, ...
 rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
     'conePacking', p.Results.coneMosaicPacking, ...                       
     'fieldOfViewDegs', p.Results.coneMosaicFOVDegs, ... 
+    'realisticSconeSubmosaic', true, ...             % if true, there will be no S-cones in the central 0.3 degs, and the S-cone lattice will be semiregular
     'integrationTimeInSeconds', p.Results.integrationTime, ...
     'isomerizationNoise', 'random',...               % select from {'random', 'frozen', 'none'}
     'osNoise', p.Results.osNoise, ...                % select from {'random', 'frozen', 'none'}
@@ -180,6 +184,7 @@ if (strcmp(thresholdParams.method, 'svm')) || ...
    (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')) || ...
    (strcmp(thresholdParams.method, 'svmGaussianRF'))
      thresholdParams = modifyStructParams(thresholdParams, ...
+         'spatialPoolingKernelParams', p.Results.spatialPoolingKernelParams, ...
          'useRBFKernel', false);   % set to true to use a nonlinear (radial basis function) - based SVM
 end
 
@@ -196,7 +201,7 @@ for pedestalLuminanceIndex = 1:numel(pedestalLuminanceList)
     
     %% Background params
     pedestalLuminance = pedestalLuminanceList(pedestalLuminanceIndex);
-    baseLum = 50;
+    baseLum = 12.5;
     rParams.backgroundParams = modifyStructParams(rParams.backgroundParams, ...
         'backgroundxyY', [0.31 0.316 baseLum]',...  % Illuminant-C chromaticity
         'monitorFile', 'CRT-MODEL', ...
@@ -317,9 +322,9 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance)
     pedestalIlluminanceList = LumToTrolands(pedestalLuminanceList, pupilAreaMM2);
     thresholdIlluminance = LumToTrolands(thresholdLuminance, pupilAreaMM2);
     
-    YLimContrast = [0.01 1000];
-    YLimIlluminance = [0.1 10000];
-    XLimIlluminance = [0.11 10000];
+    YLimContrast = [0.001 10];
+    YLimIlluminance = [0.1 1000];
+    XLimIlluminance = [1 10000];
     
     if (strcmp(plotType, 'loglog'))
         pedestalIlluminanceList = log10(pedestalIlluminanceList);
@@ -335,13 +340,49 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance)
         illuminanceTicks = 1:10;
     end
     
+    
+    GeislerData.x  = [-0.245    0.2914    0.7881    1.444     1.94      2.477     3.013   3.43    3.927    4.583];
+    GeislerData.y1 = [-0.3487  -0.25    -0.072      0.2362    0.5395    0.9934    1.368   1.763   2.197    2.928];
+    GeislerData.y2 = [0.2237    0.3421   0.4408     0.7961    1.013     1.428     1.783   2.237   2.711    3.283];
+    GeislerData.y3 = [0.937     1.092    1.23       1.467     1.586     1.98      2.336   2.73    3.164    3.836];
+    
     hFig = figure(1000); clf;
     set(hFig, 'Position', [10 10 450 900], 'Color', [1 1 1]);
     
     
+    markerFaceColor1 = [0.7 0.7 0.7];
+    markerEdgeColor1 = [0 0 0];
+    markerFaceColor2 = [0.7 0.7 0.7];
+    markerEdgeColor2 = [0 0 0];
+    markerFaceColor3 = [0.7 0.7 0.7];
+    markerEdgeColor3 = [0 0 0];
+        
     subplot(2,1,1);
-    plot(pedestalIlluminanceList, thresholdIlluminance, 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
+    hold on;
+    if (strcmp(p.Results.summaryCurveMarkerType, 'o'))
+        markerFaceColor2 = [0.9 0.9 0.9];
+        markerEdgeColor2 = [0.5 0.5 0.5];
+        markerFaceColor3 = [0.9 0.9 0.9];
+        markerEdgeColor3 = [0.5 0.5 0.5]; 
+    elseif (strcmp(p.Results.summaryCurveMarkerType, 's'))
+        markerFaceColor1 = [0.9 0.9 0.9];
+        markerEdgeColor1 = [0.5 0.5 0.5];
+        markerFaceColor3 = [0.9 0.9 0.9];
+        markerEdgeColor3 = [0.5 0.5 0.5];
+    elseif (strcmp(p.Results.summaryCurveMarkerType, '^'))
+        markerFaceColor1 = [0.9 0.9 0.9];
+        markerEdgeColor1 = [0.5 0.5 0.5];
+        markerFaceColor2 = [0.9 0.9 0.9];
+        markerEdgeColor2 = [0.5 0.5 0.5];
+    end
+    plot(GeislerData.x, GeislerData.y1, 'ko-', 'MarkerSize', 12, 'MarkerEdgeColor', markerEdgeColor1, 'MarkerFaceColor', markerFaceColor1, 'LineWidth', 1.5);
+    plot(GeislerData.x, GeislerData.y2, 'ks-', 'MarkerSize', 12, 'MarkerEdgeColor', markerEdgeColor2, 'MarkerFaceColor', markerFaceColor2, 'LineWidth', 1.5);
+    plot(GeislerData.x, GeislerData.y3, 'k^-', 'MarkerSize', 12, 'MarkerEdgeColor', markerEdgeColor3, 'MarkerFaceColor', markerFaceColor3, 'LineWidth', 1.5);
+    plot(pedestalIlluminanceList, thresholdIlluminance, 'r-', 'Marker', p.Results.summaryCurveMarkerType, 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
+    hold off
     axis 'equal'
+    hL = legend({'Geisler (3.5'')',  'Geisler (10'')', 'Geisler (50'')', p.Results.summaryCurveLegend});
+    set(hL, 'FontSize', 12, 'Location', 'NorthWest');
     set(gca, 'XLim', XLimIlluminance, 'YLim', YLimIlluminance, 'XTick', -5:5, 'YTick', -5:5);
     title(sprintf('%s (%s)',thresholdParams.signalSource, thresholdParams.method))
     if (strcmp(plotType, 'loglog'))
@@ -357,7 +398,7 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance)
     
     
     subplot(2,1,2)
-    plot(pedestalIlluminanceList, detectionThresholdContrast, 'rs-', 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
+    plot(pedestalIlluminanceList, detectionThresholdContrast, 'r-', 'Marker', p.Results.summaryCurveMarkerType, 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
     axis 'equal'
     set(gca, 'XLim', XLimIlluminance, 'YLim', YLimContrast, 'XTick', -5:5, 'YTick', -5:5);
     if (strcmp(plotType, 'loglog'))

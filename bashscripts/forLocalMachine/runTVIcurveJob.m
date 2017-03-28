@@ -2,22 +2,58 @@ function runTVIcurveJob()
 
     close all;
     
-    % Set 
-    nTrainingSamples = 4;
-    freezeNoise = false;
-    emPathType = 'frozen0';
+    computationIntance = 2;  % 0, 1 or 2
     
-    lowContrast =  1e-3;
-    highContrast = 0.3;
-    nContrastsPerPedestalLuminance = 12;
+    freezeNoise = false;
+    
+    % Set 
+    nTrainingSamples = 512;
     
     lowPedestalLuminance = 3.3;
     highPedestalLuminance = 450;
     nPedestalLuminanceLevels = 12;
         
-    fieldOfViewDegs = 1.5;
+    emPathType = 'random'; % 'random'; %'frozen0';  % random
+    
     testDiameterDegs = [3.5 10 50]/60;      % spot diameters in Geisler 1979 paper
-    testDiameterDegs = testDiameterDegs(1);
+    sizeIndex = 2;
+    testDiameterDegs = testDiameterDegs(sizeIndex);
+
+    
+    if (sizeIndex == 3)
+        fieldOfViewDegs = 1.2;
+        lowContrast =  1e-3;
+        highContrast = 0.3;
+        nContrastsPerPedestalLuminance = 12;
+        
+        lowContrast =  3e-3;
+        nContrastsPerPedestalLuminance = 11;
+        nTrainingSamples = 128;
+        freezeNoise = true;
+        summaryCurveMarkerType = 'o';
+        summaryCurveLegend = sprintf('ISETbio (%2.0f'')', testDiameterDegs*60);
+        nTrainingSamples = 128
+        emPathType = 'frozen0'
+        
+    elseif (sizeIndex == 2)
+        fieldOfViewDegs = 0.75;
+        lowContrast = 0.01;
+        highContrast = 1.0;
+        nContrastsPerPedestalLuminance = 12;
+        summaryCurveMarkerType = 's';
+        summaryCurveLegend = sprintf('ISETbio (%2.0f'')', testDiameterDegs*60);
+        
+    elseif (sizeIndex == 1)
+        fieldOfViewDegs = 0.25;
+        lowContrast =  2e-2;
+        highContrast = 4;
+        nContrastsPerPedestalLuminance = 12;
+        summaryCurveMarkerType = '^';
+        summaryCurveLegend = sprintf('ISETbio (%2.1f'')', testDiameterDegs*60);
+        nTrainingSamples = 512
+    end
+    
+    
     
     stimulusDurationSecs = 30/1000;         % 30 milliseconds, as in Geisler 1979
     stimulusTemporalEnvelope = 'square';    % choose between 'square', and 'Gaussian'
@@ -29,8 +65,16 @@ function runTVIcurveJob()
     responseStabilizationMilliseconds = 100;
     responseExtinctionMilliseconds = 400;
     
+    spatialPoolingKernelParams.type = 'GaussianRF';
+    spatialPoolingKernelParams.shrinkageFactor = 0.20;
+    spatialPoolingKernelParams.adjustForConeDensity = true;
     
-    computationIntance = 0;
+    % V1 spatial kernel
+    %spatialPoolingKernelParams.type = 'GaborStimulusMatchedQuadraturePhase';
+    %spatialPoolingKernelParams.activationFunction = 'energy';
+    %spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    %spatialPoolingKernelParams.adjustForConeDensity = true;
+    
     if (computationIntance == 0)
         % All conditions in 1 MATLAB session
         ramPercentageEmployed = 1.0;  % use all the RAM
@@ -46,12 +90,12 @@ function runTVIcurveJob()
     end
     
     computeMosaic = ~true;
-    computeResponses = ~true;
+    computeResponses = true;
     visualizeResponses = true;
-    visualizeOuterSegmentFilters = ~true;
+    visualizeOuterSegmentFilters = true;
     findPerformance = ~true;
     visualizePerformance = ~true;
-    visualizeSpatialScheme = ~true;
+    visualizeSpatialScheme = true;
     
     if (computeResponses) || (visualizeResponses) || (visualizeOuterSegmentFilters)
         c_TVIcurve(...
@@ -114,7 +158,10 @@ function runTVIcurveJob()
             'findPerformance', findPerformance, ...
             'visualizePerformance', visualizePerformance, ...
             'performanceSignal', 'photocurrents', ... % 'isomerizations', ... % 'photocurrents', ...
-            'performanceClassifier', 'svmSpaceTimeSeparable', ... % 'mlpt', 'svmGaussianRF', ...
+            'performanceClassifier', 'svmGaussianRF', ... % 'mlgtGaussianRF', ... % 'svmGaussianRF', ... % 'mlpt', 'svmGaussianRF', ...
+            'spatialPoolingKernelParams', spatialPoolingKernelParams, ...
+            'summaryCurveMarkerType', summaryCurveMarkerType, ...
+            'summaryCurveLegend', summaryCurveLegend, ...
             'visualizeResponses', false);
     end
     

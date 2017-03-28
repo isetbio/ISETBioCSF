@@ -1,4 +1,4 @@
-function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLevelDirParams, visualizeSpatialScheme, v1FilterBankType)
+function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLevelDirParams, visualizeSpatialScheme, spatialPoolingKernelParams)
     % Filter width
     filterWidthInDegrees = 0.5*spatialParams.fieldOfViewDegs;
     
@@ -39,7 +39,7 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
     yaxis = yaxis - mean(yaxis);
             
     % Generate the V1 filter bank        
-    V1filterBank = makeV1filters(spatialParams, filterWidthInDegrees, coneLocsInDegs, xaxis, yaxis, coneDensity, v1FilterBankType);
+    V1filterBank = makeV1FilterBank(spatialParams, filterWidthInDegrees, coneLocsInDegs, xaxis, yaxis, coneDensity, spatialPoolingKernelParams);
 
     if (visualizeSpatialScheme)
         hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, ...
@@ -48,7 +48,7 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
 end
 
 
-function V1filterBank = makeV1filters(spatialParams, filterWidthDegs, coneLocsDegs, xaxisDegs, yaxisDegs, coneDensity, v1FilterBankType)
+function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLocsDegs, xaxisDegs, yaxisDegs, coneDensity, spatialPoolingKernelParams)
 
     % filter width
     spatialParams.gaussianFWHMDegs = filterWidthDegs/2.0;
@@ -74,12 +74,14 @@ function V1filterBank = makeV1filters(spatialParams, filterWidthDegs, coneLocsDe
     [~, idx] = pdist2(rfCoordsDegs, coneLocsDegs, 'euclidean', 'Smallest', 1);
     V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingProfile(idx);
     V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingProfile(idx);
-    
-    % Adjust weights by the inverse of the coneDensity
     maxCos = max(abs(V1filterBank.cosPhasePoolingWeights(:)));
     maxSin = max(abs(V1filterBank.sinPhasePoolingWeights(:)));
-    V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingWeights ./ coneDensity;
-    V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights ./ coneDensity;
+    
+    % Adjust weights by the inverse of the coneDensity
+    if (spatialPoolingKernelParams.adjustForConeDensity)
+        V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingWeights ./ coneDensity;
+        V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights ./ coneDensity;
+    end
     
     V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingWeights / max(abs(V1filterBank.cosPhasePoolingWeights(:))) * maxCos;
     V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights / max(abs(V1filterBank.sinPhasePoolingWeights(:))) * maxSin;
@@ -88,12 +90,7 @@ function V1filterBank = makeV1filters(spatialParams, filterWidthDegs, coneLocsDe
     netWeight = 1/sqrt(2.0) * sqrt(sum(V1filterBank.cosPhasePoolingWeights(:).^2) + sum(V1filterBank.sinPhasePoolingWeights(:).^2));
     V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingWeights/netWeight;
     V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights/netWeight;
-    
-    if (strcmp(v1FilterBankType, 'svmV1FilterBank'))
-        V1filterBank.activationFunction = 'energy';
-    elseif (strcmp(v1FilterBankType, 'svmV1FilterBankFullWaveRectAF'))
-        V1filterBank.activationFunction = 'fullWaveRectifier';
-    end
-    
+
+    V1filterBank.activationFunction = spatialPoolingKernelParams.activationFunction;
 end
 

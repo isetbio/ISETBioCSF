@@ -47,6 +47,7 @@ p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
 p.addParameter('thresholdParams',[],@isemptyorstruct);
+p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
 p.addParameter('freezeNoise',false,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('parforWorkersNum', 12, @isnumeric);
@@ -114,6 +115,15 @@ if (isempty(thresholdParams))
     thresholdParams = thresholdParamsGenerate;
 end
 
+
+%% Set up the rw object for this program
+rwObject = IBIOColorDetectReadWriteBasic;
+readProgram = 't_coneCurrentEyeMovementsResponseInstances';
+writeProgram = mfilename;
+
+constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
+
+
 %% svmV1FilterBank - related checks and computations
 if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && ((strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')))
     error('Currently, classification using the ''svmV1FilterBank'' method is only implemented for spatially-varying density hex mosaics.\n')
@@ -124,23 +134,17 @@ end
 
 if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF'))
     % Generate V1 filter bank struct and add it to thresholdParams
-    V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams.method);
+    V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams.spatialPoolingKernelParams);
     thresholdParams = modifyStructParams(thresholdParams, ...
-        'V1filterBank', V1filterBank);
+        'spatialPoolingKernel', V1filterBank);
 end
 
-if (strcmp(thresholdParams.method, 'svmGaussianRF'))
-    spatialPoolingKernel = generateSpatialPoolingKernel(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams.method);
+if (strcmp(thresholdParams.method, 'svmGaussianRF')) || (strcmp(thresholdParams.method, 'mlgtGaussianRF'))
+    gaussianPoolingKernel = generateSpatialPoolingKernel(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams.spatialPoolingKernelParams, constantParamsList);
     thresholdParams = modifyStructParams(thresholdParams, ...
-        'spatialPoolingKernel', spatialPoolingKernel);
+        'spatialPoolingKernel', gaussianPoolingKernel);
 end
 
-%% Set up the rw object for this program
-rwObject = IBIOColorDetectReadWriteBasic;
-readProgram = 't_coneCurrentEyeMovementsResponseInstances';
-writeProgram = mfilename;
-
-constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
 
 %% Compute if desired
 if (p.Results.compute)   

@@ -1,4 +1,4 @@
-function spatialPoolingFilter = generateSpatialPoolingKernel(spatialParams, mosaicParams, topLevelDirParams, visualizeSpatialScheme, spatialPoolingKernelType)
+function [spatialPoolingFilter, hFig] = generateSpatialPoolingKernel(spatialParams, mosaicParams, topLevelDirParams, visualizeSpatialScheme, spatialPoolingKernelParams, paramsList)
 
     % Load the mosaic
     coneParamsList = {topLevelDirParams, mosaicParams};
@@ -33,26 +33,34 @@ function spatialPoolingFilter = generateSpatialPoolingKernel(spatialParams, mosa
     yaxis = yaxis - mean(yaxis);
     
     % Generate the spatial pooling filter      
-    spatialPoolingFilter = makeSpatialPoolingFilter(spatialParams, coneLocsInDegs, xaxis, yaxis, coneDensity, spatialPoolingKernelType);
+    spatialPoolingFilter = makeSpatialPoolingFilter(spatialParams, coneLocsInDegs, xaxis, yaxis, coneDensity, spatialPoolingKernelParams);
     
     if (visualizeSpatialScheme)
         hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, ...
-            spatialPoolingFilter, coneLocsInDegs, mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs);
+            spatialPoolingKernelParams, spatialPoolingFilter, coneLocsInDegs, mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs);
+    
+        % Save figure
+        theProgram = mfilename;
+        rwObject = IBIOColorDetectReadWriteBasic;
+        data = 0;
+        fileName = sprintf('SpatialPooling');
+        rwObject.write(fileName, data, paramsList, theProgram, ...
+           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+       
     end % visualizeSpatialScheme
 
 end
 
-function spatialPoolingFilter = makeSpatialPoolingFilter(spatialParams, coneLocsDegs, xaxis, yaxis, coneDensity, spatialPoolingKernelType)
+function spatialPoolingFilter = makeSpatialPoolingFilter(spatialParams, coneLocsDegs, xaxis, yaxis, coneDensity, spatialPoolingKernelParams)
 
     spatialPoolingFilter = [];
-  
     [X,Y] = meshgrid(xaxis, yaxis);
-    switch spatialPoolingKernelType
-        case 'svmGaussianRF'
-            sigma = spatialParams.testDiameterDegs/1.5;
+    switch spatialPoolingKernelParams.type
+        case 'GaussianRF'
+            sigma = spatialPoolingKernelParams.shrinkageFactor  * spatialParams.testDiameterDegs/2.0;
             RFprofile = exp(-0.5*(X/sigma).^2) .* exp(-0.5*(Y/sigma).^2);
         otherwise
-            error('Unknown spatialPoolingKernelType: ''%s''.', spatialPoolingKernelType);
+            error('Unknown spatialPoolingKernelType: ''%s''.', spatialPoolingKernelParams.type);
     end % switch
     
     spatialPoolingFilter.RFprofile = RFprofile / max(abs(RFprofile(:)));
@@ -60,10 +68,12 @@ function spatialPoolingFilter = makeSpatialPoolingFilter(spatialParams, coneLocs
     rfCoordsDegs = [X(:) Y(:)];
     [~, idx] = pdist2(rfCoordsDegs, coneLocsDegs, 'euclidean', 'Smallest', 1);
     spatialPoolingFilter.poolingWeights = spatialPoolingFilter.RFprofile(idx);
-    
-    % Adjust weights by the inverse of the coneDensity
     maxWeight = max(spatialPoolingFilter.poolingWeights(:));
-    spatialPoolingFilter.poolingWeights = spatialPoolingFilter.poolingWeights ./ coneDensity;
+     
+    % Adjust weights by the inverse of the coneDensity
+    if (spatialPoolingKernelParams.adjustForConeDensity)
+        spatialPoolingFilter.poolingWeights = spatialPoolingFilter.poolingWeights ./ coneDensity;
+    end
     spatialPoolingFilter.poolingWeights = spatialPoolingFilter.poolingWeights / max(abs(spatialPoolingFilter.poolingWeights(:))) * maxWeight;
     
     % Normalize with respect to total energy over space

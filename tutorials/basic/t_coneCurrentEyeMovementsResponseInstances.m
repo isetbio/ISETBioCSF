@@ -548,7 +548,6 @@ if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visual
             rwObject.write(fileName, data, paramsList, theProgram, ...
                 'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{5}, 'FigureType', 'pdf');
             
-            
         end
     end
     
