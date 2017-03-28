@@ -209,87 +209,136 @@ function hFig = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData)
     isomerizationsRange = [...
         min([min(noStimData.noiseFreeIsomerizations(:)) min(stimData.noiseFreeIsomerizations(:))]) ...
         max([max(noStimData.noiseFreeIsomerizations(:)) max(stimData.noiseFreeIsomerizations(:))]) ];
+    
+    if (isomerizationsRange(1) / isomerizationsRange(2) < 0.9)
+        isomerizationsRange(2) = isomerizationsRange(2) * 1.1;
+        isomerizationsRange(1) = isomerizationsRange(1) / 1.1;
+    end
+    
+    if (isomerizationsRange(1) > isomerizationsRange(2)*0.50)
+        isomerizationsRange(1) = isomerizationsRange(2)*0.50;
+    end
+    
     photocurrentsRange = [...
         min([min(noStimData.noiseFreePhotocurrents(:)) min(stimData.noiseFreePhotocurrents(:))]) ...
         max([max(noStimData.noiseFreePhotocurrents(:)) max(stimData.noiseFreePhotocurrents(:))]) ];
     
+    deltaRange = photocurrentsRange(2)-photocurrentsRange(1);
+    if (deltaRange < 2)
+        midRange = 0.5*(photocurrentsRange(2)+photocurrentsRange(1));
+        photocurrentsRange(1) = midRange - 1;
+        photocurrentsRange(2) = midRange + 1;
+    end
+    
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', 2, ...
            'colsNum', 2, ...
-           'heightMargin',   0.1, ...
+           'heightMargin',   0.08, ...
            'widthMargin',    0.01, ...
-           'leftMargin',     0.05, ...
+           'leftMargin',     0.07, ...
            'rightMargin',    0.001, ...
-           'bottomMargin',   0.05, ...
-           'topMargin',      0.04);
+           'bottomMargin',   0.06, ...
+           'topMargin',      0.03);
        
     hFig{2} = figure(2); clf;
-    set(hFig{2}, 'Position', [10 10 1100 820], 'Color', [1 1 1]);
+    set(hFig{2}, 'Position', [10 10 770 850], 'Color', [1 1 1]);
     subplot('Position', subplotPosVectors(1,1).v);
     imagesc(1000*noStimData.responseInstanceArray.timeAxis, 1:size(noStimData.noiseFreeIsomerizations,1), noStimData.noiseFreeIsomerizations);
-    set(gca, 'CLim', isomerizationsRange, 'FontSize', 12);
-    title(sprintf('NULL stim\nnoise-free isomerization rate (R*/cone/sec)'));
+    set(gca, 'CLim', isomerizationsRange, 'FontSize', 14);
     ylabel('cone #');
+    hcb = colorbar('northoutside');
+    colorTitleHandle = get(hcb,'Title');
+    set(colorTitleHandle ,'String', 'isomerization rates (R*/cone/sec)');
+    set(hcb, 'FontSize', 12);
     
     subplot('Position', subplotPosVectors(1,2).v);
     imagesc(1000*stimData.responseInstanceArray.timeAxis, 1:size(stimData.noiseFreeIsomerizations,1), stimData.noiseFreeIsomerizations);
-    set(gca, 'CLim', isomerizationsRange, 'YTickLabel', {}, 'FontSize', 12);
-    title(sprintf('Stim\nnoise-free isomerization rate (R*/cone/sec)'));
-    colorbar
+    set(gca, 'CLim', isomerizationsRange, 'YTickLabel', {}, 'FontSize', 14);
+    
+    hcb = colorbar('northoutside');
+    colorTitleHandle = get(hcb,'Title');
+    set(colorTitleHandle ,'String', 'isomerization rates (R*/cone/sec)');
+    set(hcb, 'FontSize', 12);
     
     subplot('Position', subplotPosVectors(2,1).v);
     imagesc(1000*noStimData.responseInstanceArray.timeAxis, 1:size(noStimData.noiseFreePhotocurrents,1), noStimData.noiseFreePhotocurrents);
-    set(gca, 'CLim', photocurrentsRange, 'FontSize', 12);
+    set(gca, 'CLim', photocurrentsRange, 'FontSize', 14);
     ylabel('cone #');
-    xlabel('time (seconds)');
-    title(sprintf('NULL stim\nnoise-free photocurrents (pAmps)'));
+    xlabel('time (msec)');
+    hcb = colorbar('northoutside');
+    colorTitleHandle = get(hcb,'Title');
+    set(colorTitleHandle ,'String', 'photocurrents (pAmps)');
+    set(hcb, 'FontSize', 12);
+    
     
     subplot('Position', subplotPosVectors(2,2).v);
     imagesc(1000*stimData.responseInstanceArray.timeAxis, 1:size(stimData.noiseFreePhotocurrents,1), stimData.noiseFreePhotocurrents);
-    set(gca, 'CLim', photocurrentsRange, 'YTickLabel', {}, 'FontSize', 12);
-    xlabel('time (seconds)');
-    title(sprintf('Stim\nnoise-free photocurrents (pAmps)'));
-    colorbar
+    set(gca, 'CLim', photocurrentsRange, 'YTickLabel', {}, 'FontSize', 14);
+    xlabel('time (msec)');
+    hcb = colorbar('northoutside');
+    colorTitleHandle = get(hcb,'Title');
+    set(colorTitleHandle ,'String', 'photocurrents (pAmps)');
+    set(hcb, 'FontSize', 12);
+    
     colormap(gray(1024));
     drawnow;
-
+    
+    
     if (isa(theMosaic, 'coneMosaicHex'))
-        
+       
         subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', 2, ...
            'colsNum', 2, ...
-           'heightMargin',   0.04, ...
+           'heightMargin',   0.07, ...
            'widthMargin',    0.01, ...
-           'leftMargin',     0.03, ...
+           'leftMargin',     0.01, ...
            'rightMargin',    0.001, ...
-           'bottomMargin',   0.03, ...
+           'bottomMargin',   0.02, ...
            'topMargin',      0.04);
        
         hFig{3} = figure(3); clf;
-        set(hFig{3}, 'Position', [10 10 1340 1290], 'Color', [1 1 1]);
+        set(hFig{3}, 'Position', [10 10 590 850], 'Color', [1 1 1]);
     
         subplot('Position', subplotPosVectors(1,2).v);
         timeBinOfPeakIsomerizationResponse = renderHexActivationMap(theMosaic, stimData.noiseFreeIsomerizations, isomerizationsRange, []);
-        title(sprintf('Stim\nnoise-free isomerization rate (R*/cone/sec) [t = %2.2f msec]', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakIsomerizationResponse)), 'FontSize', 14);
         set(gca, 'XTickLabel', {});
         set(gca, 'YTickLabel', {});
-        
+        hcb = colorbar('northoutside');
+        colorTitleHandle = get(hcb,'Title');
+        set(colorTitleHandle ,'String', sprintf('isomerization rates (R*/cone/sec)\nat %2.2f msec', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakIsomerizationResponse)));
+        set(hcb, 'FontSize', 12);
+    
         subplot('Position', subplotPosVectors(1,1).v);
-        timeBinOfPeakIsomerizationResponse = renderHexActivationMap(theMosaic, noStimData.noiseFreeIsomerizations, isomerizationsRange, timeBinOfPeakIsomerizationResponse);
-        title(sprintf('NULL stim\nnoise-free isomerization rate (R*/cone/sec) [t = %2.2f msec]', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakIsomerizationResponse)), 'FontSize', 14);
+        renderHexActivationMap(theMosaic, noStimData.noiseFreeIsomerizations, isomerizationsRange, timeBinOfPeakIsomerizationResponse);
         set(gca, 'XTickLabel', {});
-        
+        set(gca, 'YTickLabel', {});
+        hcb = colorbar('northoutside');
+        colorTitleHandle = get(hcb,'Title');
+        set(colorTitleHandle ,'String', sprintf('isomerization rates (R*/cone/sec)\nat %2.2f msec ', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakIsomerizationResponse)));
+        set(hcb, 'FontSize', 12);
+    
         subplot('Position', subplotPosVectors(2,2).v);
         timeBinOfPeakPhotocurrentResponse = renderHexActivationMap(theMosaic, stimData.noiseFreePhotocurrents, photocurrentsRange, []);
-        title(sprintf('Stim\nnoise-free photocurrents (pAmps) [t = %2.2f msec]', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakPhotocurrentResponse)), 'FontSize', 14);
         set(gca, 'YTickLabel', {});
+        set(gca, 'XTickLabel', {});
+        hcb = colorbar('northoutside');
+        colorTitleHandle = get(hcb,'Title');
+        set(colorTitleHandle ,'String', sprintf('photocurrents (pAmps)\nat %2.2f msec', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakPhotocurrentResponse)));
+        set(hcb, 'FontSize', 12);
+        
         
         subplot('Position', subplotPosVectors(2,1).v);
-        timeBinOfPeakPhotocurrentResponse = renderHexActivationMap(theMosaic, noStimData.noiseFreePhotocurrents, photocurrentsRange, timeBinOfPeakPhotocurrentResponse);
-        title(sprintf('NULL stim\nnoise-free photocurrents (pAmps) [t = %2.2f msec]', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakPhotocurrentResponse)), 'FontSize', 14);
-        
+        renderHexActivationMap(theMosaic, noStimData.noiseFreePhotocurrents, photocurrentsRange, timeBinOfPeakPhotocurrentResponse);
+        set(gca, 'YTickLabel', {});
+        set(gca, 'XTickLabel', {});
+        hcb = colorbar('northoutside');
+        colorTitleHandle = get(hcb,'Title');
+        set(colorTitleHandle ,'String', sprintf('photocurrents (pAmps)\nat %2.2f msec', 1000*stimData.responseInstanceArray.timeAxis(timeBinOfPeakPhotocurrentResponse)));
+        set(hcb, 'FontSize', 12);
+    
         colormap(gray(1024));
         drawnow;
+        pause
     end
 end
 
@@ -322,7 +371,6 @@ function timeBinOfPeakResponse = renderHexActivationMap(theMosaic, signal, signa
     renderPatchArray(apertureOutline, mosaicXaxis, mosaicYaxis, hexMap, edgeColor, lineWidth);
     axis 'image'; axis 'xy'; box 'on';
     set(gca, 'CLim', signalRange, 'Color', [0 0 0], 'FontSize', 12);
-    colorbar
 end
 
 function visualizeXYTResponseInstances(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum, format)
