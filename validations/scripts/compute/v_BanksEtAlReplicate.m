@@ -82,7 +82,6 @@ function ValidationFunction(runTimeParams)
         params.nTrainingSamples = 50;
         params.thresholdCriterionFraction = 0.75;
         params.freezeNoise = true;
-        params.useTrialBlocks = false;
         params.wavelengths = [400 20 700];
     
     % This runs with old parameters.  Probably don't need it anymore, as I
@@ -99,7 +98,6 @@ function ValidationFunction(runTimeParams)
         params.nTrainingSamples = 500;
         params.thresholdCriterionFraction = 0.75;
         params.freezeNoise = false;
-        params.useTrialBlocks = false;
 
     end
     
