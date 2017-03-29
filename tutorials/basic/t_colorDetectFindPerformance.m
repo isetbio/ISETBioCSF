@@ -134,13 +134,13 @@ end
 
 if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF'))
     % Generate V1 filter bank struct and add it to thresholdParams
-    V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams.spatialPoolingKernelParams);
+    V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams, constantParamsList);
     thresholdParams = modifyStructParams(thresholdParams, ...
         'spatialPoolingKernel', V1filterBank);
 end
 
 if (strcmp(thresholdParams.method, 'svmGaussianRF')) || (strcmp(thresholdParams.method, 'mlgtGaussianRF'))
-    gaussianPoolingKernel = generateSpatialPoolingKernel(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams.spatialPoolingKernelParams, constantParamsList);
+    gaussianPoolingKernel = generateSpatialPoolingKernel(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams, constantParamsList);
     thresholdParams = modifyStructParams(thresholdParams, ...
         'spatialPoolingKernel', gaussianPoolingKernel);
 end

@@ -1,5 +1,7 @@
-function [spatialPoolingFilter, hFig] = generateSpatialPoolingKernel(spatialParams, mosaicParams, topLevelDirParams, visualizeSpatialScheme, spatialPoolingKernelParams, paramsList)
+function [spatialPoolingFilter, hFig] = generateSpatialPoolingKernel(spatialParams, mosaicParams, topLevelDirParams, visualizeSpatialScheme, thresholdParams, paramsList)
 
+    
+    
     % Load the mosaic
     coneParamsList = {topLevelDirParams, mosaicParams};
     theProgram = 't_coneCurrentEyeMovementsResponseInstances';
@@ -33,17 +35,18 @@ function [spatialPoolingFilter, hFig] = generateSpatialPoolingKernel(spatialPara
     yaxis = yaxis - mean(yaxis);
     
     % Generate the spatial pooling filter      
-    spatialPoolingFilter = makeSpatialPoolingFilter(spatialParams, coneLocsInDegs, xaxis, yaxis, coneDensity, spatialPoolingKernelParams);
+    spatialPoolingFilter = makeSpatialPoolingFilter(spatialParams, coneLocsInDegs, xaxis, yaxis, coneDensity, thresholdParams.spatialPoolingKernelParams);
     
     if (visualizeSpatialScheme)
         hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, ...
-            spatialPoolingKernelParams, spatialPoolingFilter, coneLocsInDegs, mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs);
+            thresholdParams.spatialPoolingKernelParams, spatialPoolingFilter, coneLocsInDegs, mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs);
     
         % Save figure
         theProgram = mfilename;
         rwObject = IBIOColorDetectReadWriteBasic;
         data = 0;
         fileName = sprintf('SpatialPooling');
+        paramsList{numel(paramsList)+1} = thresholdParams;
         rwObject.write(fileName, data, paramsList, theProgram, ...
            'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
        

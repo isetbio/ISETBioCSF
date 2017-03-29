@@ -1,4 +1,4 @@
-function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLevelDirParams, visualizeSpatialScheme, spatialPoolingKernelParams)
+function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLevelDirParams, visualizeSpatialScheme, thresholdParams, paramsList)
     % Filter width
     filterWidthInDegrees = 0.5*spatialParams.fieldOfViewDegs;
     
@@ -39,7 +39,7 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
     yaxis = yaxis - mean(yaxis);
             
     % Generate the V1 filter bank        
-    V1filterBank = makeV1FilterBank(spatialParams, filterWidthInDegrees, coneLocsInDegs, xaxis, yaxis, coneDensity, spatialPoolingKernelParams);
+    V1filterBank = makeV1FilterBank(spatialParams, filterWidthInDegrees, coneLocsInDegs, xaxis, yaxis, coneDensity, thresholdParams.spatialPoolingKernelParams);
 
     if (visualizeSpatialScheme)
         hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, ...
