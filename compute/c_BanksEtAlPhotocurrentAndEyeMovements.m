@@ -258,7 +258,7 @@ for ll = 1:length(p.Results.luminances)
                 'plotPsychometric',false,...
                 'freezeNoise',p.Results.freezeNoise ...
             );
-        end
+        
         
         %% Fit psychometric functions
         if (p.Results.fitPsychometric)
@@ -272,12 +272,12 @@ for ll = 1:length(p.Results.luminances)
                     'plotEllipse',false);
             %close all;
         end
-        
+        end
     end % cc
 end % ll
 
 % Write out the data
-if (p.Results.fitPsychometric)
+if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.visualizePerformance))
     fprintf('Writing performance data ... ');
     paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
     rwObject = IBIOColorDetectReadWriteBasic;

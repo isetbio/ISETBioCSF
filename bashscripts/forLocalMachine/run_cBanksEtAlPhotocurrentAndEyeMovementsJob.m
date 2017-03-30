@@ -4,7 +4,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     cyclesPerDegreeExamined = [20];
     luminancesExamined = [34];
     nContrastsPerDirection = 12;
-    nTrainingSamples = 32;
+    nTrainingSamples = 256;
     
     
     classifierSignal = 'isomerizations';
@@ -21,6 +21,9 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     computeResponses = true;
     visualizeResponses = true;
     visualizeSpatialScheme = true;
+    findPerformance = true
+    visualizePerformance = true
+    
     
     if (computeResponses) || (visualizeResponses) 
         c_BanksEtAlPhotocurrentAndEyeMovements(...
@@ -38,8 +41,8 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             'computeResponses', computeResponses, ...
             'visualizeResponses', visualizeResponses, ...
             'visualizeSpatialScheme', visualizeSpatialScheme, ...
-            'findPerformance', false, ...
-            'visualizePerformance', false ...
+            'findPerformance', findPerformance, ...
+            'visualizePerformance', visualizePerformance ...
         );
     end
     
