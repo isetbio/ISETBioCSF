@@ -1,13 +1,31 @@
 function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
 
  
-    mosaicType = 'fullIsetbioNoScones';
+    % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
+    mosaicType = 'fullIsetbioWithScones';
+    
+    % 'singleExposure'; 'timeSeriesNoPhotocurrents'; 'timeSeriesPhotocurrents'
     temporalAnalysis = 'singleExposure';
     
-    emPathType = 'frozen0';     % 'random'; %'frozen0';
+    % 'random'; 'frozen0';
+    emPathType = 'frozen0';     
     
+    % 'isomerizations', 'photocurrents'
     performanceSignal = 'isomerizations';
+    
+    % 'mlpt', 'svm', 'svmV1FilterBank'
     performanceClassifier = 'mlpt';
+    
+    % What to do ?
+    nTrainingSamples = 256;
+    
+    computeMosaic = true;
+    computeResponses = true;
+    visualizeResponses = true;
+    visualizeSpatialScheme = ~true;
+    findPerformance = true;
+    visualizePerformance = true;
+    
     
     
     switch mosaicType
@@ -30,7 +48,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             conePacking = 'hex';
             LMSRatio = [0.67 0.33 0];
             
-        case 'fullIsetbioScones'
+        case 'fullIsetbioWithScones'
             % 3. spatially-varying density isetbio mosaic params
             coneSpacingMicrons = 2.0;
             innerSegmentDiameter = 1.5797; % for a circular sensor; this corresponds to the 1.4 micron square pixel 
@@ -62,7 +80,6 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
     
     freezeNoise = ~true;
-    nTrainingSamples = 256;
     cyclesPerDegreeExamined =  [10 20 40];
     luminancesExamined =  [34];
     nContrastsPerDirection =  12;
@@ -71,14 +88,6 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
     
     ramPercentageEmployed = 1.0;
-    
-    
-    computeMosaic = true;
-    computeResponses = true;
-    visualizeResponses = true;
-    visualizeSpatialScheme = ~true;
-    findPerformance = true;
-    visualizePerformance = true;
     
     
     if (computeResponses) || (visualizeResponses) || (visualizeSpatialScheme) 
