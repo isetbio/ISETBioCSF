@@ -65,7 +65,7 @@ p.addParameter('visualizePerformance', false, @islogical);
 
 % PERFORMANCE COMPUTATION OPTIONS
 p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
-p.addParameter('performanceClassifier', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'mlpt', 'mlpe', 'mlgtGaussianRF'}));
+p.addParameter('performanceClassifier', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF', 'mlpt', 'mlpe', 'mlgtGaussianRF'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
 
 p.parse(varargin{:});
