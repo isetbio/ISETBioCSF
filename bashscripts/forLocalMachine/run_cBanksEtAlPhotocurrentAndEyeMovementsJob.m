@@ -1,6 +1,14 @@
 function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
 
-    mosaicType = 'originalBanks';
+ 
+    mosaicType = 'fullIsetbioNoScones';
+    temporalAnalysis = 'singleExposure';
+    
+    emPathType = 'frozen0';     % 'random'; %'frozen0';
+    
+    performanceSignal = 'isomerizations';
+    performanceClassifier = 'mlpt';
+    
     
     switch mosaicType
         case 'originalBanks'
@@ -15,14 +23,44 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             innerSegmentDiameter = 1.5797; % for a circular sensor; this corresponds to the 1.4 micron square pixel 
             conePacking = 'hexReg';
     
-        case 'fullIsetbio'
+        case 'fullIsetbioNoScones'
             % 3. spatially-varying density isetbio mosaic params
             coneSpacingMicrons = 2.0;
             innerSegmentDiameter = 1.5797; % for a circular sensor; this corresponds to the 1.4 micron square pixel 
             conePacking = 'hex';
+            LMSRatio = [0.67 0.33 0];
+            
+        case 'fullIsetbioScones'
+            % 3. spatially-varying density isetbio mosaic params
+            coneSpacingMicrons = 2.0;
+            innerSegmentDiameter = 1.5797; % for a circular sensor; this corresponds to the 1.4 micron square pixel 
+            conePacking = 'hex';
+            LMSRatio = [0.60 0.30 0.10];
     end
     
-    emPathType = 'frozen0';     % 'random'; %'frozen0';  % random
+    
+    switch temporalAnalysis 
+        case 'singleExposure'
+            % For 100 ms simulation
+            responseStabilizationMilliseconds = 0;
+            responseExtinctionMilliseconds = 100;
+            integrationTimeMilliseconds =  100;
+            
+        case 'timeSeriesNoPhotocurrents'
+            % For 5 milliseconds simulation
+            responseStabilizationMilliseconds = 20;
+            responseExtinctionMilliseconds = 20;
+            integrationTimeMilliseconds =  5;
+            
+        case 'timeSeriesPhotocurrents'
+            % For 5 milliseconds simulation
+            responseStabilizationMilliseconds = 100;
+            responseExtinctionMilliseconds = 400;   % use 400 for photocurrents computations
+            integrationTimeMilliseconds =  5;
+    end
+    
+    
+    
     freezeNoise = ~true;
     nTrainingSamples = 256;
     cyclesPerDegreeExamined =  [10 20 40];
@@ -32,27 +70,13 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     highContrast = 0.3;
     
     
-    classifierSignal = 'isomerizations';
-    classifierType = 'mlpt';
-    
     ramPercentageEmployed = 1.0;
     
-    % For 5 milliseconds simulation
-    responseStabilizationMilliseconds = 20;
-    responseExtinctionMilliseconds = 20;   % use 400 for photocurrents computations
-    integrationTimeMilliseconds =  5;
-    
-    % For 100 ms simulation
-    responseStabilizationMilliseconds = 0;
-    responseExtinctionMilliseconds = 100;   % use 400 for photocurrents computations
-    integrationTimeMilliseconds =  100;
-    
-   
     
     computeMosaic = true;
     computeResponses = true;
     visualizeResponses = true;
-    visualizeSpatialScheme = true;
+    visualizeSpatialScheme = ~true;
     findPerformance = true;
     visualizePerformance = true;
     
@@ -74,12 +98,15 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             'coneSpacingMicrons', coneSpacingMicrons, ...
             'innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(innerSegmentDiameter), ...
             'conePacking', conePacking, ...
+            'LMSRatio', LMSRatio, ...
             'computeMosaic',computeMosaic, ...
             'computeResponses', computeResponses, ...
             'visualizeResponses', visualizeResponses, ...
             'visualizeSpatialScheme', visualizeSpatialScheme, ...
             'findPerformance', false, ...
-            'visualizePerformance', false ...
+            'visualizePerformance', false, ...
+            'performanceSignal' , performanceSignal, ...
+            'performanceClassifier', performanceClassifier ...
         );
     end
     
@@ -100,12 +127,15 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             'coneSpacingMicrons', coneSpacingMicrons, ...
             'innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(innerSegmentDiameter), ...
             'conePacking', conePacking, ...
+            'LMSRatio', LMSRatio, ...
             'computeMosaic', false, ...
             'computeResponses', false, ...
             'visualizeResponses', false, ...
             'visualizeSpatialScheme', visualizeSpatialScheme, ...
             'findPerformance', findPerformance, ...
-            'visualizePerformance', visualizePerformance ...
+            'visualizePerformance', visualizePerformance, ...
+            'performanceSignal' , performanceSignal, ...
+            'performanceClassifier', performanceClassifier ...
         );
     end
     
