@@ -349,7 +349,7 @@ if (p.Results.compute)
     % Start timing the stim reponses computation
     tBegin = clock;
     
-    for kk = 1:nParforConditions    
+    for kk = nParforConditions:-1:1
         fprintf('<strong> Computing responses for condition %d/%d ...  </strong> \n', kk,nParforConditions);
         
         thisConditionStruct = parforConditionStructs{kk};
