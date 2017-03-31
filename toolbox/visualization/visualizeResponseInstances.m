@@ -42,9 +42,12 @@ function hFig = visualizeSingleConeResponseInstances(theMosaic, stimData, noStim
             
             % find the current submosaic's cone that has the max noise-free delta (stim - noStim) photocurrent signal
             submosaicNoiseFreeDeltaPhotocurrents = stimData.noiseFreePhotocurrents(submosaicConeIndices,:) - noStimData.noiseFreePhotocurrents(submosaicConeIndices,:);
+            % find the current submosaic's cone that has the max noise-free delta (stim - noStim) isomerization signal
+            submosaicNoiseFreeDeltaIsomerizations = stimData.noiseFreeIsomerizations(submosaicConeIndices,:) - noStimData.noiseFreeIsomerizations(submosaicConeIndices,:);
 
-            [maxDeltaPhotocurrent, idx] = max(submosaicNoiseFreeDeltaPhotocurrents(:));
-            [coneIndexOfPeakResponse, timeBinOfPeakResponse(submosaicIndex)] = ind2sub(size(submosaicNoiseFreeDeltaPhotocurrents), idx);
+            
+            [maxDeltaIsomerization, idx] = max(submosaicNoiseFreeDeltaIsomerizations(:));
+            [coneIndexOfPeakResponse, timeBinOfPeakResponse(submosaicIndex)] = ind2sub(size(submosaicNoiseFreeDeltaIsomerizations), idx);
 
             submosaicInstances        = noStimData.responseInstanceArray.theMosaicIsomerizations(:,submosaicConeIndices,:);
             submosaicNoiseFreeSignals = noStimData.noiseFreeIsomerizations(submosaicConeIndices,:);
@@ -189,18 +192,22 @@ end
 
 function hFig = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData)
 
-    % Visualize the os impulse response functions
-    hFig{1} = figure(1); clf;
-    set(hFig{1}, 'Position', [10 10 700 500], 'Color', [1 1 1]);
-    hold on
-    plot(1000*stimData.osImpulseResponseTimeAxis, stimData.osImpulseResponses(:,1), 'r-', 'LineWidth', 1.5);
-    plot(1000*stimData.osImpulseResponseTimeAxis, stimData.osImpulseResponses(:,2), 'g-', 'LineWidth', 1.5);
-    plot(1000*stimData.osImpulseResponseTimeAxis, stimData.osImpulseResponses(:,3), 'b-', 'LineWidth', 1.5);
-    xlabel('time (msec)');
-    set(gca, 'FontSize', 14);
-    grid on;
-    title(sprintf('os impulse response functions'));
-    drawnow;
+    if (numel(stimData.osImpulseResponseTimeAxis) > 1)
+        
+        % Visualize the os impulse response functions
+        hFig{1} = figure(1); clf;
+        set(hFig{1}, 'Position', [10 10 700 500], 'Color', [1 1 1]);
+        hold on
+
+        plot(1000*stimData.osImpulseResponseTimeAxis, stimData.osImpulseResponses(:,1), 'r-', 'LineWidth', 1.5);
+        plot(1000*stimData.osImpulseResponseTimeAxis, stimData.osImpulseResponses(:,2), 'g-', 'LineWidth', 1.5);
+        plot(1000*stimData.osImpulseResponseTimeAxis, stimData.osImpulseResponses(:,3), 'b-', 'LineWidth', 1.5);
+        xlabel('time (msec)');
+        set(gca, 'FontSize', 14);
+        grid on;
+        title(sprintf('os impulse response functions'));
+        drawnow;
+    end
     
     % transform isomerization counts to isomerization rate
     stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations / theMosaic.integrationTime;
@@ -239,7 +246,9 @@ function hFig = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData)
            'rightMargin',    0.001, ...
            'bottomMargin',   0.06, ...
            'topMargin',      0.03);
-       
+      
+    isomerizationsRangeModulation = 0.2*[-1 1];
+    
     hFig{2} = figure(2); clf;
     set(hFig{2}, 'Position', [10 10 770 900], 'Color', [1 1 1]);
     subplot('Position', subplotPosVectors(1,1).v);
@@ -252,12 +261,12 @@ function hFig = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData)
     set(hcb, 'FontSize', 12);
     
     subplot('Position', subplotPosVectors(1,2).v);
-    imagesc(1000*stimData.responseInstanceArray.timeAxis, 1:size(stimData.noiseFreeIsomerizations,1), stimData.noiseFreeIsomerizations);
-    set(gca, 'CLim', isomerizationsRange, 'YTickLabel', {}, 'FontSize', 14);
+    imagesc(1000*stimData.responseInstanceArray.timeAxis, 1:size(stimData.noiseFreeIsomerizations,1), (stimData.noiseFreeIsomerizations - noStimData.noiseFreeIsomerizations)./noStimData.noiseFreeIsomerizations);
+    set(gca, 'CLim', isomerizationsRangeModulation, 'YTickLabel', {}, 'FontSize', 14);
     
     hcb = colorbar('northoutside');
     colorTitleHandle = get(hcb,'Title');
-    set(colorTitleHandle ,'String', sprintf('isomerization rates (R*/cone/sec)'));
+    set(colorTitleHandle ,'String', sprintf('isomerization rate modulation (R*/cone/sec)'));
     set(hcb, 'FontSize', 12);
     
     subplot('Position', subplotPosVectors(2,1).v);
