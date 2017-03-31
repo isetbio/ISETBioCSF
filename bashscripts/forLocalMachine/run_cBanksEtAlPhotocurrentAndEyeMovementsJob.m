@@ -6,19 +6,19 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
         case 'originalBanks'
             % 1. Original Banks et al mosaic params
             coneSpacingMicrons = 3.0;
-            innerSegmentDiameter = 3.0;
+            innerSegmentDiameter = 3.0;    % for a circular sensor
             conePacking = 'hexReg';
             
         case 'defaultIsetbio'
             % 2. Default isetbio mosaic params
             coneSpacingMicrons = 2.0;
-            innerSegmentDiameter = 1.5797; % this corresponds to the 1.4 micron square pixel 
+            innerSegmentDiameter = 1.5797; % for a circular sensor; this corresponds to the 1.4 micron square pixel 
             conePacking = 'hexReg';
     
         case 'fullIsetbio'
             % 3. spatially-varying density isetbio mosaic params
             coneSpacingMicrons = 2.0;
-            innerSegmentDiameter = 1.5797; % this corresponds to the 1.4 micron square pixel 
+            innerSegmentDiameter = 1.5797; % for a circular sensor; this corresponds to the 1.4 micron square pixel 
             conePacking = 'hex';
     end
     
