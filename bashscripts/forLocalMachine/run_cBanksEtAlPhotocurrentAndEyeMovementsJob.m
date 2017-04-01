@@ -5,24 +5,50 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     mosaicType = 'fullIsetbioWithScones';
     
     % 'singleExposure'; 'timeSeriesNoPhotocurrents'; 'timeSeriesPhotocurrents'
-    temporalAnalysis = 'singleExposure';
+    temporalAnalysis = 'timeSeriesPhotocurrents';
     
     % 'random'; 'frozen0';
-    emPathType = 'frozen0';     
+    emPathType = 'frozen0'; %'random';     
+    centeredEMPaths = false;
     
     % 'isomerizations', 'photocurrents'
     performanceSignal = 'isomerizations';
     
     % 'mlpt', 'svm', 'svmV1FilterBank'
-    performanceClassifier = 'mlpt';
+    performanceClassifier =  svmV1FilterBank';
+    
+    spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    spatialPoolingKernelParams.activationFunction = 'energy'; %'fullWaveRectifier'
+    spatialPoolingKernelParams.adjustForConeDensity = true;
     
     % What to do ?
-    nTrainingSamples = 256;
+    nTrainingSamples = 1024;
+    computationInstance = 1;
+    
+    if (computationIntance == 0)
+        % All conditions in 1 MATLAB session
+        ramPercentageEmployed = 1.0;  % use all the RAM
+        cyclesPerDegreeExamined =  [10 20 40];
+    elseif (computationIntance == 1)
+        % First half of the conditions in session 1 of 2 parallel MATLAB sessions
+        ramPercentageEmployed = 1.0;  % use all of the RAM
+        cyclesPerDegreeExamined =  [10];
+    elseif (computationIntance == 2)
+        % Second half of the conditions in session 2 of 2 parallel MATLAB sessions
+        ramPercentageEmployed = 0.5;  % use 1/2 the RAM
+        cyclesPerDegreeExamined =  [20];
+    elseif (computationIntance == 3)
+        % Second half of the conditions in session 2 of 2 parallel MATLAB sessions
+        ramPercentageEmployed = 0.5;  % use 1/2 the RAM
+        cyclesPerDegreeExamined =  [40];
+    end
+    
+    
     
     computeMosaic = true;
     computeResponses = true;
     visualizeResponses = true;
-    visualizeSpatialScheme = ~true;
+    visualizeSpatialScheme = true;
     findPerformance = true;
     visualizePerformance = true;
     
@@ -63,31 +89,33 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             responseStabilizationMilliseconds = 0;
             responseExtinctionMilliseconds = 100;
             integrationTimeMilliseconds =  100;
+            lowContrast = 0.001;
+            highContrast = 0.3;
+            nContrastsPerDirection =  12;    
             
         case 'timeSeriesNoPhotocurrents'
             % For 5 milliseconds simulation
-            responseStabilizationMilliseconds = 20;
-            responseExtinctionMilliseconds = 20;
-            integrationTimeMilliseconds =  5;
-            
+            responseStabilizationMilliseconds = 10;
+            responseExtinctionMilliseconds = 100;
+            integrationTimeMilliseconds =  7.5;
+            lowContrast = 0.001;
+            highContrast = 0.3;
+            nContrastsPerDirection =  12;    
+    
         case 'timeSeriesPhotocurrents'
             % For 5 milliseconds simulation
             responseStabilizationMilliseconds = 100;
             responseExtinctionMilliseconds = 400;   % use 400 for photocurrents computations
             integrationTimeMilliseconds =  5;
+            lowContrast = 0.001;
+            highContrast = 1.0;
+            nContrastsPerDirection =  18;    
     end
     
     
     
     freezeNoise = ~true;
-    cyclesPerDegreeExamined =  [10 20 40];
     luminancesExamined =  [34];
-    nContrastsPerDirection =  12;
-    lowContrast = 0.001;
-    highContrast = 0.3;
-    
-    
-    ramPercentageEmployed = 1.0;
     
     
     if (computeResponses) || (visualizeResponses) || (visualizeSpatialScheme) 
@@ -100,6 +128,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             'nContrastsPerDirection', nContrastsPerDirection, ...
             'ramPercentageEmployed', ramPercentageEmployed, ...
             'emPathType', emPathType, ...
+            'centeredEMPaths', centeredEMPaths, ...
             'responseStabilizationMilliseconds', responseStabilizationMilliseconds, ...
             'responseExtinctionMilliseconds', responseExtinctionMilliseconds, ...
             'freezeNoise', freezeNoise, ...
@@ -129,6 +158,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             'highContrast', highContrast, ...
             'ramPercentageEmployed', ramPercentageEmployed, ...
             'emPathType', emPathType, ...
+            'centeredEMPaths', centeredEMPaths, ...
             'responseStabilizationMilliseconds', responseStabilizationMilliseconds, ...
             'responseExtinctionMilliseconds', responseExtinctionMilliseconds, ...
             'freezeNoise', freezeNoise, ...
@@ -143,8 +173,10 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             'visualizeSpatialScheme', visualizeSpatialScheme, ...
             'findPerformance', findPerformance, ...
             'visualizePerformance', visualizePerformance, ...
+            'visualizeTransformedSignals', true, ...
             'performanceSignal' , performanceSignal, ...
-            'performanceClassifier', performanceClassifier ...
+            'performanceClassifier', performanceClassifier, ...
+            'spatialPoolingKernelParams', spatialPoolingKernelParams ...
         );
     end
     
