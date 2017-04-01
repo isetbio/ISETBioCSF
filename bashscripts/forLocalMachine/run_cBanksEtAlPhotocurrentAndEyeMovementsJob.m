@@ -8,11 +8,11 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     temporalAnalysis = 'timeSeriesNoPhotocurrents';
     
     % 'random'; 'frozen0';
-    emPathType = 'frozen0'; %'random';     
+    emPathType = 'random'; %'random';     
     centeredEMPaths = false;
     
     % 'isomerizations', 'photocurrents'
-    performanceSignal = 'isomerizations';
+    performanceSignal = 'photocurrents';
     
     % 'mlpt', 'svm', 'svmV1FilterBank'
     performanceClassifier =  'svmV1FilterBank';
@@ -23,7 +23,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
     % What to do ?
     nTrainingSamples = 512;
-    computationIntance = 2;
+    computationIntance = 0;
     
     if (computationIntance == 0)
         % All conditions in 1 MATLAB session
@@ -45,7 +45,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
     
     
-    computeMosaic = true;
+    computeMosaic = ~true;
     computeResponses = true;
     visualizeResponses = true;
     visualizeSpatialScheme = true;
