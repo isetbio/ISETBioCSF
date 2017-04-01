@@ -5,7 +5,14 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
     zLevels = [0.025:0.05:1.0];
     zLevels = [-fliplr(zLevels) zLevels];
         
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+
+    coneRadius = 1.0/300;
+    coneX = coneRadius * cos(2*pi*(0:30:360)/360);
+    coneY = coneRadius * sin(2*pi*(0:30:360)/360);
+    quantizationLevels = 1024;
+    if (strcmp(spatialPoolingKernelParams.type, 'GaussianRF'))
+        
+        subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', 1, ...
            'colsNum', 1, ...
            'heightMargin',   0.00, ...
@@ -16,15 +23,9 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
            'topMargin',      0.005);
        
     
-    hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 850 740], 'Color', [1 1 1]);
+        hFig = figure(1); clf;
+        set(hFig, 'Position', [10 10 850 740], 'Color', [1 1 1]);
     
-    coneRadius = 1.0/300;
-    coneX = coneRadius * cos(2*pi*(0:30:360)/360);
-    coneY = coneRadius * sin(2*pi*(0:30:360)/360);
-    coneMarkerSize = 7;
-    quantizationLevels = 1024;
-    if (strcmp(spatialPoolingKernelParams.type, 'GaussianRF'))
         subplot('Position', subplotPosVectors(1,1).v);
         quantizedWeights = round(spatialPoolingFilter.poolingWeights*quantizationLevels);
         quantizedWeights(quantizedWeights > quantizationLevels) = quantizationLevels;
@@ -55,8 +56,82 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         axis 'xy'; axis 'image'
         set(gca, 'CLim', [0 1], 'XLim', max([mosaicFOVDegs stimulusFOVDegs])/2*[-1 1]*1.02, 'YLim', max([mosaicFOVDegs stimulusFOVDegs])/2*[-1 1]*1.02, 'XTickLabels', {});
         set(gca, 'FontSize', 20);  
+        
+    elseif (strcmp(spatialPoolingKernelParams.type, 'V1QuadraturePair'))
+        
+        subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', 1, ...
+           'colsNum', 3, ...
+           'heightMargin',   0.001, ...
+           'widthMargin',    0.02, ...
+           'leftMargin',     0.03, ...
+           'rightMargin',    0.001, ...
+           'bottomMargin',   0.001, ...
+           'topMargin',      0.001);
+       
+        
+        hFig = figure(1); clf;
+        set(hFig, 'Position', [10 10 1800 570], 'Color', [1 1 1]);
+        
+        subplot('Position', subplotPosVectors(1,1).v);
+        imagesc(xaxis, yaxis, spatialModulation);
+        hold on;
+        % Spatial RF envelope
+        envelopeLevels = [0.05:0.05:1];
+        contour(xaxis, yaxis, spatialPoolingFilter.RFprofile, envelopeLevels, 'Color', 'g', 'LineWidth', 1.5, 'LineStyle', '-');
+   
+        % All cone locations
+        X = zeros(numel(coneX), size(coneLocsInDegs,1));
+        Y = X;
+        for k = 1:size(coneLocsInDegs,1)
+            X(:,k) = coneLocsInDegs(k,1)+coneX;
+            Y(:,k) = coneLocsInDegs(k,2)+coneY;
+        end
+        line(X,Y,'color','k')
+
+        hold off;
+        axis 'xy'; axis 'image'
+        set(gca, 'Color', [0.5 0.5 0.5], 'FontSize', 16);
+        
+        % The cos/sin-weights
+        for quadratureIndex = 1:2
+            subplot('Position', subplotPosVectors(1,quadratureIndex+1).v);
+            imagesc(xaxis, yaxis, spatialModulation);
+            hold on;
+            if (quadratureIndex == 1)
+                quantizedWeights = quantizationLevels/2 + round(spatialPoolingFilter.cosPhasePoolingWeights/max(abs(spatialPoolingFilter.cosPhasePoolingWeights))*quantizationLevels/2);
+            else
+                quantizedWeights = quantizationLevels/2 + round(spatialPoolingFilter.sinPhasePoolingWeights/max(abs(spatialPoolingFilter.cosPhasePoolingWeights))*quantizationLevels/2);
+            end
+            
+            for iLevel = quantizationLevels/2:quantizationLevels
+               idx = find(quantizedWeights == iLevel);
+               if (~isempty(idx))
+                    for k = 1:numel(idx)
+                        c = [0.5 0.5 0.5] + (iLevel-quantizationLevels/2)/(quantizationLevels/2)*[0.5 -0.4 -0.4];
+                        fill(squeeze(coneLocsInDegs(idx(k),1))+coneX, squeeze(coneLocsInDegs(idx(k),2))+coneY,  c);
+                    end
+               end
+            end
+        
+            for iLevel = 1:quantizationLevels/2
+               idx = find(quantizedWeights == iLevel);
+               if (~isempty(idx))
+                    for k = 1:numel(idx)
+                        c = [0.5 0.5 0.5] + (quantizationLevels/2-iLevel)/(quantizationLevels/2)*[-0.4 -0.4 0.5];
+                        fill(squeeze(coneLocsInDegs(idx(k),1))+coneX, squeeze(coneLocsInDegs(idx(k),2))+coneY,  c);
+                    end
+               end
+            end
+        
+            hold off;
+            axis 'xy'; axis 'image'
+            set(gca, 'Color', [0.5 0.5 0.5], 'XTickLabel', {}, 'YTickLabel', {});
+        
+        end % quadrature index
+
     else
-        error('UNknown spatialPooling filter: %s\n', spatialPoolingKernelParams.type);
+        error('Unknown spatialPooling filter: %s\n', spatialPoolingKernelParams.type);
     end
       
     colormap(gray(quantizationLevels));

@@ -5,7 +5,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     mosaicType = 'fullIsetbioWithScones';
     
     % 'singleExposure'; 'timeSeriesNoPhotocurrents'; 'timeSeriesPhotocurrents'
-    temporalAnalysis = 'timeSeriesPhotocurrents';
+    temporalAnalysis = 'timeSeriesNoPhotocurrents';
     
     % 'random'; 'frozen0';
     emPathType = 'frozen0'; %'random';     
@@ -15,29 +15,29 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     performanceSignal = 'isomerizations';
     
     % 'mlpt', 'svm', 'svmV1FilterBank'
-    performanceClassifier =  svmV1FilterBank';
+    performanceClassifier =  'svmV1FilterBank';
     
     spatialPoolingKernelParams.type = 'V1QuadraturePair';
     spatialPoolingKernelParams.activationFunction = 'energy'; %'fullWaveRectifier'
-    spatialPoolingKernelParams.adjustForConeDensity = true;
+    spatialPoolingKernelParams.adjustForConeDensity = false;
     
     % What to do ?
-    nTrainingSamples = 1024;
-    computationInstance = 1;
+    nTrainingSamples = 512;
+    computationIntance = 2;
     
     if (computationIntance == 0)
         % All conditions in 1 MATLAB session
         ramPercentageEmployed = 1.0;  % use all the RAM
         cyclesPerDegreeExamined =  [10 20 40];
-    elseif (computationIntance == 1)
+    elseif (computationIntance  == 1)
         % First half of the conditions in session 1 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 1.0;  % use all of the RAM
         cyclesPerDegreeExamined =  [10];
-    elseif (computationIntance == 2)
+    elseif (computationIntance  == 2)
         % Second half of the conditions in session 2 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 0.5;  % use 1/2 the RAM
         cyclesPerDegreeExamined =  [20];
-    elseif (computationIntance == 3)
+    elseif (computationIntance  == 3)
         % Second half of the conditions in session 2 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 0.5;  % use 1/2 the RAM
         cyclesPerDegreeExamined =  [40];
@@ -94,13 +94,13 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             nContrastsPerDirection =  12;    
             
         case 'timeSeriesNoPhotocurrents'
-            % For 5 milliseconds simulation
+            % For 7.0 milliseconds simulation
             responseStabilizationMilliseconds = 10;
             responseExtinctionMilliseconds = 100;
-            integrationTimeMilliseconds =  7.5;
+            integrationTimeMilliseconds =  7.0;
             lowContrast = 0.001;
-            highContrast = 0.3;
-            nContrastsPerDirection =  12;    
+            highContrast = 0.7;
+            nContrastsPerDirection =  16;    
     
         case 'timeSeriesPhotocurrents'
             % For 5 milliseconds simulation

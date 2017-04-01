@@ -1,6 +1,6 @@
-function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLevelDirParams, visualizeSpatialScheme, thresholdParams, paramsList)
+function [V1filterBank, hFig] = generateV1FilterBank(spatialParams, mosaicParams, topLevelDirParams, visualizeSpatialScheme, thresholdParams, paramsList)
     % Filter width
-    filterWidthInDegrees = 0.5*spatialParams.fieldOfViewDegs;
+    filterWidthInDegrees = spatialParams.fieldOfViewDegs;
     
     % Load the mosaic
     coneParamsList = {topLevelDirParams, mosaicParams};
@@ -43,7 +43,17 @@ function V1filterBank = generateV1FilterBank(spatialParams, mosaicParams, topLev
 
     if (visualizeSpatialScheme)
         hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, ...
-            V1filterBank, coneLocsInDegs, mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs);
+            thresholdParams.spatialPoolingKernelParams, V1filterBank, coneLocsInDegs, mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs);
+    
+        % Save figure
+        theProgram = mfilename;
+        rwObject = IBIOColorDetectReadWriteBasic;
+        data = 0;
+        fileName = sprintf('V1poolingKernel');
+        paramsList{numel(paramsList)+1} = thresholdParams;
+        rwObject.write(fileName, data, paramsList, theProgram, ...
+           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+       
     end % visualizeSpatialScheme      
 end
 
@@ -64,7 +74,7 @@ function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLoc
     V1filterBank.sinPhasePoolingProfile = sinPhaseFilter-1;
 
     % Compute energy envelope
-    RFprofile = sqrt(V1filterBank.cosPhasePoolingProfile.^2 + V1filterBank.sinPhasePoolingProfile.^2);
+    RFprofile = V1filterBank.cosPhasePoolingProfile.^2 + V1filterBank.sinPhasePoolingProfile.^2;
     V1filterBank.RFprofile = RFprofile / max(abs(RFprofile(:)));
     
     % Find pooling weights
@@ -82,6 +92,7 @@ function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLoc
         V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingWeights ./ coneDensity;
         V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights ./ coneDensity;
     end
+    
     
     V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingWeights / max(abs(V1filterBank.cosPhasePoolingWeights(:))) * maxCos;
     V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights / max(abs(V1filterBank.sinPhasePoolingWeights(:))) * maxSin;
