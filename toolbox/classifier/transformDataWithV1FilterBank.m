@@ -16,7 +16,7 @@ else
     end
 end
 
-V1filterBank = thresholdParams.V1filterBank;
+V1filterBank = thresholdParams.spatialPoolingKernel;
 if (~ismember(V1filterBank.activationFunction, {'energy', 'fullWaveRectifier'}))
     error('V1filterBank.activationFunction must be set to either ''energy'' or ''fullWaveRectifier''.\n')
 end
