@@ -5,214 +5,69 @@ function hFigs = visualizeResponseInstances(theMosaic, stimData, noStimData, res
         return;
     end
     
-    % NEW
-    hFigs1 = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData);
-    hFigs2 = visualizeSingleConeResponseInstances(theMosaic, stimData, noStimData);
-
-    hFigs = [hFigs1 hFigs2];
+    % transform isomerization counts to isomerization rate
+    stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations / theMosaic.integrationTime;
+    noStimData.noiseFreeIsomerizations = noStimData.noiseFreeIsomerizations / theMosaic.integrationTime;
+    stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations / theMosaic.integrationTime;
+    noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations / theMosaic.integrationTime;
     
+    hFig0 = plotImpulseResponseFunctions(stimData);
+    [hFigs1, peakConeIndex] = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData);
+    
+    for submosaicIndex = 1:3
+        if (~isempty(peakConeIndex{submosaicIndex}))
+            theSelectedConeIndex = peakConeIndex{submosaicIndex};
+            noStimIsomerizationsResponseInstances(submosaicIndex,:,:) = squeeze(noStimData.responseInstanceArray.theMosaicIsomerizations(:,theSelectedConeIndex,:));
+            noStimPhotocurrentsResponseInstances(submosaicIndex,:,:)  = squeeze(noStimData.responseInstanceArray.theMosaicPhotocurrents(:,theSelectedConeIndex,:));
+            noStimNoiseFreeIsomerizationsResponse(submosaicIndex,:)   = noStimData.noiseFreeIsomerizations(theSelectedConeIndex,:);
+            noStimNoiseFreePhotocurrentsResponse(submosaicIndex,:)    = noStimData.noiseFreePhotocurrents(theSelectedConeIndex,:);
+            
+            stimIsomerizationsResponseInstances(submosaicIndex,:,:)   = squeeze(stimData.responseInstanceArray.theMosaicIsomerizations(:,theSelectedConeIndex,:));
+            stimPhotocurrentsResponseInstances(submosaicIndex,:,:)    = squeeze(stimData.responseInstanceArray.theMosaicPhotocurrents(:,theSelectedConeIndex,:));
+            stimNoiseFreeIsomerizationsResponse(submosaicIndex,:)     = stimData.noiseFreeIsomerizations(theSelectedConeIndex,:);
+            stimNoiseFreePhotocurrentsResponse(submosaicIndex,:)      = stimData.noiseFreePhotocurrents(theSelectedConeIndex,:);
+        end
+    end
+    
+    timeAxis = 1000*noStimData.responseInstanceArray.timeAxis;
+    isomerizationQuantizationLevelsNum = 15;
+    photocurrentsQuantizationLevelsNum = 100;
+    hFigs2{1} = visualizeResponsesInstancesAndNoiseFreeResponsesAsDensityPlots(timeAxis, ...
+        noStimIsomerizationsResponseInstances, stimIsomerizationsResponseInstances, ...
+        noStimNoiseFreeIsomerizationsResponse, stimNoiseFreeIsomerizationsResponse, 0, isomerizationQuantizationLevelsNum, 'R*/cone/sec');
+
+    hFigs2{2} = visualizeResponsesInstancesAndNoiseFreeResponsesAsDensityPlots(timeAxis, ...
+        noStimPhotocurrentsResponseInstances, stimPhotocurrentsResponseInstances, ...
+        noStimNoiseFreePhotocurrentsResponse, stimNoiseFreePhotocurrentsResponse, 0, photocurrentsQuantizationLevelsNum, 'pAmps');
+    
+    hFigs = [hFig0 hFigs1 hFigs2];
+    pause
     % OLD
     %visualizeXYTResponseInstances(theMosaic, stimData, noStimData, responseNormalization, condIndex, condsNum, format);
 end
 
-function hFig = visualizeSingleConeResponseInstances(theMosaic, stimData, noStimData)
-    
-    % transform isomerization counts to isomerization rate
-    stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations / theMosaic.integrationTime;
-    noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations / theMosaic.integrationTime;
-    stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations / theMosaic.integrationTime;
-    noStimData.noiseFreeIsomerizations = noStimData.noiseFreeIsomerizations / theMosaic.integrationTime;
-    
-    isomerizationsRange = [...
-        min([min(noStimData.responseInstanceArray.theMosaicIsomerizations(:)) min(stimData.responseInstanceArray.theMosaicIsomerizations(:))]) ...
-        max([max(noStimData.responseInstanceArray.theMosaicIsomerizations(:)) max(stimData.responseInstanceArray.theMosaicIsomerizations(:))]) ];
-    
-    photocurrentsRange = [...
-        min([min(noStimData.responseInstanceArray.theMosaicPhotocurrents(:)) min(stimData.responseInstanceArray.theMosaicPhotocurrents(:))]) ...
-        max([max(noStimData.responseInstanceArray.theMosaicPhotocurrents(:)) max(stimData.responseInstanceArray.theMosaicPhotocurrents(:))]) ];
-    
-    nonNullCones = theMosaic.pattern(theMosaic.pattern>1);
-    for submosaicIndex = 1:3
-        % find the cone indices for this submosaic
-        submosaicConeIndices = find(nonNullCones==submosaicIndex+1);
-        
-        if (~isempty(submosaicConeIndices))
-            % We have at least one cone of this type
-            submosaicDataIsValid(submosaicIndex) = true;
-            
-            % find the current submosaic's cone that has the max noise-free delta (stim - noStim) photocurrent signal
-            submosaicNoiseFreeDeltaPhotocurrents = stimData.noiseFreePhotocurrents(submosaicConeIndices,:) - noStimData.noiseFreePhotocurrents(submosaicConeIndices,:);
-            % find the current submosaic's cone that has the max noise-free delta (stim - noStim) isomerization signal
-            submosaicNoiseFreeDeltaIsomerizations = stimData.noiseFreeIsomerizations(submosaicConeIndices,:) - noStimData.noiseFreeIsomerizations(submosaicConeIndices,:);
-
-            
-            [maxDeltaIsomerization, idx] = max(submosaicNoiseFreeDeltaIsomerizations(:));
-            [coneIndexOfPeakResponse, timeBinOfPeakResponse(submosaicIndex)] = ind2sub(size(submosaicNoiseFreeDeltaIsomerizations), idx);
-
-            submosaicInstances        = noStimData.responseInstanceArray.theMosaicIsomerizations(:,submosaicConeIndices,:);
-            submosaicNoiseFreeSignals = noStimData.noiseFreeIsomerizations(submosaicConeIndices,:);
-            isomerizationNoStimResponseInstances(submosaicIndex,:,:) = submosaicInstances(:, coneIndexOfPeakResponse, :);
-            isomerizationNoStimNoiseFreeResponse(submosaicIndex,:) = submosaicNoiseFreeSignals(coneIndexOfPeakResponse,:);
-
-            submosaicInstances        = noStimData.responseInstanceArray.theMosaicPhotocurrents(:,submosaicConeIndices,:);
-            submosaicNoiseFreeSignals = noStimData.noiseFreePhotocurrents(submosaicConeIndices,:);
-            photocurrentNoStimResponseInstances(submosaicIndex,:,:) = submosaicInstances(:, coneIndexOfPeakResponse, :);
-            photocurrentNoStimNoiseFreeResponse(submosaicIndex,:) = submosaicNoiseFreeSignals(coneIndexOfPeakResponse,:);
-
-            submosaicInstances        = stimData.responseInstanceArray.theMosaicIsomerizations(:,submosaicConeIndices,:);
-            submosaicNoiseFreeSignals = stimData.noiseFreeIsomerizations(submosaicConeIndices,:);
-            isomerizationStimResponseInstances(submosaicIndex,:,:) = submosaicInstances(:, coneIndexOfPeakResponse, :);
-            isomerizationStimNoiseFreeResponse(submosaicIndex,:) = submosaicNoiseFreeSignals(coneIndexOfPeakResponse,:);
-
-            submosaicInstances        = stimData.responseInstanceArray.theMosaicPhotocurrents(:,submosaicConeIndices,:);
-            submosaicNoiseFreeSignals = stimData.noiseFreePhotocurrents(submosaicConeIndices,:);
-            photocurrentStimResponseInstances(submosaicIndex,:,:) = submosaicInstances(:, coneIndexOfPeakResponse, :);
-            photocurrentStimNoiseFreeResponse(submosaicIndex,:) = submosaicNoiseFreeSignals(coneIndexOfPeakResponse,:);
-        else
-            % We do not have any cones of this type
-            submosaicDataIsValid(submosaicIndex) = false;
-        end
-    end
-    
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', 3, ...
-           'colsNum', 2, ...
-           'heightMargin',   0.09, ...
-           'widthMargin',    0.05, ...
-           'leftMargin',     0.07, ...
-           'rightMargin',    0.001, ...
-           'bottomMargin',   0.05, ...
-           'topMargin',      0.04);
-       
-    nTrials = size(isomerizationNoStimResponseInstances,2);
-    opacity = 0.2;
-    
-    for signalIndex = 1:2
-        
-        hFig{signalIndex} = figure(4+signalIndex); clf;
-        set(hFig{signalIndex}, 'Position', [10 10 900 950], 'Color', [1 1 1]);
-    
-        for submosaicIndex = 1:3
-            
-            if (submosaicDataIsValid(submosaicIndex))
-                % NULL STIMULUS
-                subplot('Position', subplotPosVectors(submosaicIndex,1).v);
-                hold on
-                if (signalIndex == 1)
-                    for instanceIndex = 1:nTrials
-                        scatter(1000*noStimData.responseInstanceArray.timeAxis, squeeze(isomerizationNoStimResponseInstances(submosaicIndex,instanceIndex,:)), 'ks', 'MarkerEdgeColor', [0.2 0.2 0.2], 'MarkerFaceColor', [0.2 0.2 0.2], 'LineWidth', 1.0);
-                    end
-                    plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(isomerizationNoStimNoiseFreeResponse(submosaicIndex,:)), 'r-', 'LineWidth', 1.5);
-                    alpha(opacity);
-                else
-                    for instanceIndex = 1:nTrials
-                        h = plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(photocurrentNoStimResponseInstances(submosaicIndex,instanceIndex,:)), '-', 'Color', [0.2 0.2 0.2],'LineWidth', 1.0);
-                        h.Color(4) = opacity;
-                    end
-                    plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(photocurrentNoStimNoiseFreeResponse(submosaicIndex,:)), 'r-', 'LineWidth', 1.5);
-                end
-                hold off
-
-                if (signalIndex == 1)
-                    set(gca, 'YLim', isomerizationsRange, 'XLim', 1000*[noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)], 'FontSize', 12);
-                    if (submosaicIndex == 1)
-                        title(sprintf('NULL stim (nTrials = %d)\npeak L-cone isomerization responses', nTrials));
-                    elseif (submosaicIndex == 2)
-                        title(sprintf('NULL stim (nTrials = %d)\npeak M-cone isomerization responses', nTrials));
-                    elseif (submosaicIndex == 3)
-                        title(sprintf('NULL stim (nTrials = %d)\npeak S-cone isomerization responses', nTrials));
-                    end
-                    ylabel('R*/cone/sec');
-                else
-                    set(gca, 'YLim',photocurrentsRange, 'XLim', 1000*[noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)], 'FontSize', 12);
-                    if (submosaicIndex == 1)
-                        title(sprintf('NULL stim (nTrials = %d)\npeak L-cone photocurrent responses', nTrials));
-                    elseif (submosaicIndex == 2)
-                        title(sprintf('NULL stim (nTrials = %d)\npeak M-cone photocurrent responses', nTrials));
-                    elseif (submosaicIndex == 3)
-                        title(sprintf('NULL stim (nTrials = %d)\npeak S-cone photocurrent responses', nTrials));
-                    end
-                    ylabel('pAmps');
-                end
-
-                if (submosaicIndex == 3)
-                    xlabel('time (msec)');
-                end
-
-                % STIMULUS
-                subplot('Position', subplotPosVectors(submosaicIndex,2).v);
-                hold on
-                if (signalIndex == 1)
-                    for instanceIndex = 1:nTrials
-                        scatter(1000*noStimData.responseInstanceArray.timeAxis, squeeze(isomerizationStimResponseInstances(submosaicIndex,instanceIndex,:)), 'ks', 'MarkerEdgeColor', [0.2 0.2 0.2], 'MarkerFaceColor', [0.2 0.2 0.2], 'LineWidth', 1.0);
-                    end
-                    plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(isomerizationStimNoiseFreeResponse(submosaicIndex,:)), 'r-', 'LineWidth', 1.5);
-                    alpha(opacity);
-                else
-                    for instanceIndex = 1:nTrials
-                        h = plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(photocurrentStimResponseInstances(submosaicIndex,instanceIndex,:)), '-', 'Color', [0.2 0.2 0.2], 'LineWidth', 1.0);
-                        h.Color(4) = opacity;
-                    end
-                    plot(1000*noStimData.responseInstanceArray.timeAxis, squeeze(photocurrentStimNoiseFreeResponse(submosaicIndex,:)), 'r-', 'LineWidth', 1.5);
-                end
-                hold off
-
-                if (signalIndex == 1)
-                    set(gca, 'YLim', isomerizationsRange, 'XLim', 1000*[noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)], 'FontSize', 12);
-                    set(gca, 'YTickLabel', {});
-                    if (submosaicIndex == 1)
-                        title(sprintf('Stim (nTrials = %d)\npeak L-cone isomerization responses', nTrials));
-                    elseif (submosaicIndex == 2)
-                        title(sprintf('Stim (nTrials = %d)\npeak M-cone isomerization responses (R*/cone/sec)', nTrials));
-                    elseif (submosaicIndex == 3)
-                        title(sprintf('Stim (nTrials = %d)\npeak S-cone isomerization responses (R*/cone/sec)', nTrials));
-                    end
-                else
-                    set(gca, 'YLim', photocurrentsRange, 'XLim', 1000*[noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(end)], 'FontSize', 12);
-                    set(gca, 'YTickLabel', {});
-                    if (submosaicIndex == 1)
-                        title(sprintf('Stim (nTrials = %d)\npeak L-cone photocurrent responses', nTrials));
-                    elseif (submosaicIndex == 2)
-                        title(sprintf('Stim (nTrials = %d)\npeak M-cone photocurrent responses', nTrials));
-                    elseif (submosaicIndex == 3)
-                        title(sprintf('Stim (nTrials = %d)\npeak S-cone photocurrent responses', nTrials));
-                    end
-                end
-
-                if (submosaicIndex == 3)
-                    xlabel('time (msec)');
-                end
-            end  % submosaicDataIsValid(submosaicIndex)
-        end % submosaicIndex
-    end % signalIndex
-    drawnow;
-    
-end
-
-
-function hFig = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData)
+function hFig = plotImpulseResponseFunctions(stimData)
 
     if (numel(stimData.osImpulseResponseTimeAxis) > 1)
-        
         % Visualize the os impulse response functions
         hFig{1} = figure(1); clf;
         set(hFig{1}, 'Position', [10 10 700 500], 'Color', [1 1 1]);
         hold on
 
-        plot(1000*stimData.osImpulseResponseTimeAxis, stimData.osImpulseResponses(:,1), 'r-', 'LineWidth', 1.5);
-        plot(1000*stimData.osImpulseResponseTimeAxis, stimData.osImpulseResponses(:,2), 'g-', 'LineWidth', 1.5);
-        plot(1000*stimData.osImpulseResponseTimeAxis, stimData.osImpulseResponses(:,3), 'b-', 'LineWidth', 1.5);
+        timeAxis = 1000*stimData.osImpulseResponseTimeAxis;
+        plot(timeAxis, stimData.osImpulseResponses(:,1), 'r-', 'LineWidth', 1.5);
+        plot(timeAxis, stimData.osImpulseResponses(:,2), 'g-', 'LineWidth', 1.5);
+        plot(timeAxis, stimData.osImpulseResponses(:,3), 'b-', 'LineWidth', 1.5);
         xlabel('time (msec)');
         set(gca, 'FontSize', 14);
         grid on;
         title(sprintf('os impulse response functions'));
         drawnow;
     end
+end
     
-    % transform isomerization counts to isomerization rate
-    stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations / theMosaic.integrationTime;
-    noStimData.noiseFreeIsomerizations = noStimData.noiseFreeIsomerizations / theMosaic.integrationTime;
-    
+function [hFig, peakConeIndex] = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData)
+
     isomerizationsRange = [...
         min([min(noStimData.noiseFreeIsomerizations(:)) min(stimData.noiseFreeIsomerizations(:))]) ...
         max([max(noStimData.noiseFreeIsomerizations(:)) max(stimData.noiseFreeIsomerizations(:))]) ];
@@ -241,52 +96,92 @@ function hFig = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData)
            'rowsNum', 2, ...
            'colsNum', 2, ...
            'heightMargin',   0.08, ...
-           'widthMargin',    0.01, ...
-           'leftMargin',     0.07, ...
+           'widthMargin',    0.02, ...
+           'leftMargin',     0.08, ...
            'rightMargin',    0.001, ...
            'bottomMargin',   0.06, ...
            'topMargin',      0.03);
       
-    isomerizationsRangeModulation = 0.2*[-1 1];
     
-    hFig{2} = figure(2); clf;
-    set(hFig{2}, 'Position', [10 10 770 900], 'Color', [1 1 1]);
+    nonNullCones = theMosaic.pattern(theMosaic.pattern > 1);
+    
+    LMSindices = [];
+    noStimLMSnoiseFreeIsomerizations = [];
+    noStimLMSnoiseFreePhotocurrents = [];
+    stimLMSnoiseFreeIsomerizations = [];
+    stimLMSnoiseFreePhotocurrents = [];
+    
+    peakConeIndex = cell(1,3);
+    for submosaicIndex = 2:4
+        submosaicConeIndices = find(nonNullCones==submosaicIndex);
+        if (~isempty(submosaicConeIndices))
+            if (isempty(LMSindices))
+                LMSindices = submosaicConeIndices(:);
+                noStimLMSnoiseFreeIsomerizations = noStimData.noiseFreeIsomerizations(submosaicConeIndices,:);
+                noStimLMSnoiseFreePhotocurrents  = noStimData.noiseFreePhotocurrents(submosaicConeIndices,:);
+                stimLMSnoiseFreeIsomerizations = stimData.noiseFreeIsomerizations(submosaicConeIndices,:);
+                stimLMSnoiseFreePhotocurrents  = stimData.noiseFreePhotocurrents(submosaicConeIndices,:);
+            else
+                LMSindices = cat(1, LMSindices, submosaicConeIndices(:));
+                noStimLMSnoiseFreeIsomerizations = cat(1, noStimLMSnoiseFreeIsomerizations, noStimData.noiseFreeIsomerizations(submosaicConeIndices,:));
+                noStimLMSnoiseFreePhotocurrents  = cat(1, noStimLMSnoiseFreePhotocurrents,  noStimData.noiseFreePhotocurrents(submosaicConeIndices,:));
+                stimLMSnoiseFreeIsomerizations = cat(1, stimLMSnoiseFreeIsomerizations, stimData.noiseFreeIsomerizations(submosaicConeIndices,:));
+                stimLMSnoiseFreePhotocurrents  = cat(1, stimLMSnoiseFreePhotocurrents,  stimData.noiseFreePhotocurrents(submosaicConeIndices,:));
+            end
+            
+            x = stimData.noiseFreeIsomerizations(submosaicConeIndices,:);
+            [~, idx] = max(x(:));
+            [idx, ~] = ind2sub(size(x), idx);
+            peakConeIndex{submosaicIndex-1} = submosaicConeIndices(idx);
+        end
+    end
+
+
+    isomerizationModulation = 100*(stimLMSnoiseFreeIsomerizations - noStimLMSnoiseFreeIsomerizations)/noStimLMSnoiseFreeIsomerizations(1);
+    isomerizationsRangeModulation = max(abs(isomerizationModulation(:)))*[-1 1];
+    
+    deltaPhotocurrents = stimLMSnoiseFreePhotocurrents-noStimLMSnoiseFreePhotocurrents(1);
+    timeAxis = 1000*noStimData.responseInstanceArray.timeAxis;
+    
+    
+    hFig{1} = figure(2); clf;
+    set(hFig{1}, 'Position', [10 10 770 900], 'Color', [1 1 1]);
     subplot('Position', subplotPosVectors(1,1).v);
-    imagesc(1000*noStimData.responseInstanceArray.timeAxis, 1:size(noStimData.noiseFreeIsomerizations,1), noStimData.noiseFreeIsomerizations);
+    
+    imagesc(timeAxis, 1:size(noStimData.noiseFreeIsomerizations,1), noStimLMSnoiseFreeIsomerizations);
     set(gca, 'CLim', isomerizationsRange, 'FontSize', 14);
     ylabel('cone #');
     hcb = colorbar('northoutside');
     colorTitleHandle = get(hcb,'Title');
-    set(colorTitleHandle ,'String', sprintf('isomerization rates (R*/cone/sec)'));
+    set(colorTitleHandle ,'String', sprintf('noise-free isomerization rates (R*/cone/sec)'));
     set(hcb, 'FontSize', 12);
     
     subplot('Position', subplotPosVectors(1,2).v);
-    imagesc(1000*stimData.responseInstanceArray.timeAxis, 1:size(stimData.noiseFreeIsomerizations,1), (stimData.noiseFreeIsomerizations - noStimData.noiseFreeIsomerizations)./noStimData.noiseFreeIsomerizations);
+    imagesc(timeAxis, 1:size(stimData.noiseFreeIsomerizations,1), isomerizationModulation);
     set(gca, 'CLim', isomerizationsRangeModulation, 'YTickLabel', {}, 'FontSize', 14);
     
     hcb = colorbar('northoutside');
     colorTitleHandle = get(hcb,'Title');
-    set(colorTitleHandle ,'String', sprintf('isomerization rate modulation (R*/cone/sec)'));
+    set(colorTitleHandle ,'String', 'noise-free isomerization rate modulation (%)');
     set(hcb, 'FontSize', 12);
     
     subplot('Position', subplotPosVectors(2,1).v);
-    imagesc(1000*noStimData.responseInstanceArray.timeAxis, 1:size(noStimData.noiseFreePhotocurrents,1), noStimData.noiseFreePhotocurrents);
+    imagesc(timeAxis, 1:size(noStimData.noiseFreePhotocurrents,1), noStimLMSnoiseFreePhotocurrents);
     set(gca, 'CLim', photocurrentsRange, 'FontSize', 14);
     ylabel('cone #');
     xlabel('time (msec)');
     hcb = colorbar('northoutside');
     colorTitleHandle = get(hcb,'Title');
-    set(colorTitleHandle ,'String', sprintf('photocurrents (pAmps)'));
+    set(colorTitleHandle ,'String', sprintf('noise-free photocurrents (pAmps)'));
     set(hcb, 'FontSize', 12);
     
-    
     subplot('Position', subplotPosVectors(2,2).v);
-    imagesc(1000*stimData.responseInstanceArray.timeAxis, 1:size(stimData.noiseFreePhotocurrents,1), stimData.noiseFreePhotocurrents);
-    set(gca, 'CLim', photocurrentsRange, 'YTickLabel', {}, 'FontSize', 14);
+    imagesc(timeAxis, 1:size(stimData.noiseFreePhotocurrents,1), deltaPhotocurrents);
+    set(gca, 'CLim', [min(deltaPhotocurrents(:)) max(deltaPhotocurrents(:))], 'YTickLabel', {}, 'FontSize', 14);
     xlabel('time (msec)');
     hcb = colorbar('northoutside');
     colorTitleHandle = get(hcb,'Title');
-    set(colorTitleHandle ,'String', sprintf('photocurrents (pAmps)'));
+    set(colorTitleHandle ,'String', sprintf('noise-free delta photocurrents (pAmps)'));
     set(hcb, 'FontSize', 12);
     
     colormap(gray(1024));
@@ -305,8 +200,8 @@ function hFig = visualizeNoiseFreeResponses(theMosaic, stimData, noStimData)
            'bottomMargin',   0.02, ...
            'topMargin',      0.01);
        
-        hFig{3} = figure(3); clf;
-        set(hFig{3}, 'Position', [10 10 770 900], 'Color', [1 1 1]);
+        hFig{2} = figure(3); clf;
+        set(hFig{2}, 'Position', [10 10 770 900], 'Color', [1 1 1]);
     
         subplot('Position', subplotPosVectors(1,2).v);
         timeBinOfPeakIsomerizationResponse = renderHexActivationMap(theMosaic, stimData.noiseFreeIsomerizations, isomerizationsRange, []);

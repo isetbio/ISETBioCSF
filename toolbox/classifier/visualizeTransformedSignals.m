@@ -1,5 +1,19 @@
-function hFig = visualizeTransformedSignals(timeAxis, noStimResponses, stimResponses, signalSource, stimContrast, spatialFilterName)
+function hFig = visualizeTransformedSignals(timeAxis, noStimResponseInstances, stimResponseInstances, signalSource, stimContrast, spatialFilterName)
 
+    responseQuantizationLevelsNum = 50;
+    p = 0;
+    
+    noStimNoiseFreeResponse = squeeze(mean(noStimResponseInstances,1));
+    stimNoiseFreeResponse = squeeze(mean(stimResponseInstances,1));
+    
+    hFig = visualizeResponsesInstancesAndNoiseFreeResponsesAsDensityPlots(...
+        timeAxis, noStimResponseInstances, stimResponseInstances, ...
+        noStimNoiseFreeResponse, stimNoiseFreeResponse,  ...
+        p, responseQuantizationLevelsNum, sprintf('%s output\n(%s-based)', spatialFilterName, signalSource));
+
+end
+
+function hFig = visualizeTransformedSignalsOLD(timeAxis, noStimResponses, stimResponses, signalSource, stimContrast, spatialFilterName)
     hFig = figure(1234); clf;
     set(hFig, 'Position', [10 10 850 800], 'Color', [1 1 1]);
 

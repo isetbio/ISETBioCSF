@@ -501,7 +501,7 @@ if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visual
         rParams = ancillaryData.rParams;
         parforConditionStructs = ancillaryData.parforConditionStructs;
         nParforConditions = length(parforConditionStructs); 
-        for kk = 1:nParforConditions
+        for kk = nParforConditions:-1:1
             fprintf('Importing STIM data for condition %d/%d\n', kk, nParforConditions);
             thisConditionStruct = parforConditionStructs{kk};
             colorModulationParamsTemp = rParams.colorModulationParams;
