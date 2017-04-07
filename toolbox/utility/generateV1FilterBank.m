@@ -61,7 +61,7 @@ end
 function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLocsDegs, xaxisDegs, yaxisDegs, coneDensity, spatialPoolingKernelParams)
 
     % filter width
-    spatialParams.gaussianFWHMDegs = filterWidthDegs/2.0;
+    spatialParams.gaussianFWHMDegs = spatialPoolingKernelParams.shrinkageFactor * filterWidthDegs/2.0;
     
     % make the cos-phase filter
     spatialParams.ph = 0;
@@ -93,7 +93,6 @@ function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLoc
         V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights ./ coneDensity;
     end
     
-    
     V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingWeights / max(abs(V1filterBank.cosPhasePoolingWeights(:))) * maxCos;
     V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights / max(abs(V1filterBank.sinPhasePoolingWeights(:))) * maxSin;
     
@@ -102,6 +101,32 @@ function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLoc
     V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingWeights/netWeight;
     V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights/netWeight;
 
+    if (any(V1filterBank.cosPhasePoolingWeights(:)<-1))
+        fprintf('Cos pooling contains % values< -1\n', sum(V1filterBank.cosPhasePoolingWeights(:)<-1));
+    end
+    
+    if (any(V1filterBank.cosPhasePoolingWeights(:)>1))
+        fprintf('Cos pooling contains % values< >1\n', sum(V1filterBank.cosPhasePoolingWeights(:)>1));
+    end
+    
+    if (any(V1filterBank.sinPhasePoolingWeights(:)<-1))
+        fprintf('Sin pooling contains % values< -1\n', sum(V1filterBank.sinPhasePoolingWeights(:)<-1));
+    end
+    
+    if (any(V1filterBank.sinPhasePoolingWeights(:)>1))
+        fprintf('Sin pooling contains % values< >1\n', sum(V1filterBank.sinPhasePoolingWeights(:)>1));
+    end
+    
+    
+    if (any(isnan(V1filterBank.cosPhasePoolingWeights)))
+        fprintf('Cos pooling contains %d NANs\n', sum(isnan(V1filterBank.cosPhasePoolingWeights(:))));
+    end
+    
+    if (any(isnan(V1filterBank.sinPhasePoolingWeights)))
+        fprintf('Sin pooling contains %d NANs\n', sum(isnan(V1filterBank.sinPhasePoolingWeights(:))));
+    end
+    
+    
     V1filterBank.activationFunction = spatialPoolingKernelParams.activationFunction;
     V1filterBank.temporalPCAcoeffs = spatialPoolingKernelParams.temporalPCAcoeffs;
 end

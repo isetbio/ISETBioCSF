@@ -1,7 +1,5 @@
 function [spatialPoolingFilter, hFig] = generateSpatialPoolingKernel(spatialParams, mosaicParams, topLevelDirParams, visualizeSpatialScheme, thresholdParams, paramsList)
 
-    
-    
     % Load the mosaic
     coneParamsList = {topLevelDirParams, mosaicParams};
     theProgram = 't_coneCurrentEyeMovementsResponseInstances';
@@ -60,7 +58,7 @@ function spatialPoolingFilter = makeSpatialPoolingFilter(spatialParams, coneLocs
     [X,Y] = meshgrid(xaxis, yaxis);
     switch spatialPoolingKernelParams.type
         case 'GaussianRF'
-            sigma = spatialPoolingKernelParams.shrinkageFactor  * spatialParams.testDiameterDegs/2.0;
+            sigma = spatialPoolingKernelParams.shrinkageFactor * spatialParams.testDiameterDegs/2.0;
             RFprofile = exp(-0.5*(X/sigma).^2) .* exp(-0.5*(Y/sigma).^2);
         otherwise
             error('Unknown spatialPoolingKernelType: ''%s''.', spatialPoolingKernelParams.type);

@@ -10,6 +10,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
     coneX = coneRadius * cos(2*pi*(0:30:360)/360);
     coneY = coneRadius * sin(2*pi*(0:30:360)/360);
     quantizationLevels = 1024;
+    
     if (strcmp(spatialPoolingKernelParams.type, 'GaussianRF'))
         
         subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -22,36 +23,14 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
            'bottomMargin',   0.01, ...
            'topMargin',      0.005);
        
-    
         hFig = figure(1); clf;
         set(hFig, 'Position', [10 10 850 740], 'Color', [1 1 1]);
     
         subplot('Position', subplotPosVectors(1,1).v);
-        quantizedWeights = round(spatialPoolingFilter.poolingWeights*quantizationLevels);
-        quantizedWeights(quantizedWeights > quantizationLevels) = quantizationLevels;
         title('spatial pooling weights (cone mosaic view)');
         imagesc(xaxis, yaxis, 0.5 + 0.2*spatialModulation);
         hold on;
-        for k = 1:size(coneLocsInDegs,1)
-            fill(squeeze(coneLocsInDegs(k,1))+coneX, squeeze(coneLocsInDegs(k,2))+coneY, [0.5 0.5 0.5]);
-        end
-        for iLevel = 1:quantizationLevels
-            idx = find(quantizedWeights == iLevel);
-            if (~isempty(idx))
-            for k = 1:numel(idx)
-            c = [0.5 0.5 0.5] + (iLevel/max(abs(quantizedWeights)))*[0.5 -0.4 -0.4];
-            fill(squeeze(coneLocsInDegs(idx(k),1))+coneX, squeeze(coneLocsInDegs(idx(k),2))+coneY,  c);
-            end
-            end
-            idx = find(quantizedWeights == -iLevel);
-            if (~isempty(idx))
-                for k = 1:numel(idx)
-            c = [0.5 0.5 0.5] + (iLevel/max(abs(quantizedWeights)))*[-0.4 -0.4 0.5];
-            fill(squeeze(coneLocsInDegs(idx(k),1))+coneX, squeeze(coneLocsInDegs(idx(k),2))+coneY,  c);
-                end
-            end
-        end
-
+        plotQuantizedWeights(spatialPoolingFilter.poolingWeights, quantizationLevels, coneLocsInDegs, coneX, coneY);
         hold off;
         axis 'xy'; axis 'image'
         set(gca, 'CLim', [0 1], 'XLim', max([mosaicFOVDegs stimulusFOVDegs])/2*[-1 1]*1.02, 'YLim', max([mosaicFOVDegs stimulusFOVDegs])/2*[-1 1]*1.02, 'XTickLabels', {});
@@ -68,7 +47,6 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
            'rightMargin',    0.001, ...
            'bottomMargin',   0.001, ...
            'topMargin',      0.001);
-       
         
         hFig = figure(1); clf;
         set(hFig, 'Position', [10 10 1800 570], 'Color', [1 1 1]);
@@ -94,40 +72,21 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         set(gca, 'Color', [0.5 0.5 0.5], 'FontSize', 16);
         
         % The cos/sin-weights
-        for quadratureIndex = 1:2
+        maxWeight = max([max(abs(spatialPoolingFilter.cosPhasePoolingWeights(:))) max(abs(spatialPoolingFilter.sinPhasePoolingWeights(:)))]);
+        for quadratureIndex = 1:2        
+            if (quadratureIndex == 1)
+                quantizedWeights = spatialPoolingFilter.cosPhasePoolingWeights;
+            else
+                quantizedWeights = spatialPoolingFilter.sinPhasePoolingWeights;
+            end
+            
             subplot('Position', subplotPosVectors(1,quadratureIndex+1).v);
             imagesc(xaxis, yaxis, spatialModulation);
             hold on;
-            if (quadratureIndex == 1)
-                quantizedWeights = quantizationLevels/2 + round(spatialPoolingFilter.cosPhasePoolingWeights/max(abs(spatialPoolingFilter.cosPhasePoolingWeights))*quantizationLevels/2);
-            else
-                quantizedWeights = quantizationLevels/2 + round(spatialPoolingFilter.sinPhasePoolingWeights/max(abs(spatialPoolingFilter.cosPhasePoolingWeights))*quantizationLevels/2);
-            end
-            
-            for iLevel = quantizationLevels/2:quantizationLevels
-               idx = find(quantizedWeights == iLevel);
-               if (~isempty(idx))
-                    for k = 1:numel(idx)
-                        c = [0.5 0.5 0.5] + (iLevel-quantizationLevels/2)/(quantizationLevels/2)*[0.5 -0.4 -0.4];
-                        fill(squeeze(coneLocsInDegs(idx(k),1))+coneX, squeeze(coneLocsInDegs(idx(k),2))+coneY,  c);
-                    end
-               end
-            end
-        
-            for iLevel = 1:quantizationLevels/2
-               idx = find(quantizedWeights == iLevel);
-               if (~isempty(idx))
-                    for k = 1:numel(idx)
-                        c = [0.5 0.5 0.5] + (quantizationLevels/2-iLevel)/(quantizationLevels/2)*[-0.4 -0.4 0.5];
-                        fill(squeeze(coneLocsInDegs(idx(k),1))+coneX, squeeze(coneLocsInDegs(idx(k),2))+coneY,  c);
-                    end
-               end
-            end
-        
+            plotQuantizedWeights(quantizedWeights/maxWeight, quantizationLevels, coneLocsInDegs, coneX, coneY);
             hold off;
             axis 'xy'; axis 'image'
             set(gca, 'Color', [0.5 0.5 0.5], 'XTickLabel', {}, 'YTickLabel', {});
-        
         end % quadrature index
 
     else
@@ -137,6 +96,34 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
     colormap(gray(quantizationLevels));
     drawnow;
 end
+
+function plotQuantizedWeights(quantizedWeights, quantizationLevels, coneLocsInDegs, coneX, coneY)
+            
+    quantizedWeights(quantizedWeights >  1) = 1;
+    quantizedWeights(quantizedWeights < -1) = -1;
+    quantizedWeights = round(quantizationLevels/2 * (1+quantizedWeights));
+
+    for iLevel = quantizationLevels/2:quantizationLevels
+        idx = find(quantizedWeights == iLevel);
+        if (~isempty(idx))
+            for k = 1:numel(idx)
+                c = [0.5 0.5 0.5] + (iLevel-quantizationLevels/2)/(quantizationLevels/2)*[0.5 -0.4 -0.4];
+                fill(squeeze(coneLocsInDegs(idx(k),1))+coneX, squeeze(coneLocsInDegs(idx(k),2))+coneY,  c);
+            end
+        end
+    end
+
+    for iLevel = 0:quantizationLevels/2-1
+        idx = find(quantizedWeights == iLevel);
+        if (~isempty(idx))
+            for k = 1:numel(idx)
+                c = [0.5 0.5 0.5] + (quantizationLevels/2-iLevel)/(quantizationLevels/2)*[-0.4 -0.4 0.5];
+                fill(squeeze(coneLocsInDegs(idx(k),1))+coneX, squeeze(coneLocsInDegs(idx(k),2))+coneY,  c);
+            end
+        end
+    end
+end
+
 
 function renderPatchArray(pixelOutline, xCoords, yCoords, faceColorsNormalizedValues,  edgeColor, lineWidth)
     verticesPerCone = numel(pixelOutline.x);

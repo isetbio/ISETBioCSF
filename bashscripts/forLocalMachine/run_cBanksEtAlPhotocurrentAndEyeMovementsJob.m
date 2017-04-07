@@ -12,18 +12,23 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     centeredEMPaths = false;
     
     % 'isomerizations', 'photocurrents'
-    performanceSignal = 'isomerizations'; % isomerizations';
+    performanceSignal = 'photocurrents'; % isomerizations';
     
     % 'mlpt', 'svm', 'svmV1FilterBank'
-    performanceClassifier =  'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
+    performanceClassifier =  'svm'; % 'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
     
     spatialPoolingKernelParams.type = 'V1QuadraturePair';
     spatialPoolingKernelParams.activationFunction = 'energy'; %'fullWaveRectifier'
     spatialPoolingKernelParams.adjustForConeDensity = false;
-    spatialPoolingKernelParams.temporalPCAcoeffs = 3;
+    spatialPoolingKernelParams.temporalPCAcoeffs = Inf;  % Inf, results in no PCA, just the raw time series
+    spatialPoolingKernelParams.shrinkageFactor = 1.0;  % > 1, results in expansion, < 1 results in shrinking
     
-    % What to do ?
+   
+    freezeNoise = ~true;
+    luminancesExamined =  [34];
+    
     nTrainingSamples = 512;
+    
     computationIntance = 0;
     
     if (computationIntance == 0)
@@ -44,16 +49,17 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
         cyclesPerDegreeExamined =  [40];
     end
     
+
     
     
+    % What to do ?
     computeMosaic = ~true;
     computeResponses = ~true;
     visualizeResponses = ~true;
     visualizeSpatialScheme = ~true;
     findPerformance = true;
     visualizePerformance = true;
-    visualizeTransformedSignals = ~true;
-    visualizedResponseNormalization = ''; % 'divideByMean';
+    visualizeTransformedSignals = true;
     
     
     switch mosaicType
@@ -117,11 +123,6 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     end
     
     
-    
-    freezeNoise = ~true;
-    luminancesExamined =  [34];
-    
-    
     if (computeResponses) || (visualizeResponses) || (visualizeSpatialScheme) 
         c_BanksEtAlPhotocurrentAndEyeMovements(...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
@@ -144,7 +145,6 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             'computeMosaic',computeMosaic, ...
             'computeResponses', computeResponses, ...
             'visualizeResponses', visualizeResponses, ...
-            'visualizedResponseNormalization', visualizedResponseNormalization, ...
             'visualizeSpatialScheme', visualizeSpatialScheme, ...
             'findPerformance', false, ...
             'visualizePerformance', false, ...

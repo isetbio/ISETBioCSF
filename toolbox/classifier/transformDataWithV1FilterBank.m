@@ -1,4 +1,4 @@
-function [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams, paramsList, visualizeSignals)
+function [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams, paramsList, visualizeTransformedSignals)
 % [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams)
 % Compute from the raw signal responses (isomerizations/photocurrents) the
 % energy response of a V1 quadrature pair filter bank
@@ -32,13 +32,15 @@ temporalDimension = 3;
 if (strcmp(thresholdParams.signalSource,'photocurrents'))
     
     [noStimData.responseInstanceArray.theMosaicPhotocurrents, ...
-     stimData.responseInstanceArray.theMosaicPhotocurrents, noStimDataPCAapproximatedPhotocurrents, stimDataPCAapproximatedPhotocurrents] = computeV1FilterTransformation(V1filterBank, ...
+     stimData.responseInstanceArray.theMosaicPhotocurrents, ...
+     noStimDataPCAapproximatedPhotocurrents, stimDataPCAapproximatedPhotocurrents] = computeV1FilterTransformation(V1filterBank, ...
             noStimData.responseInstanceArray.theMosaicPhotocurrents, ...
             stimData.responseInstanceArray.theMosaicPhotocurrents, ...
             repsDimension, spatialDimension, temporalDimension, thresholdParams.STANDARDIZE);
 else
     [noStimData.responseInstanceArray.theMosaicIsomerizations, ...
-     stimData.responseInstanceArray.theMosaicIsomerizations, noStimDataPCAapproximatedIsomerizations, stimDataPCAapproximatedIsomerizations] = computeV1FilterTransformation(V1filterBank, ...
+     stimData.responseInstanceArray.theMosaicIsomerizations, ...
+     noStimDataPCAapproximatedIsomerizations, stimDataPCAapproximatedIsomerizations] = computeV1FilterTransformation(V1filterBank, ...
             noStimData.responseInstanceArray.theMosaicIsomerizations, ...
             stimData.responseInstanceArray.theMosaicIsomerizations, ...
             repsDimension, spatialDimension, temporalDimension, thresholdParams.STANDARDIZE);
@@ -46,7 +48,7 @@ end
 
 
 % Visualize transformed signals
-if (visualizeSignals) 
+if (visualizeTransformedSignals) && (V1filterBank.temporalPCAcoeffs > 0) && (~isinf(V1filterBank.temporalPCAcoeffs))
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
         hFig = visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicPhotocurrents, stimData.responseInstanceArray.theMosaicPhotocurrents, thresholdParams.signalSource, stimData.testContrast*100, 'V1 filter bank');
     else
@@ -84,17 +86,14 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
         stimData = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
     end
     
-    % Clear some RAM space
-    clear 'cosFilterLinearActivation'
-    clear 'sinFilterLinearActivation'
-    
     noStimDataPCAapproximation = [];
     stimDataPCAapproximation =  [];
         
-    figure(1); clf;
-    subplot(1,2,1);
-    plot(stimData', 'k-')
-    if (isfield(V1filterBank, 'temporalPCAcoeffs')) && (V1filterBank.temporalPCAcoeffs > 0)
+  %  figure(1); clf;
+  %  subplot(1,2,1);
+  %  plot(stimData', 'k-');
+    
+    if (isfield(V1filterBank, 'temporalPCAcoeffs')) && (V1filterBank.temporalPCAcoeffs > 0) && (~isinf(V1filterBank.temporalPCAcoeffs))
         nTrials = size(noStimData,repsDimension);
         tBins = size(noStimData,2);
         theData = noStimData;
@@ -108,9 +107,9 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
         noStimDataPCAapproximation = (temporalPCAs * noStimData')';
         stimDataPCAapproximation = (temporalPCAs * stimData')';
 
-        subplot(1,2,2)
-        plot(stimDataPCAapproximation', 'r-');
-        drawnow
+   %     subplot(1,2,2)
+   %     plot(stimDataPCAapproximation', 'r-');
+   %     drawnow
     end
     
 end
