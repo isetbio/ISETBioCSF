@@ -27,60 +27,23 @@ spatialDimension = 2;
 temporalDimension = 3;
 [noStimData, stimData] = subtractMeanOfNoStimData(noStimData, stimData, thresholdParams.signalSource, repsDimension, temporalDimension);
 
+
 % Compute the energy response of the V1 filter bank
 if (strcmp(thresholdParams.signalSource,'photocurrents'))
-    cosFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicPhotocurrents, V1filterBank.cosPhasePoolingWeights), spatialDimension));
-    sinFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicPhotocurrents, V1filterBank.sinPhasePoolingWeights), spatialDimension));
-    if strcmp(V1filterBank.activationFunction, 'energy')
-        noStimData.responseInstanceArray.theMosaicPhotocurrents = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
-    elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
-        noStimData.responseInstanceArray.theMosaicPhotocurrents = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
-    end
     
-    cosFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData.responseInstanceArray.theMosaicPhotocurrents, V1filterBank.cosPhasePoolingWeights), spatialDimension));
-    sinFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData.responseInstanceArray.theMosaicPhotocurrents, V1filterBank.sinPhasePoolingWeights), spatialDimension));
-    if strcmp(V1filterBank.activationFunction, 'energy')
-        stimData.responseInstanceArray.theMosaicPhotocurrents = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
-    elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
-        stimData.responseInstanceArray.theMosaicPhotocurrents = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
-    end
-    
-    % Clear some RAM space
-    clear 'cosFilterLinearActivation'
-    clear 'sinFilterLinearActivation'
-    
-    if (thresholdParams.STANDARDIZE)
-        % zero mean, unit std
-        noStimData.responseInstanceArray.theMosaicPhotocurrents = standardizeResponses(noStimData.responseInstanceArray.theMosaicPhotocurrents);
-        stimData.responseInstanceArray.theMosaicPhotocurrents = standardizeResponses(stimData.responseInstanceArray.theMosaicPhotocurrents);
-    end    
+    [noStimData.responseInstanceArray.theMosaicPhotocurrents, ...
+     stimData.responseInstanceArray.theMosaicPhotocurrents, noStimDataPCAapproximatedPhotocurrents, stimDataPCAapproximatedPhotocurrents] = computeV1FilterTransformation(V1filterBank, ...
+            noStimData.responseInstanceArray.theMosaicPhotocurrents, ...
+            stimData.responseInstanceArray.theMosaicPhotocurrents, ...
+            repsDimension, spatialDimension, temporalDimension, thresholdParams.STANDARDIZE);
 else
-    cosFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicIsomerizations, V1filterBank.cosPhasePoolingWeights), spatialDimension));
-    sinFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicIsomerizations, V1filterBank.sinPhasePoolingWeights), spatialDimension));
-    if strcmp(V1filterBank.activationFunction, 'energy')
-        noStimData.responseInstanceArray.theMosaicIsomerizations = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
-    elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
-        noStimData.responseInstanceArray.theMosaicIsomerizations = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
-    end
-    
-    cosFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData.responseInstanceArray.theMosaicIsomerizations, V1filterBank.cosPhasePoolingWeights), spatialDimension));
-    sinFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData.responseInstanceArray.theMosaicIsomerizations, V1filterBank.sinPhasePoolingWeights), spatialDimension));
-    if strcmp(V1filterBank.activationFunction, 'energy')
-        stimData.responseInstanceArray.theMosaicIsomerizations  = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
-    elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
-        stimData.responseInstanceArray.theMosaicIsomerizations  = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
-    end
-    
-    % Clear some RAM space
-    clear 'cosFilterLinearActivation'
-    clear 'sinFilterLinearActivation'
-    
-    if (thresholdParams.STANDARDIZE)
-        % zero mean, unit std
-        noStimData.responseInstanceArray.theMosaicIsomerizations = standardizeResponses(noStimData.responseInstanceArray.theMosaicIsomerizations);
-        stimData.responseInstanceArray.theMosaicIsomerizations = standardizeResponses(stimData.responseInstanceArray.theMosaicIsomerizations);
-    end      
+    [noStimData.responseInstanceArray.theMosaicIsomerizations, ...
+     stimData.responseInstanceArray.theMosaicIsomerizations, noStimDataPCAapproximatedIsomerizations, stimDataPCAapproximatedIsomerizations] = computeV1FilterTransformation(V1filterBank, ...
+            noStimData.responseInstanceArray.theMosaicIsomerizations, ...
+            stimData.responseInstanceArray.theMosaicIsomerizations, ...
+            repsDimension, spatialDimension, temporalDimension, thresholdParams.STANDARDIZE);
 end
+
 
 % Visualize transformed signals
 if (visualizeSignals) 
@@ -101,15 +64,56 @@ end % visualize transformed signals
 
 end
 
-function responses = standardizeResponses(responses)
 
-    stdDimensionIndex = 2;
-    s = std(responses, 0, stdDimensionIndex);
-    index = find(s ~= 0);
-    %responses = responses(index,:);
-    s = s(index);
-    m = mean(responses,stdDimensionIndex);
-    responses = (responses - repmat(m,1,size(responses,stdDimensionIndex))) ./ repmat(s,1, size(responses,stdDimensionIndex));
+function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproximation] = ...
+    computeV1FilterTransformation(V1filterBank, noStimData, stimData, repsDimension, spatialDimension, temporalDimension, standardizeData)
+    
+    cosFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData, V1filterBank.cosPhasePoolingWeights), spatialDimension));
+    sinFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData, V1filterBank.sinPhasePoolingWeights), spatialDimension));
+    if strcmp(V1filterBank.activationFunction, 'energy')
+        noStimData = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
+    elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
+        noStimData = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
+    end
+    
+    cosFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData, V1filterBank.cosPhasePoolingWeights), spatialDimension));
+    sinFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData, V1filterBank.sinPhasePoolingWeights), spatialDimension));
+    if strcmp(V1filterBank.activationFunction, 'energy')
+        stimData = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
+    elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
+        stimData = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
+    end
+    
+    % Clear some RAM space
+    clear 'cosFilterLinearActivation'
+    clear 'sinFilterLinearActivation'
+    
+    noStimDataPCAapproximation = [];
+    stimDataPCAapproximation =  [];
+        
+    figure(1); clf;
+    subplot(1,2,1);
+    plot(stimData', 'k-')
+    if (isfield(V1filterBank, 'temporalPCAcoeffs')) && (V1filterBank.temporalPCAcoeffs > 0)
+        nTrials = size(noStimData,repsDimension);
+        tBins = size(noStimData,2);
+        theData = noStimData;
+        theData = cat(1, theData, stimData);
+        theData = reshape(theData, [nTrials*2 tBins]);
+        [theData, temporalPCAs] = transformDataWithPCA(theData, V1filterBank.temporalPCAcoeffs, standardizeData);
+        
+        noStimData = theData(1:nTrials,:);
+        stimData = theData(nTrials + (1:nTrials),:);
+        
+        noStimDataPCAapproximation = (temporalPCAs * noStimData')';
+        stimDataPCAapproximation = (temporalPCAs * stimData')';
+
+        subplot(1,2,2)
+        plot(stimDataPCAapproximation', 'r-');
+        drawnow
+    end
+    
 end
+
 
 

@@ -2,24 +2,25 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
 
  
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
-    mosaicType = 'fullIsetbioWithScones';
+    mosaicType = 'originalBanks'; %'fullIsetbioNoScones';
     
     % 'singleExposure'; 'timeSeriesNoPhotocurrents'; 'timeSeriesPhotocurrents'
     temporalAnalysis = 'timeSeriesNoPhotocurrents';
     
     % 'random'; 'frozen0';
-    emPathType = 'random'; %'random';     
+    emPathType = 'frozen0'; %random'; %'random';     
     centeredEMPaths = false;
     
     % 'isomerizations', 'photocurrents'
-    performanceSignal = 'photocurrents';
+    performanceSignal = 'isomerizations'; % isomerizations';
     
     % 'mlpt', 'svm', 'svmV1FilterBank'
-    performanceClassifier =  'svmV1FilterBank';
+    performanceClassifier =  'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
     
     spatialPoolingKernelParams.type = 'V1QuadraturePair';
     spatialPoolingKernelParams.activationFunction = 'energy'; %'fullWaveRectifier'
     spatialPoolingKernelParams.adjustForConeDensity = false;
+    spatialPoolingKernelParams.temporalPCAcoeffs = 3;
     
     % What to do ?
     nTrainingSamples = 512;
@@ -28,7 +29,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     if (computationIntance == 0)
         % All conditions in 1 MATLAB session
         ramPercentageEmployed = 1.0;  % use all the RAM
-        cyclesPerDegreeExamined =  [10 20 40];
+        cyclesPerDegreeExamined =  10 % [10 20 40];
     elseif (computationIntance  == 1)
         % First half of the conditions in session 1 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 1.0;  % use all of the RAM
@@ -46,12 +47,13 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
     
     computeMosaic = ~true;
-    computeResponses = true;
-    visualizeResponses = true;
-    visualizeSpatialScheme = true;
+    computeResponses = ~true;
+    visualizeResponses = ~true;
+    visualizeSpatialScheme = ~true;
     findPerformance = true;
     visualizePerformance = true;
-    
+    visualizeTransformedSignals = ~true;
+    visualizedResponseNormalization = ''; % 'divideByMean';
     
     
     switch mosaicType
@@ -60,13 +62,15 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             coneSpacingMicrons = 3.0;
             innerSegmentDiameter = 3.0;    % for a circular sensor
             conePacking = 'hexReg';
+            LMSRatio = [0.67 0.33 0];
             
         case 'defaultIsetbio'
             % 2. Default isetbio mosaic params
             coneSpacingMicrons = 2.0;
             innerSegmentDiameter = 1.5797; % for a circular sensor; this corresponds to the 1.4 micron square pixel 
             conePacking = 'hexReg';
-    
+            LMSRatio = [0.60 0.30 0.10];
+            
         case 'fullIsetbioNoScones'
             % 3. spatially-varying density isetbio mosaic params
             coneSpacingMicrons = 2.0;
@@ -96,8 +100,8 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
         case 'timeSeriesNoPhotocurrents'
             % For 7.0 milliseconds simulation
             responseStabilizationMilliseconds = 10;
-            responseExtinctionMilliseconds = 100;
-            integrationTimeMilliseconds =  7.0;
+            responseExtinctionMilliseconds = 150;
+            integrationTimeMilliseconds =  5.0;
             lowContrast = 0.001;
             highContrast = 0.7;
             nContrastsPerDirection =  16;    
@@ -107,8 +111,8 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             responseStabilizationMilliseconds = 100;
             responseExtinctionMilliseconds = 400;   % use 400 for photocurrents computations
             integrationTimeMilliseconds =  5;
-            lowContrast = 0.001;
-            highContrast = 1.0;
+            lowContrast = 0.0001;
+            highContrast = 0.1;
             nContrastsPerDirection =  18;    
     end
     
@@ -140,6 +144,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             'computeMosaic',computeMosaic, ...
             'computeResponses', computeResponses, ...
             'visualizeResponses', visualizeResponses, ...
+            'visualizedResponseNormalization', visualizedResponseNormalization, ...
             'visualizeSpatialScheme', visualizeSpatialScheme, ...
             'findPerformance', false, ...
             'visualizePerformance', false, ...
@@ -173,7 +178,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             'visualizeSpatialScheme', visualizeSpatialScheme, ...
             'findPerformance', findPerformance, ...
             'visualizePerformance', visualizePerformance, ...
-            'visualizeTransformedSignals', true, ...
+            'visualizeTransformedSignals', visualizeTransformedSignals, ...
             'performanceSignal' , performanceSignal, ...
             'performanceClassifier', performanceClassifier, ...
             'spatialPoolingKernelParams', spatialPoolingKernelParams ...

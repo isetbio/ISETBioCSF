@@ -1,4 +1,4 @@
-function data = transformDataWithPCA(data,numPCAComponents,STANDARDIZE)
+function [data, coeff] = transformDataWithPCA(data,numPCAComponents,STANDARDIZE)
 % data = transformDataWithPCA(data,numPCAComponents,[STANDARDIZE])
 %
 % Projects data along a specified number of principal components. PCA is

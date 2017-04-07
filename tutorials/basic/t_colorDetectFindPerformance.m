@@ -125,10 +125,12 @@ constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.o
 
 
 %% svmV1FilterBank - related checks and computations
-if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && ((strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')))
+if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaicParams.conePacking, 'hexReg')) && ... 
+   ((strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')))
     error('Currently, classification using the ''svmV1FilterBank'' method is only implemented for spatially-varying density hex mosaics.\n')
 end
-if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (strcmp(thresholdParams.method, 'svmGaussianRF'))
+if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaicParams.conePacking, 'hexReg')) && ...
+   (strcmp(thresholdParams.method, 'svmGaussianRF'))
     error('Currently, classification using the ''svmGaussianRF'' method is only implemented for spatially-varying density hex mosaics.\n')
 end
 

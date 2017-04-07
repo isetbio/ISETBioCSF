@@ -103,5 +103,6 @@ function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLoc
     V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights/netWeight;
 
     V1filterBank.activationFunction = spatialPoolingKernelParams.activationFunction;
+    V1filterBank.temporalPCAcoeffs = spatialPoolingKernelParams.temporalPCAcoeffs;
 end
 

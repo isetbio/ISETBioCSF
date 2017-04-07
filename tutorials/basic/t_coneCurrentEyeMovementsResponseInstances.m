@@ -301,12 +301,6 @@ if (p.Results.compute)
             tmpData{trialBlock} = struct();
     end % parfor trialBlock
         
-    % Save the computed impulse responses for mean currents from the noStim esponses to be used for the stimData responses
-    %osImpulseReponseFunctionTimeAxis = osImpulseReponseFunctionTimeAxis{1};
-    %osImpulseResponseFunctionsFromNullStimulus = osImpulseResponseFunctionsFromNullStimulus{1};
-    %meanCurrentsFromNullStimulus = meanCurrentsFromNullStimulus{1};
-    
-    
     % Form noStimData structure
     noStimData = struct(...
         'testContrast', colorModulationParamsNull.contrast, ...
@@ -528,25 +522,36 @@ if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visual
             theProgram = mfilename;
             rwObject = IBIOColorDetectReadWriteBasic;
             data = 0;
-            fileName = sprintf('osImpulseResponses');
-            rwObject.write(fileName, data, paramsList, theProgram, ...
-                'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{1}, 'FigureType', 'pdf');
             
-            fileName = sprintf('noiseFreeXTResponses');
-            rwObject.write(fileName, data, paramsList, theProgram, ...
-                'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{2}, 'FigureType', 'pdf');
+            if (~isempty(hFigs{1}))
+                fileName = sprintf('osImpulseResponses');
+                rwObject.write(fileName, data, paramsList, theProgram, ...
+                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{1}, 'FigureType', 'pdf');
+            end
             
-            fileName = sprintf('noiseFreeXYResponses');
-            rwObject.write(fileName, data, paramsList, theProgram, ...
-                'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{3}, 'FigureType', 'pdf');
- 
-            fileName = sprintf('peakConeIsomerizationResponseInstances');
-            rwObject.write(fileName, data, paramsList, theProgram, ...
-                'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{4}, 'FigureType', 'pdf');
+            if (~isempty(hFigs{2}))
+                fileName = sprintf('noiseFreeXTResponses');
+                rwObject.write(fileName, data, paramsList, theProgram, ...
+                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{2}, 'FigureType', 'pdf');
+            end
             
-            fileName = sprintf('peakConePhotocurrentResponseInstances');
-            rwObject.write(fileName, data, paramsList, theProgram, ...
-                'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{5}, 'FigureType', 'pdf');
+            if (~isempty(hFigs{3}))
+                fileName = sprintf('noiseFreeXYResponses');
+                rwObject.write(fileName, data, paramsList, theProgram, ...
+                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{3}, 'FigureType', 'pdf');
+            end
+            
+            if (~isempty(hFigs{4}))
+                fileName = sprintf('peakConeIsomerizationResponseInstances');
+                rwObject.write(fileName, data, paramsList, theProgram, ...
+                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{4}, 'FigureType', 'pdf');
+            end
+            
+            if (~isempty(hFigs{5}))
+                fileName = sprintf('peakConePhotocurrentResponseInstances');
+                rwObject.write(fileName, data, paramsList, theProgram, ...
+                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{5}, 'FigureType', 'pdf');
+            end
             
         end
     end

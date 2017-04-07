@@ -68,7 +68,6 @@ p.addParameter('visualizePerformance', false, @islogical);
 p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
 p.addParameter('performanceClassifier', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF', 'mlpt', 'mlpe', 'mlgtGaussianRF'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
-
 p.parse(varargin{:});
 
 %% Get the parameters we need
@@ -124,7 +123,7 @@ for ll = 1:length(p.Results.luminances)
         % Their stimulus intervals were 100 msec each.
         stimulusDurationInSeconds = 100/1000;
         
-        % In the absence of info from the Banks et al paper, assume 100 Hz refresh rate
+        % In the absence of info from the Banks et al paper, assume 50 Hz refresh rate
         frameRate = 50;
         windowTauInSeconds = nan; % square-wave
         stimulusSamplingIntervalInSeconds = 1/frameRate;
