@@ -140,7 +140,7 @@ for ll = 1:length(p.Results.luminances)
         % Just to get things into a reasonable scale, we'll find a
         % luminance corresponding to a threshold energy of 10 for our
         % smallest spot.
-        maxThresholdEnergy = 1000;
+        maxThresholdEnergy = 10;
         minSpotAreaMin2 = pi*(min(p.Results.spotDiametersMinutes)/2)^2;
         maxSpotLuminanceCdM2 = maxThresholdEnergy/((p.Results.durationMs/1000)*minSpotAreaMin2);
         rParams.colorModulationParams.startWl = p.Results.wavelength;
