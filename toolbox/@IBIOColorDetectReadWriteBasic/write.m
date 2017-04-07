@@ -60,11 +60,18 @@ switch (p.Results.Type)
             saveas(data,filename,p.Results.FigureType);
         end
         cd(curdir);
-    case 'NicePlotExport'
+    case 'NicePlotExportPNG'
         % The cd method seems to prevent an error when fileid gets very long.
         curdir = pwd;
         cd(filedir);
         NicePlot.exportFigToPNG(filename, p.Results.FigureHandle, 300);
+        fprintf('Figure exported to %s/%s\n', pwd,filename);
+        cd(curdir);
+    case 'NicePlotExportPDF'
+        % The cd method seems to prevent an error when fileid gets very long.
+        curdir = pwd;
+        cd(filedir);
+        NicePlot.exportFigToPDF(filename, p.Results.FigureHandle, 300);
         fprintf('Figure exported to %s/%s\n', pwd,filename);
         cd(curdir);
     case 'movieFile'

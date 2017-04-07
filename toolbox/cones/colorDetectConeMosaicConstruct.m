@@ -6,9 +6,6 @@ function theMosaic = colorDetectConeMosaicConstruct(mosaicParams, varargin)
 % Designed to allow us to control exactly what features of early vision
 % we're using.
 % 
-%   mosaicParams.fieldOfViewDegs - field of view in degrees
-%   mosaicParams.LMSRatio - vector with three entries summing to one
-%                           proportion of L, M, and S cones in mosaic
 %
 % Key/Value pairs
 %       'visualizeMosaic' - true/false (default true). Wether to visualize the cone mosaic
@@ -28,7 +25,6 @@ if (ischar(mosaicParams.conePacking))
         resamplingFactor = 6;
         centerInMM = [0.0 0.0];                    % mosaic eccentricity in MM - this should obey mosaicParams.eccentricityDegs, but it does not do so yet
         spatiallyVaryingConeDensity = true;        % spatially-varying density (at the mosaic's eccentricity)
-        
         theMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, [], ...
             'center', centerInMM*1e-3, ...
             'spatialDensity', [0 mosaicParams.LMSRatio]', ...
@@ -97,8 +93,13 @@ end
 if (isfield(mosaicParams, 'fieldOfViewDegs'))
     if (isa(theMosaic, 'coneMosaicHex'))
         theMosaic.setSizeToFOVForHexMosaic(mosaicParams.fieldOfViewDegs);
+        if ((isfield(mosaicParams, 'realisticSconeSubmosaic')) && (mosaicParams.realisticSconeSubmosaic == true))
+            theMosaic.reassignConeIdentities(...
+                'sConeMinDistanceFactor', 3.0, ...   % min distance between neighboring S-cones = f * local cone separation, to make the S-cone lattice semi-regular
+                'sConeFreeRadiusMicrons', 45);       % 45/300 = 0.15, so S-cone free radius of 0.15 deg (0.3 deg diameter)
+        end
         if (visualizeMosaic)
-            theMosaic.visualizeGrid();
+            theMosaic.visualizeGrid(); % 'visualizedConeAperture', 'geometricArea');
         end
         theMosaic.displayInfo();
     else

@@ -1,15 +1,10 @@
-function [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams)
+function [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams, paramsList, visualizeSignals)
 % [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams)
 % Compute from the raw signal responses (isomerizations/photocurrents) the
 % energy response of a V1 quadrature pair filter bank
 %
 
 fprintf('Transforming data via projection to the spatial components of a V1-based filter bank (energy)\n');
-
-visualizeTransformedSignals = true;
-repsDimension = 1;
-spatialDimension = 2;
-temporalDimension = 3;
 
 if (strcmp(thresholdParams.signalSource,'photocurrents'))
     if (ndims(noStimData.responseInstanceArray.theMosaicPhotocurrents) ~= 3)
@@ -21,113 +16,104 @@ else
     end
 end
 
+V1filterBank = thresholdParams.spatialPoolingKernel;
+if (~ismember(V1filterBank.activationFunction, {'energy', 'fullWaveRectifier'}))
+    error('V1filterBank.activationFunction must be set to either ''energy'' or ''fullWaveRectifier''.\n')
+end
+
 % Subtract the noStimData so that zero modulation gives zero response for both isomerizations and photocurrrents
+repsDimension = 1;
+spatialDimension = 2;
+temporalDimension = 3;
 [noStimData, stimData] = subtractMeanOfNoStimData(noStimData, stimData, thresholdParams.signalSource, repsDimension, temporalDimension);
 
-if (strcmp(thresholdParams.signalSource,'photocurrents'))
-    nTrials = size(noStimData.responseInstanceArray.theMosaicPhotocurrents,repsDimension);
-    nTimeBins = size(noStimData.responseInstanceArray.theMosaicPhotocurrents,temporalDimension);
-else
-    nTrials = size(noStimData.responseInstanceArray.theMosaicIsomerizations,repsDimension);
-    nTimeBins = size(noStimData.responseInstanceArray.theMosaicIsomerizations,temporalDimension);
-end
 
 % Compute the energy response of the V1 filter bank
-V1filterBank = thresholdParams.V1filterBank;
-standardize = thresholdParams.STANDARDIZE;
-netWeight = sqrt(...
-    (sum(V1filterBank.cosPhasePoolingWeights(:) .* V1filterBank.cosPhasePoolingWeights(:)))^2 + ...
-    (sum(V1filterBank.sinPhasePoolingWeights(:) .* V1filterBank.sinPhasePoolingWeights(:)))^2 ...
-    );
-
-V1filterBank.cosPhasePoolingWeights = repmat(V1filterBank.cosPhasePoolingWeights, [nTrials 1 nTimeBins]);
-V1filterBank.sinPhasePoolingWeights = repmat(V1filterBank.sinPhasePoolingWeights, [nTrials 1 nTimeBins]);
-
 if (strcmp(thresholdParams.signalSource,'photocurrents'))
-    cosFilterLinearActivation = squeeze(sum(noStimData.responseInstanceArray.theMosaicPhotocurrents .* V1filterBank.cosPhasePoolingWeights, spatialDimension));
-    sinFilterLinearActivation = squeeze(sum(noStimData.responseInstanceArray.theMosaicPhotocurrents .* V1filterBank.sinPhasePoolingWeights, spatialDimension));
-    noStimData.responseInstanceArray.theMosaicPhotocurrents = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2)/netWeight;
-
-    cosFilterLinearActivation = squeeze(sum(stimData.responseInstanceArray.theMosaicPhotocurrents .* V1filterBank.cosPhasePoolingWeights, spatialDimension));
-    sinFilterLinearActivation = squeeze(sum(stimData.responseInstanceArray.theMosaicPhotocurrents .* V1filterBank.sinPhasePoolingWeights, spatialDimension));
-    stimData.responseInstanceArray.theMosaicPhotocurrents = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2)/netWeight;
-
-    if (standardize)
-        % zero mean, unit std
-        noStimData.responseInstanceArray.theMosaicPhotocurrents = standardizeResponses(noStimData.responseInstanceArray.theMosaicPhotocurrents);
-        stimData.responseInstanceArray.theMosaicPhotocurrents = standardizeResponses(stimData.responseInstanceArray.theMosaicPhotocurrents);
-    end
     
-    photocurrentsBasedV1Range = [...
-        min([min(stimData.responseInstanceArray.theMosaicPhotocurrents(:)) min(noStimData.responseInstanceArray.theMosaicPhotocurrents(:))]) ...
-        max([max(stimData.responseInstanceArray.theMosaicPhotocurrents(:)) max(noStimData.responseInstanceArray.theMosaicPhotocurrents(:))])];
+    [noStimData.responseInstanceArray.theMosaicPhotocurrents, ...
+     stimData.responseInstanceArray.theMosaicPhotocurrents, noStimDataPCAapproximatedPhotocurrents, stimDataPCAapproximatedPhotocurrents] = computeV1FilterTransformation(V1filterBank, ...
+            noStimData.responseInstanceArray.theMosaicPhotocurrents, ...
+            stimData.responseInstanceArray.theMosaicPhotocurrents, ...
+            repsDimension, spatialDimension, temporalDimension, thresholdParams.STANDARDIZE);
 else
-    cosFilterLinearActivation = squeeze(sum(noStimData.responseInstanceArray.theMosaicIsomerizations .* V1filterBank.cosPhasePoolingWeights, spatialDimension));
-    sinFilterLinearActivation = squeeze(sum(noStimData.responseInstanceArray.theMosaicIsomerizations .* V1filterBank.sinPhasePoolingWeights, spatialDimension));
-    noStimData.responseInstanceArray.theMosaicIsomerizations = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2)/netWeight;
-
-    cosFilterLinearActivation = squeeze(sum(stimData.responseInstanceArray.theMosaicIsomerizations .* V1filterBank.cosPhasePoolingWeights, spatialDimension));
-    sinFilterLinearActivation = squeeze(sum(stimData.responseInstanceArray.theMosaicIsomerizations .* V1filterBank.sinPhasePoolingWeights, spatialDimension));
-    stimData.responseInstanceArray.theMosaicIsomerizations  = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2)/netWeight;
-    
-    if (standardize)
-        % zero mean, unit std
-        noStimData.responseInstanceArray.theMosaicIsomerizations = standardizeResponses(noStimData.responseInstanceArray.theMosaicIsomerizations);
-        stimData.responseInstanceArray.theMosaicIsomerizations = standardizeResponses(stimData.responseInstanceArray.theMosaicIsomerizations);
-    end  
-    
-    isomerizationsBasedV1Range = [ ...
-        min([min(stimData.responseInstanceArray.theMosaicIsomerizations(:)) min(noStimData.responseInstanceArray.theMosaicIsomerizations(:))]) 
-        max([max(stimData.responseInstanceArray.theMosaicIsomerizations(:)) max(noStimData.responseInstanceArray.theMosaicIsomerizations(:))])];
+    [noStimData.responseInstanceArray.theMosaicIsomerizations, ...
+     stimData.responseInstanceArray.theMosaicIsomerizations, noStimDataPCAapproximatedIsomerizations, stimDataPCAapproximatedIsomerizations] = computeV1FilterTransformation(V1filterBank, ...
+            noStimData.responseInstanceArray.theMosaicIsomerizations, ...
+            stimData.responseInstanceArray.theMosaicIsomerizations, ...
+            repsDimension, spatialDimension, temporalDimension, thresholdParams.STANDARDIZE);
 end
 
-if (visualizeTransformedSignals) 
-    hFig = figure(1234); clf;
-    set(hFig, 'Position', [10 10 400 800]);
 
-    subplot(2,1,1);
+% Visualize transformed signals
+if (visualizeSignals) 
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
-        plot(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicPhotocurrents, 'k-')
-        set(gca, 'YLim', photocurrentsBasedV1Range,  'XLim', [noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(nTimeBins)]);
-        title(sprintf('NO-STIM\nphotocurrents-based V1 filter response'));
+        hFig = visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicPhotocurrents, stimData.responseInstanceArray.theMosaicPhotocurrents, thresholdParams.signalSource, stimData.testContrast*100, 'V1 filter bank');
     else
-        plot(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicIsomerizations, 'k-')
-        set(gca, 'YLim', isomerizationsBasedV1Range,  'XLim', [noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(nTimeBins)]);
-        title(sprintf('NO-STIM\nisomerizations-based V1 filter response'));
-    end
-    ylabel('V1 filter bank energy');
-    set(gca, 'FontSize', 14);
-    
-    subplot(2,1,2);
-    if (strcmp(thresholdParams.signalSource,'photocurrents'))
-        plot(stimData.responseInstanceArray.timeAxis, stimData.responseInstanceArray.theMosaicPhotocurrents, 'k-')
-        set(gca, 'YLim', photocurrentsBasedV1Range,  'XLim', [noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(nTimeBins)]);
-        title(sprintf('C = %2.5f%%\nphotocurrents-based V1 filter response', stimData.testContrast*100));
-    else
-        plot(stimData.responseInstanceArray.timeAxis, stimData.responseInstanceArray.theMosaicIsomerizations, 'k-')
-        set(gca, 'YLim', isomerizationsBasedV1Range,  'XLim', [noStimData.responseInstanceArray.timeAxis(1) noStimData.responseInstanceArray.timeAxis(nTimeBins)]);
-        title(sprintf('C = %2.5f%%\nisomerizations-based V1 filterresponse', stimData.testContrast*100));
-    end
-    ylabel('V1 filter bank energy');
-    xlabel('time (ms)'); 
-    set(gca, 'FontSize', 14);
-    
-    drawnow;
-    NicePlot.exportFigToPDF('test.pdf', hFig, 300);    
-    
+        hFig = visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicIsomerizations, stimData.responseInstanceArray.theMosaicIsomerizations, thresholdParams.signalSource, stimData.testContrast*100, 'V1 filter bank');
+    end    
+
+    % Save figure
+    theProgram = mfilename;
+    rwObject = IBIOColorDetectReadWriteBasic;
+    data = 0;
+    fileName = sprintf('%s-based_%s_outputs', thresholdParams.signalSource, thresholdParams.method);
+    rwObject.write(fileName, data, paramsList, theProgram, ...
+           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
 end % visualize transformed signals
 
 end
 
-function responses = standardizeResponses(responses)
 
-    stdDimensionIndex = 2;
-    s = std(responses, 0, stdDimensionIndex);
-    index = find(s ~= 0);
-    %responses = responses(index,:);
-    s = s(index);
-    m = mean(responses,stdDimensionIndex);
-    responses = (responses - repmat(m,1,size(responses,stdDimensionIndex))) ./ repmat(s,1, size(responses,stdDimensionIndex));
+function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproximation] = ...
+    computeV1FilterTransformation(V1filterBank, noStimData, stimData, repsDimension, spatialDimension, temporalDimension, standardizeData)
+    
+    cosFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData, V1filterBank.cosPhasePoolingWeights), spatialDimension));
+    sinFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData, V1filterBank.sinPhasePoolingWeights), spatialDimension));
+    if strcmp(V1filterBank.activationFunction, 'energy')
+        noStimData = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
+    elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
+        noStimData = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
+    end
+    
+    cosFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData, V1filterBank.cosPhasePoolingWeights), spatialDimension));
+    sinFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData, V1filterBank.sinPhasePoolingWeights), spatialDimension));
+    if strcmp(V1filterBank.activationFunction, 'energy')
+        stimData = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
+    elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
+        stimData = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
+    end
+    
+    % Clear some RAM space
+    clear 'cosFilterLinearActivation'
+    clear 'sinFilterLinearActivation'
+    
+    noStimDataPCAapproximation = [];
+    stimDataPCAapproximation =  [];
+        
+    figure(1); clf;
+    subplot(1,2,1);
+    plot(stimData', 'k-')
+    if (isfield(V1filterBank, 'temporalPCAcoeffs')) && (V1filterBank.temporalPCAcoeffs > 0)
+        nTrials = size(noStimData,repsDimension);
+        tBins = size(noStimData,2);
+        theData = noStimData;
+        theData = cat(1, theData, stimData);
+        theData = reshape(theData, [nTrials*2 tBins]);
+        [theData, temporalPCAs] = transformDataWithPCA(theData, V1filterBank.temporalPCAcoeffs, standardizeData);
+        
+        noStimData = theData(1:nTrials,:);
+        stimData = theData(nTrials + (1:nTrials),:);
+        
+        noStimDataPCAapproximation = (temporalPCAs * noStimData')';
+        stimDataPCAapproximation = (temporalPCAs * stimData')';
+
+        subplot(1,2,2)
+        plot(stimDataPCAapproximation', 'r-');
+        drawnow
+    end
+    
 end
+
 
 

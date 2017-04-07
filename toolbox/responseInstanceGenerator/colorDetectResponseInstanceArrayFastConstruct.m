@@ -1,4 +1,4 @@
-function [responseStruct, osImpulseResponseFunctions, osMeanCurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic, varargin)
+function [responseStruct, osImpulseResponseFunctions, osImpulseReponseFunctionTimeAxis, osMeanCurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic, varargin)
 % [responseStruct, osImpulseResponseFunctions, osMeanCurrents] = colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nTrials, spatialParams, backgroundParams, colorModulationParams, temporalParams, theOI, theMosaic)
 % 
 % Construct an array of nTrials response instances given the
@@ -19,6 +19,8 @@ function [responseStruct, osImpulseResponseFunctions, osMeanCurrents] = colorDet
 %  'osMeanCurrents' - the steady-state LMS currents caused by the mean absorption LMS rates
 %  'computeNoiseFreeSignals' - true/false (default true) wether to compute the noise free isomerizations and photocurrents
 %  'useSinglePrecision' - true/false (default true) use single precision to represent isomerizations and photocurrent
+%  'visualizeSpatialScheme' - true/false (default false) wether to co-visualize the optical image and the cone mosaic
+%  'paramsList' - the paramsList associated for this direction (used for exporting response figures to the right directory)
 % 7/10/16  npc Wrote it.
 
 %% Parse arguments
@@ -30,7 +32,8 @@ p.addParameter('centeredEMPaths',false, @islogical);
 p.addParameter('osImpulseResponseFunctions', [], @isnumeric);
 p.addParameter('osMeanCurrents', [], @isnumeric);
 p.addParameter('computeNoiseFreeSignals', true, @islogical);
-
+p.addParameter('visualizeSpatialScheme', false, @islogical);
+p.addParameter('paramsList', {}, @iscell);
 p.parse(varargin{:});
 currentSeed = p.Results.seed;
 
@@ -60,12 +63,32 @@ oiModulated = theOI;
 oiModulated = oiCompute(oiModulated, modulatedScene);
 
 %% Generate the stimulus modulation function
-[stimulusTimeAxis, stimulusModulationFunction, ~] = gaussianTemporalWindowCreate(temporalParams);
+if (isnan(temporalParams.windowTauInSeconds))
+    [stimulusTimeAxis, stimulusModulationFunction, ~] = squareTemporalWindowCreate(temporalParams);
+else
+    [stimulusTimeAxis, stimulusModulationFunction, ~] = gaussianTemporalWindowCreate(temporalParams);
+end
 
 %% Compute the oiSequence
-theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, ...
-                                stimulusModulationFunction, 'composition', 'blend');
+if (strcmp(spatialParams.spatialType, 'pedestalDisk'))
+    theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, stimulusModulationFunction, ...
+        'composition', 'xor');
+else
+    theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, stimulusModulationFunction, ...
+        'composition', 'blend');
+end
 
+
+%%  Visualize the oiSequence
+%theOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
+
+%% Co-visualize the optical image and the cone mosaic
+if (p.Results.visualizeSpatialScheme)
+    [~, timeBinOfPeakModulation] = max(abs(stimulusModulationFunction));
+    thePeakOI = theOIsequence.frameAtIndex(timeBinOfPeakModulation);
+    visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, p.Results.paramsList);
+end
+    
 % Clear oiModulated and oiBackground to save space
 varsToClear = {'oiBackground', 'oiModulated'};
 clear(varsToClear{:});
@@ -87,6 +110,17 @@ theEMpaths = colorDetectMultiTrialEMPathGenerate(...
                     'currentFlag', true, ...
                     'workDescription', sprintf('%d trials of noisy responses', nTrials),...
                     'workerID', p.Results.workerID);
+                
+if (isempty(p.Results.osImpulseResponseFunctions))
+    % Since we compute the impulse response functions, the 
+    % mosaic.interpFilterTimeAxis has already being computed for us
+    osImpulseReponseFunctionTimeAxis = theMosaic.interpFilterTimeAxis;
+else
+    % Since we do not compute the impulse response functions, the
+    % mosaic.interpFilterTimeAxis is not computed, so compute it here
+    osImpulseReponseFunctionTimeAxis = (0:(size(p.Results.osImpulseResponseFunctions,1)-1))*theMosaic.integrationTime;
+end
+
 isomerizationsTimeAxis = theMosaic.timeAxis + theOIsequence.timeAxis(1);
 photoCurrentTimeAxis = isomerizationsTimeAxis;
  
@@ -130,7 +164,7 @@ end
 
 % Save original noise flags
 originalIsomerizationNoiseFlag = theMosaic.noiseFlag;
-originalPootocurrentNoiseFlag = theMosaic.os.noiseFlag;
+originalPhotocurrentNoiseFlag = theMosaic.os.noiseFlag;
 
 % Set noiseFlags to none
 theMosaic.noiseFlag = 'none';
@@ -157,7 +191,7 @@ end
 
 % Restore noiseFlags to none
 theMosaic.noiseFlag = originalIsomerizationNoiseFlag;
-theMosaic.os.noiseFlag = originalPootocurrentNoiseFlag;
+theMosaic.os.noiseFlag = originalPhotocurrentNoiseFlag;
 
 % Store
 responseStruct.noiseFreeIsomerizations = squeeze(responseStruct.noiseFreeIsomerizations);
@@ -173,6 +207,3 @@ else
 end
 
 end
-
-
-

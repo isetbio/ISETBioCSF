@@ -6,17 +6,16 @@
 clear; close all;
 
 % Common parameters
-params.computeResponses = true;
-params.findPerformance = true;
-params.fitPsychometric = true;
+params.computeResponses = false;
+params.findPerformance = false;
+params.fitPsychometric = false;
 
 params.useScratchTopLevelDirName = false;
 params.thresholdMethod = 'mlpt';
 
 % Background for production should be 2.1, but can use smaller to make
 % tests run faster.
-%params.spotDiametersMinutes = [0.25 0.5 0.75 1 1.5 2 3 5 7.5 10 15 20 40 60];
-params.spotDiametersMinutes = [1];
+params.spotDiametersMinutes = [0.25 0.5 0.75 1 1.5 2 3 5 7.5 10 15 20 40 60];
 params.backgroundSizeDegs = 1.5;
 params.luminances = 10;
  
@@ -34,12 +33,6 @@ params.visualizeResponses = false;
 
 params.imagePixels = 1000;
 
-params.nContrastsPerDirection = 1;
-%params.lowContrast = 1e-6;
-params.lowContrast = 1e-2;
-params.highContrast = 1e-2;
-params.contrastScale = 'log';
-
 % Check that pixels per minute isn't insane, given smallest spot size
 % The D-G code sets the image to 1.1 times the background size at present
 imageSizeMinutes = 60*1.1*params.backgroundSizeDegs;
@@ -51,7 +44,7 @@ params.blur = true;
 params.apertureBlur = true;
 params.coneDarkNoiseRate = [0 0 0];
 params.opticsModel = 'DavilaGeisler';
-c_DavilaGeislerReplicate(params);
+%c_DavilaGeislerReplicate(params);
 params = rmfield(params,'opticsModel');
 
 % No blur, no dark noise, with aperture blur

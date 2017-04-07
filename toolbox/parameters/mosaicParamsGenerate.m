@@ -29,6 +29,7 @@ function mosaicParams = mosaicParamsGenerate(varargin)
 mosaicParams.type = 'Mosaic';
 
 mosaicParams.conePacking = 'rect';
+mosaicParams.realisticSconeSubmosaic = false;       % if this is set to true, there will be a 0.3 deg S-cone free region and the S-cone lattice will be semiregular
 mosaicParams.LMSRatio = [0.62 0.31 0.07];
 mosaicParams.innerSegmentSizeMicrons = 1.4;       
 mosaicParams.apertureBlur = false;                  

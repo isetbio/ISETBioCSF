@@ -1,10 +1,7 @@
-function c_PoirsonAndWandell96RunSession(runConfigID, nTrainingSamples, performanceClassifierTrainingSamples)
-% Conduct batch runs using the c_PoirsonAndWandel executive script
-% Example usage:
-%   c_PoirsonAndWandell96RunSession(1, 1024, 700)
+function detectionThresholdData = c_PoirsonAndWandell96RunSession(runConfigID, nTrainingSamples, performanceClassifierTrainingSamples, ...
+    computeMosaic, computeResponses, findPerformances, visualizeResponses, visualizePerformances, ...
+    visualizeMosaic, visualizeSpatialScheme, classifierSignalList, classifierTypeList, pcaComponentsNum)
 %
-%   The intermediate data (e.g. generated during PCA computing) for certain classifiers 
-%   may not fit in RAM, hence the different nTrainingSamples, performanceClassifierTrainingSamples
 %
     nContrastsPerDirection = 12;
     lowContrast = 5e-4;
@@ -13,15 +10,8 @@ function c_PoirsonAndWandell96RunSession(runConfigID, nTrainingSamples, performa
     % Freeze photon-isomerization & photocurrent noise
     freezeNoise = false;
     
-    % Compute the hex-mosaic or use existing one
-    computeMosaic = false;
-    
     % Size of cone mosaic
     coneMosaicFOVDegs = 1.25;
-    
-    % Conditions to examine
-    % Full set of conditions
-    [emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList] = assembleFullConditionsSet();
     
     allRunConfigs = { ...
         {'random',  struct('spatialFrequency', 2,  'meanLuminance', 20) } ... 
@@ -32,36 +22,16 @@ function c_PoirsonAndWandell96RunSession(runConfigID, nTrainingSamples, performa
         {'frozen0', struct('spatialFrequency', 10, 'meanLuminance', 200)} ...
         };
     
+    % Select the one we want
     theSelectedRunConfig = allRunConfigs{runConfigID};
-    
-    % Or override some, such as:
     emPathTypesList = {theSelectedRunConfig{1}};
     stimParamsList = {theSelectedRunConfig{2}};
-
-    % performance params to examine
-    classifierSignalList = {'isomerizations', 'photocurrents'};
- 
-    classifierTypeList = {'svmV1FilterBank'};
-    
-    
-    %classifierTypeList = {'svm'};
-    pcaComponentsNum = 60;
-    
-    % Actions to perform
-    computeResponses   = ~true;
-    findPerformances   = true;
-    
-    % Visualization options
-    visualizeSpatialScheme = ~true;
-    visualizeResponses = ~true;
-    visualizePerformances = ~true;
-    visualizeMosaic = ~true;
     
     % Computation foptions
     displayResponseComputationProgress = false;
     
     % Go !
-    batchJob(computeMosaic, computeResponses, displayResponseComputationProgress, visualizeMosaic, visualizeSpatialScheme, visualizeResponses, findPerformances, visualizePerformances, ...
+    detectionThresholdData = batchJob(computeMosaic, computeResponses, displayResponseComputationProgress, visualizeMosaic, visualizeSpatialScheme, visualizeResponses, findPerformances, visualizePerformances, ...
         lowContrast, highContrast, nContrastsPerDirection, nTrainingSamples, freezeNoise,  coneMosaicFOVDegs, emPathTypesList, stimParamsList, ...
         classifierSignalList, classifierTypeList, pcaComponentsNum, performanceClassifierTrainingSamples);
     
@@ -86,7 +56,7 @@ function c_PoirsonAndWandell96RunSession(runConfigID, nTrainingSamples, performa
 end
 
 
-function batchJob(computeMosaic, computeResponses, displayResponseComputationProgress, visualizeMosaic, visualizeSpatialScheme, visualizeResponses, findPerformances, visualizePerformances, ...
+function detectionThresholdData = batchJob(computeMosaic, computeResponses, displayResponseComputationProgress, visualizeMosaic, visualizeSpatialScheme, visualizeResponses, findPerformances, visualizePerformances, ...
         lowContrast, highContrast, nContrastsPerDirection, nTrainingSamples, freezeNoise, coneMosaicFOVDegs, emPathTypesList, stimParamsList, classifierSignalList, classifierTypeList, pcaComponentsNum, performanceClassifierTrainingSamples)
 
     % Start timing
@@ -95,7 +65,10 @@ function batchJob(computeMosaic, computeResponses, displayResponseComputationPro
     % Only compute the mosaic once
     mosaicAlreadyComputed = false;
         
+    detectionThresholdData = {};
+    
     for emPathTypeIndex = 1:numel(emPathTypesList)
+        
         % Get the emPathType
         emPathType = emPathTypesList{emPathTypeIndex};
         
@@ -147,7 +120,7 @@ function batchJob(computeMosaic, computeResponses, displayResponseComputationPro
                             continue;
                         end
 
-                        c_PoirsonAndWandell96Replicate(...
+                        [~,~, detectionThresholdContrast] = c_PoirsonAndWandell96Replicate(...
                             'spatialFrequency', params.spatialFrequency, ...
                             'meanLuminance', params.meanLuminance, ...
                             'nContrastsPerDirection', nContrastsPerDirection, ...
@@ -162,12 +135,21 @@ function batchJob(computeMosaic, computeResponses, displayResponseComputationPro
                             'visualizeSpatialScheme', visualizeSpatialScheme , ...
                             'findPerformance', findPerformances, ...
                             'visualizePerformance', visualizePerformances, ...
+                            'fitPsychometric', true, ...
                             'performanceSignal', performanceSignalName, ...
                             'performanceClassifier', classifierTypeName, ...
                             'performanceClassifierTrainingSamples', performanceClassifierTrainingSamples, ...
                             'pcaComponentsNum', pcaComponentsNum ...
                             );  % findPerformances
                         
+                        d.emPathType = emPathType;
+                        d.stimParams = params;
+                        d.performanceSignalName = performanceSignalName;
+                        d.classifierTypeName = classifierTypeName;
+                        d.detectionThresholdContrast = detectionThresholdContrast;
+                        detectionThresholdData{numel(detectionThresholdData)+1} = d;
+            
+                        fprintf('Detection threshold contrast for <strong>%s</strong> signals using <strong>''%s''</strong> classifier: <strong>%f</strong>\n',performanceSignalName,  classifierTypeName, detectionThresholdContrast);
                     end % classifierSignalIndex
                 end % classifierTypeIndex
             end % if (findPerformances) || (visualizePerformances)
@@ -178,24 +160,6 @@ function batchJob(computeMosaic, computeResponses, displayResponseComputationPro
     tEnd = clock;
     timeLapsed = etime(tEnd,tBegin);
     fprintf('BATCH JOB: Completed in %.2f hours. \n', timeLapsed/60/60);
-end
-
-function [emPathTypesList, stimParamsList, ...
-         classifierSignalList, classifierTypeList] = assembleFullConditionsSet()
-
-    % emPathTypes to compute/analyze
-    emPathTypesList = {'frozen0', 'frozen', 'random'};
-    
-    % stimParams to compute/analyze
-    stimParamsList = {...
-        struct('spatialFrequency', 2, 'meanLuminance', 20) ...
-        struct('spatialFrequency', 2, 'meanLuminance', 200) ...
-        struct('spatialFrequency', 10, 'meanLuminance', 200) ...
-    };
-
-    % performance params to examine
-    classifierSignalList = {'isomerizations', 'photocurrents'};
-    classifierTypeList = {'mlpt', 'svm', 'svmSpaceTimeSeparable', 'svmV1FilterBank'};
 end
 
 

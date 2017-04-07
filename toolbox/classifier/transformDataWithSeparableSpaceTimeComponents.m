@@ -1,10 +1,9 @@
-function [noStimData, stimData] = transformDataWithSeparableSpaceTimeComponents(noStimData, stimData, thresholdParams)
+function [noStimData, stimData] = transformDataWithSeparableSpaceTimeComponents(noStimData, stimData, thresholdParams, paramsList, visualizeSignals)
 % [noStimData, stimData] = transformDataWithSeparableSpaceTimeComponents(noStimData, stimData, thresholdParams)
 %
 
 fprintf('Transforming data via projection to %d spatial components (PCA)\n', thresholdParams.PCAComponents);
 
-visualizeTransformedSignals = true;
 repsDimension = 1;
 spatialDimension = 2;
 temporalDimension = 3;
@@ -56,7 +55,7 @@ else
 end
 
 
-if (visualizeTransformedSignals) 
+if (visualizeSignals) 
     visualizedPCAcomponentsNum = min([thresholdParams.PCAComponents 3]);
     hFig = figure(1234); clf;
     set(hFig, 'Position', [10 10 400*visualizedPCAcomponentsNum 800]);
@@ -94,11 +93,17 @@ if (visualizeTransformedSignals)
         xlabel('time (ms)'); 
         set(gca, 'FontSize', 14);
         
-        drawnow;
-        
+        drawnow;  
     end % for pcaComponentIndex 
     
-    NicePlot.exportFigToPDF('test.pdf', hFig, 300);
+    % Save figure
+    theProgram = mfilename;
+    rwObject = IBIOColorDetectReadWriteBasic;
+    data = 0;
+    fileName = sprintf('%s-based_%s_outputs', thresholdParams.signalSource, thresholdParams.method);
+    rwObject.write(fileName, data, paramsList, theProgram, ...
+           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+
 end % visualize transformed signals
 
 end

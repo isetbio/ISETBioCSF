@@ -4,6 +4,8 @@ function [usePercentCorrect,useStdErr,h] = classifyForOneDirectionAndContrast(no
 % Do classification for one stimulus color direction and contrast.
 %
 % Optional key/value pairs
+%   'paramsList' - the paramsList associated for this direction (used for exporting response figures to the right directory)
+%   'visualizeTransformedSignals' - true/false (default false). Wether to plot the transformed responses.
 %   'plotSvmBoundary' - true/false (default false).  Plot classification boundary
 %   'plotPCAAxis1' - First PCA component to plot (default 1)
 %   'plotPCAAxis2' - Second PCA component to plot (default 2)
@@ -16,6 +18,8 @@ p = inputParser;
 p.addRequired('noStimData',@isstruct);
 p.addRequired('stimData',@isstruct);
 p.addRequired('thresholdParams',@isstruct);
+p.addParameter('visualizeTransformedSignals', false, @islogical);
+p.addParameter('paramsList', {}, @iscell);
 p.addParameter('plotSvmBoundary',false,@islogical);
 p.addParameter('plotPCAAxis1',1,@isnumeric);
 p.addParameter('plotPCAAxis2',2,@isnumeric);
@@ -26,13 +30,15 @@ p.parse(noStimData,stimData,thresholdParams,varargin{:});
 tBegin = clock;
 
 %% Transform the raw cone responses into V1 filter bank responses
-if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
-    if ((~isfield(thresholdParams, 'V1filterBank')) || (isfield(thresholdParams, 'V1filterBank')) && (isempty(thresholdParams.V1filterBank)))
-        error('thresholdParams must have a V1filterBank field when using the svmV1FilterBank classifier\n');
+if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF'))
+    if ((~isfield(thresholdParams, 'spatialPoolingKernel')) || (isfield(thresholdParams, 'spatialPoolingKernel')) && (isempty(thresholdParams.spatialPoolingKernel)))
+        error('thresholdParams must have a spatialPoolingKernel field when using the svmV1FilterBank classifier\n');
     end
-    [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams);
+    [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams, p.Results.paramsList, p.Results.visualizeTransformedSignals);
 elseif (strcmp(thresholdParams.method, 'svmSpaceTimeSeparable'))
-    [noStimData, stimData] = transformDataWithSeparableSpaceTimeComponents(noStimData, stimData, thresholdParams);
+    [noStimData, stimData] = transformDataWithSeparableSpaceTimeComponents(noStimData, stimData, thresholdParams, p.Results.paramsList, p.Results.visualizeTransformedSignals);
+elseif (strcmp(thresholdParams.method, 'svmGaussianRF')) || (strcmp(thresholdParams.method, 'mlgtGaussianRF'))
+    [noStimData, stimData] = transformDataWithSpatialPoolingFilter(noStimData, stimData, thresholdParams, p.Results.paramsList, p.Results.visualizeTransformedSignals);
 end
 
 %% Put zero contrast response instances into data that we will pass to the SVM
@@ -44,22 +50,96 @@ end
 %% Decide what type of classifier we are running
 switch (thresholdParams.method)
     
-    case 'svmV1FilterBank'
+    case {'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF', 'svmGaussianRF', 'svmSpaceTimeSeparable'}
         % Perform SVM classification for this stimulus vs the zero contrast stimulus
-        fprintf('\tRunning SVM ...');
+        fprintf('\tRunning special SVM ...');
         [usePercentCorrect, useStdErr, svm] = classifyWithSVM(classificationData,classes,thresholdParams.kFold,...
-            'standardizeSVMpredictors', thresholdParams.standardizeSVMpredictors);
-        fprintf(' correct: %2.2f%%\n', usePercentCorrect*100);
-        h = [];
-        
-    case 'svmSpaceTimeSeparable'
-        % Perform SVM classification for this stimulus vs the zero contrast stimulus
-        fprintf('\tRunning SVM ...');
-        [usePercentCorrect, useStdErr, svm] = classifyWithSVM(classificationData,classes,thresholdParams.kFold,...
-            'standardizeSVMpredictors', thresholdParams.standardizeSVMpredictors);
+            'standardizeSVMpredictors', thresholdParams.standardizeSVMpredictors, ...
+            'useRBFKernel', thresholdParams.useRBFKernel);
         fprintf(' correct: %2.2f%%\n', usePercentCorrect*100);
         h = [];
 
+        
+        
+    case {'mlgtGaussianRF'}
+        % Empirical Gaussian maximum likelihood classifier, based on analytic responses to
+        % each class and assuming that the noise is Gaussian (empirical sigma).
+        
+        fprintf('\tRunning empirical LogLikelihood classifier ...\n');
+        
+        % Check for sanity
+        if (~strcmp(thresholdParams.signalSource,'photocurrents'))
+            error('Template only available at photocurrents');
+        end
+        
+        % Set up template
+        dNoStim.responseInstanceArray.theMosaicPhotocurrents = ...
+                reshape(noStimData.noiseFreePhotocurrents, [1 size(noStimData.noiseFreePhotocurrents,1) size(noStimData.noiseFreePhotocurrents,2)]);
+        dStim.responseInstanceArray.theMosaicPhotocurrents = ...
+                reshape(stimData.noiseFreePhotocurrents, [1 size(stimData.noiseFreePhotocurrents,1) size(stimData.noiseFreePhotocurrents,2)]);
+        dNoStim.responseInstanceArray.timeAxis = noStimData.responseInstanceArray.timeAxis;
+        dStim.responseInstanceArray.timeAxis = stimData.responseInstanceArray.timeAxis;
+        dStim.testContrast = stimData.testContrast;
+        [dNoStim, dStim] = transformDataWithSpatialPoolingFilter(dNoStim, dStim, thresholdParams, p.Results.paramsList, false);
+            
+        figure(10);
+        plot(dNoStim.responseInstanceArray.timeAxis, dNoStim.responseInstanceArray.theMosaicPhotocurrents, 'k-');
+        hold on;
+        plot(dNoStim.responseInstanceArray.timeAxis, dStim.responseInstanceArray.theMosaicPhotocurrents, 'r-');
+        drawnow
+
+        if (thresholdParams.nIntervals == 1)
+            templateClass0 = dNoStim.responseInstanceArray.theMosaicPhotocurrents(:)';
+            templateClass1 = dStim.responseInstanceArray.theMosaicPhotocurrents(:)';
+        else
+            templateClass0 = [dNoStim.responseInstanceArray.theMosaicPhotocurrents(:)' dStim.responseInstanceArray.theMosaicPhotocurrents(:)'];
+            templateClass1 = [dStim.responseInstanceArray.theMosaicPhotocurrents(:)'   dNoStim.responseInstanceArray.theMosaicPhotocurrents(:)'];
+        end
+        
+        % Compute likelihood of each class, given analytic means and empirical response sigma
+        teClasses = classes;
+        teData = classificationData;
+        tePredict = -1*ones(size(teClasses));
+        nTeObservations = size(teData,1);
+        
+        
+        % We only need to consider data where the two classes differ, so
+        % find that subset and use below.
+        index = find(templateClass0 ~= templateClass1);
+        templateClass0 = templateClass0(index);
+        templateClass1 = templateClass1(index);
+        teData = teData(:, index);
+        
+        nResponsePoints = numel(templateClass0);
+        loglGiven0 = zeros(nTeObservations, nResponsePoints);
+        loglGiven1 = zeros(nTeObservations, nResponsePoints);
+        
+        % Empirical response sigma computed from all responses
+        responseSigma = std(teData(:));
+        
+        for tPoint = 1:nResponsePoints
+            loglGiven0(:, tPoint) = log10(normpdf(squeeze(teData(:, tPoint)), templateClass1(tPoint), responseSigma));
+            loglGiven1(:, tPoint) = log10(normpdf(squeeze(teData(:, tPoint)), templateClass0(tPoint), responseSigma));
+        end
+        
+        logLikelyRatio = sum(loglGiven0,2) - sum(loglGiven1,2);
+            
+        % Compute percent correct
+        for ii = 1:nTeObservations
+            if (logLikelyRatio(ii) > 0)
+                tePredict(ii) = 1;
+            else
+                tePredict(ii) = 0;
+            end
+           % [logLikelyRatio(ii) tePredict(ii) teClasses(ii)]
+        end 
+
+        nCorrect = length(find(tePredict == teClasses));
+        usePercentCorrect = nCorrect/length(teClasses);
+        useStdErr = 0;
+        fprintf('\tPercent correct: %2.2f%%\n',usePercentCorrect*100);
+        h = [];
+        
     case 'svm'
         % Friendly neighborhood SVM, with optional standardization and PCA
         % first

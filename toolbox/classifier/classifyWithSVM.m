@@ -18,19 +18,28 @@ function [percentCorrect,stdErr,svm] = classifyWithSVM(data,classes,kFold, varar
 %% Parse inputs
 p = inputParser;
 p.addParameter('standardizeSVMpredictors', false, @islogical);
+p.addParameter('useRBFKernel', false, @islogical);
 p.parse(varargin{:});
 standardizeSVMpredictors = p.Results.standardizeSVMpredictors;
 
 %% Train cross validated SVM
-svm = fitcsvm(data,classes,'KernelFunction','linear','KernelScale','auto', 'standardize', standardizeSVMpredictors);
+if (p.Results.useRBFKernel)
+    kernelFunction = 'rbf';
+else
+    kernelFunction = 'linear';
+end
+
+svm = fitcsvm(data,classes,'KernelFunction',kernelFunction,'KernelScale','auto', 'standardize', standardizeSVMpredictors);
 CVSVM = crossval(svm,'KFold',kFold);
 percentCorrect = 1 - kfoldLoss(CVSVM,'lossfun','classiferror','mode','individual');
 stdErr = std(percentCorrect)/sqrt(kFold);
 percentCorrect = mean(percentCorrect);
 
 % We'll discard the data that's normally stored in the SVM object to save space.
+% This can only be done in the LINEAR SVM
 svm = compact(svm);
-svm = discardSupportVectors(svm);
-
+if (~p.Results.useRBFKernel)
+    svm = discardSupportVectors(svm);
+end
 end
 

@@ -29,7 +29,8 @@ function [validationData,extraData] = t_colorDetectFindPerformance(varargin)
 %       use > 0: for a parfor loop with desired number of workers
 %   'generatePlots' - true/false (default true).  Produce any plots at
 %      all? Other plot options only have an effect if this is true.
-%   'visualizeSpatialScheme' - true/false (default false). Visualize the V1-filter bank
+%   'visualizeSpatialScheme' - true/false (default false). Visualize the post-receptoral spatial pooling scheme
+%   'visualizeTransformedSignals' - true/false (default false). Visualize the output of the post-receptoral spatial pooling scheme
 %   'plotPsychometric' - true/false (default false).  Produce
 %       psychometric function output graphs.
 %   'plotSvmBoundary' - true/false (default false).  Plot classification boundary
@@ -46,11 +47,13 @@ p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
 p.addParameter('thresholdParams',[],@isemptyorstruct);
+p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
 p.addParameter('freezeNoise',false,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('parforWorkersNum', 12, @isnumeric);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
+p.addParameter('visualizeTransformedSignals', false, @islogical);
 p.addParameter('plotPsychometric',false,@islogical);
 p.addParameter('plotSvmBoundary',false,@islogical);
 p.addParameter('plotPCAAxis1',1,@isnumeric)
@@ -112,15 +115,6 @@ if (isempty(thresholdParams))
     thresholdParams = thresholdParamsGenerate;
 end
 
-%% svmV1FilterBank - related checks and computations
-if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (strcmp(thresholdParams.method, 'svmV1FilterBank'))
-    error('Currently, classification using the ''svmV1FilterBank'' method is only implemented for spatially-varying density hex mosaics.\n')
-end
-if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
-    % Generate V1 filter bank struct and add it to thresholdParams
-    V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme);
-    thresholdParams = modifyStructParams(thresholdParams, 'V1filterBank', V1filterBank);
-end
 
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
@@ -129,21 +123,43 @@ writeProgram = mfilename;
 
 constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
 
-%% Compute if desired
-if (p.Results.compute)
-    
-    
-    % Inform the user regarding what we are currently working on
-    if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
-        fprintf('Computing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the raw <strong>%s</strong>.\n', ...
-    rParams.spatialParams.cyclesPerDegree, rParams.backgroundParams.backgroundxyY(3)*rParams.backgroundParams.lumFactor, rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
-    elseif (~strcmp(thresholdParams.method, 'mlpt'))
-        fprintf('Computing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the first %d PCA components of <strong>%s</strong>.\n', ...
-    rParams.spatialParams.cyclesPerDegree, rParams.backgroundParams.backgroundxyY(3)*rParams.backgroundParams.lumFactor, rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.PCAComponents, thresholdParams.signalSource);                  
-    else
-        fprintf('Computing performance for <strong>%2.2f c/deg, %d cd/m2</strong> with <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on  <strong>%s</strong>.\n', ...
-    rParams.spatialParams.cyclesPerDegree, rParams.backgroundParams.backgroundxyY(3)*rParams.backgroundParams.lumFactor, rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
 
+%% svmV1FilterBank - related checks and computations
+if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaicParams.conePacking, 'hexReg')) && ... 
+   ((strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')))
+    error('Currently, classification using the ''svmV1FilterBank'' method is only implemented for spatially-varying density hex mosaics.\n')
+end
+if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaicParams.conePacking, 'hexReg')) && ...
+   (strcmp(thresholdParams.method, 'svmGaussianRF'))
+    error('Currently, classification using the ''svmGaussianRF'' method is only implemented for spatially-varying density hex mosaics.\n')
+end
+
+if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF'))
+    % Generate V1 filter bank struct and add it to thresholdParams
+    V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams, constantParamsList);
+    thresholdParams = modifyStructParams(thresholdParams, ...
+        'spatialPoolingKernel', V1filterBank);
+end
+
+if (strcmp(thresholdParams.method, 'svmGaussianRF')) || (strcmp(thresholdParams.method, 'mlgtGaussianRF'))
+    gaussianPoolingKernel = generateSpatialPoolingKernel(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams, constantParamsList);
+    thresholdParams = modifyStructParams(thresholdParams, ...
+        'spatialPoolingKernel', gaussianPoolingKernel);
+end
+
+
+%% Compute if desired
+if (p.Results.compute)   
+    % Inform the user regarding what we are currently working on
+    if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')) || (strcmp(thresholdParams.method, 'svmGaussianRF'))
+        fprintf('Computing performance for <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the raw <strong>%s</strong>.\n', ...
+        rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
+    elseif (~strcmp(thresholdParams.method, 'mlpt'))
+        fprintf('Computing performance for <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the first %d PCA components of <strong>%s</strong>.\n', ...
+        rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.PCAComponents, thresholdParams.signalSource);                  
+    else
+        fprintf('Computing performance for <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on  <strong>%s</strong>.\n', ...
+    	rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
     end
     
     % Read data for the no stimulus condition
@@ -157,6 +173,12 @@ if (p.Results.compute)
     ancillaryData = rwObject.read('ancillaryData',paramsList,readProgram);
     noStimData = rwObject.read('responseInstances',paramsList,readProgram);
     
+    if (strcmp(thresholdParams.signalSource,'isomerizations'))
+        noStimData.responseInstanceArray.theMosaicPhotocurrents = [];
+    else
+        noStimData.responseInstanceArray.theMosaicIsomerizations = [];
+    end
+    
     % Only keep the trials we will use
     if isfield(thresholdParams, 'trialsUsed')
         noStimData.responseInstanceArray = keepTrialsUsed(noStimData.responseInstanceArray, thresholdParams.trialsUsed);
@@ -165,12 +187,6 @@ if (p.Results.compute)
     % Only keep the time bins we will use
     if (~isempty(thresholdParams.evidenceIntegrationTime))
         [noStimData, thresholdParams.actualEvidenceIntegrationTime] = keepTimeBinsUsed(noStimData, thresholdParams.evidenceIntegrationTime);
-    end
-    
-    if (strcmp(thresholdParams.signalSource,'isomerizations'))
-        noStimData.responseInstanceArray.theMosaicPhotocurrents = [];
-    else
-        noStimData.responseInstanceArray.theMosaicIsomerizations = [];
     end
         
     % Get out some data we'll want
@@ -212,6 +228,12 @@ if (p.Results.compute)
         fprintf('Reading stimulus data for condition %d of %d... \n', kk,nParforConditions);
         stimData = rwObject.read('responseInstances',paramsList,readProgram);
         
+        if (strcmp(thresholdParams.signalSource,'isomerizations'))
+            stimData.responseInstanceArray.theMosaicPhotocurrents = [];
+        else
+            stimData.responseInstanceArray.theMosaicIsomerizations = [];
+        end
+        
         % Only keep the data we will use
         if isfield(thresholdParams, 'trialsUsed')
             stimData.responseInstanceArray = keepTrialsUsed(stimData.responseInstanceArray, thresholdParams.trialsUsed);
@@ -222,16 +244,13 @@ if (p.Results.compute)
             [stimData, ~] = keepTimeBinsUsed(stimData, thresholdParams.evidenceIntegrationTime);
         end
         
-        if (strcmp(thresholdParams.signalSource,'isomerizations'))
-            stimData.responseInstanceArray.theMosaicPhotocurrents = [];
-        else
-            stimData.responseInstanceArray.theMosaicIsomerizations = [];
-        end
         % Get performance for this condition.  Optional parameters control
         % whether or not the routine returns a handle to a plot that
         % illustrates the classifier.
         [usePercentCorrect(kk),useStdErr(kk),h] = ...
             classifyForOneDirectionAndContrast(noStimData,stimData,thresholdParams, ...
+            'paramsList', paramsList, ...
+            'visualizeTransformedSignals', p.Results.visualizeTransformedSignals, ...
             'plotSvmBoundary', p.Results.generatePlots && p.Results.plotSvmBoundary, ...
             'plotPCAAxis1', p.Results.plotPCAAxis1, ...
             'plotPCAAxis2',p.Results.plotPCAAxis2);
@@ -353,7 +372,7 @@ function checkStructs(struct1Name, struct1, struct2Name, struct2, varargin)
     
     graphMismatchedData = false;
 
-    defaultTolerance = 1e-12;
+    defaultTolerance = 1e-6;
     structCheck = RecursivelyCompareStructs(...
         struct1Name, struct1, ...
         struct2Name, struct2, ...
@@ -372,9 +391,12 @@ function checkStructs(struct1Name, struct1, struct2Name, struct2, varargin)
 end
 
 function responseInstanceArray = keepTrialsUsed(responseInstanceArray, trialsUsed)
-    fprintf('Classifying based on %d of the computed %d trials\n', trialsUsed, size(responseInstanceArray.theMosaicIsomerizations,1));
-    responseInstanceArray.theMosaicIsomerizations = responseInstanceArray.theMosaicIsomerizations(1:trialsUsed,:,:,:);
+    if (~isempty(responseInstanceArray.theMosaicIsomerizations))
+        fprintf('Classifying based on %d of the computed %d trials\n', trialsUsed, size(responseInstanceArray.theMosaicIsomerizations,1));
+        responseInstanceArray.theMosaicIsomerizations = responseInstanceArray.theMosaicIsomerizations(1:trialsUsed,:,:,:);
+    end
     if ~isempty(responseInstanceArray.theMosaicPhotocurrents)
+        fprintf('Classifying based on %d of the computed %d trials\n', trialsUsed, size(responseInstanceArray.theMosaicPhotocurrents,1));
         responseInstanceArray.theMosaicPhotocurrents = responseInstanceArray.theMosaicPhotocurrents(1:trialsUsed,:,:,:);
     end
 end
@@ -391,32 +413,41 @@ function [stimData, actualEvidenceIntegrationTime] = keepTimeBinsUsed(stimData, 
         timeBinsToKeep = numel(stimData.responseInstanceArray.timeAxis) - timeBinsToKeep + 1;
         actualEvidenceIntegrationTime = -numel(timeBinsToKeep)*dt*1000;
     end
-      
-    responseDimensionality = ndims(stimData.responseInstanceArray.theMosaicIsomerizations);
-    if (responseDimensionality == 2)
-        % nTrials x cones - do nothing
-    elseif (responseDimensionality == 3)
-        % nTrials X non-null cones x time bins
-        stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(:,:,timeBinsToKeep);
-        if ~isempty(stimData.responseInstanceArray.theMosaicPhotocurrents)
+    
+    if (~isempty(responseInstanceArray.theMosaicIsomerizations))
+        responseDimensionality = ndims(stimData.responseInstanceArray.theMosaicIsomerizations);
+    
+        if (responseDimensionality == 2)
+            % nTrials x cones - do nothing
+        elseif (responseDimensionality == 3)
+            % nTrials X non-null cones x time bins
+            stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(:,:,timeBinsToKeep);
+            stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations(:,timeBinsToKeep);
+        elseif (responseDimensionality == 4)
+            % nTrials X cone rows x cone cols x time bins
+            stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(:,:,:,timeBinsToKeep);
+            stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations(:,:,timeBinsToKeep);
+        else
+            error('Response dimensionality: %d', responseDimensionality);
+        end
+    end
+    
+    if (~isempty(responseInstanceArray.theMosaicPhotocurrents))
+        responseDimensionality = ndims(stimData.responseInstanceArray.theMosaicPhotocurrents);
+    
+        if (responseDimensionality == 2)
+            % nTrials x cones - do nothing
+        elseif (responseDimensionality == 3)
+            % nTrials X non-null cones x time bins
             stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(:,:,timeBinsToKeep);
-        end
-        stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations(:,timeBinsToKeep);
-        if (~isempty(stimData.noiseFreePhotocurrents))
             stimData.noiseFreePhotocurrents = stimData.noiseFreePhotocurrents(:,timeBinsToKeep);
-        end
-    elseif (responseDimensionality == 4)
-        % nTrials X cone rows x cone cols x time bins
-        stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(:,:,:,timeBinsToKeep);
-        if ~isempty(stimData.responseInstanceArray.theMosaicPhotocurrents)
+        elseif (responseDimensionality == 4)
+            % nTrials X cone rows x cone cols x time bins
             stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(:,:,:,timeBinsToKeep);
-        end
-        stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations(:,:,timeBinsToKeep);
-        if (~isempty(stimData.noiseFreePhotocurrents))
             stimData.noiseFreePhotocurrents = stimData.noiseFreePhotocurrents(:,:,timeBinsToKeep);
+        else
+            error('Response dimensionality: %d', responseDimensionality);
         end
-    else
-        error('Response dimensionality: %d', responseDimensionality);
     end
     
 end

@@ -1,4 +1,4 @@
-function [validationData, extraData] = c_PoirsonAndWandell96Replicate(varargin)
+function [validationData, extraData, detectionThresholdContrast] = c_PoirsonAndWandell96Replicate(varargin)
 %
 % Compute thresholds to replicate the Poirson and Wandell 96 paper.
 % We are finding thresholds for spatio-temporal stimuli defined in the full 3D LMS space.
@@ -103,7 +103,7 @@ p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischa
 p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('visualizePerformance', false, @islogical);
 % PERFORMANCE COMPUTATION OPTIONS
-p.addParameter('performanceClassifier', 'svm', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmV1FilterBank', 'mlpt', 'mlpe'}));
+p.addParameter('performanceClassifier', 'svm', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF', 'mlpt', 'mlpe'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
 p.addParameter('performanceClassifierTrainingSamples', [], @isnumeric);
 p.addParameter('performanceEvidenceIntegrationTime', [], @isnumeric);
@@ -118,6 +118,11 @@ if (strcmp(visualizationFormat, 'montage')) || (strcmp(visualizationFormat, 'vid
 else
     error('visualizationFormat must be set to either ''montage'' or ''video''. Current value: ''%s''.', visualizationFormat);
 end
+
+% Returned arguments
+validationData = [];
+extraData = [];
+detectionThresholdContrast = [];
 
 % Start with default
 rParams = responseParamsGenerate;
@@ -156,7 +161,7 @@ rParams.backgroundParams = modifyStructParams(rParams.backgroundParams, ...
 frameRate = 87;                                     % their CRT had 87 Hz refresh rate
 windowTauInSeconds = 165/1000;
 stimulusSamplingIntervalInSeconds = 1/frameRate;
-stimulusDurationInSeconds = 4.5*windowTauInSeconds;
+stimulusDurationInSeconds = 3.5*windowTauInSeconds;
 % Allow around 100 milliseconds for response to stabilize
 responseStabilizationSeconds = ceil(100/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
 rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
@@ -164,7 +169,6 @@ rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
     'windowTauInSeconds', windowTauInSeconds, ...
     'stimulusSamplingIntervalInSeconds', stimulusSamplingIntervalInSeconds, ...
     'stimulusDurationInSeconds', stimulusDurationInSeconds, ...
-    'secondsForResponseStabilization', 60/1000, ...
     'secondsToInclude', stimulusDurationInSeconds, ...
     'secondsForResponseStabilization', responseStabilizationSeconds, ...
     'secondsToIncludeOffset', 0/1000, ...
@@ -266,16 +270,16 @@ end % visualizeResponses
 
 %% Find performance
 % Parameters related to how we find thresholds from responses
-% Use default
+% Start with default
 thresholdParams = thresholdParamsGenerate;
    
 % Reduce # of trials used if computation is not feasible (ie. PCA)
-% Here we are using all of them
 if (isempty(p.Results.performanceClassifierTrainingSamples))
     thresholdParams.trialsUsed = p.Results.nTrainingSamples;
 else
-    thresholdParams.trialsUsed = p.Results.performanceClassifierTrainingSamples; % p.Results.nTrainingSamples;
+    thresholdParams.trialsUsed = p.Results.performanceClassifierTrainingSamples;
 end
+
 
 thresholdParams = modifyStructParams(thresholdParams, ...
     'method', p.Results.performanceClassifier, ...
@@ -300,7 +304,21 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance)
         'plotSvmBoundary',false, ...
         'plotPsychometric',true ...
         );
-end
+    
+    % Fit psychometric functions
+    if (p.Results.fitPsychometric)
+      d = t_plotDetectThresholdsOnLMPlane(...
+          'rParams',rParams, ...
+          'instanceParams',testDirectionParams, ...
+          'thresholdParams',thresholdParams, ...
+          'plotPsychometric',p.Results.visualizePerformance, ...
+          'plotEllipse',false);
+      
+      detectionThresholdContrast = d.thresholdContrasts;
+    end
+end % if (p.Results.findPerformance) || (p.Results.visualizePerformance)
 
+
+        
 end
 

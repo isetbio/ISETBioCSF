@@ -337,7 +337,7 @@ function exportResponseTraceStills(theConeMosaic, stimData, chromaticDirectionPa
 
     % Export a PNG image    
     rwObject.write('AbsorptionsPhotocurrentsSingleConesAllInstances', stimData, paramsList, theProgram, ...
-        'type', 'NicePlotExport', 'FigureHandle', hFig, 'FigureType', 'png');
+        'type', 'NicePlotExportPNG', 'FigureHandle', hFig, 'FigureType', 'png');
 
     % Plot some cone responses (number of cones is controlled by the coneStride parameter) for the first instance
     if (1==1)
