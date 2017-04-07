@@ -262,7 +262,8 @@ if (p.Results.compute)
     end
     
     % Parfor over trial blocks
-    parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
+    %parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
+    for trialBlock = 1:nParforTrialBlocks
         % Get the parallel pool worker ID
         if (~isempty(p.Results.workerID))  
             t = getCurrentTask();
@@ -341,7 +342,8 @@ if (p.Results.compute)
             colorModulationParamsTemp.coneContrasts(1), colorModulationParamsTemp.coneContrasts(2), colorModulationParamsTemp.coneContrasts(3), colorModulationParamsTemp.contrast);
         
         % Parfor over blocks of trials
-        parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
+        %parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
+        for trialBlock = 1:nParforTrialBlocks
             % Get the parallel pool worker ID
             if (~isempty(p.Results.workerID))  
                 t = getCurrentTask();
