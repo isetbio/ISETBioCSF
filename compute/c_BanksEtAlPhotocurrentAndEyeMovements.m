@@ -68,6 +68,7 @@ p.addParameter('visualizePerformance', false, @islogical);
 p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
 p.addParameter('performanceClassifier', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF', 'mlpt', 'mlpe', 'mlgtGaussianRF'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
+p.addParameter('performanceTrialsUsed', [], @isnumeric);
 p.parse(varargin{:});
 
 %% Get the parameters we need
@@ -205,6 +206,12 @@ for ll = 1:length(p.Results.luminances)
             thresholdParams = modifyStructParams(thresholdParams, ...
                 'spatialPoolingKernelParams', p.Results.spatialPoolingKernelParams, ...
                 'useRBFKernel', false);   % set to true to use a nonlinear (radial basis function) - based SVM
+        end
+
+        if (isempty(p.Results.performanceTrialsUsed))
+            thresholdParams.trialsUsed = p.Results.nTrainingSamples;
+        else
+            thresholdParams.trialsUsed = p.Results.performanceTrialsUsed;
         end
 
         

@@ -12,22 +12,25 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     centeredEMPaths = false;
     
     % 'isomerizations', 'photocurrents'
-    performanceSignal = 'photocurrents'; % isomerizations';
+    performanceSignal = 'isomerizations';
     
     % 'mlpt', 'svm', 'svmV1FilterBank'
-    performanceClassifier =  'svm'; % 'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
+    performanceClassifier = 'svm'; %'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
+    
+    % Use a subset of the trials. Specify [] to use all available trials
+    performanceTrialsUsed = 128;
     
     spatialPoolingKernelParams.type = 'V1QuadraturePair';
     spatialPoolingKernelParams.activationFunction = 'energy'; %'fullWaveRectifier'
     spatialPoolingKernelParams.adjustForConeDensity = false;
-    spatialPoolingKernelParams.temporalPCAcoeffs = Inf;  % Inf, results in no PCA, just the raw time series
+    spatialPoolingKernelParams.temporalPCAcoeffs = 2;%Inf;  % Inf, results in no PCA, just the raw time series
     spatialPoolingKernelParams.shrinkageFactor = 1.0;  % > 1, results in expansion, < 1 results in shrinking
     
    
     freezeNoise = ~true;
     luminancesExamined =  [34];
     
-    nTrainingSamples = 512;
+    nTrainingSamples = 8192;
     
     computationIntance = 0;
     
@@ -59,7 +62,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     visualizeSpatialScheme = ~true;
     findPerformance = true;
     visualizePerformance = true;
-    visualizeTransformedSignals = true;
+    visualizeTransformedSignals = ~true;
     
     
     switch mosaicType
@@ -109,7 +112,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             responseExtinctionMilliseconds = 150;
             integrationTimeMilliseconds =  5.0;
             lowContrast = 0.001;
-            highContrast = 0.7;
+            highContrast = 0.2;
             nContrastsPerDirection =  16;    
     
         case 'timeSeriesPhotocurrents'
@@ -181,6 +184,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             'visualizeTransformedSignals', visualizeTransformedSignals, ...
             'performanceSignal' , performanceSignal, ...
             'performanceClassifier', performanceClassifier, ...
+            'performanceTrialsUsed', performanceTrialsUsed, ...
             'spatialPoolingKernelParams', spatialPoolingKernelParams ...
         );
     end
