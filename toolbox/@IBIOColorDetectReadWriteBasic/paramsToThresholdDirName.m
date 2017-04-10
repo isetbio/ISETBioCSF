@@ -8,6 +8,7 @@ if (~strcmp(params.type,'threshold'))
     error('Incorrect parameter type passed');
 end
 
+
 switch (params.method)
     case 'svm'
         theThresholdName = sprintf('%s_%s_%dInt_kFold%d_PCA%d_std%d_c%0.2f',...
@@ -47,7 +48,11 @@ switch (params.method)
            if isfield(params.spatialPoolingKernelParams, 'shrinkageFactor')
                 methodName = sprintf('%s_%0.2fshrinkageFactor', methodName, params.spatialPoolingKernelParams.shrinkageFactor);
            end
+           if isfield(params.spatialPoolingKernelParams, 'activationFunction')
+                methodName = sprintf('%s_%s', methodName, params.spatialPoolingKernelParams.activationFunction);
+           end
         end
+        
         
         theThresholdName = sprintf('%s_%s_%dInt_kFold%d_stdSVMpredictors%d_c%0.2f',...
                 methodName, ...
