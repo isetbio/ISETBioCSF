@@ -516,43 +516,20 @@ if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visual
             end
             
             % Call the figures generation routine
-            hFigs = visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, p.Results.visualizationFormat);
+            hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizeOuterSegmentFilters, p.Results.visualizedResponseNormalization, kk, nParforConditions, p.Results.visualizationFormat);
         
             % Save figures produced
             theProgram = mfilename;
             rwObject = IBIOColorDetectReadWriteBasic;
             data = 0;
             
-            if (~isempty(hFigs{1}))
-                fileName = sprintf('osImpulseResponses');
-                rwObject.write(fileName, data, paramsList, theProgram, ...
-                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{1}, 'FigureType', 'pdf');
+            for k = 1:numel(hFigsInfo)
+                if ~isempty(hFigsInfo{k}.hFig)
+                    fileName = hFigsInfo{k}.filename;
+                    rwObject.write(fileName, data, paramsList, theProgram, ...
+                        'type', 'NicePlotExportPDF', 'FigureHandle', hFigsInfo{k}.hFig, 'FigureType', 'pdf');
+                end
             end
-            
-            if (~isempty(hFigs{2}))
-                fileName = sprintf('noiseFreeXTResponses');
-                rwObject.write(fileName, data, paramsList, theProgram, ...
-                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{2}, 'FigureType', 'pdf');
-            end
-            
-            if (~isempty(hFigs{3}))
-                fileName = sprintf('noiseFreeXYResponses');
-                rwObject.write(fileName, data, paramsList, theProgram, ...
-                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{3}, 'FigureType', 'pdf');
-            end
-            
-            if (~isempty(hFigs{4}))
-                fileName = sprintf('peakConeIsomerizationResponseInstances');
-                rwObject.write(fileName, data, paramsList, theProgram, ...
-                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{4}, 'FigureType', 'pdf');
-            end
-            
-            if (~isempty(hFigs{5}))
-                fileName = sprintf('peakConePhotocurrentResponseInstances');
-                rwObject.write(fileName, data, paramsList, theProgram, ...
-                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{5}, 'FigureType', 'pdf');
-            end
-            
         end
     end
     

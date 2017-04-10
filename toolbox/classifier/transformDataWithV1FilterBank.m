@@ -1,4 +1,4 @@
-function [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams, paramsList, visualizeTransformedSignals)
+function [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams, paramsList, visualizeTheTransformedSignals)
 % [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams)
 % Compute from the raw signal responses (isomerizations/photocurrents) the
 % energy response of a V1 quadrature pair filter bank
@@ -30,7 +30,6 @@ temporalDimension = 3;
 
 % Compute the energy response of the V1 filter bank
 if (strcmp(thresholdParams.signalSource,'photocurrents'))
-    
     [noStimData.responseInstanceArray.theMosaicPhotocurrents, ...
      stimData.responseInstanceArray.theMosaicPhotocurrents, ...
      noStimDataPCAapproximatedPhotocurrents, stimDataPCAapproximatedPhotocurrents] = computeV1FilterTransformation(V1filterBank, ...
@@ -47,8 +46,8 @@ else
 end
 
 
-% Visualize transformed signals
-if (visualizeTransformedSignals) && (V1filterBank.temporalPCAcoeffs > 0) && (~isinf(V1filterBank.temporalPCAcoeffs))
+% Visualize transformed signals if we are working on the full temporal response (i.e. no temporal PCA)
+if (visualizeTheTransformedSignals) && (isinf(V1filterBank.temporalPCAcoeffs))
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
         hFig = visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicPhotocurrents, stimData.responseInstanceArray.theMosaicPhotocurrents, thresholdParams.signalSource, stimData.testContrast*100, 'V1 filter bank');
     else
