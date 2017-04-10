@@ -15,23 +15,23 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     performanceSignal = 'isomerizations';
     
     % 'mlpt', 'svm', 'svmV1FilterBank'
-    performanceClassifier = 'svm'; %'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
+    performanceClassifier = 'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
+    useRBFSVMKernel = true;
     
     % Use a subset of the trials. Specify [] to use all available trials
-    performanceTrialsUsed = 128;
+    nTrainingSamples = 8192;
+    performanceTrialsUsed = nTrainingSamples;
     
     spatialPoolingKernelParams.type = 'V1QuadraturePair';
     spatialPoolingKernelParams.activationFunction = 'energy'; %'fullWaveRectifier'
     spatialPoolingKernelParams.adjustForConeDensity = false;
-    spatialPoolingKernelParams.temporalPCAcoeffs = 2;%Inf;  % Inf, results in no PCA, just the raw time series
+    spatialPoolingKernelParams.temporalPCAcoeffs = Inf;  % Inf, results in no PCA, just the raw time series
     spatialPoolingKernelParams.shrinkageFactor = 1.0;  % > 1, results in expansion, < 1 results in shrinking
     
    
     freezeNoise = ~true;
     luminancesExamined =  [34];
-    
-    nTrainingSamples = 8192;
-    
+
     computationIntance = 0;
     
     if (computationIntance == 0)
@@ -184,6 +184,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             'visualizeTransformedSignals', visualizeTransformedSignals, ...
             'performanceSignal' , performanceSignal, ...
             'performanceClassifier', performanceClassifier, ...
+            'useRBFSVMKernel', useRBFSVMKernel, ...
             'performanceTrialsUsed', performanceTrialsUsed, ...
             'spatialPoolingKernelParams', spatialPoolingKernelParams ...
         );
