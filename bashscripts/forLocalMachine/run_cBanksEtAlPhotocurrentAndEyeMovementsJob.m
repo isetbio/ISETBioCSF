@@ -14,16 +14,18 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     % 'isomerizations', 'photocurrents'
     performanceSignal = 'isomerizations';
     
-    % 'mlpt', 'svm', 'svmV1FilterBank'
-    performanceClassifier = 'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
-    useRBFSVMKernel = true;
-    
     % Use a subset of the trials. Specify [] to use all available trials
     nTrainingSamples = 8192;
     performanceTrialsUsed = nTrainingSamples;
     
-    spatialPoolingKernelParams.type = 'V1QuadraturePair';
-    spatialPoolingKernelParams.activationFunction = 'energy'; %'fullWaveRectifier'
+    
+    % 'mlpt', 'svm', 'svmV1FilterBank'
+    performanceClassifier = 'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
+    useRBFSVMKernel = false;
+    
+    % Spatial pooling kernel parameters
+    spatialPoolingKernelParams.type = 'V1SinUnit';  % Choose between 'V1CosUnit' 'V1SinUnit' 'V1QuadraturePair';
+    spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';  % Choose between 'energy' and 'fullWaveRectifier'
     spatialPoolingKernelParams.adjustForConeDensity = false;
     spatialPoolingKernelParams.temporalPCAcoeffs = Inf;  % Inf, results in no PCA, just the raw time series
     spatialPoolingKernelParams.shrinkageFactor = 1.0;  % > 1, results in expansion, < 1 results in shrinking
@@ -62,7 +64,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     visualizeSpatialScheme = ~true;
     findPerformance = true;
     visualizePerformance = true;
-    visualizeTransformedSignals = ~true;
+    visualizeTransformedSignals = true;
     
     
     switch mosaicType

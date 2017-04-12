@@ -4,7 +4,12 @@ function [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stim
 % energy response of a V1 quadrature pair filter bank
 %
 
-fprintf('Transforming data via projection to the spatial components of a V1-based filter bank (energy)\n');
+V1filterBank = thresholdParams.spatialPoolingKernel;
+if (~ismember(V1filterBank.activationFunction, {'energy', 'fullWaveRectifier'}))
+    error('V1filterBank.activationFunction must be set to either ''energy'' or ''fullWaveRectifier''.\n')
+end
+
+fprintf('Transforming data via projection to the spatial components of a V1-based filter (type: %s, activationFunction: %s)\n', V1filterBank.type, V1filterBank.activationFunction);
 
 if (strcmp(thresholdParams.signalSource,'photocurrents'))
     if (ndims(noStimData.responseInstanceArray.theMosaicPhotocurrents) ~= 3)
@@ -16,19 +21,13 @@ else
     end
 end
 
-V1filterBank = thresholdParams.spatialPoolingKernel;
-if (~ismember(V1filterBank.activationFunction, {'energy', 'fullWaveRectifier'}))
-    error('V1filterBank.activationFunction must be set to either ''energy'' or ''fullWaveRectifier''.\n')
-end
-
 % Subtract the noStimData so that zero modulation gives zero response for both isomerizations and photocurrrents
 repsDimension = 1;
 spatialDimension = 2;
 temporalDimension = 3;
 [noStimData, stimData] = subtractMeanOfNoStimData(noStimData, stimData, thresholdParams.signalSource, repsDimension, temporalDimension);
 
-
-% Compute the energy response of the V1 filter bank
+% Compute the transformed signals
 if (strcmp(thresholdParams.signalSource,'photocurrents'))
     [noStimData.responseInstanceArray.theMosaicPhotocurrents, ...
      stimData.responseInstanceArray.theMosaicPhotocurrents, ...
@@ -46,19 +45,19 @@ else
 end
 
 
-% Visualize transformed signals if we are working on the full temporal response (i.e. no temporal PCA)
+% Visualize the transformed signals only if we are working on the full temporal response (i.e. no temporal PCA)
 if (visualizeTheTransformedSignals) && (isinf(V1filterBank.temporalPCAcoeffs))
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
-        hFig = visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicPhotocurrents, stimData.responseInstanceArray.theMosaicPhotocurrents, thresholdParams.signalSource, stimData.testContrast*100, 'V1 filter bank');
+        hFig = visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicPhotocurrents, stimData.responseInstanceArray.theMosaicPhotocurrents, thresholdParams.signalSource, stimData.testContrast*100, sprintf('V1 filter (%s,%s)', V1filterBank.type, V1filterBank.activationFunction));
     else
-        hFig = visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicIsomerizations, stimData.responseInstanceArray.theMosaicIsomerizations, thresholdParams.signalSource, stimData.testContrast*100, 'V1 filter bank');
+        hFig = visualizeTransformedSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicIsomerizations, stimData.responseInstanceArray.theMosaicIsomerizations, thresholdParams.signalSource, stimData.testContrast*100, sprintf('V1 filter (%s,%s)', V1filterBank.type, V1filterBank.activationFunction));
     end    
 
     % Save figure
     theProgram = mfilename;
     rwObject = IBIOColorDetectReadWriteBasic;
     data = 0;
-    fileName = sprintf('%s-based_%s_outputs', thresholdParams.signalSource, thresholdParams.method);
+    fileName = sprintf('%s-based_%s_%s_%s_%.2fshrinkageFactor_outputs', thresholdParams.signalSource, thresholdParams.method, thresholdParams.spatialPoolingKernelParams.type, thresholdParams.spatialPoolingKernelParams.activationFunction, thresholdParams.spatialPoolingKernelParams.shrinkageFactor);
     rwObject.write(fileName, data, paramsList, theProgram, ...
            'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
 end % visualize transformed signals
@@ -92,7 +91,7 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
   %  subplot(1,2,1);
   %  plot(stimData', 'k-');
     
-    if (isfield(V1filterBank, 'temporalPCAcoeffs')) && (V1filterBank.temporalPCAcoeffs > 0) && (~isinf(V1filterBank.temporalPCAcoeffs))
+    if (isfield(V1filterBank, 'temporalPCAcoeffs')) && (~isinf(V1filterBank.temporalPCAcoeffs))
         nTrials = size(noStimData,repsDimension);
         tBins = size(noStimData,2);
         theData = noStimData;

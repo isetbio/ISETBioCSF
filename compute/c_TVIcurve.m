@@ -57,6 +57,7 @@ p.addParameter('performanceClassifierTrainingSamples', [], @isnumeric);
 p.addParameter('performanceEvidenceIntegrationTime', [], @isnumeric);
 p.addParameter('summaryCurveMarkerType', 'o', @ischar);
 p.addParameter('summaryCurveLegend', '', @ischar);
+p.addParameter('plotSummaryCurve', false, @islogical);
 p.addParameter('pcaComponentsNum', 60, @isnumeric);
 p.addParameter('findPerformance',true,@islogical);
 p.addParameter('fitPsychometric',true,@islogical);
@@ -181,7 +182,6 @@ thresholdParams = modifyStructParams(thresholdParams, ...
 
 if (strcmp(thresholdParams.method, 'svm')) || ...
    (strcmp(thresholdParams.method, 'svmV1FilterBank')) || ...
-   (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')) || ...
    (strcmp(thresholdParams.method, 'svmGaussianRF'))
      thresholdParams = modifyStructParams(thresholdParams, ...
          'spatialPoolingKernelParams', p.Results.spatialPoolingKernelParams, ...
@@ -250,7 +250,7 @@ for pedestalLuminanceIndex = 1:numel(pedestalLuminanceList)
     end % visualizeResponses
 
     %% Compute/Visualize performance
-    if (p.Results.findPerformance) || (p.Results.visualizePerformance) || (p.Results.fitPsychometric) || (p.Results.visualizeSpatialScheme)
+    if (p.Results.findPerformance) || (p.Results.visualizePerformance) || (p.Results.fitPsychometric) || (p.Results.visualizeSpatialScheme) || (p.Results.plotSummaryCurve)
         rParams.plotParams = modifyStructParams(rParams.plotParams, ...
             'axisFontSize', 12, ...
             'labelFontSize', 14, ...
@@ -270,7 +270,7 @@ for pedestalLuminanceIndex = 1:numel(pedestalLuminanceList)
         end
         
         % Fit psychometric functions
-        if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.visualizePerformance))
+        if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.visualizePerformance)) || (p.Results.plotSummaryCurve)
           d = t_plotDetectThresholds(...
               'rParams',rParams, ...
               'instanceParams',testLuminanceParams, ...
@@ -314,7 +314,7 @@ end
 plotType = 'loglog';
 %plotType = 'linear';
 
-if (p.Results.findPerformance) || (p.Results.visualizePerformance)
+if (p.Results.plotSummaryCurve)
     detectionThresholdContrast = cell2mat(detectionThresholdContrast);
     thresholdLuminance = pedestalLuminanceList .* (detectionThresholdContrast);
     
@@ -375,21 +375,27 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance)
         markerFaceColor2 = [0.9 0.9 0.9];
         markerEdgeColor2 = [0.5 0.5 0.5];
     end
-    plot(GeislerData.x, GeislerData.y1, 'ko-', 'MarkerSize', 12, 'MarkerEdgeColor', markerEdgeColor1, 'MarkerFaceColor', markerFaceColor1, 'LineWidth', 1.5);
-    plot(GeislerData.x, GeislerData.y2, 'ks-', 'MarkerSize', 12, 'MarkerEdgeColor', markerEdgeColor2, 'MarkerFaceColor', markerFaceColor2, 'LineWidth', 1.5);
-    plot(GeislerData.x, GeislerData.y3, 'k^-', 'MarkerSize', 12, 'MarkerEdgeColor', markerEdgeColor3, 'MarkerFaceColor', markerFaceColor3, 'LineWidth', 1.5);
+    if (strcmp(p.Results.summaryCurveMarkerType, 'o'))
+        plot(GeislerData.x, GeislerData.y1, 'ko-', 'MarkerSize', 12, 'MarkerEdgeColor', markerEdgeColor1, 'MarkerFaceColor', markerFaceColor1, 'LineWidth', 1.5);
+    end
+    if (strcmp(p.Results.summaryCurveMarkerType, 's'))
+        plot(GeislerData.x, GeislerData.y2, 'ks-', 'MarkerSize', 12, 'MarkerEdgeColor', markerEdgeColor2, 'MarkerFaceColor', markerFaceColor2, 'LineWidth', 1.5);
+    end
+    if (strcmp(p.Results.summaryCurveMarkerType, '^'))
+        plot(GeislerData.x, GeislerData.y3, 'k^-', 'MarkerSize', 12, 'MarkerEdgeColor', markerEdgeColor3, 'MarkerFaceColor', markerFaceColor3, 'LineWidth', 1.5);
+    end
     plot(pedestalIlluminanceList, thresholdIlluminance, 'r-', 'Marker', p.Results.summaryCurveMarkerType, 'LineWidth', 1.5, 'MarkerSize', 14, 'MarkerFaceColor', [1 0.8 0.8]);
     hold off
     axis 'equal'
-    hL = legend({'Geisler (3.5'')',  'Geisler (10'')', 'Geisler (50'')', p.Results.summaryCurveLegend});
+    hL = legend({'Geisler (10'')', p.Results.summaryCurveLegend});
     set(hL, 'FontSize', 12, 'Location', 'NorthWest');
     set(gca, 'XLim', XLimIlluminance, 'YLim', YLimIlluminance, 'XTick', -5:5, 'YTick', -5:5);
     title(sprintf('%s (%s)',thresholdParams.signalSource, thresholdParams.method))
     if (strcmp(plotType, 'loglog'))
-        xlabel('log pedestal (adapting) illuminance (Td)', 'FontWeight', 'bold');
+        xlabel('log adapting illuminance (Td)', 'FontWeight', 'bold');
         ylabel('log threshold test illuminance (Td)', 'FontWeight', 'bold');
     else
-        xlabel('pedestal (adapting) illuminance (Td)', 'FontWeight', 'bold');
+        xlabel('adapting illuminance (Td)', 'FontWeight', 'bold');
         ylabel('threshold test illuminance (Td)', 'FontWeight', 'bold');
     end
     set(gca, 'FontSize', 14);
@@ -402,11 +408,11 @@ if (p.Results.findPerformance) || (p.Results.visualizePerformance)
     axis 'equal'
     set(gca, 'XLim', XLimIlluminance, 'YLim', YLimContrast, 'XTick', -5:5, 'YTick', -5:5);
     if (strcmp(plotType, 'loglog'))
-        xlabel('log pedestal (adapting) illuminance (Td)', 'FontWeight', 'bold');
-        ylabel('log threshold contrast', 'FontWeight', 'bold');
+        xlabel('log adapting illuminance (Td)', 'FontWeight', 'bold');
+        ylabel('log threshold test contrast', 'FontWeight', 'bold');
     else
-        xlabel('pedestal (adapting) illuminance (Td)', 'FontWeight', 'bold');
-        ylabel('threshold contrast', 'FontWeight', 'bold');
+        xlabel('adapting illuminance (Td)', 'FontWeight', 'bold');
+        ylabel('threshold test contrast', 'FontWeight', 'bold');
     end
     title(sprintf('%s (%s)',thresholdParams.signalSource, thresholdParams.method));
     set(gca, 'FontSize', 14);

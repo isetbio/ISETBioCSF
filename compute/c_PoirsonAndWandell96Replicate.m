@@ -103,7 +103,7 @@ p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischa
 p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('visualizePerformance', false, @islogical);
 % PERFORMANCE COMPUTATION OPTIONS
-p.addParameter('performanceClassifier', 'svm', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF', 'mlpt', 'mlpe'}));
+p.addParameter('performanceClassifier', 'svm', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmV1FilterBank',  'mlpt', 'mlpe'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
 p.addParameter('performanceClassifierTrainingSamples', [], @isnumeric);
 p.addParameter('performanceEvidenceIntegrationTime', [], @isnumeric);

@@ -57,7 +57,7 @@ function [noStimData, stimData] = transformDataWithSpatialPoolingFilter(noStimDa
         theProgram = mfilename;
         rwObject = IBIOColorDetectReadWriteBasic;
         data = 0;
-        fileName = sprintf('%s-based_%s_%.2fshrinkageFactor_outputs', thresholdParams.signalSource, thresholdParams.method, thresholdParams.spatialPoolingKernelParams.shrinkageFactor);
+        fileName = sprintf('%s-based_%s_%s_%s_%.2fshrinkageFactor_outputs', thresholdParams.signalSource, thresholdParams.method, thresholdParams.spatialPoolingKernelParams.type, VthresholdParams.spatialPoolingKernelParams.activationFunction, thresholdParams.spatialPoolingKernelParams.shrinkageFactor);
         rwObject.write(fileName, data, paramsList, theProgram, ...
            'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
     end

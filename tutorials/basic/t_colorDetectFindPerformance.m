@@ -126,7 +126,7 @@ constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.o
 
 %% svmV1FilterBank - related checks and computations
 if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaicParams.conePacking, 'hexReg')) && ... 
-   ((strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')))
+   ((strcmp(thresholdParams.method, 'svmV1FilterBank')))
     error('Currently, classification using the ''svmV1FilterBank'' method is only implemented for spatially-varying density hex mosaics.\n')
 end
 if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaicParams.conePacking, 'hexReg')) && ...
@@ -134,7 +134,7 @@ if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaic
     error('Currently, classification using the ''svmGaussianRF'' method is only implemented for spatially-varying density hex mosaics.\n')
 end
 
-if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF'))
+if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
     % Generate V1 filter bank struct and add it to thresholdParams
     V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams, constantParamsList);
     thresholdParams = modifyStructParams(thresholdParams, ...
@@ -151,7 +151,7 @@ end
 %% Compute if desired
 if (p.Results.compute)   
     % Inform the user regarding what we are currently working on
-    if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')) || (strcmp(thresholdParams.method, 'svmGaussianRF'))
+    if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmGaussianRF'))
         fprintf('Computing performance for <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the raw <strong>%s</strong>.\n', ...
         rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
     elseif (~strcmp(thresholdParams.method, 'mlpt'))

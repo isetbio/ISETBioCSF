@@ -30,7 +30,7 @@ p.parse(noStimData,stimData,thresholdParams,varargin{:});
 tBegin = clock;
 
 %% Transform the raw cone responses into V1 filter bank responses
-if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF'))
+if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
     if ((~isfield(thresholdParams, 'spatialPoolingKernel')) || (isfield(thresholdParams, 'spatialPoolingKernel')) && (isempty(thresholdParams.spatialPoolingKernel)))
         error('thresholdParams must have a spatialPoolingKernel field when using the svmV1FilterBank classifier\n');
     end
@@ -50,7 +50,7 @@ end
 %% Decide what type of classifier we are running
 switch (thresholdParams.method)
     
-    case {'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF', 'svmGaussianRF', 'svmSpaceTimeSeparable'}
+    case {'svmV1FilterBank', 'svmGaussianRF', 'svmSpaceTimeSeparable'}
         % Perform SVM classification for this stimulus vs the zero contrast stimulus
         fprintf('\tRunning special SVM ...');
         [usePercentCorrect, useStdErr, svm] = classifyWithSVM(classificationData,classes,thresholdParams.kFold,...

@@ -73,6 +73,7 @@ function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLoc
     sinPhaseFilter = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams, 1.0));
     V1filterBank.sinPhasePoolingProfile = sinPhaseFilter-1;
 
+    
     % Compute energy envelope
     RFprofile = V1filterBank.cosPhasePoolingProfile.^2 + V1filterBank.sinPhasePoolingProfile.^2;
     V1filterBank.RFprofile = RFprofile / max(abs(RFprofile(:)));
@@ -118,6 +119,14 @@ function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLoc
     end
     
     
+    if (strcmp(spatialPoolingKernelParams.type, 'V1SinUnit'))
+        V1filterBank.cosPhasePoolingProfile = 0*V1filterBank.cosPhasePoolingProfile;
+    end
+    
+    if (strcmp(spatialPoolingKernelParams.type, 'V1CosUnit'))
+        V1filterBank.sinPhasePoolingProfile = 0*V1filterBank.sinPhasePoolingProfile;
+    end
+    
     if (any(isnan(V1filterBank.cosPhasePoolingWeights)))
         fprintf('Cos pooling contains %d NANs\n', sum(isnan(V1filterBank.cosPhasePoolingWeights(:))));
     end
@@ -126,7 +135,7 @@ function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLoc
         fprintf('Sin pooling contains %d NANs\n', sum(isnan(V1filterBank.sinPhasePoolingWeights(:))));
     end
     
-    
+    V1filterBank.type = spatialPoolingKernelParams.type;
     V1filterBank.activationFunction = spatialPoolingKernelParams.activationFunction;
     V1filterBank.temporalPCAcoeffs = spatialPoolingKernelParams.temporalPCAcoeffs;
 end
