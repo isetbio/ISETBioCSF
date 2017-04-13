@@ -1,4 +1,5 @@
 function [V1filterBank, hFig] = generateV1FilterBank(spatialParams, mosaicParams, topLevelDirParams, visualizeSpatialScheme, thresholdParams, paramsList)
+    
     % Filter width
     filterWidthInDegrees = spatialParams.fieldOfViewDegs;
     
@@ -60,6 +61,10 @@ end
 
 function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLocsDegs, xaxisDegs, yaxisDegs, coneDensity, spatialPoolingKernelParams)
 
+    if (~ismember(spatialPoolingKernelParams.type, {'V1SinUnit', 'V1CosUnit', 'V1QuadraturePair'}))
+        error('spatialPoolingKernelParams.type must be set to either ''V1SinUnit'', ''V1CosUnit'', or ''V1QuadraturePair''.\n');
+    end
+    
     % filter width
     spatialParams.gaussianFWHMDegs = spatialPoolingKernelParams.shrinkageFactor * filterWidthDegs/2.0;
     
@@ -118,7 +123,7 @@ function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLoc
         fprintf('Sin pooling contains % values< >1\n', sum(V1filterBank.sinPhasePoolingWeights(:)>1));
     end
     
-    
+   
     if (strcmp(spatialPoolingKernelParams.type, 'V1SinUnit'))
         V1filterBank.cosPhasePoolingProfile = 0*V1filterBank.cosPhasePoolingProfile;
     end

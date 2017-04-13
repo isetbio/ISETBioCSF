@@ -169,6 +169,41 @@ colorModulationParamsNull.contrast = 0;
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
 
+%% Maybe we are just visualizing the mosaic - not computing responses
+if ((~p.Results.compute) && ((p.Results.visualizeMosaic) || (p.resultsComputeMosaic)) )
+    if (p.Results.computeMosaic)
+        % Create the cone mosaic
+        theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams, ...
+            'visualizeMosaic', p.Results.visualizeMosaic);
+        
+        % Save cone mosaic
+        coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
+        rwObject.write('coneMosaic', theMosaic, coneParamsList, theProgram, 'type', 'mat');
+    else
+        % Load a previously saved cone mosaic
+        fprintf('Loading a previously saved cone mosaic\n');
+        coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
+        theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
+        theMosaic.displayInfo();
+    end
+    
+    if (p.Results.visualizeMosaic)
+       if (strcmp(rParams.mosaicParams.conePacking, 'hex'))
+           hFig = theMosaic.visualizeGrid('generateNewFigure', true, ...
+            'overlayConeDensityContour', 'measured', ...    % choose between 'measured', 'theoretical', 'none'
+            'coneDensityContourLevelStep', 10000);
+       else
+           hFig = theMosaic.visualizeGrid('generateNewFigure', true);
+       end
+    
+        coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
+        data = 0;
+        rwObject.write('coneMosaic', data, coneParamsList, theProgram, ...
+            'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');   
+    end
+    return;
+end
+
 %% The computing happens here, if we are doing it
 if (p.Results.compute)
     % Create the optics

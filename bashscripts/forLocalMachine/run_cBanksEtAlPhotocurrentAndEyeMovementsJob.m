@@ -2,7 +2,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
 
  
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
-    mosaicType = 'originalBanks'; %'fullIsetbioNoScones';
+    mosaicType = 'fullIsetbioWithScones'; % 'originalBanks'; %'fullIsetbioNoScones';
     
     % 'singleExposure'; 'timeSeriesNoPhotocurrents'; 'timeSeriesPhotocurrents'
     temporalAnalysis = 'timeSeriesNoPhotocurrents';
@@ -59,12 +59,13 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
     % What to do ?
     computeMosaic = ~true;
+    visualizeMosaic = ~true;
     computeResponses = ~true;
-    visualizeResponses = ~true;
-    visualizeSpatialScheme = ~true;
-    findPerformance = true;
-    visualizePerformance = true;
-    visualizeTransformedSignals = true;
+    visualizeResponses = true;
+    visualizeSpatialScheme = true;
+    findPerformance = ~true;
+    visualizePerformance = ~true;
+    visualizeTransformedSignals = ~true;
     
     
     switch mosaicType
@@ -128,7 +129,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     end
     
     
-    if (computeResponses) || (visualizeResponses) || (visualizeSpatialScheme) 
+    if (computeResponses) || (visualizeResponses) || (visualizeSpatialScheme) || (visualizeMosaic)
         c_BanksEtAlPhotocurrentAndEyeMovements(...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
             'luminances', luminancesExamined, ...
@@ -148,6 +149,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             'conePacking', conePacking, ...
             'LMSRatio', LMSRatio, ...
             'computeMosaic',computeMosaic, ...
+            'visualizeMosaic', visualizeMosaic, ...
             'computeResponses', computeResponses, ...
             'visualizeResponses', visualizeResponses, ...
             'visualizeSpatialScheme', visualizeSpatialScheme, ...
