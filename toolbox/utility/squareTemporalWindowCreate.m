@@ -23,8 +23,9 @@ else
     extinctionTimeSamples = 0;
 end
 
-sampleTimes = (1:(stabilizingTimeSamples + stimulusSamples + extinctionTimeSamples))*temporalParams.stimulusSamplingIntervalInSeconds;
-sampleTimes = sampleTimes - mean(sampleTimes);
+sampleTimes = 1:(stabilizingTimeSamples + stimulusSamples + extinctionTimeSamples);
+sampleTimes = sampleTimes - stabilizingTimeSamples - round(stimulusSamples/2);
+sampleTimes = sampleTimes * temporalParams.stimulusSamplingIntervalInSeconds;
 sampleTimes = sampleTimes - (sampleTimes(2)-sampleTimes(1))/2;
 
 squareTemporalWindow = zeros(1,numel(sampleTimes));

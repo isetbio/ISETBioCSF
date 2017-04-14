@@ -201,7 +201,6 @@ if ((~p.Results.compute) && ((p.Results.visualizeMosaic) || (p.resultsComputeMos
         rwObject.write('coneMosaic', data, coneParamsList, theProgram, ...
             'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');   
     end
-    return;
 end
 
 %% The computing happens here, if we are doing it

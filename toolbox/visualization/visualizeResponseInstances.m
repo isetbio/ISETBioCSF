@@ -60,13 +60,14 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData,
         end
     end
     
-    isomerizationQuantizationLevelsNum = 5*(timeAxis(2)-timeAxis(1));
+    isomerizationQuantizationLevelsNum = round(14*(timeAxis(2)-timeAxis(1)))
     photocurrentsQuantizationLevelsNum = 100;
     
     if (~isempty(noStimData.responseInstanceArray.theMosaicIsomerizations))
+        isomerizationLevels = [0 14000]; 
         hFig = visualizeResponsesInstancesAndNoiseFreeResponsesAsDensityPlots(timeAxis, ...
         noStimIsomerizationsResponseInstances, stimIsomerizationsResponseInstances, ...
-        noStimNoiseFreeIsomerizationsResponse, stimNoiseFreeIsomerizationsResponse, 0, isomerizationQuantizationLevelsNum, 'density', 'R*/cone/sec', 5001);
+        noStimNoiseFreeIsomerizationsResponse, stimNoiseFreeIsomerizationsResponse, 0, isomerizationLevels, isomerizationQuantizationLevelsNum, 'density', 'R*/cone/sec', 5001);
     else
         hFig = [];
     end 
@@ -75,9 +76,11 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData,
             'hFig', hFig);
     
     if (~isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
+        
+        photocurrentsLevels = [-95 -55]; 
         hFig = visualizeResponsesInstancesAndNoiseFreeResponsesAsDensityPlots(timeAxis, ...
         noStimPhotocurrentsResponseInstances, stimPhotocurrentsResponseInstances, ...
-        noStimNoiseFreePhotocurrentsResponse, stimNoiseFreePhotocurrentsResponse, 0, photocurrentsQuantizationLevelsNum, 'line', 'pAmps', 5002);
+        noStimNoiseFreePhotocurrentsResponse, stimNoiseFreePhotocurrentsResponse, 0, photocurrentsLevels, photocurrentsQuantizationLevelsNum, 'line', 'pAmps', 5002);
     else
         hFig = [];
     end
