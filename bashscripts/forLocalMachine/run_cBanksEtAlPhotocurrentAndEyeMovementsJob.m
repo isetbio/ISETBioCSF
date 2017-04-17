@@ -2,7 +2,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
 
  
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
-    mosaicType = 'fullIsetbioWithScones'; % 'originalBanks'; %'fullIsetbioNoScones';
+    mosaicType = 'originalBanks'; % 'originalBanks'; %'fullIsetbioNoScones';
     
     % 'singleExposure'; 'timeSeriesNoPhotocurrents'; 'timeSeriesPhotocurrents'
     temporalAnalysis = 'timeSeriesNoPhotocurrents';
@@ -20,12 +20,12 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
     
     % 'mlpt', 'svm', 'svmV1FilterBank'
-    performanceClassifier = 'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
+    performanceClassifier ='svm'; %'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
     useRBFSVMKernel = false;
     
     % Spatial pooling kernel parameters
-    spatialPoolingKernelParams.type = 'V1SinUnit';  % Choose between 'V1CosUnit' 'V1SinUnit' 'V1QuadraturePair';
-    spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';  % Choose between 'energy' and 'fullWaveRectifier'
+    spatialPoolingKernelParams.type = 'V1QuadraturePair';  % Choose between 'V1CosUnit' 'V1SinUnit' 'V1QuadraturePair';
+    spatialPoolingKernelParams.activationFunction = 'energy';  % Choose between 'energy' and 'fullWaveRectifier'
     spatialPoolingKernelParams.adjustForConeDensity = false;
     spatialPoolingKernelParams.temporalPCAcoeffs = Inf;  % Inf, results in no PCA, just the raw time series
     spatialPoolingKernelParams.shrinkageFactor = 1.0;  % > 1, results in expansion, < 1 results in shrinking
@@ -61,10 +61,10 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     computeMosaic = ~true;
     visualizeMosaic = ~true;
     computeResponses = ~true;
-    visualizeResponses = true;
-    visualizeSpatialScheme = true;
-    findPerformance = ~true;
-    visualizePerformance = ~true;
+    visualizeResponses = ~true;
+    visualizeSpatialScheme = ~true;
+    findPerformance = true;
+    visualizePerformance = true;
     visualizeTransformedSignals = ~true;
     
     
@@ -160,7 +160,14 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
         );
     end
     
+    
+        
     if (findPerformance) || (visualizePerformance) 
+        
+     for k = 6:-1:1
+        performanceTrialsUsed = nTrainingSamples/(2^k);
+        fprintf('Computing performance based on %d trials \n', performanceTrialsUsed);
+        
         c_BanksEtAlPhotocurrentAndEyeMovements(...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
             'luminances', luminancesExamined, ...
@@ -192,6 +199,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             'performanceTrialsUsed', performanceTrialsUsed, ...
             'spatialPoolingKernelParams', spatialPoolingKernelParams ...
         );
+    end
     end
     
     
