@@ -77,7 +77,7 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData,
     
     if (~isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
         
-        photocurrentsLevels = [-95 -55]; 
+        photocurrentsLevels = [-90 -50]; 
         hFig = visualizeResponsesInstancesAndNoiseFreeResponsesAsDensityPlots(timeAxis, ...
         noStimPhotocurrentsResponseInstances, stimPhotocurrentsResponseInstances, ...
         noStimNoiseFreePhotocurrentsResponse, stimNoiseFreePhotocurrentsResponse, 0, photocurrentsLevels, photocurrentsQuantizationLevelsNum, 'line', 'pAmps', 5002);
