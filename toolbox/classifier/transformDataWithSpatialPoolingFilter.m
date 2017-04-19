@@ -20,29 +20,11 @@ function [noStimData, stimData] = transformDataWithSpatialPoolingFilter(noStimDa
 
     spatialPoolingKernel = thresholdParams.spatialPoolingKernel;
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
-        spatialKernelLinearActivation = squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicPhotocurrents, spatialPoolingKernel.poolingWeights), spatialDimension));
-        noStimData.responseInstanceArray.theMosaicPhotocurrents = spatialKernelLinearActivation;
-        
-        spatialKernelLinearActivation = squeeze(sum(bsxfun(@times, stimData.responseInstanceArray.theMosaicPhotocurrents, spatialPoolingKernel.poolingWeights), spatialDimension));
-        stimData.responseInstanceArray.theMosaicPhotocurrents = spatialKernelLinearActivation;
-    
-        if (thresholdParams.STANDARDIZE)
-            % zero mean, unit std
-            noStimData.responseInstanceArray.theMosaicPhotocurrents = standardizeResponses(noStimData.responseInstanceArray.theMosaicPhotocurrents);
-            stimData.responseInstanceArray.theMosaicPhotocurrents = standardizeResponses(stimData.responseInstanceArray.theMosaicPhotocurrents);
-        end 
+        noStimData.responseInstanceArray.theMosaicPhotocurrents = squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicPhotocurrents, spatialPoolingKernel.poolingWeights), spatialDimension));
+        stimData.responseInstanceArray.theMosaicPhotocurrents = squeeze(sum(bsxfun(@times, stimData.responseInstanceArray.theMosaicPhotocurrents, spatialPoolingKernel.poolingWeights), spatialDimension));
     else
-        spatialKernelLinearActivation = squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicIsomerizations, spatialPoolingKernel.poolingWeights), spatialDimension));
-        noStimData.responseInstanceArray.theMosaicIsomerizations = spatialKernelLinearActivation;
-        
-        spatialKernelLinearActivation = squeeze(sum(bsxfun(@times, stimData.responseInstanceArray.theMosaicIsomerizations, spatialPoolingKernel.poolingWeights), spatialDimension));
-        stimData.responseInstanceArray.theMosaicIsomerizations = spatialKernelLinearActivation;
-    
-        if (thresholdParams.STANDARDIZE)
-            % zero mean, unit std
-            noStimData.responseInstanceArray.theMosaicIsomerizations = standardizeResponses(noStimData.responseInstanceArray.theMosaicIsomerizations);
-            stimData.responseInstanceArray.theMosaicIsomerizations = standardizeResponses(stimData.responseInstanceArray.theMosaicIsomerizations);
-        end 
+        noStimData.responseInstanceArray.theMosaicIsomerizations= squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicIsomerizations, spatialPoolingKernel.poolingWeights), spatialDimension));
+        stimData.responseInstanceArray.theMosaicIsomerizations = squeeze(sum(bsxfun(@times, stimData.responseInstanceArray.theMosaicIsomerizations, spatialPoolingKernel.poolingWeights), spatialDimension));
     end
     
     % Visualize transformed signals

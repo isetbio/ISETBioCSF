@@ -61,8 +61,10 @@ end
 
 function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLocsDegs, xaxisDegs, yaxisDegs, coneDensity, spatialPoolingKernelParams)
 
-    if (~ismember(spatialPoolingKernelParams.type, {'V1SinUnit', 'V1CosUnit', 'V1QuadraturePair'}))
-        error('spatialPoolingKernelParams.type must be set to either ''V1SinUnit'', ''V1CosUnit'', or ''V1QuadraturePair''.\n');
+    validV1KernelTypes = {'V1envelope', 'V1SinUnit', 'V1CosUnit', 'V1QuadraturePair'};
+    if (~ismember(spatialPoolingKernelParams.type, validV1KernelTypes))
+        validV1KernelTypes
+        error('spatialPoolingKernelParams.type (''%s'') is not a valid V1 kernel type.\n', spatialPoolingKernelParams.type);
     end
     
     % filter width
@@ -90,23 +92,28 @@ function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLoc
     [~, idx] = pdist2(rfCoordsDegs, coneLocsDegs, 'euclidean', 'Smallest', 1);
     V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingProfile(idx);
     V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingProfile(idx);
+    V1filterBank.envelopePoolingWeights = V1filterBank.RFprofile(idx);
+    
     maxCos = max(abs(V1filterBank.cosPhasePoolingWeights(:)));
     maxSin = max(abs(V1filterBank.sinPhasePoolingWeights(:)));
+    maxEnvelope = max(abs(V1filterBank.envelopePoolingWeights));
     
     % Adjust weights by the inverse of the coneDensity
     if (spatialPoolingKernelParams.adjustForConeDensity)
         V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingWeights ./ coneDensity;
         V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights ./ coneDensity;
+        V1filterBank.envelopePoolingWeights = V1filterBank.envelopePoolingWeights ./ coneDensity;
     end
     
     V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingWeights / max(abs(V1filterBank.cosPhasePoolingWeights(:))) * maxCos;
     V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights / max(abs(V1filterBank.sinPhasePoolingWeights(:))) * maxSin;
+    V1filterBank.envelopePoolingWeights = V1filterBank.envelopePoolingWeights / max(abs(V1filterBank.envelopePoolingWeights(:))) * maxEnvelope;
     
     % Normalize with respect to total energy over space
     netWeight = 1/sqrt(2.0) * sqrt(sum(V1filterBank.cosPhasePoolingWeights(:).^2) + sum(V1filterBank.sinPhasePoolingWeights(:).^2));
     V1filterBank.cosPhasePoolingWeights = V1filterBank.cosPhasePoolingWeights/netWeight;
     V1filterBank.sinPhasePoolingWeights = V1filterBank.sinPhasePoolingWeights/netWeight;
-
+    
     if (any(V1filterBank.cosPhasePoolingWeights(:)<-1))
         fprintf('Cos pooling contains % values< -1\n', sum(V1filterBank.cosPhasePoolingWeights(:)<-1));
     end

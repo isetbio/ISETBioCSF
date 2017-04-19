@@ -73,7 +73,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         
         % The cos/sin-weights
         maxWeight = max([max(abs(spatialPoolingFilter.cosPhasePoolingWeights(:))) max(abs(spatialPoolingFilter.sinPhasePoolingWeights(:)))]);
-        for quadratureIndex = 1:2        
+        for quadratureIndex = 1:2
             if (quadratureIndex == 1)
                 quantizedWeights = spatialPoolingFilter.cosPhasePoolingWeights;
             else
@@ -89,6 +89,51 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
             set(gca, 'Color', [0.5 0.5 0.5], 'XTickLabel', {}, 'YTickLabel', {});
         end % quadrature index
 
+
+    elseif (strcmp(spatialPoolingKernelParams.type, 'V1envelope'))
+       subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', 1, ...
+           'colsNum', 2, ...
+           'heightMargin',   0.001, ...
+           'widthMargin',    0.02, ...
+           'leftMargin',     0.03, ...
+           'rightMargin',    0.001, ...
+           'bottomMargin',   0.001, ...
+           'topMargin',      0.001);
+        
+        hFig = figure(1); clf;
+        set(hFig, 'Position', [10 10 1400 570], 'Color', [1 1 1]);
+        
+        subplot('Position', subplotPosVectors(1,1).v);
+        imagesc(xaxis, yaxis, spatialModulation);
+        hold on;
+        % Spatial RF envelope
+        envelopeLevels = [0.05:0.05:1];
+        contour(xaxis, yaxis, spatialPoolingFilter.RFprofile, envelopeLevels, 'Color', 'g', 'LineWidth', 1.5, 'LineStyle', '-');
+   
+        % All cone locations
+        X = zeros(numel(coneX), size(coneLocsInDegs,1));
+        Y = X;
+        for k = 1:size(coneLocsInDegs,1)
+            X(:,k) = coneLocsInDegs(k,1)+coneX;
+            Y(:,k) = coneLocsInDegs(k,2)+coneY;
+        end
+        line(X,Y,'color','k')
+
+        hold off;
+        axis 'xy'; axis 'image'
+        set(gca, 'Color', [0.5 0.5 0.5], 'FontSize', 16);
+        
+        quantizedWeights = spatialPoolingFilter.envelopePoolingWeights;
+        maxWeight = max(quantizedWeights(:));
+        
+        subplot('Position', subplotPosVectors(1,2).v);
+        imagesc(xaxis, yaxis, spatialModulation);
+        hold on;
+        plotQuantizedWeights(quantizedWeights/maxWeight, quantizationLevels, coneLocsInDegs, coneX, coneY);
+        hold off;
+        axis 'xy'; axis 'image'
+        set(gca, 'Color', [0.5 0.5 0.5], 'XTickLabel', {}, 'YTickLabel', {});
     else
         error('Unknown spatialPooling filter: %s\n', spatialPoolingKernelParams.type);
     end
