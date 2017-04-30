@@ -170,7 +170,7 @@ rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
 
 %% Maybe we are just visualizing the mosaic - not computing responses
-if ((~p.Results.compute) && ((p.Results.visualizeMosaic) || (p.resultsComputeMosaic)) )
+if ((~p.Results.compute) && ((p.Results.visualizeMosaic) || (p.Results.computeMosaic)) )
     if (p.Results.computeMosaic)
         % Create the cone mosaic
         theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams, ...
@@ -308,6 +308,7 @@ if (p.Results.compute)
     
     % Parfor over trial blocks
     parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
+
         % Get the parallel pool worker ID
         t = getCurrentTask();
         if (~isempty(p.Results.workerID))  
@@ -397,6 +398,7 @@ if (p.Results.compute)
         
         % Parfor over blocks of trials
         parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum) 
+
             % Get the parallel pool worker ID
             t = getCurrentTask();
             

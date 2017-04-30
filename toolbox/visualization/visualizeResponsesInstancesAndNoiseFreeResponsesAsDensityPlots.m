@@ -1,4 +1,4 @@
-function hFig = visualizeResponsesInstancesAndNoiseFreeResponsesAsDensityPlots(timeAxis, noStimResponseInstances, stimResponseInstances, noStimNoiseFreeResponse, stimNoiseFreeResponse,  p, responseLevels, responseLevelsNum, plotType, yAxisLabel, figNo)
+function hFig = visualizeResponsesInstancesAndNoiseFreeResponsesAsDensityPlots(timeAxis, noStimResponseInstances, stimResponseInstances, noStimNoiseFreeResponse, stimNoiseFreeResponse,  p, responseRange, responseLevelsNum, plotType, yAxisLabel, figNo)
 
     allInstances = [...
         noStimResponseInstances(:);...
@@ -6,7 +6,7 @@ function hFig = visualizeResponsesInstancesAndNoiseFreeResponsesAsDensityPlots(t
         ];
     
     %responseLevels = prctile(allInstances(:), [p 100-p]);
-    responseLevels = linspace(responseLevels(1), responseLevels(2), responseLevelsNum);
+    responseLevels = linspace(responseRange(1), responseRange(2), responseLevelsNum);
     timeAxisLimits = [timeAxis(1) timeAxis(end)];
     if (timeAxis(1) == timeAxis(end))
         timeAxisLimits = timeAxis(1) + [-0.5 0.5];

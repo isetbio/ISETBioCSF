@@ -18,10 +18,14 @@ function [V1filterBank, hFig] = generateV1FilterBank(spatialParams, mosaicParams
     coneLocsInDegs(:,1) = coneLocsInMeters(:,1) / theMosaic.width * theMosaic.fov(1);
     coneLocsInDegs(:,2) = coneLocsInMeters(:,2) / theMosaic.height * theMosaic.fov(2);
        
-    % Find the density map around each cone
-    eccInMeters = sqrt(sum(coneLocsInMeters.^2, 2));
-    ang = atan2(squeeze(coneLocsInMeters(:,2)), squeeze(coneLocsInMeters(:,1)))/pi*180;
-    [~, ~, coneDensity] = coneSize(eccInMeters(:),ang(:));
+    if (strcmp(mosaicParams.conePacking, 'hex'))
+        % Find the density map around each cone
+        eccInMeters = sqrt(sum(coneLocsInMeters.^2, 2));
+        ang = atan2(squeeze(coneLocsInMeters(:,2)), squeeze(coneLocsInMeters(:,1)))/pi*180;
+        [~, ~, coneDensity] = coneSize(eccInMeters(:),ang(:));
+    else
+        coneDensity = 1;
+    end
     
     switch(spatialParams.spatialType)
         case 'Gabor'  

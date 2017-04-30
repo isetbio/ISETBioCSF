@@ -211,8 +211,7 @@ for ll = 1:length(p.Results.luminances)
         responseStabilizationSeconds = ceil(p.Results.responseStabilizationMilliseconds/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
         % Post-stimulus time: allow photocurrent response to return to baseline
         responseExtinctionSeconds = ceil(p.Results.responseExtinctionMilliseconds/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
-        secondsToInclude = responseStabilizationSeconds+stimulusDurationInSeconds+responseExtinctionSeconds;   
-        
+        secondsToInclude = responseStabilizationSeconds+stimulusDurationInSeconds+responseExtinctionSeconds;
         rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
             'frameRate', frameRate, ...
             'windowTauInSeconds', windowTauInSeconds, ...

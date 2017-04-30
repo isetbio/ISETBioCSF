@@ -26,7 +26,6 @@ end
 % Center pixel
 centerRow = round(spatialParams.row/2);
 centerCol = round(spatialParams.col/2);
-
 % Get background parameters
 backgroundSizePixels = round((spatialParams.row/spatialParams.fieldOfViewDegs)*spatialParams.backgroundSizeDegs);
 
@@ -39,7 +38,7 @@ spotPattern = zeros(spatialParams.row, spatialParams.col);
 
 % Create and put background into canvas
 backgroundImage = backgroundValue*ones(backgroundSizePixels,backgroundSizePixels);
-if isodd(size(backgroundImage,1)) == 0; 
+if isodd(size(backgroundImage,1)) == 0
     minusHW = size(backgroundImage,1)/2;
     plusHW = (size(backgroundImage,1)/2)-1;
 else 
@@ -55,7 +54,7 @@ croppedSpot = Circle(spotRadiusPixels);
 % Pop spot into the image, preserving previous values
 %
 % Handle even versus odd pixel sizes
-if isodd(size(croppedSpot,1)) == 0; 
+if isodd(size(croppedSpot,1)) == 0
     minusHW = size(croppedSpot,1)/2;
     plusHW = (size(croppedSpot,1)/2)-1;
 else 
