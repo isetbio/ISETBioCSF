@@ -4,8 +4,7 @@ function hFig = visualizeResponsesInstancesAndNoiseFreeResponsesAsDensityPlots(t
         noStimResponseInstances(:);...
         stimResponseInstances(:)...
         ];
-    
-    %responseLevels = prctile(allInstances(:), [p 100-p]);
+ 
     responseLevels = linspace(responseRange(1), responseRange(2), responseLevelsNum);
     timeAxisLimits = [timeAxis(1) timeAxis(end)];
     if (timeAxis(1) == timeAxis(end))
