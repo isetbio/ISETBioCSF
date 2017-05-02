@@ -1,6 +1,5 @@
 function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
 
- 
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
     mosaicType = 'originalBanks'; % 'originalBanks'; %'fullIsetbioNoScones';
     
