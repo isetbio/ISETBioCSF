@@ -61,8 +61,8 @@ function [validationData, extraData] = c_DavilaGeislerReplicate(varargin)
 p = inputParser;
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
 p.addParameter('nTrainingSamples',500,@isnumeric);
-p.addParameter('spotDiametersMinutes',[0.5 1 5 10 20 40],@isnumeric);
-p.addParameter('backgroundSizeDegs',2.1,@isnumeric);
+p.addParameter('spotDiametersMinutes',[0.5],@isnumeric);
+p.addParameter('backgroundSizeDegs',1.0,@isnumeric);
 p.addParameter('wavelength',550,@isnumeric);
 p.addParameter('luminances',[10],@isnumeric);
 p.addParameter('pupilDiamMm',3,@isnumeric);
