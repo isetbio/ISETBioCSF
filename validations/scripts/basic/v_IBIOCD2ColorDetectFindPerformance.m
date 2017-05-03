@@ -17,7 +17,7 @@ function ValidationFunction(runTimeParams)
     UnitTest.validationRecord('SIMPLE_MESSAGE', '***** v_IBIOCD2ColorDetectFindPerformance *****');
     
     %% Basic validation
-    [validationData1,extraData1] = t_colorDetectFindPerformance('generatePlots',runTimeParams.generatePlots,'plotPsychometric',true,'freezeNoise',true);
+    [validationData1,extraData1] = t_colorDetectFindPerformance('generatePlots',runTimeParams.generatePlots,'plotPsychometric',true,'freezeNoise',true, 'employStandardHostComputerResources', true);
     UnitTest.validationData('validationData1',validationData1);
     UnitTest.extraData('extraData1',extraData1);
 end
