@@ -24,7 +24,7 @@ function [validationData,extraData] = t_colorDetectFindPerformance(varargin)
 %   'freezeNoise'- true/false (default false).  Freezes all noise so that results are reproducible.
 %     If there is no noise set, this leaves it alone.
 %   'compute' - true/false (default true).  Do the computations.
-%   'parforWorkersNum' - 0 .. 12 (default: 12). How many workers to use for the computations.
+%   'parforWorkersNum' - 0 .. 20 (default: 6). How many workers to use for the computations.
 %       use 0: for a serial for loop
 %       use > 0: for a parfor loop with desired number of workers
 %   'generatePlots' - true/false (default true).  Produce any plots at
@@ -50,7 +50,7 @@ p.addParameter('thresholdParams',[],@isemptyorstruct);
 p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
 p.addParameter('freezeNoise',false,@islogical);
 p.addParameter('compute',true,@islogical);
-p.addParameter('parforWorkersNum', 12, @isnumeric);
+p.addParameter('parforWorkersNum', 6, @isnumeric);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
 p.addParameter('visualizeTransformedSignals', false, @islogical);
@@ -220,8 +220,8 @@ if (p.Results.compute)
     useStdErr = zeros(size(testConeContrasts,2),1);
     rState = rng;
     
-    %parfor (kk = 1:nParforConditions, p.Results.parforWorkersNum)
-    for kk = nParforConditions:-1:1
+    parfor (kk = 1:nParforConditions, p.Results.parforWorkersNum)
+    %for kk = nParforConditions:-1:1
         rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         paramsList = thisConditionStruct.paramsList;

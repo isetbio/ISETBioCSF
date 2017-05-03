@@ -47,7 +47,7 @@ p.addParameter('responseStabilizationMilliseconds', 80, @isnumeric);
 p.addParameter('responseExtinctionMilliseconds', 200, @isnumeric);
 p.addParameter('computeMosaic',false,@islogical);
 p.addParameter('ramPercentageEmployed', 1.0, @isnumeric);
-p.addParameter('parforWorkersNum', 12, @isnumeric);
+p.addParameter('parforWorkersNum', 20, @isnumeric);
 
 % MOSAIC OPTIONS
 p.addParameter('integrationTime', 5.0/1000, @isnumeric);

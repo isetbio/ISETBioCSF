@@ -39,7 +39,7 @@ function [validationData, extraData, varargout] = t_coneCurrentEyeMovementsRespo
 %     'ramPercentageEmployed' [>0 .. <=1]. Percentage of RAM to use for the computations. 
 %       Use 0.5, if you want to run 2 simultaneous instances of MATLAB (touse all cores for example).
 %       Use 1.0, otherwise
-%     'parforWorkersNum' - 0 .. 12 (default: 12). How many workers to use for the computations.
+%     'parforWorkersNum' - 0 .. 20 (default: 20). How many workers to use for the computations.
 %       use 0: for a serial for loop
 %       use > 0: for a parfor loop with desired number of workers
 %     'employStandardHostComputerResources' - true/false (default false). Only validation scripts should set this to true, so as to produce
@@ -75,7 +75,7 @@ p.addParameter('compute',true,@islogical);
 p.addParameter('computeMosaic', true, @islogical);
 p.addParameter('visualizeMosaic',true, @islogical);
 p.addParameter('ramPercentageEmployed', 1.0, @isnumeric);
-p.addParameter('parforWorkersNum', 12, @isnumeric);
+p.addParameter('parforWorkersNum', 20, @isnumeric);
 p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('overrideMosaicIntegrationTime', [], @isnumeric);
 p.addParameter('generatePlots',false,@islogical);
