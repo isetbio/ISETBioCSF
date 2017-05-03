@@ -51,6 +51,7 @@ p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
 p.addParameter('freezeNoise',false,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('parforWorkersNum', 6, @isnumeric);
+p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
 p.addParameter('visualizeTransformedSignals', false, @islogical);
@@ -64,6 +65,13 @@ p.parse(varargin{:});
 rParams = p.Results.rParams;
 testDirectionParams = p.Results.testDirectionParams;
 thresholdParams = p.Results.thresholdParams;
+
+% Check the parforWorkersNum
+parforWorkersNum = p.Results.parforWorkersNum;
+[numberOfWorkers, ~, ~] = determineSystemResources(p.Results.employStandardHostComputerResources);
+if (numberOfWorkers < parforWorkersNum)
+    parforWorkersNum = numberOfWorkers;
+end
 
 %% Clear
 if (nargin == 0)
@@ -220,7 +228,7 @@ if (p.Results.compute)
     useStdErr = zeros(size(testConeContrasts,2),1);
     rState = rng;
     
-    parfor (kk = 1:nParforConditions, p.Results.parforWorkersNum)
+    parfor (kk = 1:nParforConditions, parforWorkersNum)
     %for kk = nParforConditions:-1:1
         rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
