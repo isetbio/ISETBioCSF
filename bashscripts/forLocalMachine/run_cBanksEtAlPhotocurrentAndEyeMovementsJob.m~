@@ -55,9 +55,9 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
 
     % What to do ?
-    computeMosaic = true;
+    computeMosaic = ~true;
     visualizeMosaic = ~true;
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
     visualizeSpatialScheme = ~true;
     findPerformance = true;
