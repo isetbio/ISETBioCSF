@@ -22,7 +22,7 @@ function [validationData, extraData, detectionThresholdContrast] = c_PoirsonAndW
 %           'frozen' : results to the identical emPath being applied to each computed instance
 %           'frozen0': all zeros path
 %           'random' : results in a different emPath being applied to each computed instance
-%       'parforWorkersNum' - 0 .. 12 (default: 12). How many workers to use for the computations.
+%       'parforWorkersNum' - 0 .. 20 (default: 20). How many workers to use for the computations.
 %         use 0: for a serial for loop
 %         use > 0: for a parfor loop with desired number of workers
 %
@@ -85,7 +85,7 @@ p.addParameter('nTrainingSamples',128, @isnumeric);
 p.addParameter('emPathType','frozen',@(x)ismember(x, {'none', 'frozen', 'frozen0', 'random'}));
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
-p.addParameter('parforWorkersNum', 12, @isnumeric);
+p.addParameter('parforWorkersNum',20, @isnumeric);
 % MOSAIC OPTIONS
 p.addParameter('freezeNoise',true, @islogical);
 p.addParameter('coneMosaicPacking', 'hex', @(x)ismember(x, {'hex', 'hexReg', 'rect'}));

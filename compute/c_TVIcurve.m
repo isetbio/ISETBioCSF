@@ -26,7 +26,7 @@ p.addParameter('responseExtinctionMilliseconds', 200, @isnumeric);
 p.addParameter('computeResponses',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
 p.addParameter('ramPercentageEmployed', 1.0, @isnumeric);
-p.addParameter('parforWorkersNum', 12, @isnumeric);
+p.addParameter('parforWorkersNum', 20, @isnumeric);
 % OPTICS OPTIONS
 p.addParameter('pupilDiamMm',2,@isnumeric);
 % MOSAIC OPTIONS
