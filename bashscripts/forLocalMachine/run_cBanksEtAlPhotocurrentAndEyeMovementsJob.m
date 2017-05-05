@@ -1,7 +1,7 @@
 function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
 
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
-    mosaicType = 'originalBanks'; % 'originalBanks'; %'fullIsetbioNoScones';
+    mosaicType = 'fullIsetbioWithScones'; % 'originalBanks'; %'fullIsetbioNoScones';
     
     % 'singleExposure'; 'timeSeries5msec'
     temporalAnalysis = 'timeSeries5msec';
@@ -11,7 +11,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     centeredEMPaths = false;
     
     % 'isomerizations', 'photocurrents'
-    performanceSignal = 'photocurrents'; %'isomerizations';
+    performanceSignal ='isomerizations';
     
     % Use a subset of the trials. Specify [] to use all available trials
     nTrainingSamples = 1024;
@@ -19,7 +19,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
     
     % 'mlpt', 'svm', 'svmV1FilterBank'
-    performanceClassifier = 'svmV1FilterBank'; %'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
+    performanceClassifier = 'mlpt'; %'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
     useRBFSVMKernel = false;
     
     % Spatial pooling kernel parameters
@@ -33,12 +33,12 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     freezeNoise = ~true;
     luminancesExamined =  [34]; 
 
-    computationIntance = 2;
+    computationIntance = 0;
     
     if (computationIntance == 0)
         % All conditions in 1 MATLAB session
         ramPercentageEmployed = 1.0;  % use all the RAM
-        cyclesPerDegreeExamined =  [5 10 20 40];
+        cyclesPerDegreeExamined =  [2.5];
     elseif (computationIntance  == 1)
         % First half of the conditions in session 1 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 1.0;  % use all of the RAM
@@ -56,10 +56,10 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
 
     % What to do ?
     computeMosaic = true;
-    visualizeMosaic = ~true;
+    visualizeMosaic = true;
     computeResponses = true;
     visualizeResponses = ~true;
-    visualizeSpatialScheme = ~true;
+    visualizeSpatialScheme = true;
     findPerformance = true;
     visualizePerformance = true;
     visualizeTransformedSignals = ~true;
