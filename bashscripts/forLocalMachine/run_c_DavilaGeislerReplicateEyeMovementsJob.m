@@ -8,29 +8,34 @@ function run_c_DavilaGeislerReplicateEyeMovementsJob
     findPerformance = true;
    
     visualizePerformance = true;
-    visualizeTransformedSignals = true;
+    visualizeTransformedSignals = ~true;
     
-    nTrainingSamples = 128;
-    spotAreaMinutes = [10^-0.25 logspace(0.1, 2,8) 10^2.5]
+    nTrainingSamples = 1024;
+    spotAreaMinutes = logspace(-0.1, 2.5, 10);
+    spotAreaMinutes = spotAreaMinutes(1:end);
+    
     spotDiametersMinutes = fliplr(spotDiameterFromArea(spotAreaMinutes));
+
     %spotDiametersMicrons = spotDiametersMinutes/60*300
     
-    nContrastsPerDirection = 10;
-    highContrast = 0.01;
-    lowContrast = 0.0001;
-    backgroundSizeDegs = 1.2;  % 0.1, 0.15, 0.3 works
+    nContrastsPerDirection = 18;
+    highContrast = 0.3;
+    lowContrast = 0.00003;
+    backgroundSizeDegs = 0.4;  % 0.1, 0.15, 0.3 works
     
     blur = false;           % NO OPTICS
     emPathType = 'frozen0'; % 'frozen0'; %random'; %'random';
     conePacking = 'hex';
     LMSRatio = [0.62 0.31 0.07];
+    coneSpacingMicrons = 2.0;
+    innerSegmentSizeMicrons = 1.5797; % for a circular sensor; this corresponds to the 1.4 micron square pixel 
     realisticSconeSubmosaic = true;
     
     responseStabilizationMilliseconds = 20;
-    responseExtinctionMilliseconds = 50;
+    responseExtinctionMilliseconds = 60;
 
     thresholdSignal = 'isomerizations';
-    thresholdMethod = 'svmGaussianRF'; %'svmGaussianRF'; %'svm'; %'mlpt'%
+    thresholdMethod = 'mlpt'; % 'svmGaussianRF'; %'svm'; %'mlpt'%
     useRBFSVMKernel = false;
     
     % Spatial pooling kernel parameters
@@ -38,7 +43,7 @@ function run_c_DavilaGeislerReplicateEyeMovementsJob
     spatialPoolingKernelParams.activationFunction = 'linear';  % Choose between 'energy' and 'fullWaveRectifier'
     spatialPoolingKernelParams.adjustForConeDensity = false;
     spatialPoolingKernelParams.temporalPCAcoeffs = Inf;  % Inf, results in no PCA, just the raw time series
-    spatialPoolingKernelParams.shrinkageFactor = 4.0;  % > 1, results in expansion, < 1 results in shrinking
+    spatialPoolingKernelParams.shrinkageFactor = -2.0/60;  % > 1, results in expansion, > 0 < 1 results in shrinking, < 0 means the actual sigma in degs
     
     if (computeResponses) || (visualizeResponses) || (visualizeSpatialScheme) || (visualizeMosaic)
         c_DavilaGeislerReplicateEyeMovements(...
@@ -51,6 +56,8 @@ function run_c_DavilaGeislerReplicateEyeMovementsJob
             'lowContrast', lowContrast, ...
             'nContrastsPerDirection', nContrastsPerDirection, ...
             'conePacking', conePacking, ...
+            'coneSpacingMicrons', coneSpacingMicrons, ...
+            'innerSegmentSizeMicrons', innerSegmentSizeMicrons, ...
             'LMSRatio', LMSRatio, ...
             'realisticSconeSubmosaic', realisticSconeSubmosaic, ...
             'computeMosaic', computeMosaic, ...
@@ -83,6 +90,8 @@ function run_c_DavilaGeislerReplicateEyeMovementsJob
             'lowContrast', lowContrast, ...
             'nContrastsPerDirection', nContrastsPerDirection, ...
             'conePacking', conePacking, ...
+            'coneSpacingMicrons', coneSpacingMicrons, ...
+            'innerSegmentSizeMicrons', innerSegmentSizeMicrons, ...
             'LMSRatio', LMSRatio, ...
             'realisticSconeSubmosaic', realisticSconeSubmosaic, ...
             'computeMosaic', false, ...

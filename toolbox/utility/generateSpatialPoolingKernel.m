@@ -77,7 +77,11 @@ function spatialPoolingFilter = makeSpatialPoolingFilter(spatialParams, coneLocs
     
     switch spatialPoolingKernelParams.type
         case 'GaussianRF'
-            sigma = spatialPoolingKernelParams.shrinkageFactor * testDiameterDegs/2.0;
+            if (spatialPoolingKernelParams.shrinkageFactor > 0)
+                sigma = spatialPoolingKernelParams.shrinkageFactor * testDiameterDegs/2.0;
+            else
+                sigma = spatialPoolingKernelParams.shrinkageFactor;
+            end
             RFprofile = exp(-0.5*(X/sigma).^2) .* exp(-0.5*(Y/sigma).^2);
         otherwise
             error('Unknown spatialPoolingKernelType: ''%s''.', spatialPoolingKernelParams.type);
