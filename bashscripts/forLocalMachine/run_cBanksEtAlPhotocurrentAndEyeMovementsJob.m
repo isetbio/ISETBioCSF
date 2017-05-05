@@ -19,7 +19,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
     
     % 'mlpt', 'svm', 'svmV1FilterBank'
-    performanceClassifier = 'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
+    performanceClassifier = 'svm'; % V1FilterBank'; %'mlpt'% 'svmV1FilterBank';
     useRBFSVMKernel = false;
     
     % Spatial pooling kernel parameters
@@ -33,7 +33,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     freezeNoise = ~true;
     luminancesExamined =  [34]; 
 
-    computationIntance = 2;
+    computationIntance = 3;
     
     if (computationIntance == 0)
         % All conditions in 1 MATLAB session
@@ -194,6 +194,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
                 'findPerformance', findPerformance, ...
                 'visualizePerformance', visualizePerformance, ...
                 'visualizeTransformedSignals', visualizeTransformedSignals, ...
+                'parforWorkersNumForClassification', 2, ...
                 'performanceSignal' , performanceSignal, ...
                 'performanceClassifier', performanceClassifier, ...
                 'useRBFSVMKernel', useRBFSVMKernel, ...
