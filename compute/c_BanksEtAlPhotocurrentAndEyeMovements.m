@@ -308,6 +308,7 @@ if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.vis
 
     % Return the performance data
     varargout{1} = banksEtAlReplicate;
+    varargout{2} = rParams;
     
     %% Make a plot of CSFs
     %
