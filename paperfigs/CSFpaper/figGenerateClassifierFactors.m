@@ -16,7 +16,7 @@ function figGenerateClassifierFactors()
     ramPercentageEmployed = 1.0;  % use all the RAM
     freezeNoise = ~true;
     
-    cyclesPerDegreeExamined =  [10 20 40];
+    cyclesPerDegreeExamined =  [5 10 20 40];
     luminancesExamined =  [34]; 
     plotLuminanceLines = [false true false];
 
