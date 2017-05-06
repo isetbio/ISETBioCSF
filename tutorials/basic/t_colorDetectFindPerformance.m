@@ -24,7 +24,7 @@ function [validationData,extraData] = t_colorDetectFindPerformance(varargin)
 %   'freezeNoise'- true/false (default false).  Freezes all noise so that results are reproducible.
 %     If there is no noise set, this leaves it alone.
 %   'compute' - true/false (default true).  Do the computations.
-%   'parforWorkersNum' - 0 .. 12 (default: 12). How many workers to use for the computations.
+%   'parforWorkersNum' - 0 .. 20 (default: 6). How many workers to use for the computations.
 %       use 0: for a serial for loop
 %       use > 0: for a parfor loop with desired number of workers
 %   'generatePlots' - true/false (default true).  Produce any plots at
@@ -50,7 +50,8 @@ p.addParameter('thresholdParams',[],@isemptyorstruct);
 p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
 p.addParameter('freezeNoise',false,@islogical);
 p.addParameter('compute',true,@islogical);
-p.addParameter('parforWorkersNum', 12, @isnumeric);
+p.addParameter('parforWorkersNum', 6, @isnumeric);
+p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
 p.addParameter('visualizeTransformedSignals', false, @islogical);
@@ -64,6 +65,13 @@ p.parse(varargin{:});
 rParams = p.Results.rParams;
 testDirectionParams = p.Results.testDirectionParams;
 thresholdParams = p.Results.thresholdParams;
+
+% Check the parforWorkersNum
+parforWorkersNum = p.Results.parforWorkersNum;
+[numberOfWorkers, ~, ~] = determineSystemResources(p.Results.employStandardHostComputerResources);
+if (numberOfWorkers < parforWorkersNum)
+    parforWorkersNum = numberOfWorkers;
+end
 
 %% Clear
 if (nargin == 0)
@@ -126,7 +134,7 @@ constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.o
 
 %% svmV1FilterBank - related checks and computations
 if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaicParams.conePacking, 'hexReg')) && ... 
-   ((strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')))
+   ((strcmp(thresholdParams.method, 'svmV1FilterBank')))
     error('Currently, classification using the ''svmV1FilterBank'' method is only implemented for spatially-varying density hex mosaics.\n')
 end
 if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaicParams.conePacking, 'hexReg')) && ...
@@ -134,7 +142,7 @@ if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaic
     error('Currently, classification using the ''svmGaussianRF'' method is only implemented for spatially-varying density hex mosaics.\n')
 end
 
-if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF'))
+if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
     % Generate V1 filter bank struct and add it to thresholdParams
     V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams, constantParamsList);
     thresholdParams = modifyStructParams(thresholdParams, ...
@@ -151,7 +159,7 @@ end
 %% Compute if desired
 if (p.Results.compute)   
     % Inform the user regarding what we are currently working on
-    if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')) || (strcmp(thresholdParams.method, 'svmGaussianRF'))
+    if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmGaussianRF'))
         fprintf('Computing performance for <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the raw <strong>%s</strong>.\n', ...
         rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
     elseif (~strcmp(thresholdParams.method, 'mlpt'))
@@ -220,8 +228,8 @@ if (p.Results.compute)
     useStdErr = zeros(size(testConeContrasts,2),1);
     rState = rng;
     
-    %parfor (kk = 1:nParforConditions, p.Results.parforWorkersNum)
-    for kk = nParforConditions:-1:1
+    parfor (kk = 1:nParforConditions, parforWorkersNum)
+    %for kk = nParforConditions:-1:1
         rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         paramsList = thisConditionStruct.paramsList;

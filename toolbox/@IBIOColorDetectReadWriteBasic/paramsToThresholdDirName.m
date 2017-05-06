@@ -8,6 +8,7 @@ if (~strcmp(params.type,'threshold'))
     error('Incorrect parameter type passed');
 end
 
+
 switch (params.method)
     case 'svm'
         theThresholdName = sprintf('%s_%s_%dInt_kFold%d_PCA%d_std%d_c%0.2f',...
@@ -36,19 +37,18 @@ switch (params.method)
             params.criterionFraction ...
             );
         
-    case {'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF', 'svmGaussianRF'}
+    case {'svmV1FilterBank', 'svmGaussianRF'}
         if (isfield(params, 'useRBFKernel')) && (params.useRBFKernel)
             methodName = sprintf('%sRBF', params.method);
         else
             methodName = sprintf('%s', params.method);
         end
         
-        if (isfield(params,'spatialPoolingKernelParams'))
-           if isfield(params.spatialPoolingKernelParams, 'shrinkageFactor')
-                methodName = sprintf('%s_%0.2fshrinkageFactor', methodName, params.spatialPoolingKernelParams.shrinkageFactor);
-           end
-        end
-        
+        methodName = sprintf('%s_%s_%s_%0.2fshrinkFactor', methodName, ...
+            params.spatialPoolingKernelParams.type, ...
+            params.spatialPoolingKernelParams.activationFunction,...
+            params.spatialPoolingKernelParams.shrinkageFactor);
+
         theThresholdName = sprintf('%s_%s_%dInt_kFold%d_stdSVMpredictors%d_c%0.2f',...
                 methodName, ...
                 params.signalSource, ...

@@ -23,12 +23,14 @@ else
     extinctionTimeSamples = 0;
 end
 
-sampleTimes = (1:(stabilizingTimeSamples + stimulusSamples + extinctionTimeSamples))*temporalParams.stimulusSamplingIntervalInSeconds;
-sampleTimes = sampleTimes - mean(sampleTimes);
-sampleTimes = sampleTimes - (sampleTimes(2)-sampleTimes(1))/2;
+sampleTimes = 1:(stabilizingTimeSamples + stimulusSamples + extinctionTimeSamples);
+sampleTimes = sampleTimes - stabilizingTimeSamples - round(stimulusSamples/2);
+sampleTimes = sampleTimes * temporalParams.stimulusSamplingIntervalInSeconds;
 
 squareTemporalWindow = zeros(1,numel(sampleTimes));
-squareTemporalWindow(abs(sampleTimes) <= temporalParams.stimulusDurationInSeconds/2) = 1;
+onTime = find(sampleTimes >= -temporalParams.stimulusDurationInSeconds/2);
+squareTemporalWindow(onTime(1)+(0:(stimulusSamples-1))) = 1;
+
 rasterModulation = [];
 end
 

@@ -5,10 +5,8 @@ function runTVIcurveJob()
     computationIntance = 0;  % 0, 1 or 2
        
     emPathType = 'random'; % 'random'; %'frozen0';  % random
-    
-
         
-    sizeIndex = 1;
+    sizeIndex = 2;
     testDiameterDegs = [3.5 10 50]/60;      % spot diameters in Geisler 1979 paper
     testDiameterDegs = testDiameterDegs(sizeIndex);
     
@@ -19,7 +17,7 @@ function runTVIcurveJob()
         nContrastsPerPedestalLuminance = 12;
         summaryCurveMarkerType = '^';
         summaryCurveLegend = sprintf('ISETbio (%2.1f'')', testDiameterDegs*60);
-        nTrainingSamples = 48
+        nTrainingSamples = 512
         
     elseif (sizeIndex == 2)
         fieldOfViewDegs = 0.5;
@@ -57,7 +55,8 @@ function runTVIcurveJob()
     responseExtinctionMilliseconds = 400;
     
     spatialPoolingKernelParams.type = 'GaussianRF';
-    spatialPoolingKernelParams.shrinkageFactor = 0.20;
+    spatialPoolingKernelParams.shrinkageFactor = 0.2; % 0.1; % 0.025 * 10/3.5; % 1.6;
+    spatialPoolingKernelParams.activationFunction = 'linear';
     spatialPoolingKernelParams.adjustForConeDensity = true;
     
     if (computationIntance == 0)
@@ -74,13 +73,14 @@ function runTVIcurveJob()
         pedestalLuminanceListIndicesUsed = nPedestalLuminanceLevels/2 + (1:(nPedestalLuminanceLevels/2));
     end
     
-    computeMosaic = true;
-    computeResponses = true;
-    visualizeResponses = true;
-    visualizeOuterSegmentFilters = true;
+    computeMosaic = ~true;
+    computeResponses = ~true;
+    visualizeResponses = ~true;
+    visualizeOuterSegmentFilters = ~true;
     findPerformance = ~true;
     visualizePerformance = ~true;
     visualizeSpatialScheme = true;
+    plotSummaryCurve = true;
     
     if (computeResponses) || (visualizeResponses) || (visualizeOuterSegmentFilters)
         c_TVIcurve(...
@@ -115,7 +115,7 @@ function runTVIcurveJob()
             );
     end
     
-    if (findPerformance) || (visualizePerformance) || (visualizeSpatialScheme)
+    if (findPerformance) || (visualizePerformance) || (visualizeSpatialScheme) || (plotSummaryCurve)
         c_TVIcurve( ...
             'pupilDiamMm', 3.0, ...
             'lowContrast', lowContrast, ...
@@ -147,6 +147,7 @@ function runTVIcurveJob()
             'spatialPoolingKernelParams', spatialPoolingKernelParams, ...
             'summaryCurveMarkerType', summaryCurveMarkerType, ...
             'summaryCurveLegend', summaryCurveLegend, ...
+            'plotSummaryCurve', plotSummaryCurve, ...
             'visualizeResponses', false);
     end
     

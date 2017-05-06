@@ -1,7 +1,5 @@
 function [spatialPoolingFilter, hFig] = generateSpatialPoolingKernel(spatialParams, mosaicParams, topLevelDirParams, visualizeSpatialScheme, thresholdParams, paramsList)
 
-    
-    
     % Load the mosaic
     coneParamsList = {topLevelDirParams, mosaicParams};
     theProgram = 't_coneCurrentEyeMovementsResponseInstances';
@@ -17,14 +15,21 @@ function [spatialPoolingFilter, hFig] = generateSpatialPoolingKernel(spatialPara
     coneLocsInDegs(:,1) = coneLocsInMeters(:,1) / theMosaic.width * theMosaic.fov(1);
     coneLocsInDegs(:,2) = coneLocsInMeters(:,2) / theMosaic.height * theMosaic.fov(2);
     
-    % Find the density map around each cone
-    eccInMeters = sqrt(sum(coneLocsInMeters.^2, 2));
-    ang = atan2(squeeze(coneLocsInMeters(:,2)), squeeze(coneLocsInMeters(:,1)))/pi*180;
-    [~, ~, coneDensity] = coneSize(eccInMeters(:),ang(:));
+    
+    if (strcmp(mosaicParams.conePacking, 'hex'))
+        % Find the density map around each cone
+        eccInMeters = sqrt(sum(coneLocsInMeters.^2, 2));
+        ang = atan2(squeeze(coneLocsInMeters(:,2)), squeeze(coneLocsInMeters(:,1)))/pi*180;
+        [~, ~, coneDensity] = coneSize(eccInMeters(:),ang(:));
+    else
+        coneDensity = 1;
+    end
     
     switch(spatialParams.spatialType)
         case 'pedestalDisk' 
             spatialModulation = pedestalModulationDisk(spatialParams, 1.0);
+        case 'spot' 
+            spatialModulation = drawSpot(spatialParams);
         otherwise
             error('Unknown spatial type specified: ''%s''.', spatialParams.spatialType);
     end % switch
@@ -58,9 +63,25 @@ function spatialPoolingFilter = makeSpatialPoolingFilter(spatialParams, coneLocs
 
     spatialPoolingFilter = [];
     [X,Y] = meshgrid(xaxis, yaxis);
+    
+    switch spatialParams.spatialType
+        case 'Gabor'
+            testDiameterDegs = spatialParams.testDiameterDegs;
+        case 'spot'
+            testDiameterDegs = spatialParams.spotSizeDegs;
+        case 'pedestalDisk'
+            testDiameterDegs = spatialParams.testDiameterDegs;
+        otherwise
+            error('Do not know how to get testDiameter from ''%s''.', spatialParams.spatialType)
+    end
+    
     switch spatialPoolingKernelParams.type
         case 'GaussianRF'
-            sigma = spatialPoolingKernelParams.shrinkageFactor  * spatialParams.testDiameterDegs/2.0;
+            if (spatialPoolingKernelParams.shrinkageFactor > 0)
+                sigma = spatialPoolingKernelParams.shrinkageFactor * testDiameterDegs/2.0;
+            else
+                sigma = spatialPoolingKernelParams.shrinkageFactor;
+            end
             RFprofile = exp(-0.5*(X/sigma).^2) .* exp(-0.5*(Y/sigma).^2);
         otherwise
             error('Unknown spatialPoolingKernelType: ''%s''.', spatialPoolingKernelParams.type);
@@ -78,9 +99,5 @@ function spatialPoolingFilter = makeSpatialPoolingFilter(spatialParams, coneLocs
         spatialPoolingFilter.poolingWeights = spatialPoolingFilter.poolingWeights ./ coneDensity;
     end
     spatialPoolingFilter.poolingWeights = spatialPoolingFilter.poolingWeights / max(abs(spatialPoolingFilter.poolingWeights(:))) * maxWeight;
-    
-    % Normalize with respect to total energy over space
-    netWeight = 1/sqrt(2.0) * sqrt(sum(spatialPoolingFilter.poolingWeights(:).^2));
-    spatialPoolingFilter.poolingWeights = spatialPoolingFilter.poolingWeights / netWeight;
 end
 

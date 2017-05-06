@@ -39,7 +39,7 @@ function [validationData, extraData, varargout] = t_coneCurrentEyeMovementsRespo
 %     'ramPercentageEmployed' [>0 .. <=1]. Percentage of RAM to use for the computations. 
 %       Use 0.5, if you want to run 2 simultaneous instances of MATLAB (touse all cores for example).
 %       Use 1.0, otherwise
-%     'parforWorkersNum' - 0 .. 12 (default: 12). How many workers to use for the computations.
+%     'parforWorkersNum' - 0 .. 20 (default: 20). How many workers to use for the computations.
 %       use 0: for a serial for loop
 %       use > 0: for a parfor loop with desired number of workers
 %     'employStandardHostComputerResources' - true/false (default false). Only validation scripts should set this to true, so as to produce
@@ -75,7 +75,7 @@ p.addParameter('compute',true,@islogical);
 p.addParameter('computeMosaic', true, @islogical);
 p.addParameter('visualizeMosaic',true, @islogical);
 p.addParameter('ramPercentageEmployed', 1.0, @isnumeric);
-p.addParameter('parforWorkersNum', 12, @isnumeric);
+p.addParameter('parforWorkersNum', 20, @isnumeric);
 p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('overrideMosaicIntegrationTime', [], @isnumeric);
 p.addParameter('generatePlots',false,@islogical);
@@ -168,6 +168,40 @@ colorModulationParamsNull.contrast = 0;
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
+
+%% Maybe we are just visualizing the mosaic - not computing responses
+if ((~p.Results.compute) && ((p.Results.visualizeMosaic) || (p.Results.computeMosaic)) )
+    if (p.Results.computeMosaic)
+        % Create the cone mosaic
+        theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams, ...
+            'visualizeMosaic', p.Results.visualizeMosaic);
+        
+        % Save cone mosaic
+        coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
+        rwObject.write('coneMosaic', theMosaic, coneParamsList, theProgram, 'type', 'mat');
+    else
+        % Load a previously saved cone mosaic
+        fprintf('Loading a previously saved cone mosaic\n');
+        coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
+        theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
+        theMosaic.displayInfo();
+    end
+    
+    if (p.Results.visualizeMosaic)
+       if (strcmp(rParams.mosaicParams.conePacking, 'hex'))
+           hFig = theMosaic.visualizeGrid('generateNewFigure', true, ...
+            'overlayConeDensityContour', 'measured', ...    % choose between 'measured', 'theoretical', 'none'
+            'coneDensityContourLevelStep', 10000);
+       else
+           hFig = theMosaic.visualizeGrid('generateNewFigure', true);
+       end
+    
+        coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
+        data = 0;
+        rwObject.write('coneMosaic', data, coneParamsList, theProgram, ...
+            'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');   
+    end
+end
 
 %% The computing happens here, if we are doing it
 if (p.Results.compute)
@@ -274,6 +308,7 @@ if (p.Results.compute)
     
     % Parfor over trial blocks
     parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
+
         % Get the parallel pool worker ID
         t = getCurrentTask();
         if (~isempty(p.Results.workerID))  
@@ -363,6 +398,7 @@ if (p.Results.compute)
         
         % Parfor over blocks of trials
         parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum) 
+
             % Get the parallel pool worker ID
             t = getCurrentTask();
             
@@ -516,43 +552,20 @@ if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visual
             end
             
             % Call the figures generation routine
-            hFigs = visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizedResponseNormalization, kk, nParforConditions, p.Results.visualizationFormat);
+            hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizeOuterSegmentFilters, p.Results.visualizedResponseNormalization, kk, nParforConditions, p.Results.visualizationFormat);
         
             % Save figures produced
             theProgram = mfilename;
             rwObject = IBIOColorDetectReadWriteBasic;
             data = 0;
             
-            if (~isempty(hFigs{1}))
-                fileName = sprintf('osImpulseResponses');
-                rwObject.write(fileName, data, paramsList, theProgram, ...
-                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{1}, 'FigureType', 'pdf');
+            for k = 1:numel(hFigsInfo)
+                if ~isempty(hFigsInfo{k}.hFig)
+                    fileName = hFigsInfo{k}.filename;
+                    rwObject.write(fileName, data, paramsList, theProgram, ...
+                        'type', 'NicePlotExportPDF', 'FigureHandle', hFigsInfo{k}.hFig, 'FigureType', 'pdf');
+                end
             end
-            
-            if (~isempty(hFigs{2}))
-                fileName = sprintf('noiseFreeXTResponses');
-                rwObject.write(fileName, data, paramsList, theProgram, ...
-                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{2}, 'FigureType', 'pdf');
-            end
-            
-            if (~isempty(hFigs{3}))
-                fileName = sprintf('noiseFreeXYResponses');
-                rwObject.write(fileName, data, paramsList, theProgram, ...
-                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{3}, 'FigureType', 'pdf');
-            end
-            
-            if (~isempty(hFigs{4}))
-                fileName = sprintf('peakConeIsomerizationResponseInstances');
-                rwObject.write(fileName, data, paramsList, theProgram, ...
-                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{4}, 'FigureType', 'pdf');
-            end
-            
-            if (~isempty(hFigs{5}))
-                fileName = sprintf('peakConePhotocurrentResponseInstances');
-                rwObject.write(fileName, data, paramsList, theProgram, ...
-                    'type', 'NicePlotExportPDF', 'FigureHandle', hFigs{5}, 'FigureType', 'pdf');
-            end
-            
         end
     end
     

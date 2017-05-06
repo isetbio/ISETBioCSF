@@ -80,7 +80,7 @@ end
 
 
 %%  Visualize the oiSequence
-%theOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
+theOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
 
 %% Co-visualize the optical image and the cone mosaic
 if (p.Results.visualizeSpatialScheme)

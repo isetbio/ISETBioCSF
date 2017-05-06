@@ -1,4 +1,4 @@
-function c_BanksEtAlPhotocurrentAndEyeMovements(varargin)
+function varargout = c_BanksEtAlPhotocurrentAndEyeMovements(varargin)
 
     
 %% Parse input
@@ -47,7 +47,8 @@ p.addParameter('responseStabilizationMilliseconds', 80, @isnumeric);
 p.addParameter('responseExtinctionMilliseconds', 200, @isnumeric);
 p.addParameter('computeMosaic',false,@islogical);
 p.addParameter('ramPercentageEmployed', 1.0, @isnumeric);
-p.addParameter('parforWorkersNum', 12, @isnumeric);
+p.addParameter('parforWorkersNum', 20, @isnumeric);
+p.addParameter('parforWorkersNumForClassification', 6, @isnumeric);
 
 % MOSAIC OPTIONS
 p.addParameter('integrationTime', 5.0/1000, @isnumeric);
@@ -66,9 +67,14 @@ p.addParameter('visualizePerformance', false, @islogical);
 
 % PERFORMANCE COMPUTATION OPTIONS
 p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
-p.addParameter('performanceClassifier', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'svmV1FilterBank', 'svmV1FilterBankFullWaveRectAF', 'mlpt', 'mlpe', 'mlgtGaussianRF'}));
+p.addParameter('useRBFSVMKernel', false, @islogical);
+p.addParameter('performanceClassifier', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'svmV1FilterBank', 'mlpt', 'mlpe', 'mlgtGaussianRF'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
+p.addParameter('performanceTrialsUsed', [], @isnumeric);
 p.parse(varargin{:});
+
+%% Set the default output
+varargout = {};
 
 %% Get the parameters we need
 %
@@ -193,23 +199,28 @@ for ll = 1:length(p.Results.luminances)
         thresholdParams = modifyStructParams(thresholdParams, ...
         	'criterionFraction', p.Results.thresholdCriterionFraction, ...
         	'method', p.Results.performanceClassifier, ...
-            'STANDARDIZE', false, ...
-            'standardizeSVMpredictors', false, ...
+            'STANDARDIZE', false, ...                   % Standardize data for PCA
+            'standardizeSVMpredictors', false, ...       % Standardize data for SVM
+            'useRBFKernel', p.Results.useRBFSVMKernel, ...
         	'PCAComponents', p.Results.thresholdPCA, ...
             'signalSource', p.Results.performanceSignal ...
             );
         if (strcmp(thresholdParams.method, 'svm')) || ...
             (strcmp(thresholdParams.method, 'svmV1FilterBank')) || ...
-            (strcmp(thresholdParams.method, 'svmV1FilterBankFullWaveRectAF')) || ...
             (strcmp(thresholdParams.method, 'svmGaussianRF'))
             thresholdParams = modifyStructParams(thresholdParams, ...
-                'spatialPoolingKernelParams', p.Results.spatialPoolingKernelParams, ...
-                'useRBFKernel', false);   % set to true to use a nonlinear (radial basis function) - based SVM
+                'spatialPoolingKernelParams', p.Results.spatialPoolingKernelParams ...
+                );  
         end
 
-        
+        if (isempty(p.Results.performanceTrialsUsed))
+            thresholdParams.trialsUsed = p.Results.nTrainingSamples;
+        else
+            thresholdParams.trialsUsed = p.Results.performanceTrialsUsed;
+        end
+
         %% Compute response instances
-        if (p.Results.computeResponses)
+        if (p.Results.computeResponses) || (p.Results.visualizeMosaic) 
            t_coneCurrentEyeMovementsResponseInstances(...
                'rParams',rParams,...
                'testDirectionParams',testDirectionParams,...
@@ -228,29 +239,32 @@ for ll = 1:length(p.Results.luminances)
                'workerID', find(p.Results.displayResponseComputationProgress) ...
             );
         end
+
         
         %% Visualize response instances
-        if ((p.Results.visualizeResponses) || (p.Results.visualizeSpatialScheme))
+        if (p.Results.visualizeResponses)
             t_coneCurrentEyeMovementsResponseInstances(...
           'rParams',rParams,...
           'testDirectionParams',testDirectionParams,...
           'freezeNoise', p.Results.freezeNoise, ...
           'compute', false, ...
           'computeMosaic', false, ... 
+          'visualizeMosaic', p.Results.visualizeMosaic, ...
           'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
           'visualizationFormat', p.Results.visualizationFormat, ...
           'generatePlots', true, ...
           'visualizeResponses', p.Results.visualizeResponses, ...
-          'visualizeSpatialScheme', p.Results.visualizeSpatialScheme, ...
           'visualizeOuterSegmentFilters', false);
         end
             
+        
         if (p.Results.findPerformance) || (p.Results.visualizePerformance)
             t_colorDetectFindPerformance(...
                 'rParams',rParams, ...
                 'testDirectionParams',testDirectionParams, ...
                 'thresholdParams',thresholdParams, ...
                 'compute',p.Results.findPerformance, ...
+                'parforWorkersNum', p.Results.parforWorkersNumForClassification, ...
                 'visualizeSpatialScheme', p.Results.visualizeSpatialScheme, ...
                 'visualizeTransformedSignals', p.Results.visualizeTransformedSignals, ...
                 'plotSvmBoundary',false,...
@@ -277,6 +291,7 @@ end % ll
 
 % Write out the data
 if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.visualizePerformance))
+    
     fprintf('Writing performance data ... ');
     paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
     rwObject = IBIOColorDetectReadWriteBasic;
@@ -285,70 +300,73 @@ if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.vis
     fprintf('done\n');
 
 
-%% Get performance data
-fprintf('Reading performance data ...');
-paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
-rwObject = IBIOColorDetectReadWriteBasic;
-writeProgram = mfilename;
-banksEtAlReplicate = rwObject.read('banksEtAlReplicatePhotocurrentAndEyeMovements',paramsList,writeProgram);
-fprintf('done\n');
+    %% Get performance data
+    fprintf('Reading performance data ...');
+    paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
+    rwObject = IBIOColorDetectReadWriteBasic;
+    writeProgram = mfilename;
+    banksEtAlReplicate = rwObject.read('banksEtAlReplicatePhotocurrentAndEyeMovements',paramsList,writeProgram);
+    fprintf('done\n');
 
+    % Return the performance data
+    varargout{1} = banksEtAlReplicate;
+    varargout{2} = rParams;
+    
+    %% Make a plot of CSFs
+    %
+    % The way the plot is coded counts on the test contrasts never changing
+    % across the conditions, which we could explicitly check for here.
+    if (p.Results.generatePlots && p.Results.plotCSF)  
+        hFig = figure; clf; hold on
+        fontBump = 4;
+        markerBump = -4;
+        lineBump = -1;
+        set(gcf,'Position',[100 100 450 650]);
+        set(gca,'FontSize', rParams.plotParams.axisFontSize+fontBump);
+        theColors = ['r' 'g' 'b'];
+        legendStr = cell(length(p.Results.luminances),1);
+        for ll = 1:length(p.Results.luminances)
+            theColorIndex = 3; % rem(ll,length(theColors)) + 1;
+            plot(banksEtAlReplicate.cyclesPerDegree(ll,:),1./([banksEtAlReplicate.mlptThresholds(ll,:).thresholdContrasts]*banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1)), ...
+                [theColors(theColorIndex) 'o'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
+            legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
+        end
 
-%% Make a plot of CSFs
-%
-% The way the plot is coded counts on the test contrasts never changing
-% across the conditions, which we could explicitly check for here.
-if (p.Results.generatePlots && p.Results.plotCSF)  
-    hFig = figure; clf; hold on
-    fontBump = 4;
-    markerBump = -4;
-    lineBump = -1;
-    set(gcf,'Position',[100 100 450 650]);
-    set(gca,'FontSize', rParams.plotParams.axisFontSize+fontBump);
-    theColors = ['r' 'g' 'b'];
-    legendStr = cell(length(p.Results.luminances),1);
-    for ll = 1:length(p.Results.luminances)
-        theColorIndex = 3; % rem(ll,length(theColors)) + 1;
-        plot(banksEtAlReplicate.cyclesPerDegree(ll,:),1./([banksEtAlReplicate.mlptThresholds(ll,:).thresholdContrasts]*banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1)), ...
-            [theColors(theColorIndex) 'o'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
-        legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
+        % Add Banks et al. data to the figure
+        % Slide by eye to match our current calculations, and add as
+        % appropriate so as not to clutter the figure.  A bit klugy as we add
+        % more and more conditions, I fear.
+        % 
+        % Also add unshifted version for reference
+        banksFactor = 1;
+        [A,B,C,D,E] = LoadDigitizedBanksFigure2;
+        if (~rParams.oiParams.blur && ~rParams.mosaicParams.apertureBlur)
+            plot(A(:,1),A(:,2),'k:','LineWidth',0.5);
+            plot(A(:,1),A(:,2)*banksFactor,'r-','LineWidth',rParams.plotParams.lineWidth+lineBump);
+        elseif (~rParams.oiParams.blur)
+            plot(B(:,1),B(:,2),'k:','LineWidth',0.5);
+            plot(B(:,1),B(:,2)*banksFactor,'r','LineWidth',rParams.plotParams.lineWidth+lineBump);
+        else
+            plot(C(:,1),C(:,2),'k:','LineWidth',0.5);
+            plot(C(:,1),C(:,2)*banksFactor,'r-','LineWidth',rParams.plotParams.lineWidth+lineBump);
+            plot(D(:,1),D(:,2)*banksFactor,'b-','LineWidth',rParams.plotParams.lineWidth+lineBump);
+            plot(E(:,1),E(:,2)*banksFactor,'g-','LineWidth',rParams.plotParams.lineWidth+lineBump);
+        end
+
+        set(gca,'XScale','log');
+        set(gca,'YScale','log');
+        xlabel('Log10 Spatial Frequency (cpd)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+        ylabel('Log10 Contrast Sensitivity', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+        xlim([1 100]); ylim([1 10000]);
+        legend(legendStr,'Location','NorthEast','FontSize',rParams.plotParams.labelFontSize+fontBump);
+        box off; grid on
+        titleStr1 = 'Computational Observer CSF';
+        titleStr2 = sprintf('Blur: %d, Aperture Blur: %d',p.Results.blur, p.Results.apertureBlur);
+        title({titleStr1 ; titleStr2});
+
+        % Write out the figure
+        rwObject.write('banksEtAlReplicatePhotocurrentAndEyeMovements',hFig,paramsList,writeProgram,'Type','figure')
     end
-    
-    % Add Banks et al. data to the figure
-    % Slide by eye to match our current calculations, and add as
-    % appropriate so as not to clutter the figure.  A bit klugy as we add
-    % more and more conditions, I fear.
-    % 
-    % Also add unshifted version for reference
-    banksFactor = 1;
-    [A,B,C,D,E] = LoadDigitizedBanksFigure2;
-    if (~rParams.oiParams.blur && ~rParams.mosaicParams.apertureBlur)
-        plot(A(:,1),A(:,2),'k:','LineWidth',0.5);
-        plot(A(:,1),A(:,2)*banksFactor,'r-','LineWidth',rParams.plotParams.lineWidth+lineBump);
-    elseif (~rParams.oiParams.blur)
-        plot(B(:,1),B(:,2),'k:','LineWidth',0.5);
-        plot(B(:,1),B(:,2)*banksFactor,'r','LineWidth',rParams.plotParams.lineWidth+lineBump);
-    else
-        plot(C(:,1),C(:,2),'k:','LineWidth',0.5);
-        plot(C(:,1),C(:,2)*banksFactor,'r-','LineWidth',rParams.plotParams.lineWidth+lineBump);
-        plot(D(:,1),D(:,2)*banksFactor,'b-','LineWidth',rParams.plotParams.lineWidth+lineBump);
-        plot(E(:,1),E(:,2)*banksFactor,'g-','LineWidth',rParams.plotParams.lineWidth+lineBump);
-    end
-    
-    set(gca,'XScale','log');
-    set(gca,'YScale','log');
-    xlabel('Log10 Spatial Frequency (cpd)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-    ylabel('Log10 Contrast Sensitivity', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-    xlim([1 100]); ylim([1 10000]);
-    legend(legendStr,'Location','NorthEast','FontSize',rParams.plotParams.labelFontSize+fontBump);
-    box off; grid on
-    titleStr1 = 'Computational Observer CSF';
-    titleStr2 = sprintf('Blur: %d, Aperture Blur: %d',p.Results.blur, p.Results.apertureBlur);
-    title({titleStr1 ; titleStr2});
-     
-    % Write out the figure
-    rwObject.write('banksEtAlReplicatePhotocurrentAndEyeMovements',hFig,paramsList,writeProgram,'Type','figure')
-end
 end
 
 
