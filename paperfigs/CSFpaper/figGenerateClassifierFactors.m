@@ -52,7 +52,6 @@ function figGenerateClassifierFactors()
     % Retrieve reference mosaic ('originalBanks') CSF data
     [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs] = paramsForComparativeMosaicAnalysis(mosaicRef);
     
-    
     % Spatial pooling kernel parameters
     spatialPoolingKernelParams.type = 'V1QuadraturePair';  % Choose between 'V1CosUnit' 'V1SinUnit' 'V1QuadraturePair';
     spatialPoolingKernelParams.activationFunction = 'energy';  % Choose between 'energy' and 'fullWaveRectifier'
@@ -70,6 +69,14 @@ function figGenerateClassifierFactors()
     end
     
     
+    % Spatial pooling kernel parameters
+    spatialPoolingKernelParams.type = 'V1QuadraturePair';  % Choose between 'V1CosUnit' 'V1SinUnit' 'V1QuadraturePair';
+    spatialPoolingKernelParams.activationFunction = 'energy';  % Choose between 'energy' and 'fullWaveRectifier'
+    spatialPoolingKernelParams.adjustForConeDensity = false;
+    spatialPoolingKernelParams.temporalPCAcoeffs = Inf;  % Inf, results in no PCA, just the raw time series
+    spatialPoolingKernelParams.shrinkageFactor = 1.0;  % > 1, results in expansion, < 1 results in shrinking
+    useRBFSVMKernel = false;
+    
     [d, rParams] = getData('svmV1FilterBank');
     sfTest = d.cyclesPerDegree;
     if (any(sfTest-sfRef)~=0)
@@ -79,7 +86,8 @@ function figGenerateClassifierFactors()
         testCSF1(luminanceIndex,:) = correctionForGreaterThan100msecTime * 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
     end
     
-    [d, rParams] = getData('svm');
+    spatialPoolingKernelParams.adjustForConeDensity = true;
+    [d, rParams] = getData('svmV1FilterBank');
     sfTest = d.cyclesPerDegree;
     if (any(sfTest-sfRef)~=0)
         error('sfs do not match');
@@ -88,29 +96,28 @@ function figGenerateClassifierFactors()
         testCSF2(luminanceIndex,:) = correctionForGreaterThan100msecTime * 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
     end
     
-    
+    [d, rParams] = getData('svm');
+    sfTest = d.cyclesPerDegree;
+    if (any(sfTest-sfRef)~=0)
+        error('sfs do not match');
+    end
+    for luminanceIndex = 1:size(d.mlptThresholds,1)
+        testCSF3(luminanceIndex,:) = correctionForGreaterThan100msecTime * 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
+    end
     
     % Compute CSF ratios
     ratioCSF1 = testCSF1 ./ referenceCSF;
     ratioCSF2 = testCSF2 ./ referenceCSF;
+    ratioCSF3 = testCSF3 ./ referenceCSF;
     
     hFig = figure(2); clf;
-    set(hFig ,'Position',[100 100 450 1000], 'Color', [1 1 1]);
-    subplot('Position', [0.13 0.37 0.84 0.60]);
-    plot(sfRef, referenceCSF, 'ko', 'MarkerSize', 12, 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 12);
-    hL = legend({'MLPT'}, 'Location', 'NorthEast');
-    set(hL, 'FontSize', 13, 'FontName', 'Menlo');
-    set(gca,'XScale','log','YScale','log', 'FontSize', 16, 'XTickLabel', {});
-    xlabel('', 'FontSize', 16, 'FontWeight', 'bold');
-    ylabel('contrast sensitivity', 'FontSize' ,16, 'FontWeight', 'bold');
-    xlim([1 100]); ylim([1 10000]);
-    grid on; box off;
-    
-    subplot('Position', [0.13 0.06 0.84 0.25]);
+    set(hFig ,'Position',[100 100 450 280], 'Color', [1 1 1]);
+    subplot('Position', [0.13 0.08 0.84 0.90]);
     hold on
     plot(sfRef, ratioCSF1, 'ko-', 'MarkerSize', 10, 'MarkerFaceColor', [0.9 0.5 0.5], 'MarkerSize', 12, 'LineWidth', 1.0);
     plot(sfRef, ratioCSF2, 'ko-', 'MarkerSize', 10, 'MarkerFaceColor', [0.5 0.5 0.9], 'MarkerSize', 12, 'LineWidth', 1.0);
-    hL = legend({'SVM (optimal V1quadFilter) : MLPT', 'SVM : MLPT'}, 'Location', 'NorthEast');
+    plot(sfRef, ratioCSF3, 'ko-', 'MarkerSize', 10, 'MarkerFaceColor', [0.8 0.7 0.2], 'MarkerSize', 12, 'LineWidth', 1.0);
+    hL = legend({'SVM (quad filter, no cone density adjust)', 'SVM (quad filter, cone density adjust)', 'SVM'}, 'Location', 'NorthEast');
     set(hL, 'FontSize', 13, 'FontName', 'Menlo');
     xlabel('spatial frequency (cpd)', 'FontSize', 16, 'FontWeight', 'bold');
     ylabel('contrast sensitivity ratio', 'FontSize' ,16, 'FontWeight', 'bold');
@@ -154,36 +161,5 @@ function figGenerateClassifierFactors()
             'spatialPoolingKernelParams', spatialPoolingKernelParams ...
             );
     end
-
 end
 
-function addBanksEtAlReferenceLines(rParams, plotLuminanceLine)
-    luminanceColors = [0 1 0; 0 0 1; 1 0 0; 0 0 0];
-    luminanceColors = [0 0 0; 0 0 0; 0 0 0; 0 0 0];
-    % Add unshifted version for reference
-    banksFactor = 1;
-    [A,B,C,D,E] = LoadDigitizedBanksFigure2;
-    if (~rParams.oiParams.blur && ~rParams.mosaicParams.apertureBlur)
-        plot(A(:,1),A(:,2),'k:','LineWidth',0.5);
-        plot(A(:,1),A(:,2)*banksFactor,'r-','LineWidth',1.5);
-    elseif (~rParams.oiParams.blur)
-        plot(B(:,1),B(:,2),'k:','LineWidth',0.5);
-        plot(B(:,1),B(:,2)*banksFactor,'r','LineWidth',1.5);
-    else
-        
-        if (plotLuminanceLine(1))
-            % 3.4 cd/m2
-            plot(E(:,1),E(:,2)*banksFactor,'-','LineWidth',1.0, 'Color', squeeze(luminanceColors(1,:)));
-        end
-        
-        if (plotLuminanceLine(2))
-            % 34 cd/m2
-            plot(D(:,1),D(:,2)*banksFactor,'-','LineWidth',1.0, 'Color', squeeze(luminanceColors(2,:)));
-        end
-        
-        if (plotLuminanceLine(3))
-            % 340 cd/m2
-            plot(C(:,1),C(:,2)*banksFactor,'-','LineWidth',1.0, 'Color', squeeze(luminanceColors(3,:)));
-        end
-    end
-end
