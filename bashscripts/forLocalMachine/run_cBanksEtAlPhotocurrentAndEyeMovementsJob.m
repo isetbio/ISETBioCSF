@@ -1,7 +1,7 @@
 function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
 
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
-    mosaicType = 'fullIsetbioWithScones'; % 'originalBanks'; %'fullIsetbioNoScones';
+    mosaicType =  'originalBanks'; %'fullIsetbioNoScones';
     
     % 'singleExposure'; 'timeSeries5msec'
     temporalAnalysis = 'timeSeries5msec';
@@ -19,7 +19,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
     
     % 'mlpt', 'svm', 'svmV1FilterBank'
-    performanceClassifier = 'svm'; % V1FilterBank'; %'mlpt'% 'svmV1FilterBank';
+    performanceClassifier = 'mlpt'; % V1FilterBank'; %'mlpt'% 'svmV1FilterBank';
     useRBFSVMKernel = false;
     
     % Spatial pooling kernel parameters
@@ -38,11 +38,11 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     if (computationIntance == 0)
         % All conditions in 1 MATLAB session
         ramPercentageEmployed = 1.0;  % use all the RAM
-        cyclesPerDegreeExamined =  [20];
+        cyclesPerDegreeExamined =  [5];
     elseif (computationIntance  == 1)
         % First half of the conditions in session 1 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 1.0;  % use all of the RAM
-        cyclesPerDegreeExamined =  [5];
+        cyclesPerDegreeExamined =  [5.0];
     elseif (computationIntance  == 2)
         % Second half of the conditions in session 2 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 0.5;  % use 1/2 the RAM
@@ -55,11 +55,11 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
 
     % What to do ?
-    computeMosaic = ~true;
+    computeMosaic = true;
     visualizeMosaic = ~true;
-    computeResponses = ~true;
+    computeResponses = true;
     visualizeResponses = ~true;
-    visualizeSpatialScheme = ~true;
+    visualizeSpatialScheme = true;
     findPerformance = true;
     visualizePerformance = true;
     visualizeTransformedSignals = ~true;
