@@ -286,6 +286,8 @@ for ll = 1:length(p.Results.luminances)
             %close all;
         end
         end
+        
+        rParamsAllConds{cc,ll} = rParams;
     end % cc
 end % ll
 
@@ -310,7 +312,7 @@ if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.vis
 
     % Return the performance data
     varargout{1} = banksEtAlReplicate;
-    varargout{2} = rParams;
+    varargout{2} = rParamsAllConds;
     
     %% Make a plot of CSFs
     %
