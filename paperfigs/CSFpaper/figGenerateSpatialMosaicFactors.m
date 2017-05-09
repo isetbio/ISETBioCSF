@@ -27,7 +27,7 @@ function figGenerateSpatialMosaicFactors()
     freezeNoise = ~true;
     
     
-    cyclesPerDegreeExamined =  [5 10 20 40];
+    cyclesPerDegreeExamined =  [2.5 5 10 20 40];
     luminancesExamined =  [34]; 
     plotLuminanceLines = [false true false];
     
@@ -61,20 +61,20 @@ function figGenerateSpatialMosaicFactors()
     
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
     mosaicRef = 'originalBanks';
-    mosaicTest1 = 'fullIsetbioNoScones';
-    mosaicTest2 = 'fullIsetbioWithScones';
+    mosaicTest1 = 'fullIsetbioWithScones';
+    %mosaicTest2 = 'fullIsetbioWithScones';
     
     % Retrieve reference mosaic ('originalBanks') CSF data
     [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs] = paramsForComparativeMosaicAnalysis(mosaicRef);
     [d, rParams] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
     sfRef = d.cyclesPerDegree;
-    correctionForGreaterThan100msecTime = 100/120
     for luminanceIndex = 1:size(d.mlptThresholds,1)
-        referenceCSF(luminanceIndex,:) = correctionForGreaterThan100msecTime * 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
+        referenceCSF(luminanceIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
     end
     
+   
     
-    % Retrieve 'fullIsetbioNoScones' CSF data
+   % Retrieve 'fullIsetbioWithScones' CSF data
     [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs] = paramsForComparativeMosaicAnalysis(mosaicTest1);
     [d, rParams] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
     sfTest = d.cyclesPerDegree;
@@ -82,23 +82,11 @@ function figGenerateSpatialMosaicFactors()
         error('sfs do not match');
     end
     for luminanceIndex = 1:size(d.mlptThresholds,1)
-        testCSF1(luminanceIndex,:) = correctionForGreaterThan100msecTime * 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
-    end
-    
-   % Retrieve 'fullIsetbioWithScones' CSF data
-    [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs] = paramsForComparativeMosaicAnalysis(mosaicTest2);
-    [d, rParams] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
-    sfTest = d.cyclesPerDegree;
-    if (any(sfTest-sfRef)~=0)
-        error('sfs do not match');
-    end
-    for luminanceIndex = 1:size(d.mlptThresholds,1)
-        testCSF2(luminanceIndex,:) = correctionForGreaterThan100msecTime * 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
+        testCSF1(luminanceIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
     end
     
     % Compute CSF ratios
     ratioCSF1 = testCSF1 ./ referenceCSF;
-    ratioCSF2 = testCSF2 ./ referenceCSF;
     
     hFig = figure(1); clf;
     set(hFig ,'Position',[100 100 450 1000], 'Color', [1 1 1]);
@@ -116,8 +104,7 @@ function figGenerateSpatialMosaicFactors()
     
     subplot('Position', [0.13 0.06 0.84 0.25]);
     hold on
-    plot(sfRef, ratioCSF1, 'ko-', 'MarkerSize', 10, 'MarkerFaceColor', [0.8 0.8 0.5], 'MarkerSize', 12, 'LineWidth', 1.0);
-    plot(sfRef, ratioCSF2, 'ko-', 'MarkerSize', 10, 'MarkerFaceColor', [0.4 0.4 0.9], 'MarkerSize', 12, 'LineWidth', 1.0);
+    plot(sfRef, ratioCSF1, 'ko-', 'MarkerSize', 10, 'MarkerFaceColor', [0.4 0.4 0.9], 'MarkerSize', 12, 'LineWidth', 1.0);
     hL = legend({'ISETbio (w/out S-cones):ISETbio (Banks)', 'ISETbio  (with S-cones):ISETbio (Banks)'}, 'Location', 'NorthEast');
     set(hL, 'FontSize', 13, 'FontName', 'Menlo');
     xlabel('spatial frequency (cpd)', 'FontSize', 16, 'FontWeight', 'bold');
