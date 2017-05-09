@@ -24,7 +24,7 @@ function runPoirsonAndWandell96Job()
         
         for configID = [3]
             classifierSignalList = {'isomerizations', 'photocurrents'};
-            classifierTypeList = {'svmV1FilterBankFullWaveRectAF'};
+            classifierTypeList = {'svmV1FilterBank'};
 
             c_PoirsonAndWandell96RunSession(configID, nTrials, performanceClassifierTrainingSamples, ...
                 computeMosaic, computeResponses, findPerformances, visualizeResponses, visualizePerformances, ...
@@ -35,43 +35,80 @@ function runPoirsonAndWandell96Job()
         % Summary plots
         
         configID = 2;
+        % The SVM-V1 Classifier
         classifierSignalList = {'isomerizations'};
         classifierTypeList = {'svmV1FilterBank'};
-        
-
-        performanceClassifierTrainingSamplesExamined = [256 704 4096];
+        performanceClassifierTrainingSamplesExamined = [128 256 704 4096];
         for k = 1:numel(performanceClassifierTrainingSamplesExamined)
             d = c_PoirsonAndWandell96RunSession(configID, nTrials, performanceClassifierTrainingSamplesExamined(k), ...
             computeMosaic, computeResponses, findPerformances, visualizeResponses, visualizePerformances, ...
             visualizeMosaic, visualizeSpatialScheme, classifierSignalList, classifierTypeList, pcaComponentsNum);
-            isomerizationThresholds(k) = d{1}.detectionThresholdContrast;
-            photocurrentThresholds(k) = d{2}.detectionThresholdContrast;
+            isomerizationThresholdsSVMV1model(k) = d{1}.detectionThresholdContrast;
+            %photocurrentThresholdsSVMV1model(k) = d{2}.detectionThresholdContrast;
         end
         
+        classifierSignalList = {'photocurrents'};
+        classifierTypeList = {'svmV1FilterBank'};
+        performanceClassifierTrainingSamplesExamined3 = [128 256 704 4096];
+        for k = 1:numel(performanceClassifierTrainingSamplesExamined)
+            d = c_PoirsonAndWandell96RunSession(configID, nTrials, performanceClassifierTrainingSamplesExamined(k), ...
+            computeMosaic, computeResponses, findPerformances, visualizeResponses, visualizePerformances, ...
+            visualizeMosaic, visualizeSpatialScheme, classifierSignalList, classifierTypeList, pcaComponentsNum);
+            photocurrentThresholdsSVMV1model(k) = d{1}.detectionThresholdContrast;
+        end
+        
+        % The MLPT classifier
         classifierSignalList = {'isomerizations'};
         classifierTypeList = {'mlpt'};
-        performanceClassifierTrainingSamplesExamined = [704];
-        for k = 1:numel(performanceClassifierTrainingSamplesExamined)
-            d = c_PoirsonAndWandell96RunSession(configID, nTrials, performanceClassifierTrainingSamplesExamined(k), ...
+        performanceClassifierTrainingSamplesExamined2 = [256 704 4096];
+        for k = 1:numel(performanceClassifierTrainingSamplesExamined2)
+            d = c_PoirsonAndWandell96RunSession(configID, nTrials, performanceClassifierTrainingSamplesExamined2(k), ...
             computeMosaic, computeResponses, findPerformances, visualizeResponses, visualizePerformances, ...
             visualizeMosaic, visualizeSpatialScheme, classifierSignalList, classifierTypeList, pcaComponentsNum);
-            isomerizationThresholds(k) = d{1}.detectionThresholdContrast;
-            photocurrentThresholds(k) = d{2}.detectionThresholdContrast;
+            isomerizationThresholdsMLPT(k) = d{1}.detectionThresholdContrast;
         end
         
-        figure(1);
+        subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', 1, ...
+           'colsNum', 2, ...
+           'heightMargin',   0.01, ...
+           'widthMargin',    0.04, ...
+           'leftMargin',     0.05, ...
+           'rightMargin',    0.001, ...
+           'bottomMargin',   0.04, ...
+           'topMargin',      0.005);
+       
+        hFig = figure(1);
         clf;
-        plot(1:numel(performanceClassifierTrainingSamplesExamined), isomerizationThresholds, 'rs-', 'MarkerSize', 14, 'LineWidth', 1.5);
+        set(hFig, 'Position', [10 10 1200 1100], 'Color', [1 1 1]);
+        subplot('Position', subplotPosVectors(1,1).v);
+        plot(performanceClassifierTrainingSamplesExamined, isomerizationThresholdsSVMV1model, 'ro-', 'MarkerSize', 14, 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.7 0.7]);
+        %plot(1:numel(performanceClassifierTrainingSamplesExamined), isomerizationThresholdsSVMV1model, 'ro-', 'MarkerSize', 14, 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.7 0.7]);
         hold on;
-        plot(1:numel(performanceClassifierTrainingSamplesExamined), photocurrentThresholds, 'bs-', 'MarkerSize', 14, 'LineWidth', 1.5);
-        set(gca, 'XTick', 1:numel(performanceClassifierTrainingSamplesExamined), 'XTickLabels', performanceClassifierTrainingSamplesExamined);
-        set(gca, 'FontSize', 12);
-        axis 'square'
-        xlabel('training samples');
-        ylabel('detection threshold contrast');
-        legend({'isomerizations', 'photocurrents'});
-        title('classifier: svmV1FilterBank');
+        plot(performanceClassifierTrainingSamplesExamined2, isomerizationThresholdsMLPT, 'bo-', 'MarkerSize', 14, 'LineWidth', 1.5, 'MarkerFaceColor', [0.7 0.7 1.0]);
+        %plot(1:numel(performanceClassifierTrainingSamplesExamined2), isomerizationThresholdsMLPT, 'bo-', 'MarkerSize', 14, 'LineWidth', 1.5, 'MarkerFaceColor', [0.7 0.7 1.0]);
+        %set(gca, 'XTick', 1:numel(performanceClassifierTrainingSamplesExamined), 'XTickLabels', performanceClassifierTrainingSamplesExamined);
+        set(gca, 'XTick', performanceClassifierTrainingSamplesExamined, 'XTickLabels', performanceClassifierTrainingSamplesExamined);
+        set(gca, 'XScale', 'log', 'XLim', [100 10000], 'YScale', 'log', 'YLim', [4e-4 1.5e-2]);
+        set(gca, 'FontSize', 14);
+        box off; grid on
+        xlabel('training samples', 'FontWeight', 'bold');
+        ylabel('threshold detection contrast', 'FontWeight', 'bold');
+        hL = legend({'isomerizations (linearSVM-V1)', 'isomerizations (MLPT)'});
+        set(hL, 'FontSize', 12);
+        
+        subplot('Position', subplotPosVectors(1,2).v);
+        plot(performanceClassifierTrainingSamplesExamined, photocurrentThresholdsSVMV1model, 'ro-', 'MarkerSize', 14, 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.7 0.7]);
+        set(gca, 'XTick', performanceClassifierTrainingSamplesExamined3, 'XTickLabels', performanceClassifierTrainingSamplesExamined);
+        set(gca, 'XScale', 'log', 'XLim', [100 10000], 'YScale', 'log', 'YLim', [4e-4 1.5e-2]);
+        set(gca, 'FontSize', 14);
+        box off; grid on
+        xlabel('training samples', 'FontWeight', 'bold');
+        ylabel('threshold detection contrast', 'FontWeight', 'bold');
+        hL = legend({'photocurrents (linearSVM-V1)'});
+        set(hL, 'FontSize', 12);
         drawnow;
+        NicePlot.exportFigToPDF('summary.pdf', hFig, 300);
     end
     
     return;
