@@ -1,7 +1,7 @@
 function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
 
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
-    mosaicType =  'fullIsetbioWithScones';
+    mosaicType =  'defaultIsetbio';
     
     % 'singleExposure'; 'timeSeries5msec'
     temporalAnalysis = 'timeSeries5msec';
@@ -18,7 +18,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
     
     % 'mlpt', 'svm', 'svmV1FilterBank'
-    performanceClassifier = 'svmV1FilterBank'; %'mlpt'% 'svmV1FilterBank';
+    performanceClassifier = 'mlpt'; %'mlpt'% 'svmV1FilterBank';
     useRBFSVMKernel = false;
     
     % Spatial pooling kernel parameters
@@ -37,31 +37,31 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     if (computationIntance == 0)
         % All conditions in 1 MATLAB session
         ramPercentageEmployed = 1.0;  % use all the RAM
-        cyclesPerDegreeExamined =  [20];
+        cyclesPerDegreeExamined =  [2.5];
     elseif (computationIntance  == 1)
         % First half of the conditions in session 1 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 1.0;  % use all of the RAM
-        cyclesPerDegreeExamined =  [40];
+        cyclesPerDegreeExamined =  [5.0];
     elseif (computationIntance  == 2)
         % Second half of the conditions in session 2 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 0.5;  % use 1/2 the RAM
-        cyclesPerDegreeExamined =  [2.5];
+        cyclesPerDegreeExamined =  [5.0];
     elseif (computationIntance  == 3)
         % Second half of the conditions in session 2 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 0.5;  % use 1/2 the RAM
-        cyclesPerDegreeExamined =  [20];
+        cyclesPerDegreeExamined =  [10 20 40];
     end
     
 
     % What to do ?
-    computeMosaic = ~true;
-    visualizeMosaic = true;
-    computeResponses = ~true;
+    computeMosaic = true;
+    visualizeMosaic = ~true;
+    computeResponses = true;
     visualizeResponses = ~true;
-    visualizeSpatialScheme = true;
-    findPerformance = ~true;
+    visualizeSpatialScheme = ~true;
+    findPerformance = true;
     visualizePerformance = true;
-    visualizeTransformedSignals = true;
+    visualizeTransformedSignals = ~true;
     
     
     switch mosaicType
@@ -78,7 +78,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             coneSpacingMicrons = 2.0;
             innerSegmentDiameter = 1.5797; % for a circular sensor; this corresponds to the 1.4 micron square pixel 
             conePacking = 'hexReg';
-            LMSRatio = [0.60 0.30 0.10];
+            LMSRatio = [0.60 0.30 0.0];
             mosaicRotationDegs = 0;
             
         case 'fullIsetbioNoScones'
