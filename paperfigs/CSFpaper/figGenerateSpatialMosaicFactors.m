@@ -27,11 +27,9 @@ function figGenerateSpatialMosaicFactors()
     freezeNoise = ~true;
     
     
-    cyclesPerDegreeExamined =  [2.5 5 10 20 40];
+    cyclesPerDegreeExamined =  [5 10 20 40];
     luminancesExamined =  [34]; 
     plotLuminanceLines = [false true false];
-    
-
 
     switch temporalAnalysis 
         case 'singleExposure'
@@ -61,57 +59,111 @@ function figGenerateSpatialMosaicFactors()
     
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
     mosaicRef = 'originalBanks';
-    mosaicTest1 = 'fullIsetbioWithScones';
-    %mosaicTest2 = 'fullIsetbioWithScones';
+    mosaicTest1 = 'defaultIsetbio';
+    mosaicTest2 = 'fullIsetbioWithScones';
     
     % Retrieve reference mosaic ('originalBanks') CSF data
-    [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs] = paramsForComparativeMosaicAnalysis(mosaicRef);
-    [d, rParams] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
+    [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, referenceMosaicLegend] = paramsForComparativeMosaicAnalysis(mosaicRef);
+    [d, rParamsRef] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
     sfRef = d.cyclesPerDegree;
     for luminanceIndex = 1:size(d.mlptThresholds,1)
         referenceCSF(luminanceIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
     end
     
-   
     
-   % Retrieve 'fullIsetbioWithScones' CSF data
-    [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs] = paramsForComparativeMosaicAnalysis(mosaicTest1);
-    [d, rParams] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
-    sfTest = d.cyclesPerDegree;
-    if (any(sfTest-sfRef)~=0)
+    % Retrieve 'fullIsetbioWithScones' CSF data
+    [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, mosaicTest1Legend] = paramsForComparativeMosaicAnalysis(mosaicTest1);
+    [d, rParamsTest1] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
+    test1Color = [0.8 0.3 0.9];
+    
+    sfTest1 = d.cyclesPerDegree;
+    if (any(sfTest1-sfRef)~=0)
         error('sfs do not match');
     end
     for luminanceIndex = 1:size(d.mlptThresholds,1)
         testCSF1(luminanceIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
     end
     
+    % Retrieve 'defaultIsetbio' CSF data
+    [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, mosaicTest2Legend] = paramsForComparativeMosaicAnalysis(mosaicTest2);
+    [d, rParamsTest2] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
+    test2Color = [0.3 0.7 0.99];
+    
+    sfTest2 = d.cyclesPerDegree;
+    if (any(sfTest2-sfRef)~=0)
+        error('sfs do not match');
+    end
+    for luminanceIndex = 1:size(d.mlptThresholds,1)
+        testCSF2(luminanceIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
+    end
+    
+    
     % Compute CSF ratios
     ratioCSF1 = testCSF1 ./ referenceCSF;
+    ratioCSF2 = testCSF2 ./ referenceCSF;
     
     hFig = figure(1); clf;
-    set(hFig ,'Position',[100 100 450 1000], 'Color', [1 1 1]);
-    subplot('Position', [0.13 0.37 0.84 0.60]);
+    set(hFig ,'Position',[100 100 950 1000], 'Color', [1 1 1]);
+    subplot('Position', [0.055 0.30 0.41 0.69]);
     hold on
-    addBanksEtAlReferenceLines(rParams, plotLuminanceLines);
+    addBanksEtAlReferenceLines(rParamsTest1, plotLuminanceLines);
     plot(sfRef, referenceCSF, 'ko', 'MarkerSize', 12, 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 12);
-    hL = legend({'Banks et al', 'ISETbio (Banks)'}, 'Location', 'NorthEast');
+    plot(sfTest1, testCSF1, 'ko', 'MarkerSize', 10, 'MarkerFaceColor', test1Color, 'MarkerSize', 12);
+    plot(sfTest2, testCSF2, 'ko', 'MarkerSize', 10, 'MarkerFaceColor', test2Color, 'MarkerSize', 12);
+    hL = legend({'Banks et al study', referenceMosaicLegend, mosaicTest1Legend, mosaicTest2Legend}, 'Location', 'NorthEast');
     set(hL, 'FontSize', 13, 'FontName', 'Menlo');
-    set(gca,'XScale','log','YScale','log', 'FontSize', 16, 'XTickLabel', {});
+    set(gca,'XScale','log','YScale','log', 'FontSize', 16);
     xlabel('', 'FontSize', 16, 'FontWeight', 'bold');
     ylabel('contrast sensitivity', 'FontSize' ,16, 'FontWeight', 'bold');
-    xlim([1 100]); ylim([1 10000]);
+    xlim([1 100]); ylim([1 5000]);
     grid on; box off;
     
-    subplot('Position', [0.13 0.06 0.84 0.25]);
+    subplot('Position', [0.055 0.055 0.41 0.20]);
     hold on
-    plot(sfRef, ratioCSF1, 'ko-', 'MarkerSize', 10, 'MarkerFaceColor', [0.4 0.4 0.9], 'MarkerSize', 12, 'LineWidth', 1.0);
-    hL = legend({'ISETbio (w/out S-cones):ISETbio (Banks)', 'ISETbio  (with S-cones):ISETbio (Banks)'}, 'Location', 'NorthEast');
+    plot(sfRef, ratioCSF1, 'ko-', 'MarkerSize', 10, 'MarkerFaceColor', test1Color, 'MarkerSize', 12, 'LineWidth', 1.0);
+    plot(sfRef, ratioCSF2, 'ko-', 'MarkerSize', 10, 'MarkerFaceColor', test2Color, 'MarkerSize', 12, 'LineWidth', 1.0);
+    hL = legend({mosaicTest1Legend, mosaicTest2Legend}, 'Location', 'NorthEast');
     set(hL, 'FontSize', 13, 'FontName', 'Menlo');
     xlabel('spatial frequency (cpd)', 'FontSize', 16, 'FontWeight', 'bold');
     ylabel('contrast sensitivity ratio', 'FontSize' ,16, 'FontWeight', 'bold');
     set(gca,'XScale','log','YScale','linear', 'FontSize', 16);
     xlim([1 100]); ylim([0.5 1]);
     grid on; box off;
+    
+    sfIndex = 2;
+    subplot('Position', [0.50 0.51 0.48 0.48]);
+    plotMosaic(rParamsRef, sfIndex, sprintf('%s', referenceMosaicLegend)); 
+    subplot('Position', [0.50 0.01 0.48 0.48]);
+    plotMosaic(rParamsTest2, sfIndex, sprintf('%s', mosaicTest2Legend));
+    
+    
+    conditionsToVisualize = [18];
+    cyclesPerDeg = cyclesPerDegreeExamined(sfIndex);
+    [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, ~] = paramsForComparativeMosaicAnalysis(mosaicTest2);
+    noiseFreeResponses = getNoiseFreeResponses(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, cyclesPerDeg, conditionsToVisualize);
+    noiseFreeIsomerizations = noiseFreeResponses{1,1}.stimData{conditionsToVisualize}.noiseFreeIsomerizations;
+    [~,idx] = max(noiseFreeIsomerizations(:));
+    [~, timeBinOfMaxResponse] = ind2sub(size(noiseFreeIsomerizations), idx);
+    noiseFreeIsomerizations = noiseFreeIsomerizations(:, timeBinOfMaxResponse);
+   
+    figure(hFig);
+    theAxes = axes('Position',[0.06,0.305,0.2,0.2]);
+    plotMosaicActivation(theAxes, rParamsTest2, sfIndex, noiseFreeIsomerizations, 'isomerizations', cyclesPerDeg);
+
+    sfIndex = sfIndex + 1;
+    cyclesPerDeg = cyclesPerDegreeExamined(sfIndex);
+    noiseFreeResponses = getNoiseFreeResponses(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, cyclesPerDeg, conditionsToVisualize);
+    noiseFreeIsomerizations = noiseFreeResponses{1,1}.stimData{conditionsToVisualize}.noiseFreeIsomerizations;
+    [~,idx] = max(noiseFreeIsomerizations(:));
+    [~, timeBinOfMaxResponse] = ind2sub(size(noiseFreeIsomerizations), idx);
+    noiseFreeIsomerizations = noiseFreeIsomerizations(:, timeBinOfMaxResponse);
+    
+    figure(hFig);
+    theAxes = axes('Position',[0.26,0.305,0.2,0.2]);
+    plotMosaicActivation(theAxes, rParamsTest2, sfIndex, noiseFreeIsomerizations, 'isomerizations',cyclesPerDeg);
+
+    
+    
     drawnow;
 
     function [d, the_rParams] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs)
@@ -149,9 +201,89 @@ function figGenerateSpatialMosaicFactors()
             'spatialPoolingKernelParams', spatialPoolingKernelParams ...
             );
     end
+
+    function noiseFreeResponses = getNoiseFreeResponses(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, cyclesPerDeg, conditionsToVisualize)
+        [~, ~, noiseFreeResponses] = c_BanksEtAlPhotocurrentAndEyeMovements(...
+            'cyclesPerDegree', cyclesPerDeg, ...
+            'luminances', luminancesExamined, ...
+            'nTrainingSamples', nTrainingSamples, ...
+            'nContrastsPerDirection', nContrastsPerDirection, ...
+            'lowContrast', lowContrast, ...
+            'highContrast', highContrast, ...
+            'ramPercentageEmployed', ramPercentageEmployed, ...
+            'emPathType', emPathType, ...
+            'centeredEMPaths', centeredEMPaths, ...
+            'responseStabilizationMilliseconds', responseStabilizationMilliseconds, ...
+            'responseExtinctionMilliseconds', responseExtinctionMilliseconds, ...
+            'freezeNoise', freezeNoise, ...
+            'integrationTime', integrationTimeMilliseconds/1000, ...
+            'coneSpacingMicrons', coneSpacingMicrons, ...
+            'innerSegmentSizeMicrons', sizeForSquareApertureFromDiameterForCircularAperture(innerSegmentDiameter), ...
+            'conePacking', conePacking, ...
+            'LMSRatio', LMSRatio, ...
+            'mosaicRotationDegs', mosaicRotationDegs, ...
+            'computeMosaic', false, ...
+            'visualizeMosaic', false, ...
+            'computeResponses', false, ...
+            'generatePlots', false, ...
+            'visualizeResponses', true, ...
+            'visualizedConditionIndices', conditionsToVisualize, ...
+            'visualizeSpatialScheme', visualizeSpatialScheme, ...
+            'findPerformance', findPerformance, ...
+            'visualizePerformance', visualizePerformance, ...
+            'visualizeTransformedSignals', visualizeTransformedSignals, ...
+            'performanceSignal' , performanceSignal, ...
+            'performanceClassifier', performanceClassifier, ...
+            'useRBFSVMKernel', useRBFSVMKernel, ...
+            'performanceTrialsUsed', nTrainingSamples, ...
+            'spatialPoolingKernelParams', spatialPoolingKernelParams ...
+            );
+    end
+
 end
 
-function addBanksEtAlReferenceLines(rParams, plotLuminanceLine)
+function plotMosaic(rParamsAllConds, sfIndex, titleString)
+    lumIndex = 1;
+    rParams = rParamsAllConds{sfIndex,lumIndex};
+    fprintf('Loading a previously saved cone mosaic\n');
+    coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
+    theProgram = 't_coneCurrentEyeMovementsResponseInstances';
+    rwObject = IBIOColorDetectReadWriteBasic;
+    theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
+    theMosaic.visualizeGrid('axesHandle', gca);
+    title(gca, sprintf('%s', titleString), 'FontWeight', 'normal', 'FontWeight', 'bold', 'FontSize', 16);
+    conesNum = numel(find(theMosaic.pattern(:) > 1));
+    %xlabel(gca, sprintf('%2.0f microns, cones: %d', theMosaic.width*1e6, conesNum), 'FontWeight', 'Bold', 'FontSize', 18);
+end
+
+function plotMosaicActivation(axesHandle, rParamsAllConds, sfIndex, activationMap, signalName, cpd)
+    lumIndex = 1;
+    rParams = rParamsAllConds{sfIndex,lumIndex};
+    fprintf('Loading a previously saved cone mosaic\n');
+    coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
+    theProgram = 't_coneCurrentEyeMovementsResponseInstances';
+    rwObject = IBIOColorDetectReadWriteBasic;
+    theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
+    if (strcmp(signalName, 'isomerizations'))
+        % Make it rate in R*/sec
+        activationMap = activationMap / theMosaic.integrationTime;
+    end
+    theMosaic.renderActivationMap(axesHandle, activationMap,...
+        'mapType', 'modulated disks', ...
+        'colorMap', gray(1024), ...
+        'signalName', signalName, ...
+        'xRange', [-120 120], ...
+        'yRange', [-120 120], ...
+        'signalRange', [0.09 1.61]*1000 ...
+        );
+    title(axesHandle, sprintf('%2.2f c/deg', cpd));
+    
+end
+
+function addBanksEtAlReferenceLines(rParamsAllConds, plotLuminanceLine)
+    sfIndex = 1;
+    lumIndex = 1;
+    rParams = rParamsAllConds{sfIndex,lumIndex};
     luminanceColors = [0 1 0; 0 0 1; 1 0 0; 0 0 0];
     luminanceColors = [0 0 0; 0 0 0; 0 0 0; 0 0 0];
     % Add unshifted version for reference
@@ -159,10 +291,10 @@ function addBanksEtAlReferenceLines(rParams, plotLuminanceLine)
     [A,B,C,D,E] = LoadDigitizedBanksFigure2;
     if (~rParams.oiParams.blur && ~rParams.mosaicParams.apertureBlur)
         plot(A(:,1),A(:,2),'k:','LineWidth',0.5);
-        plot(A(:,1),A(:,2)*banksFactor,'r-','LineWidth',1.5);
+        plot(A(:,1),A(:,2)*banksFactor,'r-','LineWidth',2);
     elseif (~rParams.oiParams.blur)
         plot(B(:,1),B(:,2),'k:','LineWidth',0.5);
-        plot(B(:,1),B(:,2)*banksFactor,'r','LineWidth',1.5);
+        plot(B(:,1),B(:,2)*banksFactor,'r','LineWidth',2);
     else
         
         if (plotLuminanceLine(1))
