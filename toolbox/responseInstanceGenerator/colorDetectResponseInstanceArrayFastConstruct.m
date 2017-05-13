@@ -17,6 +17,7 @@ function [responseStruct, osImpulseResponseFunctions, osImpulseReponseFunctionTi
 %               Controls wether the eye movement paths start at (0,0) (default) or wether they are centered around (0,0)
 %  'osImpulseResponseFunctions' - the LMS impulse response filters to be used (default: [])
 %  'osMeanCurrents' - the steady-state LMS currents caused by the mean absorption LMS rates
+%  'computePhotocurrentResponseInstances' - true/false (default true) wether to compute photocurrent response instances
 %  'computeNoiseFreeSignals' - true/false (default true) wether to compute the noise free isomerizations and photocurrents
 %  'useSinglePrecision' - true/false (default true) use single precision to represent isomerizations and photocurrent
 %  'visualizeSpatialScheme' - true/false (default false) wether to co-visualize the optical image and the cone mosaic
@@ -31,6 +32,7 @@ p.addParameter('useSinglePrecision',true,@islogical);
 p.addParameter('centeredEMPaths',false, @islogical); 
 p.addParameter('osImpulseResponseFunctions', [], @isnumeric);
 p.addParameter('osMeanCurrents', [], @isnumeric);
+p.addParameter('computePhotocurrentResponseInstances', true, @islogical);
 p.addParameter('computeNoiseFreeSignals', true, @islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
 p.addParameter('paramsList', {}, @iscell);
@@ -80,7 +82,7 @@ end
 
 
 %%  Visualize the oiSequence
-theOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
+%theOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
 
 %% Co-visualize the optical image and the cone mosaic
 if (p.Results.visualizeSpatialScheme)
@@ -107,7 +109,7 @@ theEMpaths = colorDetectMultiTrialEMPathGenerate(...
                     'interpFilters', p.Results.osImpulseResponseFunctions, ...
                     'meanCur', p.Results.osMeanCurrents, ...
                     'trialBlockSize', nTrials, ...      % Do all trials in a single block
-                    'currentFlag', true, ...
+                    'currentFlag', p.Results.computePhotocurrentResponseInstances, ...
                     'workDescription', sprintf('%d trials of noisy responses', nTrials),...
                     'workerID', p.Results.workerID);
                 
@@ -129,10 +131,14 @@ isomerizationsTimeIndicesToKeep = find(abs(isomerizationsTimeAxis-temporalParams
 photocurrentsTimeIndicesToKeep = find(abs(photoCurrentTimeAxis-temporalParams.secondsToIncludeOffset) <= temporalParams.secondsToInclude/2);
 if (isa(theMosaic , 'coneMosaicHex'))
      isomerizations = isomerizations(:,:,isomerizationsTimeIndicesToKeep);
-     photocurrents = photocurrents(:,:,photocurrentsTimeIndicesToKeep);
+     if (~isempty(photocurrents))
+        photocurrents = photocurrents(:,:,photocurrentsTimeIndicesToKeep);
+     end
 else
      isomerizations = isomerizations(:,:,:,isomerizationsTimeIndicesToKeep);
-     photocurrents = photocurrents(:,:,:,photocurrentsTimeIndicesToKeep);
+     if (~isempty(photocurrents))
+        photocurrents = photocurrents(:,:,:,photocurrentsTimeIndicesToKeep);
+     end
 end
 
 %% Form the responseInstanceArray struct

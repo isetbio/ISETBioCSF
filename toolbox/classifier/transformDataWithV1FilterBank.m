@@ -12,6 +12,9 @@ end
 fprintf('Transforming data via projection to the spatial components of a V1-based filter (type: %s, activationFunction: %s)\n', V1filterBank.type, V1filterBank.activationFunction);
 
 if (strcmp(thresholdParams.signalSource,'photocurrents'))
+    if (isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
+        error('photocurrents has not been computed');
+    end
     if (ndims(noStimData.responseInstanceArray.theMosaicPhotocurrents) ~= 3)
         error('transformDataWithV1FilterBank not yet implemented for other than 3D response arrays, ndims = %d\n', ndims(noStimData.responseInstanceArray.theMosaicPhotocurrents));
     end

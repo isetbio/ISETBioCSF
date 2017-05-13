@@ -35,6 +35,7 @@ function [validationData, extraData, varargout] = t_coneCurrentEyeMovementsRespo
 %     'displayTrialBlockPartitionDiagnostics', true/false. Wether to display trial block diagnostics.
 %     'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
 %     'compute' - true/false (default true).  Do the computations.
+%    'computePhotocurrentResponseInstances' - true/false (default true) wether to compute photocurrent response instances
 %     'computeMosaic' - true/false (default true). Compute a cone mosaic or load one (good for large hex mosaics which take a while to compute)
 %     'ramPercentageEmployed' [>0 .. <=1]. Percentage of RAM to use for the computations. 
 %       Use 0.5, if you want to run 2 simultaneous instances of MATLAB (touse all cores for example).
@@ -73,6 +74,7 @@ p.addParameter('centeredEMPaths',false, @islogical);
 p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
+p.addParameter('computePhotocurrentResponseInstances', true, @islogical);
 p.addParameter('computeMosaic', true, @islogical);
 p.addParameter('visualizeMosaic',true, @islogical);
 p.addParameter('ramPercentageEmployed', 1.0, @isnumeric);
@@ -311,7 +313,7 @@ if (p.Results.compute)
     
     % Parfor over trial blocks
     parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
-
+        
         % Get the parallel pool worker ID
         t = getCurrentTask();
         if (~isempty(p.Results.workerID))  
@@ -328,6 +330,7 @@ if (p.Results.compute)
                 'osMeanCurrents', [], ...              % pass empty array, to compute the steady-state current based on the null stimulus 
                 'seed', parforRanSeedsNoStim(1, trialBlock), ...
                 'workerID', workerID,...
+                'computePhotocurrentResponseInstances', p.Results.computePhotocurrentResponseInstances, ...
                 'computeNoiseFreeSignals', true, ....
                 'visualizeSpatialScheme', (p.Results.visualizeSpatialScheme & (trialBlock == 1)), ...
                 'paramsList', paramsList...
@@ -419,6 +422,7 @@ if (p.Results.compute)
                     'osMeanCurrents', meanCurrentsFromNullStimulus{1}, ...                            % use the to steady-state currents computed from the null stimulus  
                     'seed', parforRanSeeds(kk,trialBlock), ...
                     'workerID', workerID, ...
+                    'computePhotocurrentResponseInstances', p.Results.computePhotocurrentResponseInstances, ...
                     'computeNoiseFreeSignals', true, ...
                     'visualizeSpatialScheme', (p.Results.visualizeSpatialScheme & (trialBlock == 1)), ...
                     'paramsList', paramsList);
