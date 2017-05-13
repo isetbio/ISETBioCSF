@@ -51,6 +51,7 @@ function [validationData, extraData, varargout] = t_coneCurrentEyeMovementsRespo
 %     'visualizeMosaic' - true/false (default true). Wether to visualize the cone mosaic
 %     'visualizeSpatialScheme' - true/false (default false). Visualize the relationship between mosaic and stimulus.
 %     'visualizeResponses' - true/false (default true). Call the fancy visualize response routine
+%     'visualizedConditionIndices' - list of conditions indices for which to visualize respondrd (default: empty - all conditions)
 %     'visualizeOuterSegmentFilters' - true/false (default false). Visualize the outer segment impulse response functions.
 %     'visualizationFormat' - How to arrange visualized maps. 
 %       Available options: 'montage', 'video'. Default is 'montage'
@@ -80,6 +81,7 @@ p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('overrideMosaicIntegrationTime', [], @isnumeric);
 p.addParameter('generatePlots',false,@islogical);
 p.addParameter('visualizeResponses',true,@islogical);
+p.addParameter('visualizedConditionIndices', [], @isnumeric);
 p.addParameter('visualizeOuterSegmentFilters',false, @islogical);
 p.addParameter('visualizeSpatialScheme',false,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
@@ -106,7 +108,8 @@ else
 end
 
 % Initialize varargout
-varargout{1} = [];
+varargout{1} = [];   % Impulse responses if (visualizeOuterSegmentFilters is true)
+varargout{2} = [];   % noise-free responses
 
 %% Clear
 if (nargin == 0)
@@ -500,10 +503,9 @@ if (p.Results.compute)
 end
     
 %% Visualize
-if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visualizeOuterSegmentFilters))
+if ((p.Results.visualizeResponses || p.Results.visualizeOuterSegmentFilters))
 
     if (p.Results.visualizeResponses)
-
         % Load the mosaic
         coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
         theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
@@ -514,6 +516,10 @@ if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visual
         fprintf('Importing NOSTIM data and ancillary data\n');
         noStimData = rwObject.read('responseInstances',paramsList,theProgram);
         ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
+    
+         % Save noise-free data (to be returned to the user)
+        noiseFreeResponses.noStimData.noiseFreeIsomerizations = noStimData.noiseFreeIsomerizations;
+        noiseFreeResponses.noStimData.noiseFreePhotocurrents  = noStimData.noiseFreePhotocurrents;
     
         % How many istances to visualize
         instancesToVisualize = size(noStimData.responseInstanceArray.theMosaicIsomerizations,1); % 5;
@@ -532,7 +538,11 @@ if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visual
         parforConditionStructs = ancillaryData.parforConditionStructs;
         nParforConditions = length(parforConditionStructs); 
         for kk = nParforConditions:-1:1
-            fprintf('Importing STIM data for condition %d/%d\n', kk, nParforConditions);
+            if (~isempty(p.Results.visualizedConditionIndices)) && (~ismember(kk, p.Results.visualizedConditionIndices))
+                fprintf('Skipping condition %d/%d STIM data for visualization\n', kk, nParforConditions);
+                continue;
+            end
+            fprintf('Importing condition %d/%d STIM data for visualization\n', kk, nParforConditions);
             thisConditionStruct = parforConditionStructs{kk};
             colorModulationParamsTemp = rParams.colorModulationParams;
             colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
@@ -542,6 +552,10 @@ if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visual
             paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
             stimData = rwObject.read('responseInstances',paramsList,theProgram);
             
+            % Save noise-free data (to be returned to the user)
+            noiseFreeResponses.stimData{kk}.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations;
+            noiseFreeResponses.stimData{kk}.noiseFreePhotocurrents  = stimData.noiseFreePhotocurrents;
+        
             if (instancesToVisualize ~= size(noStimData.responseInstanceArray.theMosaicIsomerizations,1))
                 % Only keep the data we will visualize
                 stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations(1:idx,:,:);
@@ -551,22 +565,26 @@ if (p.Results.generatePlots && (p.Results.visualizeResponses || p.Results.visual
                 stimData.responseInstanceArray.theMosaicEyeMovements = stimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
             end
             
-            % Call the figures generation routine
-            hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizeOuterSegmentFilters, p.Results.visualizedResponseNormalization, kk, nParforConditions, p.Results.visualizationFormat);
-        
-            % Save figures produced
-            theProgram = mfilename;
-            rwObject = IBIOColorDetectReadWriteBasic;
-            data = 0;
-            
-            for k = 1:numel(hFigsInfo)
-                if ~isempty(hFigsInfo{k}.hFig)
-                    fileName = hFigsInfo{k}.filename;
-                    rwObject.write(fileName, data, paramsList, theProgram, ...
-                        'type', 'NicePlotExportPDF', 'FigureHandle', hFigsInfo{k}.hFig, 'FigureType', 'pdf');
+            if (p.Results.generatePlots)
+                % Call the figures generation routine
+                hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizeOuterSegmentFilters, p.Results.visualizedResponseNormalization, kk, nParforConditions, p.Results.visualizationFormat);
+
+                % Save figures produced
+                theProgram = mfilename;
+                rwObject = IBIOColorDetectReadWriteBasic;
+                data = 0;
+
+                for k = 1:numel(hFigsInfo)
+                    if ~isempty(hFigsInfo{k}.hFig)
+                        fileName = hFigsInfo{k}.filename;
+                        rwObject.write(fileName, data, paramsList, theProgram, ...
+                            'type', 'NicePlotExportPDF', 'FigureHandle', hFigsInfo{k}.hFig, 'FigureType', 'pdf');
+                    end
                 end
             end
         end
+        
+        varargout{2} = noiseFreeResponses;
     end
     
     if (p.Results.visualizeOuterSegmentFilters)
