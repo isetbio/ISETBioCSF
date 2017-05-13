@@ -27,7 +27,7 @@ function figGenerateSpatialMosaicFactors()
     freezeNoise = ~true;
     
     
-    cyclesPerDegreeExamined =  [5 10 20 40];
+    cyclesPerDegreeExamined =  [2.5 5 10 20 40];
     luminancesExamined =  [34]; 
     plotLuminanceLines = [false true false];
 
@@ -130,7 +130,7 @@ function figGenerateSpatialMosaicFactors()
     xlim([1 100]); ylim([0.5 1]);
     grid on; box off;
     
-    sfIndex = 2;
+    sfIndex = 3;
     subplot('Position', [0.50 0.51 0.48 0.48]);
     plotMosaic(rParamsRef, sfIndex, sprintf('%s', referenceMosaicLegend)); 
     subplot('Position', [0.50 0.01 0.48 0.48]);
