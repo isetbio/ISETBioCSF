@@ -1,7 +1,10 @@
 function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
 
+    % 'WvfHuman', 'Geisler'
+    opticsModel = 'Geisler';
+
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
-    mosaicType =  'defaultIsetbio';
+    mosaicType =  'fullIsetbioWithScones';
     
     % 'singleExposure'; 'timeSeries5msec'
     temporalAnalysis = 'timeSeries5msec';
@@ -11,7 +14,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     centeredEMPaths = false;
     
     % 'isomerizations', 'photocurrents'
-    performanceSignal ='isomerizations';
+    performanceSignal = 'isomerizations';
     
     % Use a subset of the trials. Specify [] to use all available trials
     nTrainingSamples = 1024;
@@ -32,12 +35,12 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     freezeNoise = ~true;
     luminancesExamined =  [34]; 
 
-    computationIntance = 2;
+    computationIntance = 0;
     
     if (computationIntance == 0)
         % All conditions in 1 MATLAB session
         ramPercentageEmployed = 1.0;  % use all the RAM
-        cyclesPerDegreeExamined =  [2.5];
+        cyclesPerDegreeExamined =  [5 10 20 40 50];
     elseif (computationIntance  == 1)
         % First half of the conditions in session 1 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 1.0;  % use all of the RAM
@@ -58,7 +61,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     visualizeMosaic = ~true;
     computeResponses = true;
     visualizeResponses = ~true;
-    visualizeSpatialScheme = ~true;
+    visualizeSpatialScheme = true;
     findPerformance = true;
     visualizePerformance = true;
     visualizeTransformedSignals = ~true;
@@ -134,6 +137,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
     if (computeResponses) || (visualizeResponses) || (visualizeMosaic)
         c_BanksEtAlPhotocurrentAndEyeMovements(...
+            'opticsModel', opticsModel, ...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
             'luminances', luminancesExamined, ...
             'nTrainingSamples', nTrainingSamples, ...
@@ -167,6 +171,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     
     if (findPerformance) || (visualizePerformance)
             perfData = c_BanksEtAlPhotocurrentAndEyeMovements(...
+                'opticsModel', opticsModel, ...
                 'cyclesPerDegree', cyclesPerDegreeExamined, ...
                 'luminances', luminancesExamined, ...
                 'nTrainingSamples', nTrainingSamples, ...
