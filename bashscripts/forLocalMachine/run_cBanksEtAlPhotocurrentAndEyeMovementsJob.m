@@ -4,7 +4,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     opticsModel = 'Geisler';
 
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
-    mosaicType =  'fullIsetbioWithScones';
+    mosaicType =  'originalBanks';
     
     % 'singleExposure'; 'timeSeries5msec'
     temporalAnalysis = 'timeSeries5msec';
@@ -60,6 +60,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     computeMosaic = true;
     visualizeMosaic = ~true;
     computeResponses = true;
+    computePhotocurrentResponseInstances = false;
     visualizeResponses = ~true;
     visualizeSpatialScheme = true;
     findPerformance = true;
@@ -159,6 +160,7 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             'computeMosaic',computeMosaic, ...
             'visualizeMosaic', visualizeMosaic, ...
             'computeResponses', computeResponses, ...
+            'computePhotocurrentResponseInstances', computePhotocurrentResponseInstances, ...
             'visualizeResponses', visualizeResponses, ...
             'visualizeSpatialScheme', visualizeSpatialScheme, ...
             'findPerformance', false, ...
