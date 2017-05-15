@@ -133,18 +133,18 @@ function [hFig, peakConeIndex] = visualizeNoiseFreeResponses(theMosaic, timeAxis
         isomerizationsRange(1) = isomerizationsRange(2)*0.50;
     end
 
-    if (~isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))   
-        photocurrentsRange = [...
-            min([min(noStimData.noiseFreePhotocurrents(:)) min(stimData.noiseFreePhotocurrents(:))]) ...
-            max([max(noStimData.noiseFreePhotocurrents(:)) max(stimData.noiseFreePhotocurrents(:))]) ];
-
-        deltaRange = photocurrentsRange(2)-photocurrentsRange(1);
-        if (deltaRange < 2)
-            midRange = 0.5*(photocurrentsRange(2)+photocurrentsRange(1));
-            photocurrentsRange(1) = midRange - 1;
-            photocurrentsRange(2) = midRange + 1;
-        end
+   
+    photocurrentsRange = [...
+        min([min(noStimData.noiseFreePhotocurrents(:)) min(stimData.noiseFreePhotocurrents(:))]) ...
+        max([max(noStimData.noiseFreePhotocurrents(:)) max(stimData.noiseFreePhotocurrents(:))]) ];
+    
+    deltaRange = photocurrentsRange(2)-photocurrentsRange(1);
+    if (deltaRange < 2)
+        midRange = 0.5*(photocurrentsRange(2)+photocurrentsRange(1));
+        photocurrentsRange(1) = midRange - 1;
+        photocurrentsRange(2) = midRange + 1;
     end
+    
     
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
