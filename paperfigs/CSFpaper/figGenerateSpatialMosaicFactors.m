@@ -1,5 +1,8 @@
 function figGenerateSpatialMosaicFactors()
     
+    % 'WvfHuman', 'Geisler'
+    opticsModel = 'Geisler';
+    
     % 'singleExposure'; 'timeSeries5msec'
     temporalAnalysis = 'timeSeries5msec';
     
@@ -27,7 +30,7 @@ function figGenerateSpatialMosaicFactors()
     freezeNoise = ~true;
     
     
-    cyclesPerDegreeExamined =  [2.5 5 10 20 40];
+    cyclesPerDegreeExamined =  [5 10 20 40];
     luminancesExamined =  [34]; 
     plotLuminanceLines = [false true false];
 
@@ -168,6 +171,7 @@ function figGenerateSpatialMosaicFactors()
 
     function [d, the_rParams] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs)
         [d, the_rParams] = c_BanksEtAlPhotocurrentAndEyeMovements(...
+            'opticsModel', opticsModel, ...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
             'luminances', luminancesExamined, ...
             'nTrainingSamples', nTrainingSamples, ...
@@ -204,6 +208,7 @@ function figGenerateSpatialMosaicFactors()
 
     function noiseFreeResponses = getNoiseFreeResponses(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, cyclesPerDeg, conditionsToVisualize)
         [~, ~, noiseFreeResponses] = c_BanksEtAlPhotocurrentAndEyeMovements(...
+            'opticsModel', opticsModel, ...
             'cyclesPerDegree', cyclesPerDeg, ...
             'luminances', luminancesExamined, ...
             'nTrainingSamples', nTrainingSamples, ...
