@@ -101,6 +101,8 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
             conePacking = 'hex';
             LMSRatio = [0.60 0.30 0.10];
             mosaicRotationDegs = 0;
+        otherwise
+            error('Unknown mosaicType: ''%s''.', mosaicType);
     end
     
     
