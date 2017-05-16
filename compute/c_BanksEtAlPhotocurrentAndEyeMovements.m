@@ -59,7 +59,6 @@ p.addParameter('integrationTime', 5.0/1000, @isnumeric);
 p.addParameter('displayTrialBlockPartitionDiagnostics', true, @islogical);
 p.addParameter('displayResponseComputationProgress', false, @islogical);
 
-
 % RESPONSE MAP VISUALIZATION OPTIONS
 p.addParameter('visualizeMosaic',true, @islogical); 
 p.addParameter('visualizeSpatialScheme', false, @islogical);
@@ -73,7 +72,13 @@ p.addParameter('useRBFSVMKernel', false, @islogical);
 p.addParameter('performanceClassifier', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'svmV1FilterBank', 'mlpt', 'mlpe', 'mlgtGaussianRF'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
 p.addParameter('performanceTrialsUsed', [], @isnumeric);
+
+% DELETE RESPONSE INSTANCES
+p.addParameter('deleteResponseInstances', false, @islogical);
+
 p.parse(varargin{:});
+
+
 
 %% Set the default output
 varargout = {};
@@ -81,6 +86,14 @@ varargout{1} = [];
 varargout{2} = [];
 varargout{3} = [];
    
+%% Make sure we really want to delete the response files
+if (p.Results.deleteResponseInstances)
+    proceed = input('Responses will be deleted. Are you sure ? [y = YES]', 's');
+    if (~strcmp(proceed, 'y'))
+        return;
+    end
+end
+
 %% Get the parameters we need
 %
 % Start with default
@@ -246,7 +259,6 @@ for ll = 1:length(p.Results.luminances)
             );
         end
 
-        
         %% Visualize response instances
         if (p.Results.visualizeResponses)
             [~, ~, ~, noiseFreeResponses{cc,ll}] = t_coneCurrentEyeMovementsResponseInstances(...
@@ -265,7 +277,7 @@ for ll = 1:length(p.Results.luminances)
             );
         end
             
-        
+        %% Find performance
         if (p.Results.findPerformance) || (p.Results.visualizePerformance)
             t_colorDetectFindPerformance(...
                 'rParams',rParams, ...
@@ -281,19 +293,37 @@ for ll = 1:length(p.Results.luminances)
             );
         
         
-        %% Fit psychometric functions
-        if (p.Results.fitPsychometric)
-            banksEtAlReplicate.cyclesPerDegree(ll,cc) = p.Results.cyclesPerDegree(cc);
-            banksEtAlReplicate.mlptThresholds(ll,cc) = ...
-                t_plotDetectThresholdsOnLMPlane(...
-                    'rParams',rParams, ...
-                    'instanceParams',testDirectionParams, ...
-                    'thresholdParams',thresholdParams, ...
-                    'plotPsychometric', p.Results.generatePlots & p.Results.plotPsychometric, ...
-                    'plotEllipse',false);
-            %close all;
+            %% Fit psychometric functions
+            if (p.Results.fitPsychometric)
+                banksEtAlReplicate.cyclesPerDegree(ll,cc) = p.Results.cyclesPerDegree(cc);
+                banksEtAlReplicate.mlptThresholds(ll,cc) = ...
+                    t_plotDetectThresholdsOnLMPlane(...
+                        'rParams',rParams, ...
+                        'instanceParams',testDirectionParams, ...
+                        'thresholdParams',thresholdParams, ...
+                        'plotPsychometric', p.Results.generatePlots & p.Results.plotPsychometric, ...
+                        'plotEllipse',false);
+                %close all;
+            end
         end
+        
+        %% Delete response instances
+        if (p.Results.deleteResponseInstances)
+            t_coneCurrentEyeMovementsResponseInstances(...
+               'rParams',rParams,...
+               'testDirectionParams',testDirectionParams,...
+               'centeredEMPaths',p.Results.centeredEMPaths, ...
+               'freezeNoise',p.Results.freezeNoise,...
+               'compute',false, ...
+               'computePhotocurrentResponseInstances', false, ...
+               'computeMosaic', false, ...   
+               'visualizeMosaic', false, ...
+               'visualizeResponses',false, ...
+               'visualizeSpatialScheme', false, ...
+               'generatePlots', false,...
+                'delete', true);
         end
+        
         rParamsAllConds{cc,ll} = rParams;
     end % cc
 end % ll

@@ -60,7 +60,7 @@ function [validationData, extraData, varargout] = t_coneCurrentEyeMovementsRespo
 %        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
 %     'exportPDF' - true/false (default true).  If visualizing responses,
 %        export the PDF files.
-%     'delete' - true/false (default true).  Delete the response instance
+%     'delete' - true/false (default false).  Delete the response instance
 %        files.  Useful for cleaning up big output when we are done with
 %        it.  If this is true, output files are deleted at the end.
 %
@@ -90,7 +90,7 @@ p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischa
 p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('exportPDF',true,@islogical);
-p.addParameter('delete',false',@islogical);
+p.addParameter('delete',false,@islogical);
 p.parse(varargin{:});
 rParams = p.Results.rParams;
 testDirectionParams = p.Results.testDirectionParams;
@@ -173,6 +173,40 @@ colorModulationParamsNull.contrast = 0;
 %% Set up the rw object for this program
 rwObject = IBIOColorDetectReadWriteBasic;
 theProgram = mfilename;
+
+
+%% Delete response instance files.
+if (p.Results.delete)
+    
+    % Load the response and ancillary data
+    paramsList = constantParamsList;
+    paramsList{numel(paramsList)+1} = colorModulationParamsNull;
+    fprintf('Removing null condition response instances.\n');
+    rwObject.remove('responseInstances',paramsList,theProgram);
+    
+    
+    paramsList = constantParamsList;
+    paramsList{numel(paramsList)+1} = colorModulationParamsNull;   
+    fprintf('Importing  ancillary data\n');
+    ancillaryData = rwObject.read('ancillaryData',paramsList,theProgram);
+    
+    rParams = ancillaryData.rParams;
+    parforConditionStructs = ancillaryData.parforConditionStructs;
+    nParforConditions = length(parforConditionStructs); 
+    for kk = nParforConditions:-1:1
+            thisConditionStruct = parforConditionStructs{kk};
+            colorModulationParamsTemp = rParams.colorModulationParams;
+            colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
+            colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
+
+            paramsList = constantParamsList;
+            paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
+            
+            fprintf('Removing condition %d/%d response instances\n', kk, nParforConditions);
+            rwObject.remove('responseInstances',paramsList,theProgram);
+    end % kk
+end % if (p.Results.delete)
+
 
 %% Maybe we are just visualizing the mosaic - not computing responses
 if ((~p.Results.compute) && ((p.Results.visualizeMosaic) || (p.Results.computeMosaic)) )
@@ -622,25 +656,6 @@ if ((p.Results.visualizeResponses || p.Results.visualizeOuterSegmentFilters))
     end
 end
 
-
-%% Delete response instance files.
-%
-% Doesn't delete figures or parent directories.
-if (p.Results.delete)
-    rwObject.remove('responseInstances',paramsList,theProgram);
-    rwObject.remove('ancillaryData',paramsList,theProgram);
-    for kk = 1:nParforConditions 
-        thisConditionStruct = parforConditionStructs{kk};
-        colorModulationParamsTemp = rParams.colorModulationParams;
-        colorModulationParamsTemp.coneContrasts = thisConditionStruct.testConeContrasts;
-        colorModulationParamsTemp.contrast = thisConditionStruct.contrast;
-        paramsList = constantParamsList;
-        paramsList{numel(paramsList)+1} = colorModulationParamsTemp;
-    
-       % paramsList = {rParams.spatialParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams, colorModulationParamsTemp};
-        rwObject.remove('responseInstances',paramsList,theProgram);   
-    end   
-end
 end
 
 function [responseInstanceArray, noiseFreeIsomerizations, noiseFreePhotocurrents] = formResponseInstanceArrayForAllTrials(rwObject, nParforTrialBlocks, paramsList, theProgram, blockDataPrefix)
