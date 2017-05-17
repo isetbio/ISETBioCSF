@@ -693,7 +693,7 @@ end
 function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, integrationTime, displayTrialBlockPartitionDiagnostics, employStandardHostComputerResources)      
     % Determine system resources
     [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources(employStandardHostComputerResources);
-    
+
     ramSizeGBytes = ramPercentageEmployed * ramSizeGBytes;
     
     % Subtract RAM used by the OS
@@ -716,23 +716,23 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     computeTempProductsSizeGBytes = coneMosaicPatternSize*sizeOfDoubleInBytes/(1024^3);
     absorptions_memsizeGBytes = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/(1024^3);
     photocurrents_memsizeGBytes = absorptions_memsizeGBytes;
-    obj_currents_memsizeGBytes = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/2/(1024^3);
-    obj_absorptions_memsizeGBytes = coneMosaicActivePatternSize*sizeOfDoubleInBytes/2/(1024^3);
+    obj_currents_memsizeGBytes = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/(1024^3);
+    obj_absorptions_memsizeGBytes = coneMosaicActivePatternSize*sizeOfDoubleInBytes/(1024^3);
     
-    playerSizes = [ computeTempProductsSizeGBytes+obj_absorptions_memsizeGBytes  ...
+    playerSizes = [ computeTempProductsSizeGBytes+obj_absorptions_memsizeGBytes ...
           absorptions_memsizeGBytes+photocurrents_memsizeGBytes ...
           obj_currents_memsizeGBytes
-        ];
-    singleTrialMemoryGBytes = numberOfWorkers * max(playerSizes);
+        ]
     
+    singleTrialMemoryGBytes = numberOfWorkers * sum(playerSizes);
     allowedRAMcompression = 0.9;
-    trialBlockSize = round(allowedRAMcompression*(ramSizeGBytesAvailable)/singleTrialMemoryGBytes);
+    trialBlockSize = floor(allowedRAMcompression*(ramSizeGBytesAvailable)/singleTrialMemoryGBytes);
     trialBlockSize = min([nTrials max([1 trialBlockSize])]);
 
     
     totalMemoryPerWorker = singleTrialMemoryGBytes/numberOfWorkers * trialBlockSize;
     totalMemoryUsed  = numberOfWorkers * totalMemoryPerWorker;
-    nParforTrialBlocks = floor(nTrials / trialBlockSize);
+    nParforTrialBlocks = ceil(nTrials / trialBlockSize);
     
     if (nParforTrialBlocks < numberOfWorkers)
         nParforTrialBlocks = numberOfWorkers;
