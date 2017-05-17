@@ -56,7 +56,7 @@ p.addParameter('parforWorkersNumForClassification', 6, @isnumeric);
 p.addParameter('integrationTime', 5.0/1000, @isnumeric);
 
 % DIAGNOSTIC OPTIONS
-p.addParameter('displayTrialBlockPartitionDiagnostics', true, @islogical);
+p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('displayResponseComputationProgress', false, @islogical);
 
 % RESPONSE MAP VISUALIZATION OPTIONS

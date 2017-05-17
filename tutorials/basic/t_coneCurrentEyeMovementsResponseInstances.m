@@ -202,7 +202,7 @@ if (p.Results.delete)
             paramsList = constantParamsList;
             paramsList{numel(paramsList)+1} = colorModulationParamsTemp;    
             
-            fprintf('Removing condition %d/%d response instances\n', kk, nParforConditions);
+            fprintf('Deleting condition %d/%d response instances\n', kk, nParforConditions);
             rwObject.remove('responseInstances',paramsList,theProgram);
     end % kk
 end % if (p.Results.delete)
@@ -325,14 +325,6 @@ if (p.Results.compute)
     parforRanSeeds = randi(1000000, nParforConditions, nParforTrialBlocks)+1;
     parforRanSeedsNoStim = randi(1000000,1, nParforTrialBlocks)+1;
     
-    % Generate data for the no stimulus condition
-    fprintf('<strong> Computing the null stimulus response ... </strong> \n');
-    stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
-        colorModulationParamsNull.coneContrasts(1), colorModulationParamsNull.coneContrasts(2), colorModulationParamsNull.coneContrasts(3), colorModulationParamsNull.contrast);
-    
-    paramsList = constantParamsList;
-    paramsList{numel(paramsList)+1} = colorModulationParamsNull;
-    
     % Create parallel pool
     poolOBJ = gcp('nocreate');
     if isempty(poolOBJ)
@@ -341,6 +333,15 @@ if (p.Results.compute)
        delete(poolOBJ);
        poolOBJ = parpool(parforWorkersNum);
     end
+    
+    % Generate data for the no stimulus condition
+    fprintf('<strong>[%02d] Computing the null stimulus response ... </strong>', 0);
+    stimulusLabel = sprintf('LMS=%2.2f,%2.2f,%2.2f,Contrast=%2.2f', ...
+        colorModulationParamsNull.coneContrasts(1), colorModulationParamsNull.coneContrasts(2), colorModulationParamsNull.coneContrasts(3), colorModulationParamsNull.contrast);
+    
+    paramsList = constantParamsList;
+    paramsList{numel(paramsList)+1} = colorModulationParamsNull;
+    
     
     % Start timing the null reponses computation
     tBegin = clock;
@@ -364,6 +365,7 @@ if (p.Results.compute)
                 'osMeanCurrents', [], ...              % pass empty array, to compute the steady-state current based on the null stimulus 
                 'seed', parforRanSeedsNoStim(1, trialBlock), ...
                 'workerID', workerID,...
+                'displayTrialBlockPartitionDiagnostics', p.Results.displayTrialBlockPartitionDiagnostics, ...
                 'computePhotocurrentResponseInstances', p.Results.computePhotocurrentResponseInstances, ...
                 'computeNoiseFreeSignals', true, ....
                 'visualizeSpatialScheme', (p.Results.visualizeSpatialScheme & (trialBlock == 1)), ...
@@ -390,7 +392,7 @@ if (p.Results.compute)
     
     % Reassemble the responseInstanceArray for all trials from the blocked trials temporary datafiles
     [noStimData.responseInstanceArray, noStimData.noiseFreeIsomerizations, noStimData.noiseFreePhotocurrents] = ...
-            formResponseInstanceArrayForAllTrials(rwObject, nParforTrialBlocks, paramsList, theProgram, blockDataPrefix);
+            formResponseInstanceArrayForAllTrials(rwObject, nParforTrialBlocks, paramsList, theProgram, blockDataPrefix, p.Results.displayTrialBlockPartitionDiagnostics);
         
     % Write the no cone contrast data and some extra facts we need
     rwObject.write('responseInstances',noStimData,paramsList,theProgram);
@@ -409,7 +411,7 @@ if (p.Results.compute)
     
     tEnd = clock;
     timeLapsed = etime(tEnd,tBegin);
-    fprintf('<strong> Finished null response computation in %2.1f minutes. </strong>\n', timeLapsed/60);
+    fprintf('<strong>Finished in %2.1f minutes. </strong>\n', timeLapsed/60);
     
     %% Generate data for all the examined stimuli
     % Loop over color directions
@@ -419,7 +421,7 @@ if (p.Results.compute)
     tBegin = clock;
     
     for kk = nParforConditions:-1:1
-        fprintf('<strong> Computing responses for condition %d/%d ...  </strong> \n', kk,nParforConditions);
+        fprintf('<strong>[%02d] Computing responses for condition %d/%d ...  </strong> \n', kk, kk,nParforConditions);
         
         thisConditionStruct = parforConditionStructs{kk};
         colorModulationParamsTemp = rParams.colorModulationParams;
@@ -456,6 +458,7 @@ if (p.Results.compute)
                     'osMeanCurrents', meanCurrentsFromNullStimulus{1}, ...                            % use the to steady-state currents computed from the null stimulus  
                     'seed', parforRanSeeds(kk,trialBlock), ...
                     'workerID', workerID, ...
+                    'displayTrialBlockPartitionDiagnostics', p.Results.displayTrialBlockPartitionDiagnostics, ...
                     'computePhotocurrentResponseInstances', p.Results.computePhotocurrentResponseInstances, ...
                     'computeNoiseFreeSignals', true, ...
                     'visualizeSpatialScheme', (p.Results.visualizeSpatialScheme & (trialBlock == 1)), ...
@@ -481,7 +484,7 @@ if (p.Results.compute)
         
         % Reassemble the responseInstanceArray for all trials from the blocked trials temporary datafiles
         [stimData.responseInstanceArray, stimData.noiseFreeIsomerizations, stimData.noiseFreePhotocurrents] = ...
-            formResponseInstanceArrayForAllTrials(rwObject, nParforTrialBlocks, paramsList, theProgram, blockDataPrefix);
+            formResponseInstanceArrayForAllTrials(rwObject, nParforTrialBlocks, paramsList, theProgram, blockDataPrefix, p.Results.displayTrialBlockPartitionDiagnostics);
 
         % Save some data for validation in first loop
         if (kk == 1)
@@ -508,7 +511,7 @@ if (p.Results.compute)
     
     tEnd = clock;
     timeLapsed = etime(tEnd,tBegin);
-    fprintf('<strong> Finished response computation for all conditions in %2.3f hours. </strong>\n', timeLapsed/60/60);
+    fprintf('<strong>Finished response computation for all conditions in %2.3f hours. </strong>\n', timeLapsed/60/60);
     
     %% Validation data
     %
@@ -658,8 +661,10 @@ end
 
 end
 
-function [responseInstanceArray, noiseFreeIsomerizations, noiseFreePhotocurrents] = formResponseInstanceArrayForAllTrials(rwObject, nParforTrialBlocks, paramsList, theProgram, blockDataPrefix)
-    fprintf('Importing data from %d blocks to build up the responseInstanceArray.\n', nParforTrialBlocks);
+function [responseInstanceArray, noiseFreeIsomerizations, noiseFreePhotocurrents] = formResponseInstanceArrayForAllTrials(rwObject, nParforTrialBlocks, paramsList, theProgram, blockDataPrefix, displayTrialBlockPartitionDiagnostics)
+    if (displayTrialBlockPartitionDiagnostics)
+        fprintf('Importing data from %d blocks to build up the responseInstanceArray.\n', nParforTrialBlocks);
+    end
     % Load all the block data
     for trialBlock = 1:nParforTrialBlocks
         blockDataFileName = sprintf('%s_blockData_%d', blockDataPrefix, trialBlock);
@@ -680,7 +685,9 @@ function [responseInstanceArray, noiseFreeIsomerizations, noiseFreePhotocurrents
         % Delete the block data file
         rwObject.remove(blockDataFileName,paramsList,theProgram);
     end % trialBlock
-    fprintf('Done with building up the responseInstanceArray\n');
+    if (displayTrialBlockPartitionDiagnostics)
+        fprintf('Done with building up the responseInstanceArray\n');
+    end
 end
 
 function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, integrationTime, displayTrialBlockPartitionDiagnostics, employStandardHostComputerResources)      

@@ -13,6 +13,7 @@ function [responseStruct, osImpulseResponseFunctions, osImpulseReponseFunctionTi
 %   'workerID' - (default empty).  If this field is non-empty, the progress of
 %            the computation is printed in the command window along with the
 %            workerID (from a parfor loop).
+%  'displayTrialBlockPartitionDiagnostics' -true/false (default false). Wether to report time elapsed for each block
 %  'centeredEMPaths' - true/false (default false) 
 %               Controls wether the eye movement paths start at (0,0) (default) or wether they are centered around (0,0)
 %  'osImpulseResponseFunctions' - the LMS impulse response filters to be used (default: [])
@@ -28,6 +29,7 @@ function [responseStruct, osImpulseResponseFunctions, osImpulseReponseFunctionTi
 p = inputParser;
 p.addParameter('seed',1, @isnumeric);   
 p.addParameter('workerID', [], @isnumeric);
+p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('useSinglePrecision',true,@islogical);
 p.addParameter('centeredEMPaths',false, @islogical); 
 p.addParameter('osImpulseResponseFunctions', [], @isnumeric);
@@ -40,7 +42,9 @@ p.parse(varargin{:});
 currentSeed = p.Results.seed;
 
 %% Start computation time measurement
-tic
+if (p.Results.displayTrialBlockPartitionDiagnostics)
+    tic
+end
 
 %% Get pupil size out of OI, which is sometimes needed by colorSceneCreate
 oiParamsTemp.pupilDiamMm = 1000*opticsGet(oiGet(theOI,'optics'),'aperture diameter');
@@ -206,10 +210,12 @@ if (~isempty(responseStruct.noiseFreePhotocurrents))
 end
 
 %% Report time taken
-if isempty(p.Results.workerID)
-    fprintf('<strong> Response instance array computation (%d instances) took %2.3f minutes. </strong> \n', nTrials, toc/60);
-else
-    fprintf('<strong> Response instance array computation (%d instances) in worker %d took %2.3f minutes. </strong> \n', nTrials, p.Results.workerID, toc/60);
+if (p.Results.displayTrialBlockPartitionDiagnostics)
+    if isempty(p.Results.workerID)
+        fprintf('<strong> Response instance array computation (%d instances) took %2.3f minutes. </strong> \n', nTrials, toc/60);
+    else
+        fprintf('<strong> Response instance array computation (%d instances) in worker %d took %2.3f minutes. </strong> \n', nTrials, p.Results.workerID, toc/60);
+    end
 end
 
 end

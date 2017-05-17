@@ -20,7 +20,6 @@ p.parse(name,paramsList,theProgram,varargin{:});
 
 %% Delete the object
 fileid = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:},'MakeDirectories',false);
-fprintf('Removing %s\n', fileid);
 unix(['rm ' fileid]);
 
 end
