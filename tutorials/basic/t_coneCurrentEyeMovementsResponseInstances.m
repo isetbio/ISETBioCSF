@@ -718,7 +718,12 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     ramSizeGBytesAvailable = ramSizeGBytes - ramUsedByOSGBytes;
     
     % Compute sizes of the large players
-    [stimulusTimeAxis, ~, ~] = gaussianTemporalWindowCreate(temporalParams);
+    if (isnan(temporalParams.windowTauInSeconds))
+        [stimulusTimeAxis, ~, ~] = squareTemporalWindowCreate(temporalParams);
+    else
+        [stimulusTimeAxis, ~, ~] = gaussianTemporalWindowCreate(temporalParams);
+    end
+
     
     if (numel(stimulusTimeAxis) == 1)
         stimulusSamplingInterval  = integrationTime;
@@ -730,34 +735,25 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     emPathLength = round(eyeMovementsNumPerOpticalImage*numel(stimulusTimeAxis));
     
     % estimate sizes of the various matrices used
-    computeTempProductsSizeGBytes = coneMosaicPatternSize*sizeOfDoubleInBytes/(1024^3);
-    absorptions_memsizeGBytes = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/(1024^3);
-    photocurrents_memsizeGBytes = absorptions_memsizeGBytes;
-    obj_currents_memsizeGBytes = coneMosaicActivePatternSize*emPathLength*sizeOfDoubleInBytes/(1024^3);
-    obj_absorptions_memsizeGBytes = coneMosaicActivePatternSize*sizeOfDoubleInBytes/(1024^3);
+    trialBlockSize = floor(nTrials/numberOfWorkers);
+    totalRAM = ramSizeGBytesAvailable;
+    allowedRAMcompression = 0.8;
+    while (totalRAM > allowedRAMcompression*ramSizeGBytesAvailable)
+        totalMemoryPerWorker = 2*(coneMosaicPatternSize*trialBlockSize+coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
+        totalRAM = totalMemoryPerWorker * numberOfWorkers;
+        trialBlockSize = trialBlockSize-1;
+    end
     
-    playerSizes = [ computeTempProductsSizeGBytes+obj_absorptions_memsizeGBytes ...
-          absorptions_memsizeGBytes+photocurrents_memsizeGBytes ...
-          obj_currents_memsizeGBytes
-        ]
-    
-    singleTrialMemoryGBytes = numberOfWorkers * sum(playerSizes);
-    allowedRAMcompression = 0.9;
-    trialBlockSize = floor(allowedRAMcompression*(ramSizeGBytesAvailable)/singleTrialMemoryGBytes);
     trialBlockSize = min([nTrials max([1 trialBlockSize])]);
-
-    
-    totalMemoryPerWorker = singleTrialMemoryGBytes/numberOfWorkers * trialBlockSize;
-    totalMemoryUsed  = numberOfWorkers * totalMemoryPerWorker;
     nParforTrialBlocks = ceil(nTrials / trialBlockSize);
     
     if (nParforTrialBlocks < numberOfWorkers)
         nParforTrialBlocks = numberOfWorkers;
         trialBlockSize = max([1 floor(nTrials/nParforTrialBlocks)]);
-        totalMemoryPerWorker = singleTrialMemoryGBytes/numberOfWorkers * trialBlockSize;
-        totalMemoryUsed  = numberOfWorkers * totalMemoryPerWorker;
+        totalMemoryPerWorker = 2*(coneMosaicPatternSize*trialBlockSize+coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
     end
     
+    totalMemoryUsed  = numberOfWorkers * totalMemoryPerWorker;
     nParforTrialsTmp = ones(1, nParforTrialBlocks) * trialBlockSize;
 
     remainingTrials = nTrials - sum(nParforTrialsTmp);
@@ -792,10 +788,9 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
         error('Error in logic of trial partitioning.')
     end
     
-    if (displayTrialBlockPartitionDiagnostics)
-        fprintf('<strong> %d workers, system RAM = %2.1fGBytes </strong> \n', numberOfWorkers, ramSizeGBytes), ...
-        fprintf('<strong> %d trials partitioned in %d blocks, each with %d trials (last has %d trials) </strong>\n', nTrials, numel(nParforTrials), nParforTrials(1), nParforTrials(end));
-        fprintf('<strong> RAM used : %2.1f GBytes (per worker), total: %2.1f GBytes </strong> \n\n', totalMemoryPerWorker, totalMemoryUsed);
-    end
+    fprintf('<strong> %d workers, system RAM = %2.1fGBytes </strong> \n', numberOfWorkers, ramSizeGBytes), ...
+    fprintf('<strong> %d trials partitioned in %d blocks, each with %d trials (last has %d trials) </strong>\n', nTrials, numel(nParforTrials), nParforTrials(1), nParforTrials(end));
+    fprintf('<strong> RAM used : %2.1f GBytes (per worker), total: %2.1f GBytes </strong> \n\n', totalMemoryPerWorker, totalMemoryUsed);
+    
 end
 

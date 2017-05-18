@@ -39,7 +39,7 @@ function run_GeislerOpticsBanksMosaicConditions(computationInstance)
     freezeNoise = true;
     
     % What to do ?
-    computeMosaic = true; 
+    computeMosaic = ~true; 
     visualizeMosaic = ~true;
     
     computeResponses = true;
