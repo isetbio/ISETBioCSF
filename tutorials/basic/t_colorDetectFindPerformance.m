@@ -30,7 +30,7 @@ function [validationData,extraData] = t_colorDetectFindPerformance(varargin)
 %   'generatePlots' - true/false (default true).  Produce any plots at
 %      all? Other plot options only have an effect if this is true.
 %   'visualizeSpatialScheme' - true/false (default false). Visualize the post-receptoral spatial pooling scheme
-%   'visualizeTransformedSignals' - true/false (default false). Visualize the output of the post-receptoral spatial pooling scheme
+%   'visualizeKernelTransformedSignals' - true/false (default false). Visualize the output of the post-receptoral spatial pooling scheme
 %   'plotPsychometric' - true/false (default false).  Produce
 %       psychometric function output graphs.
 %   'plotSvmBoundary' - true/false (default false).  Plot classification boundary
@@ -54,7 +54,7 @@ p.addParameter('parforWorkersNum', 6, @isnumeric);
 p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
-p.addParameter('visualizeTransformedSignals', false, @islogical);
+p.addParameter('visualizeKernelTransformedSignals', false, @islogical);
 p.addParameter('plotPsychometric',false,@islogical);
 p.addParameter('plotSvmBoundary',false,@islogical);
 p.addParameter('plotPCAAxis1',1,@isnumeric)
@@ -258,7 +258,7 @@ if (p.Results.compute)
         [usePercentCorrect(kk),useStdErr(kk),h] = ...
             classifyForOneDirectionAndContrast(noStimData,stimData,thresholdParams, ...
             'paramsList', paramsList, ...
-            'visualizeTransformedSignals', p.Results.visualizeTransformedSignals, ...
+            'visualizeKernelTransformedSignals', p.Results.visualizeKernelTransformedSignals, ...
             'plotSvmBoundary', p.Results.generatePlots && p.Results.plotSvmBoundary, ...
             'plotPCAAxis1', p.Results.plotPCAAxis1, ...
             'plotPCAAxis2',p.Results.plotPCAAxis2);

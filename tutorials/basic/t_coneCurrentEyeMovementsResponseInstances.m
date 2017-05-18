@@ -244,8 +244,20 @@ end
 
 %% The computing happens here, if we are doing it
 if (p.Results.compute)
+    
+    % Get the current time and date
+    currentDate = datestr(datetime('now'), 'yyyymmddTHHMMSS');
+    
     % Create the optics
     theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
+    
+    % Save the optical image
+    coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
+    rwObject.write('opticalImage', theOI, coneParamsList, theProgram, 'type', 'mat');
+        
+    % Save a copy of the optical image with the current date
+    % This can be useful if the optical image is overwritten 
+    rwObject.write(sprintf('opticalImage_%s', currentDate), theOI, coneParamsList, theProgram, 'type', 'mat');
     
     if (p.Results.computeMosaic)
         % Create the cone mosaic
@@ -255,6 +267,11 @@ if (p.Results.compute)
         % Save cone mosaic
         coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
         rwObject.write('coneMosaic', theMosaic, coneParamsList, theProgram, 'type', 'mat');
+        
+        % Save a copy of the cone mosaic with the current date
+        % This can be useful if the cone mosaic is overwritten 
+        rwObject.write(sprintf('coneMosaic_%s', currentDate), theMosaic, coneParamsList, theProgram, 'type', 'mat');
+    
     else
         % Load a previously saved cone mosaic
         fprintf('Loading a previously saved cone mosaic\n');

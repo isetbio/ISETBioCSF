@@ -1,22 +1,16 @@
 function run_GeislerOpticsBanksMosaicConditions(computationInstance)
-
+    
     % 'WvfHuman', 'Geisler'
     opticsModel = 'Geisler';
+    imagePixels = 1024;
     
     % 'random'; 'frozen0';
     emPathType = 'frozen0'; %random'; %'random';     
     centeredEMPaths = false;
-    
-    % 'isomerizations', 'photocurrents'
-    performanceSignal = 'isomerizations';
-    
+   
     % Use a subset of the trials. Specify [] to use all available trials
     nTrainingSamples = 1024;
-     
-    % 'mlpt'
-    performanceClassifier = 'mlpt'; %'mlpt'% 'svmV1FilterBank';
   
-
     % Mosaic params
     coneSpacingMicrons = 3.0;
     innerSegmentDiameter = 3.0;    % for a circular sensor
@@ -35,17 +29,29 @@ function run_GeislerOpticsBanksMosaicConditions(computationInstance)
     nContrastsPerDirection =  18;
     luminancesExamined =  [34];
     
-    freezeNoise = ~true;
+    % 'isomerizations', 'photocurrents'
+    performanceSignal = 'isomerizations';
+    
+     %'mlpt'% 'svmV1FilterBank';
+    performanceClassifier = 'mlpt';
+    
+    % Freeze noise for repeatable results
+    freezeNoise = true;
     
     % What to do ?
-    computeMosaic = true;
+    computeMosaic = true; 
     visualizeMosaic = ~true;
+    
     computeResponses = true;
     computePhotocurrentResponseInstances = ~true;
     visualizeResponses = ~true;
     visualizeSpatialScheme = ~true;
+    
+    visualizeKernelTransformedSignals = ~true;
     findPerformance = true;
     visualizePerformance = true;
+    
+    % If we do not need the response instances, set this to true
     deleteResponseInstances = ~true;
     
     
@@ -56,7 +62,7 @@ function run_GeislerOpticsBanksMosaicConditions(computationInstance)
         cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
     elseif (computationInstance  == 1)
         % First half of the conditions in session 1 of 2 parallel MATLAB sessions
-        ramPercentageEmployed = 0.3;  % use 1/3 of the RAM
+        ramPercentageEmployed = 0.5;  % use 1/3 of the RAM
         cyclesPerDegreeExamined =  [2.5];
     elseif (computationInstance  == 2)
         % Second half of the conditions in session 2 of 2 parallel MATLAB sessions
@@ -72,6 +78,7 @@ function run_GeislerOpticsBanksMosaicConditions(computationInstance)
     if (deleteResponseInstances)
         c_BanksEtAlPhotocurrentAndEyeMovements(...
             'opticsModel', opticsModel, ...
+            'imagePixels', imagePixels, ...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
             'luminances', luminancesExamined, ...
             'nTrainingSamples', nTrainingSamples, ...
@@ -105,6 +112,7 @@ function run_GeislerOpticsBanksMosaicConditions(computationInstance)
     if (computeResponses) || (visualizeResponses) || (visualizeMosaic)
         c_BanksEtAlPhotocurrentAndEyeMovements(...
             'opticsModel', opticsModel, ...
+            'imagePixels', imagePixels, ...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
             'luminances', luminancesExamined, ...
             'nTrainingSamples', nTrainingSamples, ...
@@ -140,6 +148,7 @@ function run_GeislerOpticsBanksMosaicConditions(computationInstance)
     if (findPerformance) || (visualizePerformance)
             perfData = c_BanksEtAlPhotocurrentAndEyeMovements(...
                 'opticsModel', opticsModel, ...
+                'imagePixels', imagePixels, ...
                 'cyclesPerDegree', cyclesPerDegreeExamined, ...
                 'luminances', luminancesExamined, ...
                 'nTrainingSamples', nTrainingSamples, ...
@@ -165,7 +174,7 @@ function run_GeislerOpticsBanksMosaicConditions(computationInstance)
                 'visualizeSpatialScheme', visualizeSpatialScheme, ...
                 'findPerformance', findPerformance, ...
                 'visualizePerformance', visualizePerformance, ...
-                'visualizeTransformedSignals', visualizeTransformedSignals, ...
+                'visualizeKernelTransformedSignals', visualizeKernelTransformedSignals, ...
                 'parforWorkersNumForClassification', 4, ...
                 'performanceSignal' , performanceSignal, ...
                 'performanceClassifier', performanceClassifier, ...
