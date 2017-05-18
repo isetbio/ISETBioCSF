@@ -711,6 +711,9 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     % Determine system resources
     [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources(employStandardHostComputerResources);
 
+    % Ensure ramPercentageEmployed is in [0.05 1]
+    ramPercentageEmployed = max([0.05 min([1 ramPercentageEmployed])]);
+    
     ramSizeGBytes = ramPercentageEmployed * ramSizeGBytes;
     
     % Subtract RAM used by the OS

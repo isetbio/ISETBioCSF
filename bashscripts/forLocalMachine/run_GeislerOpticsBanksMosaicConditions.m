@@ -39,7 +39,7 @@ function run_GeislerOpticsBanksMosaicConditions(computationInstance)
     freezeNoise = true;
     
     % What to do ?
-    computeMosaic = ~true; 
+    computeMosaic = true; 
     visualizeMosaic = ~true;
     
     computeResponses = true;
@@ -62,7 +62,7 @@ function run_GeislerOpticsBanksMosaicConditions(computationInstance)
         cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
     elseif (computationInstance  == 1)
         % First half of the conditions in session 1 of 2 parallel MATLAB sessions
-        ramPercentageEmployed = 0.5;  % use 1/3 of the RAM
+        ramPercentageEmployed = 0.9;  % use 90% of the RAM
         cyclesPerDegreeExamined =  [2.5];
     elseif (computationInstance  == 2)
         % Second half of the conditions in session 2 of 2 parallel MATLAB sessions
