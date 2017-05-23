@@ -1,6 +1,6 @@
-function run_GeislerOpticsBanksMosaicConditions(computationInstance)
+function run_WVFmeanZcoeffOpticsBanksMosaicConditions(computationInstance)
     
-    opticsModel = 'Geisler';
+    opticsModel = 'WvfHuman';
     imagePixels = 1024;
     
     % 'random'; 'frozen0';

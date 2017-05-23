@@ -1,6 +1,6 @@
-function run_GeislerOpticsBanksMosaicConditions(computationInstance)
+function run_WVFmeanOTFOpticsBanksMosaicConditions(computationInstance)
     
-    opticsModel = 'Geisler';
+    opticsModel = '?';
     imagePixels = 1024;
     
     % 'random'; 'frozen0';
