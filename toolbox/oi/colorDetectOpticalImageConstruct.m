@@ -20,6 +20,10 @@ theOI = oiCreate('wvf human');
 % Take opticsModel into account.
 switch (oiParams.opticsModel)
     case 'WvfHuman'
+    case 'WvfHumanMeanOTF'
+        theCustomOI = updateOIWithCustomOptics(theOI, oiParams.pupilDiamMm, 'opticsModel',oiParams.opticsModel);
+        plotOIs(theOI, theCustomOI);
+        theOI = theCustomOI;
     case {'Geisler', 'GeislerLsfAsPsf', 'DavilaGeisler', 'DavilaGeislerLsfAsPsf', 'Westheimer', 'Williams'}
         theOI = ptb.oiSetPtbOptics(theOI,'opticsModel',oiParams.opticsModel);
     otherwise
@@ -58,4 +62,10 @@ if (~oiParams.lens)
 	theOI = oiSet(theOI,'lens',lens);
 end
 
+end
+
+function plotOIs(theOI, theCustomOI)
+fprintf('In plot OIs\n');
+pause();
+end
 

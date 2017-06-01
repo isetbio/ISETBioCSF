@@ -1,7 +1,7 @@
 function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
 
     % 'WvfHuman', 'Geisler'
-    opticsModel = 'Geisler';
+    opticsModel = 'WvfHumanMeanOTF';
 
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
     mosaicType =  'originalBanks';
