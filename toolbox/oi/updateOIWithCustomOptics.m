@@ -5,7 +5,7 @@ p = inputParser;
 p.addRequired('theOI',@isstruct);
 p.addRequired('pupilDiameterMM', @isnumeric);
 p.addParameter('opticsModel', '', @ischar);
-p.parse(oi,pupilDiameterMM, varargin{:});
+p.parse(theOI,pupilDiameterMM, varargin{:});
 
 opticsModel = p.Results.opticsModel;
 if (isempty(opticsModel))
@@ -52,7 +52,7 @@ wavelengthsListToCompute = opticsGet(optics,'wave');
 for waveIndex = 1:numel(wavelengthsListToCompute)
    wavelength = wavelengthsListToCompute(waveIndex);
     
-   [customMTFdata, ~, ~] = computeCustomMTF(Zcoeffs, ...
+   customMTFdata = computeCustomMTF(Zcoeffs, ...
        pupilDiameterMM, wavelength, subjectsNum, phaseMethod);
     
    if (waveIndex == 1)
@@ -73,7 +73,7 @@ for waveIndex = 1:numel(wavelengthsListToCompute)
    [~,~,theOtfCentered] = PsfToOtf(xGridMinutes,yGridMinutes,thePsf);
    theOtf = ifftshift(theOtfCentered);
    if (waveIndex == 1)
-       otfData = zeros(size(theOTF,1), size(theOTF,2), numel(wavelengthsListToCompute));
+       otfData = zeros(size(theOtf,1), size(theOtf,2), numel(wavelengthsListToCompute));
    end
    
    otfData(:,:,waveIndex) = theOtf;

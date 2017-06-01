@@ -65,7 +65,45 @@ end
 end
 
 function plotOIs(theOI, theCustomOI)
-fprintf('In plot OIs\n');
-pause();
+    fprintf('In plot OIs\n');
+    figure(99); clf;
+    
+    wavelengthsList = [450:50:700];
+    
+    for k = 1:numel(wavelengthsList)
+        wavelength = wavelengthsList(k);
+        
+        [otf, otf_fx, otf_fy, psf, psf_x, psf_y] = getOtfPsfData(theOI, wavelength);
+        [theCustomOTF, otf_fx2, otf_fy2, theCustomPSF, psf_x2, psf_y2] = getOtfPsfData(theCustomOI, wavelength);
+
+        if (any(otf_fx~=otf_fx2 | otf_fy~=otf_fy2  | psf_x~=psf_x2  | psf_y ~= psf_y2))
+           error('Internal coordinate system transformation error');
+        end
+
+        [k min(psf(:)) max(psf(:)) min(theCustomPSF(:)) max(theCustomPSF(:))]
+
+        subplot(2, numel(wavelengthsList), k)
+        imagesc(psf_x, psf_y, psf);
+        axis 'image';
+        title(sprintf('%d nm', wavelength));
+        subplot(2, numel(wavelengthsList), numel(wavelengthsList)+k)
+        imagesc(psf_x, psf_y, theCustomPSF);
+        axis 'image';
+        
+        drawnow;
+    end
+    pause();
+end
+
+function [otf, otf_fx, otf_fy, psf, psf_x, psf_y] = getOtfPsfData(theOI, wavelength)
+    theOptics = oiGet(theOI, 'optics');
+    otf = abs(fftshift(opticsGet(theOptics,'otf data', wavelength)));
+    otf_fx = opticsGet(theOptics, 'otf fx', 'cyclesperdeg');
+    otf_fy = opticsGet(theOptics, 'otf fx', 'cyclesperdeg');
+
+    psf = opticsGet(theOptics,'psf data', wavelength);
+    psfSupport = opticsGet(theOptics,'psf support', 'deg');
+    psf_x = psfSupport{1}(1,:)*1000;
+    psf_y = psf_x;
 end
 
