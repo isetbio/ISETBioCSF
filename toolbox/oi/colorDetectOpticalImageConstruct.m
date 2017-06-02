@@ -22,6 +22,7 @@ theOI = oiCreate('wvf human');
 switch (oiParams.opticsModel)
     case 'WvfHuman'
     case {'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase'}
+        fprintf('Computing custom OTF optics\n')
         [theOIdef, theCustomOI] = oiWithCustomOptics(oiParams.pupilDiamMm, oiParams.opticsModel);
         plotOIs(theOIdef, theCustomOI);
         theOI = theCustomOI;
