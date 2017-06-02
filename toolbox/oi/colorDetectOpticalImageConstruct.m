@@ -81,7 +81,7 @@ function plotOIs(theOI, theCustomOI)
            error('Internal coordinate system transformation error');
         end
 
-        [k min(psf(:)) max(psf(:)) sum(psf(:)) min(theCustomPSF(:)) max(theCustomPSF(:)) sum(theCustomPSF(:))]
+        %[k min(psf(:)) max(psf(:)) sum(psf(:)) min(theCustomPSF(:)) max(theCustomPSF(:)) sum(theCustomPSF(:))]
 
         subplot(2, numel(wavelengthsList), k)
         imagesc(psf_x, psf_y, psf);
