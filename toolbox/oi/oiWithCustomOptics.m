@@ -1,107 +1,104 @@
-function [theOI, theCustomOI] = oiWithCustomOptics(pupilDiameterMM, varargin)
-% 
-% Parse input
-p = inputParser;
-p.addRequired('pupilDiameterMM', @isnumeric);
-p.addParameter('opticsModel', '', @ischar);
-p.parse(pupilDiameterMM, varargin{:});
+function [theOI, theCustomOI] = oiWithCustomOptics(pupilDiameterMM, opticsModel)
+    % 
+    theOI = oiCreate('wvf human', pupilDiameterMM);
+    theCustomOI = theOI;
 
-opticsModel = p.Results.opticsModel;
-theOI = oiCreate('wvf human', pupilDiameterMM);
-theCustomOI = theOI;
+    if (~ismember(opticsModel, {'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase'}))
+        error('Unknown optics model\n');
+    end
 
-if (isempty(opticsModel))
-    printf('Using default optics model\n');
-    return;
-elseif ismember(opticsModel, {'WvfHumanMeanOTF'})
-else
-    error('Unknown optics model: ''%s''.', opticsModel)
+    % Load the 4.5 mm pupil diameter Thibos data set
+    measPupilDiameterMM = 4.5;
+    [Zcoeffs_SampleMean, Zcoeffs_S] = wvfLoadThibosVirtualEyes(measPupilDiameterMM);
+
+    subjectsNum  = 100;
+    % Generate Z-coeffs for subjectsNum
+    Zcoeffs = ieMvnrnd(Zcoeffs_SampleMean, Zcoeffs_S, subjectsNum)'; 
+
+    % Pull out the optics structure
+    optics = oiGet(theCustomOI,'optics');
+    wavelengthsListToCompute = opticsGet(optics,'wave');
+
+    customMTFdata = computeCustomMTF(Zcoeffs, ...
+           pupilDiameterMM, wavelengthsListToCompute, subjectsNum, opticsModel);
+    
+    % Update optics with new OTF data
+    optics = opticsSet(optics,'otf data',customMTFdata.otf);
+
+    % Stick optics into oi
+    theCustomOI = oiSet(theCustomOI,'optics',optics);
 end
 
-% Load the 4.5 mm pupil diameter Thibos data set
-measPupilDiameterMM = 4.5;
-[Zcoeffs_SampleMean, Zcoeffs_S] = wvfLoadThibosVirtualEyes(measPupilDiameterMM);
- 
-subjectsNum  = 100;
-% Generate Z-coeffs for subjectsNum
-Zcoeffs = ieMvnrnd(Zcoeffs_SampleMean, Zcoeffs_S, subjectsNum)'; 
-
-% Pull out the optics structure
-optics = oiGet(theCustomOI,'optics');
-wavelengthsListToCompute = opticsGet(optics,'wave');
-
-phaseMethod = 'subject mean';
-for waveIndex = 1:numel(wavelengthsListToCompute)
-   wavelength = wavelengthsListToCompute(waveIndex);
-    
-   customMTFdata = computeCustomMTF(Zcoeffs, ...
-       pupilDiameterMM, wavelength, subjectsNum, phaseMethod);
-    
-   theOtf = ifftshift(customMTFdata.otf);
-   if (waveIndex == 1)
-       otfData = zeros(size(theOtf,1), size(theOtf,2), numel(wavelengthsListToCompute));
-   end
-   
-   otfData(:,:,waveIndex) = theOtf;
-end % waveIndex
-
-% Update optics with new OTF data
-optics = opticsSet(optics,'otf data',otfData);
-
-% Stick optics into oi
-theCustomOI = oiSet(theCustomOI,'optics',optics);
-end
-
-function customMTFdata = computeCustomMTF(Zcoeffs, pupilDiameterMM, wavelength, subjectsNum, phaseMethod)
+function customMTFdata = computeCustomMTF(Zcoeffs, pupilDiameterMM, wavelengths, subjectsNum, opticsModel)
 
     for subjectIndex = 1:subjectsNum
         % Make WVF for this subject
-        wvfSubject = makeWVF(Zcoeffs(:,subjectIndex), wavelength, pupilDiameterMM, sprintf('subject-%d', subjectIndex));
-        % Get PSF at selected wavelength
-        psfSingleSubject = wvfGet(wvfSubject, 'psf', wavelength);
+        
+        wvfSubject = makeWVF(Zcoeffs(:,subjectIndex), wavelengths, pupilDiameterMM, sprintf('subject-%d', subjectIndex));
         optics = oiGet(wvf2oi(wvfSubject),'optics'); 
-        % Get OTF at selected wavelength
         otf = opticsGet(optics, 'otf');
-        sfx = opticsGet(optics, 'otf fx', 'cyclesperdeg');
-        sfy = opticsGet(optics, 'otf fy', 'cyclesperdeg');
-        otf = otfWithZeroCenteredPSF(otf, psfSingleSubject);
-       
-        if (subjectIndex == 1)
-            otfSubjects = zeros(subjectsNum, size(otf,1), size(otf,2));
-            customMTFdata.xSfGridCyclesDeg = sfx;
-            customMTFdata.ySfGridCyclesDeg = sfy;
-        end
-        otfSubjects(subjectIndex,:,:) = otf;
+        
+        % Get PSF at selected wavelength
+        referencePSF = wvfGet(wvfSubject, 'psf', 550);
+        
+        for waveIndex = 1:numel(wavelengths)
+            % Get OTF at  wavelength
+            theWaveOTF = squeeze(otf(:,:,waveIndex));
+            
+            if (waveIndex == 1)
+                [theWaveOTF, translationVector] = otfWithZeroCenteredPSF(theWaveOTF, referencePSF, []);
+            else
+                theWaveOTF = otfWithZeroCenteredPSF(theWaveOTF, referencePSF, translationVector);
+            end
+            otf(:,:,waveIndex) = theWaveOTF;
+            
+            if (subjectIndex == 1) && (waveIndex == 1)
+                otfSubjects = zeros(subjectsNum, size(otf,1), size(otf,2), size(otf,3));
+                customMTFdata.xSfGridCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
+                customMTFdata.ySfGridCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
+                customMTFdata.otf = 0*otf;
+            end
+        end % waveIndex
+        otfSubjects(subjectIndex,:,:,:) = otf;
     end % subjectIndex
     
-    % Compute average MTF (mag and phase) across subjects
+    % Compute average OTF across subjects
     otfMean = squeeze(mean(otfSubjects,1));
-    otfMeanMag = fftshift(abs(otfMean));
-    otfMeanPhase = fftshift(angle(otfMean));
     
-    if strcmp(phaseMethod, 'subject mean')
-       phaseToUse = otfMeanPhase;
-    elseif strcmp(phaseMethod, 'zero')
-       phaseToUse = 0*otfMeanPhase;
-    end
+    % Compute radially-symmetric OTF with desired phase at all wavelengths
+    for waveIndex = 1:numel(wavelengths)
+        theWaveOTF = squeeze(otfMean(:,:,waveIndex));
+        otfMeanMag = fftshift(abs(theWaveOTF));
+        otfMeanPhase = fftshift(angle(theWaveOTF));
+    
+        if strcmp(opticsModel, 'WvfHumanMeanOTFmagMeanOTFphase')
+           phaseToUse = otfMeanPhase;
+        elseif strcmp(opticsModel, 'WvfHumanMeanOTFmagZeroOTFphase')
+           phaseToUse = 0*otfMeanPhase;
+        end
         
-    % Make radially symmetric magnitude
-    centerPosition = floor(size(otfMeanMag,1)/2) + 1;
-    otfSlice = squeeze(otfMeanMag(centerPosition, :));
-    radiusMatrix = MakeRadiusMat(length(otfSlice),length(otfSlice),centerPosition);
-    otfMeanMag = interp1(0:floor(length(otfSlice)/2),otfSlice(centerPosition:end),radiusMatrix,'linear',0);
-
-    customMTFdata.otf = otfMeanMag .* exp(1i*phaseToUse);
+        % Make radially symmetric magnitude
+        centerPosition = floor(size(otfMeanMag,1)/2) + 1;
+        otfSlice = squeeze(otfMeanMag(centerPosition, :));
+        if (waveIndex == 1)
+            radiusMatrix = MakeRadiusMat(length(otfSlice),length(otfSlice),centerPosition);
+        end
+        otfMeanMag = interp1(0:floor(length(otfSlice)/2),otfSlice(centerPosition:end),radiusMatrix,'linear',0);
+        customMTFdata.otf(:,:,waveIndex) = ifftshift(otfMeanMag .* exp(1i*phaseToUse));
+    end
 end
 
-function otf = otfWithZeroCenteredPSF(otf, psf)
-    % Compute center of mass
-    centerOfMass = computeCenterOfMass(psf);
+function [otf, translationVector] = otfWithZeroCenteredPSF(otf, psf, translationVector)
+    if (isempty(translationVector))
+        % Compute center of mass
+        centerOfMass = computeCenterOfMass(psf);
    
-    % Compute translation vector to bring center of mass at 0,0
-    centerPosition = floor(size(psf,1)/2) + 1 * [1 1];
-    translationVector = (centerPosition-centerOfMass);
+        % Compute translation vector to bring center of mass at 0,0
+        centerPosition = floor(size(psf,1)/2) + 1 * [1 1];
+        translationVector = (centerPosition-centerOfMass);
+    end
     otf = shiftInFTplane(otf, translationVector);
+
 end
 
 function centerOfMass = computeCenterOfMass(psf0)

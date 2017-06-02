@@ -13,6 +13,7 @@ function theOI = colorDetectOpticalImageConstruct(oiParams)
 %     oiParams.opticsModel - which model of human optics to use.
 
 % 7/8/16  dhb  Wrote it.
+% 6/2/17  npc  Added WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase' optics.
 
 % Basic create and set field of view.
 theOI = oiCreate('wvf human');
@@ -20,9 +21,9 @@ theOI = oiCreate('wvf human');
 % Take opticsModel into account.
 switch (oiParams.opticsModel)
     case 'WvfHuman'
-    case 'WvfHumanMeanOTF'
-        [theOIdef, theCustomOI] = oiWithCustomOptics(oiParams.pupilDiamMm, 'opticsModel',oiParams.opticsModel);
-        %plotOIs(theOIdef, theCustomOI);
+    case {'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase'}
+        [theOIdef, theCustomOI] = oiWithCustomOptics(oiParams.pupilDiamMm, oiParams.opticsModel);
+        plotOIs(theOIdef, theCustomOI);
         theOI = theCustomOI;
     case {'Geisler', 'GeislerLsfAsPsf', 'DavilaGeisler', 'DavilaGeislerLsfAsPsf', 'Westheimer', 'Williams'}
         theOI = ptb.oiSetPtbOptics(theOI,'opticsModel',oiParams.opticsModel);
@@ -65,7 +66,6 @@ end
 end
 
 function plotOIs(theOI, theCustomOI)
-    fprintf('In plot OIs\n');
     figure(99); clf;
     
     wavelengthsList = [450:50:700];
@@ -89,10 +89,9 @@ function plotOIs(theOI, theCustomOI)
         subplot(2, numel(wavelengthsList), numel(wavelengthsList)+k)
         imagesc(psf_x, psf_y, theCustomPSF);
         axis 'image';
-        
+        colormap(gray(1024));
         drawnow;
     end
-    pause();
 end
 
 function [otf, otf_fx, otf_fy, psf, psf_x, psf_y] = getOtfPsfData(theOI, wavelength)
