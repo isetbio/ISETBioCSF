@@ -21,8 +21,8 @@ theOI = oiCreate('wvf human');
 switch (oiParams.opticsModel)
     case 'WvfHuman'
     case 'WvfHumanMeanOTF'
-        theCustomOI = updateOIWithCustomOptics(theOI, oiParams.pupilDiamMm, 'opticsModel',oiParams.opticsModel);
-        plotOIs(theOI, theCustomOI);
+        [theOIdef, theCustomOI] = oiWithCustomOptics(oiParams.pupilDiamMm, 'opticsModel',oiParams.opticsModel);
+        %plotOIs(theOIdef, theCustomOI);
         theOI = theCustomOI;
     case {'Geisler', 'GeislerLsfAsPsf', 'DavilaGeisler', 'DavilaGeislerLsfAsPsf', 'Westheimer', 'Williams'}
         theOI = ptb.oiSetPtbOptics(theOI,'opticsModel',oiParams.opticsModel);
@@ -80,7 +80,7 @@ function plotOIs(theOI, theCustomOI)
            error('Internal coordinate system transformation error');
         end
 
-        [k min(psf(:)) max(psf(:)) min(theCustomPSF(:)) max(theCustomPSF(:))]
+        [k min(psf(:)) max(psf(:)) sum(psf(:)) min(theCustomPSF(:)) max(theCustomPSF(:)) sum(theCustomPSF(:))]
 
         subplot(2, numel(wavelengthsList), k)
         imagesc(psf_x, psf_y, psf);

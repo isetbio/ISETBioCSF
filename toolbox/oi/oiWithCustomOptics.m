@@ -1,13 +1,15 @@
-function theOI = updateOIWithCustomOptics(theOI, pupilDiameterMM, varargin)
+function [theOI, theCustomOI] = oiWithCustomOptics(pupilDiameterMM, varargin)
 % 
 % Parse input
 p = inputParser;
-p.addRequired('theOI',@isstruct);
 p.addRequired('pupilDiameterMM', @isnumeric);
 p.addParameter('opticsModel', '', @ischar);
-p.parse(theOI,pupilDiameterMM, varargin{:});
+p.parse(pupilDiameterMM, varargin{:});
 
 opticsModel = p.Results.opticsModel;
+theOI = oiCreate('wvf human', pupilDiameterMM);
+theCustomOI = theOI;
+
 if (isempty(opticsModel))
     printf('Using default optics model\n');
     return;
@@ -20,58 +22,22 @@ end
 measPupilDiameterMM = 4.5;
 [Zcoeffs_SampleMean, Zcoeffs_S] = wvfLoadThibosVirtualEyes(measPupilDiameterMM);
  
-
 subjectsNum  = 100;
 % Generate Z-coeffs for subjectsNum
 Zcoeffs = ieMvnrnd(Zcoeffs_SampleMean, Zcoeffs_S, subjectsNum)'; 
-    
-phaseMethod = 'subject mean';
 
 % Pull out the optics structure
-optics = oiGet(theOI,'optics');
-
-% Get the wavelengths
+optics = oiGet(theCustomOI,'optics');
 wavelengthsListToCompute = opticsGet(optics,'wave');
 
-% Get the OTF sf support in c/deg
-% xSfGridCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
-% ySfGridCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
-        
-% sfValuesCyclesMm = opticsGet(optics,'otf support','mm');
-% uMPerMm = 1000;
-% uMPerDeg = 300;
-% [xSfGridCyclesMm, ySfGridCyclesMm] = meshgrid(sfValuesCyclesMm{1},sfValuesCyclesMm{2});
-% xSfGridCyclesDeg = uMPerDeg*xSfGridCyclesMm/uMPerMm;
-% ySfGridCyclesDeg = uMPerDeg*ySfGridCyclesMm/uMPerMm;
-
-% Get the psf spatial support from the spatial frequency support
-% centerPosition = floor(length(xSfGridCyclesDeg)/2)+1;
-% [xGridMinutes,yGridMinutes] = SfGridCyclesDegToPositionGridMinutes(xSfGridCyclesDeg,ySfGridCyclesDeg);
-% position1DMinutes = xGridMinutes(centerPosition,:);
-
+phaseMethod = 'subject mean';
 for waveIndex = 1:numel(wavelengthsListToCompute)
    wavelength = wavelengthsListToCompute(waveIndex);
     
    customMTFdata = computeCustomMTF(Zcoeffs, ...
        pupilDiameterMM, wavelength, subjectsNum, phaseMethod);
     
-   if (waveIndex == 1)
-        [X,Y] = meshgrid(customMTFdata.xSfGridCyclesDeg,customMTFdata.ySfGridCyclesDeg);
-        [xGridMinutes,yGridMinutes] = SfGridCyclesDegToPositionGridMinutes(X,Y);
-   end
-   
-   [a,b,thePsf] = OtfToPsf(X,Y,customMTFdata.otf);
-   
-   if (any(a ~= xGridMinutes | b ~= yGridMinutes))
-      error('Internal coordinate system transformation error');
-   end
-        
-   % Make sure psf has unit volume
-   thePsf = thePsf/sum(thePsf(:));
-
-   % Compute the OTF from the PSF
-   [~,~,theOtfCentered] = PsfToOtf(xGridMinutes,yGridMinutes,thePsf);
-   theOtf = ifftshift(theOtfCentered);
+   theOtf = ifftshift(customMTFdata.otf);
    if (waveIndex == 1)
        otfData = zeros(size(theOtf,1), size(theOtf,2), numel(wavelengthsListToCompute));
    end
@@ -83,8 +49,7 @@ end % waveIndex
 optics = opticsSet(optics,'otf data',otfData);
 
 % Stick optics into oi
-theOI = oiSet(theOI,'optics',optics);
-
+theCustomOI = oiSet(theCustomOI,'optics',optics);
 end
 
 function customMTFdata = computeCustomMTF(Zcoeffs, pupilDiameterMM, wavelength, subjectsNum, phaseMethod)
@@ -140,7 +105,6 @@ function otf = otfWithZeroCenteredPSF(otf, psf)
 end
 
 function centerOfMass = computeCenterOfMass(psf0)
-% Compute center of mass
     [rc,cc] = ndgrid(1:size(psf0,1),1:size(psf0,2));
     Mt = sum(psf0(:));
     centerOfMassY = sum(psf0(:) .* rc(:)) / Mt;
@@ -158,13 +122,12 @@ function theWVF = makeWVF(zcoeffs, wavelengthsToCompute, pupilDiameterMM, name)
 end
 
 function otf = shiftInFTplane(otf, translationVector)
-    
-    % The size of the matrix.
+  
     [N, M] = size(otf);
-
-    % The mathsy bit. The floors take care of odd-length signals.
-    x_shift = exp(-1i * 2 * pi * translationVector(2) * [0:floor(N/2)-1 floor(-N/2):-1]' / N);
-    y_shift = exp(-1i * 2 * pi * translationVector(1) * [0:floor(M/2)-1 floor(-M/2):-1] / M);
+    x = [0:floor(N/2) floor(-N/2)+1:-1];
+    y = [0:floor(M/2) floor(-M/2)+1:-1];
+    x_shift = exp(-1i * 2 * pi * translationVector(2) * x' / N);
+    y_shift = exp(-1i * 2 * pi * translationVector(1) * y / M);
 
     % Force conjugate symmetry. Otherwise this frequency component has no
     % corresponding negative frequency to cancel out its imaginary part.
@@ -174,7 +137,6 @@ function otf = shiftInFTplane(otf, translationVector)
     if mod(M, 2) == 0
         y_shift(M/2+1) = real(y_shift(M/2+1));
     end
-
     otf = otf .* (x_shift * y_shift);
 end
 
