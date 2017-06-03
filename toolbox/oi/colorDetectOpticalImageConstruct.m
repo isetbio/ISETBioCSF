@@ -1,6 +1,6 @@
-function theOI = colorDetectOpticalImageConstruct(oiParams)
+function [theOI, varargout] = colorDetectOpticalImageConstruct(oiParams, availableCustomWvfOpticsModels)
 %colorDetectOpticalImageConstruct   Construct optical image object for use color detect simulations
-%   theOI = colorDetectOpticalImageConstruct(oiParams)
+%   theOI = colorDetectOpticalImageConstruct(oiParams, availableCustomWvfOpticsModels)
 %
 %   Construct optical image object, for use in the color detect simulations.
 %
@@ -13,7 +13,9 @@ function theOI = colorDetectOpticalImageConstruct(oiParams)
 %     oiParams.opticsModel - which model of human optics to use.
 
 % 7/8/16  dhb  Wrote it.
-% 6/2/17  npc  Added WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase' optics.
+% 6/2/17  npc  Added WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase', 'WvfHumanSingleSubject' optics.
+
+varargout = {};
 
 % Basic create and set field of view.
 theOI = oiCreate('wvf human');
@@ -21,9 +23,10 @@ theOI = oiCreate('wvf human');
 % Take opticsModel into account.
 switch (oiParams.opticsModel)
     case 'WvfHuman'
-    case {'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase'}
+    case availableCustomWvfOpticsModels
         fprintf('Computing custom OTF optics\n')
-        [theOIdef, theCustomOI] = oiWithCustomOptics(oiParams.pupilDiamMm, oiParams.opticsModel);
+        [theOIdef, theCustomOI, Zcoeffs] = oiWithCustomOptics(oiParams.pupilDiamMm, oiParams.opticsModel);
+        varargout{1} = Zcoeffs;
         plotOIs(theOIdef, theCustomOI);
         theOI = theCustomOI;
     case {'Geisler', 'GeislerLsfAsPsf', 'DavilaGeisler', 'DavilaGeislerLsfAsPsf', 'Westheimer', 'Williams'}

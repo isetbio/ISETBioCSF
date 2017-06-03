@@ -248,16 +248,37 @@ if (p.Results.compute)
     % Get the current time and date
     currentDate = datestr(datetime('now'), 'yyyymmddTHHMMSS');
     
+    % Available custom wvf optics models
+    availableCustomWvfOpticsModels = {...
+        'WvfHumanMeanOTFmagMeanOTFphase', ...
+        'WvfHumanMeanOTFmagZeroOTFphase', ...
+        'WvfHumanSubject1', ...
+        'WvfHumanSubject2', ...
+        'WvfHumanSubject3', ...
+        'WvfHumanSubject4', ...
+        'WvfHumanSubject5' ...
+    };
+
     % Create the optics
-    theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
+    if (ismember(rParams.oiParams.opticsModel, availableCustomWvfOpticsModels))
+        [theOI, Zcoeffs] = colorDetectOpticalImageConstruct(rParams.oiParams, availableCustomWvfOpticsModels);
+    else
+        theOI = colorDetectOpticalImageConstruct(rParams.oiParams, []);
+    end
     
     % Save the optical image
-    coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
-    rwObject.write('opticalImage', theOI, coneParamsList, theProgram, 'type', 'mat');
-        
+    oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
+    rwObject.write('opticalImage', theOI, oiParamsList, theProgram, 'type', 'mat');
+    
     % Save a copy of the optical image with the current date
     % This can be useful if the optical image is overwritten 
-    rwObject.write(sprintf('opticalImage_%s', currentDate), theOI, coneParamsList, theProgram, 'type', 'mat');
+    rwObject.write(sprintf('opticalImage_%s', currentDate), theOI, oiParamsList, theProgram, 'type', 'mat');
+    
+    % Save wvf Zcoeffs (if we are using custom wvf optics)
+    if (ismember(rParams.oiParams.opticsModel, availableCustomWvfOpticsModels))
+        rwObject.write('wvfZcoeffs', Zcoeffs, oiParamsList, theProgram, 'type', 'mat');
+        rwObject.write(sprintf('wvfZcoeffs_%s', currentDate), Zcoeffs, oiParamsList, theProgram, 'type', 'mat');
+    end
     
     if (p.Results.computeMosaic)
         % Create the cone mosaic
