@@ -1,6 +1,6 @@
 function [validationData, extraData, varargout] = t_coneCurrentEyeMovementsResponseInstances(varargin)
 % T_CONECURRENTEYEMOVEMENTRESPONSES  Generate response instances for a given stimulus condition.
-%     [validationData, extraData] = T_CONECURRENTEYEMOVEMENTRESPONSES(varargin)
+%     [validationData, extraData, varargout] = T_CONECURRENTEYEMOVEMENTRESPONSES(varargin)
 % 
 %     Show how to generate a number of response instances for a given
 %     stimulus condition.  The default parameters are set up to generate
@@ -35,7 +35,8 @@ function [validationData, extraData, varargout] = t_coneCurrentEyeMovementsRespo
 %     'displayTrialBlockPartitionDiagnostics', true/false. Wether to display trial block diagnostics.
 %     'freezeNoise' - true/false (default true).  Freezes all noise so that results are reproducible
 %     'compute' - true/false (default true).  Do the computations.
-%    'computePhotocurrentResponseInstances' - true/false (default true) wether to compute photocurrent response instances
+%     'computeOptics' - true/false (default true). Compute the optics
+%     'computePhotocurrentResponseInstances' - true/false (default true) wether to compute photocurrent response instances
 %     'computeMosaic' - true/false (default true). Compute a cone mosaic or load one (good for large hex mosaics which take a while to compute)
 %     'ramPercentageEmployed' [>0 .. <=1]. Percentage of RAM to use for the computations. 
 %       Use 0.5, if you want to run 2 simultaneous instances of MATLAB (touse all cores for example).
@@ -50,6 +51,7 @@ function [validationData, extraData, varargout] = t_coneCurrentEyeMovementsRespo
 %        in parfor loops, as plotting doesn't seem to play well with those
 %        conditions.
 %     'visualizeMosaic' - true/false (default true). Wether to visualize the cone mosaic
+%     'visualizeOptics' - true/false (default true). Wether to visualize the cone mosaic
 %     'visualizeSpatialScheme' - true/false (default false). Visualize the relationship between mosaic and stimulus.
 %     'visualizeResponses' - true/false (default true). Call the fancy visualize response routine
 %     'visualizedConditionIndices' - list of conditions indices for which to visualize respondrd (default: empty - all conditions)
@@ -77,6 +79,8 @@ p.addParameter('compute',true,@islogical);
 p.addParameter('computePhotocurrentResponseInstances', true, @islogical);
 p.addParameter('computeMosaic', true, @islogical);
 p.addParameter('visualizeMosaic',true, @islogical);
+p.addParameter('computeOptics', true, @islogical);
+p.addParameter('visualizeOptics',true, @islogical);
 p.addParameter('ramPercentageEmployed', 1.0, @isnumeric);
 p.addParameter('parforWorkersNum', 20, @isnumeric);
 p.addParameter('employStandardHostComputerResources', false, @islogical);
@@ -112,6 +116,7 @@ end
 % Initialize varargout
 varargout{1} = [];   % Impulse responses if (visualizeOuterSegmentFilters is true)
 varargout{2} = [];   % noise-free responses
+varargout{3} = [];   % the optical image optics
 
 %% Clear
 if (nargin == 0)
@@ -242,6 +247,18 @@ if ((~p.Results.compute) && ((p.Results.visualizeMosaic) || (p.Results.computeMo
     end
 end
 
+%% Maybe we are just visualizing the optics, not computing responses
+if ((~p.Results.compute) && ((p.Results.visualizeOptics)) )
+
+    % Load previously-generated optics
+    fprintf('Loading previously generated optics\n');
+    oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
+    theOI = rwObject.read('opticalImage', oiParamsList, theProgram, 'type', 'mat');    
+    
+    % Return the OI (for visualization purposes)
+    varargout{3} = theOI;
+end
+
 %% The computing happens here, if we are doing it
 if (p.Results.compute)
     
@@ -259,26 +276,37 @@ if (p.Results.compute)
         'WvfHumanSubject5' ...
     };
 
-    % Create the optics
-    if (ismember(rParams.oiParams.opticsModel, availableCustomWvfOpticsModels))
-        [theOI, Zcoeffs] = colorDetectOpticalImageConstruct(rParams.oiParams, availableCustomWvfOpticsModels);
+    if (p.Results.computeOptics)
+        % Create the optics
+        if (ismember(rParams.oiParams.opticsModel, availableCustomWvfOpticsModels))
+            [theOI, Zcoeffs] = colorDetectOpticalImageConstruct(rParams.oiParams, availableCustomWvfOpticsModels);
+        else
+            theOI = colorDetectOpticalImageConstruct(rParams.oiParams, []);
+        end
+
+        % Save the optical image
+        oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
+        rwObject.write('opticalImage', theOI, oiParamsList, theProgram, 'type', 'mat');
+
+        % Save a copy of the optical image with the current date
+        % This can be useful if the optical image is overwritten 
+        rwObject.write(sprintf('opticalImage_%s', currentDate), theOI, oiParamsList, theProgram, 'type', 'mat');
+
+        % Save wvf Zcoeffs (if we are using custom wvf optics)
+        if (ismember(rParams.oiParams.opticsModel, availableCustomWvfOpticsModels))
+            rwObject.write('wvfZcoeffs', Zcoeffs, oiParamsList, theProgram, 'type', 'mat');
+            rwObject.write(sprintf('wvfZcoeffs_%s', currentDate), Zcoeffs, oiParamsList, theProgram, 'type', 'mat');
+        end
     else
-        theOI = colorDetectOpticalImageConstruct(rParams.oiParams, []);
+        % Load previously-generated optics
+        fprintf('Loading previously generated optics\n');
+        oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
+        theOI = rwObject.read('opticalImage', oiParamsList, theProgram, 'type', 'mat');    
     end
     
-    % Save the optical image
-    oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
-    rwObject.write('opticalImage', theOI, oiParamsList, theProgram, 'type', 'mat');
+    % Return the OI (for visualization purposes)
+    varargout{3} = theOI;
     
-    % Save a copy of the optical image with the current date
-    % This can be useful if the optical image is overwritten 
-    rwObject.write(sprintf('opticalImage_%s', currentDate), theOI, oiParamsList, theProgram, 'type', 'mat');
-    
-    % Save wvf Zcoeffs (if we are using custom wvf optics)
-    if (ismember(rParams.oiParams.opticsModel, availableCustomWvfOpticsModels))
-        rwObject.write('wvfZcoeffs', Zcoeffs, oiParamsList, theProgram, 'type', 'mat');
-        rwObject.write(sprintf('wvfZcoeffs_%s', currentDate), Zcoeffs, oiParamsList, theProgram, 'type', 'mat');
-    end
     
     if (p.Results.computeMosaic)
         % Create the cone mosaic
@@ -580,7 +608,7 @@ if (p.Results.compute)
         extraData.p.Results = p.Results;
     end
 end
-    
+
 %% Visualize
 if ((p.Results.visualizeResponses || p.Results.visualizeOuterSegmentFilters))
 

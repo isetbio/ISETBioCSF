@@ -47,6 +47,7 @@ p.addParameter('emPathType','frozen0',@(x)ismember(x, {'none', 'frozen', 'frozen
 p.addParameter('centeredEMPaths',false, @islogical); 
 p.addParameter('responseStabilizationMilliseconds', 80, @isnumeric);
 p.addParameter('responseExtinctionMilliseconds', 200, @isnumeric);
+p.addParameter('computeOptics',true,@islogical);
 p.addParameter('computeMosaic',false,@islogical);
 p.addParameter('ramPercentageEmployed', 1.0, @isnumeric);
 p.addParameter('parforWorkersNum', 20, @isnumeric);
@@ -60,6 +61,7 @@ p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('displayResponseComputationProgress', false, @islogical);
 
 % RESPONSE MAP VISUALIZATION OPTIONS
+p.addParameter('visualizeOptics',false, @islogical); 
 p.addParameter('visualizeMosaic',true, @islogical); 
 p.addParameter('visualizeSpatialScheme', false, @islogical);
 p.addParameter('visualizeKernelTransformedSignals',false, @islogical);
@@ -82,10 +84,11 @@ p.parse(varargin{:});
 
 %% Set the default output
 varargout = {};
-varargout{1} = [];
-varargout{2} = [];
-varargout{3} = [];
-   
+varargout{1} = []; % banksEtAlReplicate
+varargout{2} = []; % rParamsAllConds
+varargout{3} = [];  % noise-free responses
+varargout{4} = [];  % the optical image optics
+
 %% Make sure we really want to delete the response files
 if (p.Results.deleteResponseInstances)
     proceed = input('Responses will be deleted. Are you sure ? [y = YES]', 's');
@@ -238,14 +241,15 @@ for ll = 1:length(p.Results.luminances)
         end
 
         %% Compute response instances
-        if (p.Results.computeResponses) || (p.Results.visualizeMosaic) 
-           t_coneCurrentEyeMovementsResponseInstances(...
+        if (p.Results.computeResponses) || (p.Results.visualizeMosaic) || (p.Results.visualizeOptics)
+           [validationData, extraData, ~,~, theOI] = t_coneCurrentEyeMovementsResponseInstances(...
                'rParams',rParams,...
                'testDirectionParams',testDirectionParams,...
                'centeredEMPaths',p.Results.centeredEMPaths, ...
                'compute',p.Results.computeResponses, ...
                'computePhotocurrentResponseInstances', p.Results.computePhotocurrentResponseInstances, ...
-               'computeMosaic', (ll == 1) && (p.Results.computeMosaic), ...   % only compute the mosaic for the first luminance level 
+               'computeMosaic', (ll == 1) && (p.Results.computeMosaic), ...   % only compute the mosaic for the first luminance level
+               'computeOptics', (ll == 1) && (p.Results.computeOptics), ...   % only compute the mosaic for the first luminance level 
                'visualizeMosaic', p.Results.visualizeMosaic, ...
                'visualizeResponses',false, ...
                'visualizeSpatialScheme', p.Results.visualizeSpatialScheme, ...
@@ -257,6 +261,7 @@ for ll = 1:length(p.Results.luminances)
                'employStandardHostComputerResources', p.Results.employStandardHostComputerResources, ...
                'workerID', find(p.Results.displayResponseComputationProgress) ...
             );
+            varargout{4} = theOI;
         end
 
         %% Visualize response instances
