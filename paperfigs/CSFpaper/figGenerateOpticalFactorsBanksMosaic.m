@@ -88,7 +88,7 @@ end
 
 function visualizeOpticsModels(theOIlist, opticsModels)
     
-    wavelengthsToCompute = 450:25:650;
+    wavelengthsToCompute = 450:50:650;
     
     psfMax = 0;
     for waveIndex = 1:numel(wavelengthsToCompute) 
@@ -103,11 +103,11 @@ function visualizeOpticsModels(theOIlist, opticsModels)
     end
     
     hFig = figure(1); clf;
-    set(hFig, 'Color', [1 1 1]);
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1350 1300]);
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'colsNum', numel(wavelengthsToCompute), ...
            'rowsNum', 2+numel(theOIlist), ...
-           'heightMargin',   0.08, ...
+           'heightMargin',   0.04, ...
            'widthMargin',    0.02, ...
            'leftMargin',     0.04, ...
            'rightMargin',    0.001, ...
@@ -115,9 +115,9 @@ function visualizeOpticsModels(theOIlist, opticsModels)
            'topMargin',      0.04);
        
    
-    sfRange = [0 80];
-    psfRange = [0 1.0];
-    psfTicks = [-1:0.2:1];
+    sfRange = [-80 80];
+    psfRange = [-5 5];
+    psfTicks = -5:1:5;
     
     modelColors = [1 0 0; 0 0 1; 0 0 0];
     
@@ -162,6 +162,8 @@ function visualizeOpticsModels(theOIlist, opticsModels)
             set(gca, 'XTick', psfTicks, 'YTick', psfTicks, 'XLim', psfRange, 'YLim', psfRange, 'CLim', [0 1], 'FontSize', 12);
             if (waveIndex == 1)
                 ylabel(sprintf('%s PSF', opticsModels{k}), 'FontWeight', 'bold');
+            else
+                set(gca, 'YTickLabels', {});
             end
             xlabel('arc min', 'FontWeight', 'bold');
             box on; grid on;
@@ -187,7 +189,11 @@ function [otf, otf_fx, otf_fy, psf, psf_x, psf_y] = getOtfPsfData(theOI, wavelen
     otf_fy = opticsGet(theOptics, 'otf fx', 'cyclesperdeg');
 
     psf = opticsGet(theOptics,'psf data', wavelengthsToCompute);
-    psfSupport = opticsGet(theOptics,'psf support');
-    psf_x = psfSupport{1}(1,:)*60;
+    %psfSupport = opticsGet(theOptics,'psf support', 'deg');
+    [X,Y] = meshgrid(otf_fx,otf_fy);
+    [xGridMinutes,yGridMinutes] = SfGridCyclesDegToPositionGridMinutes(X,Y);
+    
+    % Make it minutes of arc
+    psf_x = xGridMinutes(1,:);
     psf_y = psf_x;
 end
