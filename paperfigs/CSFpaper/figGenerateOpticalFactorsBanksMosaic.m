@@ -1,7 +1,7 @@
 function figGenerateOpticalFactorsBanksMosaic()
 
     loadParams();
-    opticsModels = {'Geisler', 'WvfHuman'};
+    opticsModels = {'Geisler', 'WvfHuman', 'WvfHumanMeanOTFmagMeanOTFphase'};
     
     for opticsModelIndex = 1:numel(opticsModels)
         [~,~,~, theOIs{opticsModelIndex}] = c_BanksEtAlPhotocurrentAndEyeMovements(...
@@ -184,6 +184,7 @@ end
 
 function [otf, otf_fx, otf_fy, psf, psf_x, psf_y] = getOtfPsfData(theOI, wavelengthsToCompute)
     theOptics = oiGet(theOI, 'optics');
+    opticsGet(theOptics, 'pupildiameter')
     otf = abs(fftshift(opticsGet(theOptics,'otf data', wavelengthsToCompute)));
     otf_fx = opticsGet(theOptics, 'otf fx', 'cyclesperdeg');
     otf_fy = opticsGet(theOptics, 'otf fx', 'cyclesperdeg');
