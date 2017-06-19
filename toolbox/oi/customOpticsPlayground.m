@@ -3,7 +3,7 @@ function customOpticsPlayground()
     phaseMethods = {'zero', 'subject mean'};  % 'subject mean' or 'zero'
     
     wavelengthsListToCompute = 450;
-    pupilDiameterMM = 3.0;
+    pupilDiameterMM = 2.0;
     
     for k = 1:numel(wavelengthsListToCompute)
         doIt(phaseMethods, wavelengthsListToCompute(k), pupilDiameterMM);

@@ -98,15 +98,3 @@ function plotOIs(theOI, theCustomOI)
     end
 end
 
-function [otf, otf_fx, otf_fy, psf, psf_x, psf_y] = getOtfPsfData(theOI, wavelength)
-    theOptics = oiGet(theOI, 'optics');
-    otf = abs(fftshift(opticsGet(theOptics,'otf data', wavelength)));
-    otf_fx = opticsGet(theOptics, 'otf fx', 'cyclesperdeg');
-    otf_fy = opticsGet(theOptics, 'otf fx', 'cyclesperdeg');
-
-    psf = opticsGet(theOptics,'psf data', wavelength);
-    psfSupport = opticsGet(theOptics,'psf support', 'deg');
-    psf_x = psfSupport{1}(1,:)*1000;
-    psf_y = psf_x;
-end
-

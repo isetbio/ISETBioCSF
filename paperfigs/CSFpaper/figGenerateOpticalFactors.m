@@ -24,10 +24,9 @@ function figGenerateOpticalFactors()
     spatialPoolingKernelParams.shrinkageFactor = 1.0;  % > 1, results in expansion, < 1 results in shrinking
     useRBFSVMKernel = false;
     ramPercentageEmployed = 1.0;  % use all the RAM
-    freezeNoise = ~true;
+    freezeNoise = true;
     
-    
-    cyclesPerDegreeExamined =  [2.5 5 10 20 40];
+    cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
     luminancesExamined =  [34]; 
     plotLuminanceLines = [false true false];
     
@@ -44,10 +43,10 @@ function figGenerateOpticalFactors()
         case 'timeSeries5msec'
             % For 7.0 milliseconds simulation
             responseStabilizationMilliseconds = 10;
-            responseExtinctionMilliseconds = 150;
+            responseExtinctionMilliseconds = 50;
             integrationTimeMilliseconds =  5.0;
-            lowContrast = 0.0005;
-            highContrast = 0.8;
+            lowContrast = 0.0001;
+            highContrast = 0.3;
             nContrastsPerDirection =  18;
     end
    
@@ -55,56 +54,51 @@ function figGenerateOpticalFactors()
     visualizeSpatialScheme = ~true;
     findPerformance = ~true;
     visualizePerformance = true;
-    visualizeTransformedSignals = ~true;
+    visualizeKernelTransformedSignals = ~true;
     
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
-    mosaicRef = 'originalBanks';
-    mosaicTest = 'fullIsetbioWithScones';
+    mosaicTest = 'originalBanks';
     
     luminanceIndex = 1;
-    
-
-    opticsModels = {'Geisler', 'WvfHuman'};
+    opticsModels = {'Geisler', 'WvfHumanSubject1'};
     
     for opticsModelIndex = 1:numel(opticsModels)
         opticsModel = opticsModels{opticsModelIndex};
         
         % Retrieve reference mosaic ('originalBanks') CSF data
-        [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, referenceMosaicLegend] = paramsForComparativeMosaicAnalysis(mosaicRef);
-        [d, rParamsRef{opticsModelIndex}] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
+        [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, referenceMosaicLegend] = paramsForComparativeMosaicAnalysis(mosaicTest);
+        [d, the_rParams{opticsModelIndex}, ~, theOIs{opticsModelIndex}] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
         sfRef = d.cyclesPerDegree;
-        banksMosaicCSF(opticsModelIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
-
-    
-        % Retrieve 'fullIsetbioWithScones' CSF data
-        [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, mosaicTestLegend] = paramsForComparativeMosaicAnalysis(mosaicTest);
-        [d, rParamsTest{opticsModelIndex}] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
-        test1Color = [0.8 0.3 0.9];
-    
-        sfTest = d.cyclesPerDegree;
-        if (any(sfTest-sfRef)~=0)
-            error('sfs do not match');
-        end
-        testCSF(opticsModelIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
+        opticsCSF(opticsModelIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1)); 
     end % opticsModelIndex
     
-    % Retrieve reference mosaic ('originalBanks') CSF data
-    [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, referenceMosaicLegend] = paramsForComparativeMosaicAnalysis('defaultIsetbio');
-    [d, rParamsTest2{1}] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
-    sfRef = d.cyclesPerDegree;
-    defaultISETbioCSF(1,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
-
         
-        
+    opticsColors = [0 0 0; 1 0 0; 0 0 1; 0 0.6 0; 0.5 0 0.7; 1.0 0.5 0.3; 0.3 0.5 1.0; 0.5 0.7 0.5];
+    
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 992 1178]);
-    subplot(2,2,1);
-    addBanksEtAlReferenceLines(rParamsTest{opticsModelIndex}, plotLuminanceLines);
+    set(hFig, 'Position', [10 10 1360 450]);
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'colsNum', 3, ...
+           'rowsNum', 1, ...
+           'heightMargin',   0.04, ...
+           'widthMargin',    0.06, ...
+           'leftMargin',     0.05, ...
+           'rightMargin',    0.001, ...
+           'bottomMargin',   0.12, ...
+           'topMargin',      0.02);
+       
+    
+    subplot('Position', subplotPosVectors(1,2).v);
+    addBanksEtAlReferenceLines(the_rParams{1}, plotLuminanceLines);
     hold on;
-    refCSF = banksMosaicCSF(1,:);
-    plot(sfRef, banksMosaicCSF(1,:), 'ko', 'MarkerSize', 12, 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 12);
-    plot(sfRef, banksMosaicCSF(2,:), 'ks', 'MarkerSize', 12, 'MarkerFaceColor', [0.4 0.4 0.4], 'MarkerSize', 12);
-    hL = legend({'Banks study', 'Banks mosaic: Geisler optics', 'Banks mosaic: wvf optics'}, 'Location', 'NorthOutside');
+    refCSF = opticsCSF(1,:);
+    legends = {'Banks et al'};
+    for opticsModelIndex = 1:size(opticsCSF,1)
+        plot(sfRef, opticsCSF(opticsModelIndex,:), 'o', 'MarkerSize', 10, 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)));
+        legends = cat(2, legends, sprintf('%s model',opticsModels{opticsModelIndex}));
+    end
+    hL = legend(legends, 'Location', 'SouthWest');
     set(hL, 'FontSize', 13, 'FontName', 'Menlo');
     xlabel('spatial frequency (cpd)', 'FontSize', 16, 'FontWeight', 'bold');
     ylabel('contrast sensitivity', 'FontSize' ,16, 'FontWeight', 'bold');
@@ -112,44 +106,29 @@ function figGenerateOpticalFactors()
     xlim([1 100]); ylim([1 3000]);
     grid on; box off;
     
-    subplot(2,2,3);
-    plot(sfRef, banksMosaicCSF(2,:) ./ refCSF, 'ko-', 'MarkerSize', 12, 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 12);
-    xlim([1 100]); ylim([1 2.8]);
-    set(gca,'XScale','log','YScale','linear', 'FontSize', 16);
-    title('wvf optics: Geisler optics');
-    xlabel('spatial frequency (cpd)', 'FontSize', 16, 'FontWeight', 'bold');
-    ylabel('contrast sensitivity ratio  (Banks mosaic)', 'FontSize' ,16, 'FontWeight', 'bold');
-    grid on; box off;
-    
-    subplot(2,2,2)
-    addBanksEtAlReferenceLines(rParamsTest{opticsModelIndex}, plotLuminanceLines);
-    hold on;
-    refCSF = testCSF(1,:);
-    plot(sfRef, testCSF(1,:), 'ko', 'MarkerSize', 12, 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 12);
-    plot(sfRef, testCSF(2,:), 'ks', 'MarkerSize', 12, 'MarkerFaceColor', [0.4 0.4 0.4], 'MarkerSize', 12);
-    hL = legend({'Banks study', 'ISETbio mosaic: Geisler optics', 'ISETbio mosaic: wvf optics'}, 'Location', 'NorthOutside');
+    subplot('Position', subplotPosVectors(1,3).v);
+    hold on
+    legends = {};
+    for opticsModelIndex = 2:size(opticsCSF,1)
+        plot(sfRef, opticsCSF(opticsModelIndex,:) ./ refCSF, 'o-', 'MarkerSize', 12, 'LineWidth', 1.5, 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)), 'Color', squeeze(opticsColors(opticsModelIndex,:)), 'MarkerSize', 12);
+        legends = cat(2, legends, sprintf('%s : %s',opticsModels{opticsModelIndex}, opticsModels{1}));
+    end
+    hL = legend(legends, 'Location', 'SouthWest');
     set(hL, 'FontSize', 13, 'FontName', 'Menlo');
+    xlim([1 100]); ylim([1 10]);
+    yTicks = [1:10];
+    set(gca,'XScale','log','YScale','log', 'YTick', yTicks, 'YTickLabel', yTicks, 'FontSize', 16);
     xlabel('spatial frequency (cpd)', 'FontSize', 16, 'FontWeight', 'bold');
-    ylabel('contrast sensitivity', 'FontSize' ,16, 'FontWeight', 'bold');
-    set(gca,'XScale','log','YScale','log', 'FontSize', 16);
-    xlim([1 100]); ylim([1 3000]);
-    grid on; box off;
-    
-    subplot(2,2,4);
-    plot(sfRef, testCSF(2,:) ./ refCSF, 'ko-', 'MarkerSize', 12, 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 12);
-    xlim([1 100]); ylim([1 2.8]);
-    set(gca,'XScale','log','YScale','linear', 'FontSize', 16);
-    title('wvf optics: Geisler optics');
-    xlabel('spatial frequency (cpd)', 'FontSize', 16, 'FontWeight', 'bold');
-    ylabel('contrast sensitivity ratio (ISETbio mosaic)', 'FontSize' ,16, 'FontWeight', 'bold');
+    ylabel('contrast sensitivity ratio', 'FontSize' ,16, 'FontWeight', 'bold');
     grid on; box off;
     
     
-    
+    subplot('Position', subplotPosVectors(1,1).v);
+    plotOTFs(theOIs, opticsModels, opticsColors);
     drawnow;
     
-    function [d, the_rParams] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs)
-        [d, the_rParams] = c_BanksEtAlPhotocurrentAndEyeMovements(...
+    function [d, the_rParams, noiseFreeResponse, theOI] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs)
+        [d, the_rParams, noiseFreeResponse, theOI] = c_BanksEtAlPhotocurrentAndEyeMovements(...
             'opticsModel', opticsModel, ...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
             'luminances', luminancesExamined, ...
@@ -173,10 +152,11 @@ function figGenerateOpticalFactors()
             'visualizeMosaic', false, ...
             'computeResponses', false, ...
             'visualizeResponses', false, ...
+            'visualizeOptics', true, ...
             'visualizeSpatialScheme', visualizeSpatialScheme, ...
             'findPerformance', findPerformance, ...
             'visualizePerformance', visualizePerformance, ...
-            'visualizeTransformedSignals', visualizeTransformedSignals, ...
+            'visualizeKernelTransformedSignals', visualizeKernelTransformedSignals, ...
             'performanceSignal' , performanceSignal, ...
             'performanceClassifier', performanceClassifier, ...
             'useRBFSVMKernel', useRBFSVMKernel, ...
@@ -187,3 +167,27 @@ function figGenerateOpticalFactors()
 
 end
 
+function plotOTFs(theOIs, opticsModels, opticsColors)
+    wavelengthsList = [450 550 650];
+    lineStyles = {'--', '-', '-.'};
+    hold on
+    legends = {};
+    for opticsModelIndex = 1:numel(opticsModels)
+        legends = cat(2, legends, sprintf('%s',opticsModels{opticsModelIndex}));
+        for wIndex = 1:numel(wavelengthsList)
+            [otf, otf_fx, otf_fy, psf, psf_x, psf_y] = getOtfPsfData(theOIs{opticsModelIndex}, wavelengthsList(wIndex));
+            centerPosition = floor(size(otf,1)/2) + 1;
+            otfSlice = squeeze(otf(centerPosition, centerPosition:end));
+            % make otf_fx(1) = 0.1, so that the zero data point is plotted
+            otf_fx(centerPosition) = 1;
+            lineColor = squeeze(opticsColors(opticsModelIndex,:));
+            plot(otf_fx(centerPosition:end), otfSlice, '-', 'LineStyle', lineStyles{wIndex}, 'LineWidth', 1.5, 'Color',lineColor);
+        end
+    end
+    hold off
+    xlim([1 100]); ylim([0 1]);
+    xlabel('spatial frequency (cpd)', 'FontSize', 16, 'FontWeight', 'bold');
+    ylabel('OTF mag', 'FontSize' ,16, 'FontWeight', 'bold');
+    grid on; box off;
+    set(gca,'XScale','log','YScale','linear',  'FontSize', 16);
+end
