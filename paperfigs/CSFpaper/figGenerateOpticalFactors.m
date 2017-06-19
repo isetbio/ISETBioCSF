@@ -1,5 +1,7 @@
 function figGenerateOpticalFactors()
    
+    opticsModels = {'Geisler', 'WvfHuman', 'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase', 'WvfHumanSubject1'};
+    
     % 'singleExposure'; 'timeSeries5msec'
     temporalAnalysis = 'timeSeries5msec';
     
@@ -60,7 +62,7 @@ function figGenerateOpticalFactors()
     mosaicTest = 'originalBanks';
     
     luminanceIndex = 1;
-    opticsModels = {'Geisler', 'WvfHumanSubject1'};
+    
     
     for opticsModelIndex = 1:numel(opticsModels)
         opticsModel = opticsModels{opticsModelIndex};
