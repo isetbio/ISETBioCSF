@@ -1,6 +1,6 @@
 function figGenerateOpticalFactors()
    
-    opticsModels = {'Geisler', 'WvfHuman', 'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase', 'WvfHumanSubject1'};
+    opticsModels = {'Geisler', 'WvfHuman', 'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanSubject1'};
     
     % 'singleExposure'; 'timeSeries5msec'
     temporalAnalysis = 'timeSeries5msec';
@@ -112,16 +112,16 @@ function figGenerateOpticalFactors()
     hold on
     legends = {};
     for opticsModelIndex = 2:size(opticsCSF,1)
-        plot(sfRef, opticsCSF(opticsModelIndex,:) ./ refCSF, 'o-', 'MarkerSize', 12, 'LineWidth', 1.5, 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)), 'Color', squeeze(opticsColors(opticsModelIndex,:)), 'MarkerSize', 12);
+        plot(sfRef, log10(opticsCSF(opticsModelIndex,:) ./ refCSF), 'o-', 'MarkerSize', 12, 'LineWidth', 1.5, 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)), 'Color', squeeze(opticsColors(opticsModelIndex,:)), 'MarkerSize', 12);
         legends = cat(2, legends, sprintf('%s : %s',opticsModels{opticsModelIndex}, opticsModels{1}));
     end
-    hL = legend(legends, 'Location', 'SouthWest');
+    hL = legend(legends, 'Location', 'NorthWest');
     set(hL, 'FontSize', 13, 'FontName', 'Menlo');
-    xlim([1 100]); ylim([1 10]);
-    yTicks = [1:10];
-    set(gca,'XScale','log','YScale','log', 'YTick', yTicks, 'YTickLabel', yTicks, 'FontSize', 16);
+    xlim([1 100]); ylim(log10([0.25 4]));
+    yTicks = log10([0.25 0.5 1 2 4]);
+    set(gca,'XScale','log','YScale','linear', 'YTick', yTicks, 'YTickLabel', yTicks, 'FontSize', 16);
     xlabel('spatial frequency (cpd)', 'FontSize', 16, 'FontWeight', 'bold');
-    ylabel('contrast sensitivity ratio', 'FontSize' ,16, 'FontWeight', 'bold');
+    ylabel('log contrast sensitivity ratio', 'FontSize' ,16, 'FontWeight', 'bold');
     grid on; box off;
     
     
