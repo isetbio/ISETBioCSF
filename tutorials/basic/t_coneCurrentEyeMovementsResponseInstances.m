@@ -188,8 +188,7 @@ if (p.Results.delete)
     paramsList{numel(paramsList)+1} = colorModulationParamsNull;
     fprintf('Removing null condition response instances.\n');
     rwObject.remove('responseInstances',paramsList,theProgram);
-    
-    
+
     paramsList = constantParamsList;
     paramsList{numel(paramsList)+1} = colorModulationParamsNull;   
     fprintf('Importing  ancillary data\n');
@@ -264,24 +263,13 @@ if (p.Results.compute)
     
     % Get the current time and date
     currentDate = datestr(datetime('now'), 'yyyymmddTHHMMSS');
-    
-    % Available custom wvf optics models
-    availableCustomWvfOpticsModels = {...
-        'WvfHumanMeanOTFmagMeanOTFphase', ...
-        'WvfHumanMeanOTFmagZeroOTFphase', ...
-        'WvfHumanSubject1', ...
-        'WvfHumanSubject2', ...
-        'WvfHumanSubject3', ...
-        'WvfHumanSubject4', ...
-        'WvfHumanSubject5' ...
-    };
 
     if (p.Results.computeOptics)
         % Create the optics
         if (ismember(rParams.oiParams.opticsModel, availableCustomWvfOpticsModels))
-            [theOI, Zcoeffs] = colorDetectOpticalImageConstruct(rParams.oiParams, availableCustomWvfOpticsModels);
+            [theOI, Zcoeffs] = colorDetectOpticalImageConstruct(rParams.oiParams);
         else
-            theOI = colorDetectOpticalImageConstruct(rParams.oiParams, []);
+            theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
         end
 
         % Save the optical image

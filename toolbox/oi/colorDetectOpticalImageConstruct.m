@@ -1,6 +1,6 @@
-function [theOI, varargout] = colorDetectOpticalImageConstruct(oiParams, availableCustomWvfOpticsModels)
+function [theOI, varargout] = colorDetectOpticalImageConstruct(oiParams)
 %colorDetectOpticalImageConstruct   Construct optical image object for use color detect simulations
-%   theOI = colorDetectOpticalImageConstruct(oiParams, availableCustomWvfOpticsModels)
+%   theOI = colorDetectOpticalImageConstruct(oiParams)
 %
 %   Construct optical image object, for use in the color detect simulations.
 %
@@ -13,17 +13,28 @@ function [theOI, varargout] = colorDetectOpticalImageConstruct(oiParams, availab
 %     oiParams.opticsModel - which model of human optics to use.
 
 % 7/8/16  dhb  Wrote it.
-% 6/2/17  npc  Added WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase', 'WvfHumanSingleSubject' optics.
+% 6/2/17  npc  Added availableCustomWvfOpticsModels()
 
 varargout = {};
 
-% Basic create and set field of view.
+% Basic create.
 theOI = oiCreate('wvf human', oiParams.pupilDiamMm);
+
+% Is a custom Wvf model requested?
+wvfModels = availableCustomWvfOpticsModels();
+[l,idx] = ismember(oiParams.opticsModel, wvfModels);
+if (l~=0)
+    % Yes, we have a request for a custom Wvf
+    aCustomWvfModel = wvfModels{idx};
+else
+    % Nope, not a custom wvf
+    aCustomWvfModel = {''};
+end
 
 % Take opticsModel into account.
 switch (oiParams.opticsModel)
     case 'WvfHuman'
-    case availableCustomWvfOpticsModels
+    case aCustomWvfModel
         fprintf('Computing custom OTF optics\n')
         [theOIdef, theCustomOI, Zcoeffs] = oiWithCustomOptics(oiParams.pupilDiamMm, oiParams.opticsModel);
         varargout{1} = Zcoeffs;
@@ -83,8 +94,6 @@ function plotOIs(theOI, theCustomOI)
         if (any(otf_fx~=otf_fx2 | otf_fy~=otf_fy2  | psf_x~=psf_x2  | psf_y ~= psf_y2))
            error('Internal coordinate system transformation error');
         end
-
-        %[k min(psf(:)) max(psf(:)) sum(psf(:)) min(theCustomPSF(:)) max(theCustomPSF(:)) sum(theCustomPSF(:))]
 
         subplot(2, numel(wavelengthsList), k)
         imagesc(psf_x, psf_y, psf);
