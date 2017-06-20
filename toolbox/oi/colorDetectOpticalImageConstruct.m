@@ -18,7 +18,7 @@ function [theOI, varargout] = colorDetectOpticalImageConstruct(oiParams, availab
 varargout = {};
 
 % Basic create and set field of view.
-theOI = oiCreate('wvf human');
+theOI = oiCreate('wvf human', oiParams.pupilDiamMm);
 
 % Take opticsModel into account.
 switch (oiParams.opticsModel)
