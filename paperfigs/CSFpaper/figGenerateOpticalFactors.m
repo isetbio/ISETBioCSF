@@ -10,7 +10,7 @@ function figGenerateOpticalFactors()
     centeredEMPaths = false;
     
     % 'isomerizations', 'photocurrents'
-    performanceSignal ='isomerizations';
+    performanceSignal = 'isomerizations';
     
     % Use a subset of the trials. Specify [] to use all available trials
     nTrainingSamples = 1024;
@@ -75,10 +75,15 @@ function figGenerateOpticalFactors()
     end % opticsModelIndex
     
         
-    opticsColors = [0 0 0; 1 0 0; 0 0 1; 0 0.6 0; 0.5 0 0.7; 1.0 0.5 0.3; 0.3 0.5 1.0; 0.5 0.7 0.5];
+    opticsColors = [0 0 0; 1 0 0; 1 0.5 0];
+    opticsColors = cat(1, opticsColors, 0.85*[.4 .5 1]);
+    opticsColors = cat(1, opticsColors, 0.7*[.2 .5 1]);
+    opticsColors = cat(1, opticsColors, 0.55*[.2 .5 1]);
+    opticsColors = cat(1, opticsColors, 0.4*[.2 .5 1]);
+    opticsColors = cat(1, opticsColors, 0.25*[.2 .5 1]);
     
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1360 450]);
+    set(hFig, 'Position', [10 10 1800 750]);
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'colsNum', 3, ...
@@ -97,14 +102,14 @@ function figGenerateOpticalFactors()
     refCSF = opticsCSF(1,:);
     legends = {'Banks et al'};
     for opticsModelIndex = 1:size(opticsCSF,1)
-        plot(sfRef, opticsCSF(opticsModelIndex,:), 'o', 'MarkerSize', 10, 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)));
-        legends = cat(2, legends, sprintf('%s model',opticsModels{opticsModelIndex}));
+        plot(sfRef, opticsCSF(opticsModelIndex,:), 's', 'MarkerSize', 10, 'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)));
+        legends = cat(2, legends, sprintf('%s optics',opticsModels{opticsModelIndex}));
     end
-    hL = legend(legends, 'Location', 'SouthWest');
-    set(hL, 'FontSize', 13, 'FontName', 'Menlo');
-    xlabel('spatial frequency (cpd)', 'FontSize', 16, 'FontWeight', 'bold');
-    ylabel('contrast sensitivity', 'FontSize' ,16, 'FontWeight', 'bold');
-    set(gca,'XScale','log','YScale','log', 'FontSize', 16);
+    hL = legend(legends, 'Location', 'NorthOutside');
+    set(hL, 'FontSize', 12, 'FontName', 'Menlo');
+    xlabel('spatial frequency (cpd)', 'FontSize', 14, 'FontWeight', 'bold');
+    ylabel('contrast sensitivity', 'FontSize' ,14, 'FontWeight', 'bold');
+    set(gca,'XScale','log','YScale','log', 'FontSize', 14);
     xlim([1 100]); ylim([1 3000]);
     grid on; box off;
     
@@ -112,16 +117,16 @@ function figGenerateOpticalFactors()
     hold on
     legends = {};
     for opticsModelIndex = 2:size(opticsCSF,1)
-        plot(sfRef, log10(opticsCSF(opticsModelIndex,:) ./ refCSF), 'o-', 'MarkerSize', 12, 'LineWidth', 1.5, 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)), 'Color', squeeze(opticsColors(opticsModelIndex,:)), 'MarkerSize', 12);
+        plot(sfRef, opticsCSF(opticsModelIndex,:) ./ refCSF, 's-', 'MarkerSize', 12, 'LineWidth', 1.5, 'MarkerEdgeColor', [0 0 0 ], 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)), 'Color', squeeze(opticsColors(opticsModelIndex,:)), 'MarkerSize', 12);
         legends = cat(2, legends, sprintf('%s : %s',opticsModels{opticsModelIndex}, opticsModels{1}));
     end
-    hL = legend(legends, 'Location', 'NorthWest');
-    set(hL, 'FontSize', 13, 'FontName', 'Menlo');
-    xlim([1 100]); ylim(log10([0.25 4]));
-    yTicks = log10([0.25 0.5 1 2 4]);
-    set(gca,'XScale','log','YScale','linear', 'YTick', yTicks, 'YTickLabel', yTicks, 'FontSize', 16);
-    xlabel('spatial frequency (cpd)', 'FontSize', 16, 'FontWeight', 'bold');
-    ylabel('log contrast sensitivity ratio', 'FontSize' ,16, 'FontWeight', 'bold');
+    hL = legend(legends, 'Location', 'NorthOutside');
+    set(hL, 'FontSize', 12, 'FontName', 'Menlo');
+    xlim([1 100]); ylim([0.25 4]);
+    yTicks = [0.25 0.5 1 2 4];
+    set(gca,'XScale','log','YScale','log', 'YTick', yTicks, 'YTickLabel', yTicks, 'FontSize', 14);
+    xlabel('spatial frequency (cpd)', 'FontSize', 14, 'FontWeight', 'bold');
+    ylabel('contrast sensitivity ratio', 'FontSize' ,14, 'FontWeight', 'bold');
     grid on; box off;
     
     
@@ -170,26 +175,30 @@ function figGenerateOpticalFactors()
 end
 
 function plotOTFs(theOIs, opticsModels, opticsColors)
-    wavelengthsList = [450 550 650];
-    lineStyles = {'--', '-', '-.'};
+    wavelengthsList = [550 450 650];
+    lineStyles = {'-', '--', '-.'};
     hold on
     legends = {};
-    for opticsModelIndex = 1:numel(opticsModels)
-        legends = cat(2, legends, sprintf('%s',opticsModels{opticsModelIndex}));
-        for wIndex = 1:numel(wavelengthsList)
+    for wIndex = 1:numel(wavelengthsList)
+        for opticsModelIndex = 1:numel(opticsModels)
+            if (wIndex == 1)
+                legends = cat(2, legends, sprintf('%s optics',opticsModels{opticsModelIndex}));
+            end
             [otf, otf_fx, otf_fy, psf, psf_x, psf_y] = getOtfPsfData(theOIs{opticsModelIndex}, wavelengthsList(wIndex));
             centerPosition = floor(size(otf,1)/2) + 1;
             otfSlice = squeeze(otf(centerPosition, centerPosition:end));
             % make otf_fx(1) = 0.1, so that the zero data point is plotted
-            otf_fx(centerPosition) = 1;
+            otf_fx(centerPosition) = 0.1;
             lineColor = squeeze(opticsColors(opticsModelIndex,:));
-            plot(otf_fx(centerPosition:end), otfSlice, '-', 'LineStyle', lineStyles{wIndex}, 'LineWidth', 1.5, 'Color',lineColor);
+            plot(otf_fx(centerPosition:end), otfSlice, '-', 'LineStyle', lineStyles{wIndex}, 'LineWidth', 2, 'Color',lineColor);
         end
     end
     hold off
+    hL = legend(legends, 'Location', 'NorthOutside');
+    set(hL, 'FontSize', 12, 'FontName', 'Menlo');
     xlim([1 100]); ylim([0 1]);
-    xlabel('spatial frequency (cpd)', 'FontSize', 16, 'FontWeight', 'bold');
-    ylabel('OTF mag', 'FontSize' ,16, 'FontWeight', 'bold');
+    xlabel('spatial frequency (cpd)', 'FontSize', 14, 'FontWeight', 'bold');
+    ylabel('OTF mag', 'FontSize' ,14, 'FontWeight', 'bold');
     grid on; box off;
-    set(gca,'XScale','log','YScale','linear',  'FontSize', 16);
+    set(gca,'XScale','log','YScale','linear',  'FontSize', 14);
 end

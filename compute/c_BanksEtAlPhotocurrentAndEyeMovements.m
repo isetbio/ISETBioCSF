@@ -32,7 +32,7 @@ p.addParameter('findPerformance',true,@islogical);
 p.addParameter('thresholdMethod','mlpt',@ischar);
 p.addParameter('thresholdPCA',60,@isnumeric);
 p.addParameter('fitPsychometric',true,@islogical);
-p.addParameter('thresholdCriterionFraction',0.75,@isnumeric);
+p.addParameter('thresholdCriterionFraction',0.7071,@isnumeric);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeResponses',false,@islogical);
 p.addParameter('visualizedConditionIndices', [], @isnumeric);
@@ -261,7 +261,11 @@ for ll = 1:length(p.Results.luminances)
                'employStandardHostComputerResources', p.Results.employStandardHostComputerResources, ...
                'workerID', find(p.Results.displayResponseComputationProgress) ...
             );
-            varargout{4} = theOI;
+        
+            if (cc == 1)
+                % Get the OI for the lowest spatial frequency
+                varargout{4} = theOI;
+            end
         end
 
         %% Visualize response instances
