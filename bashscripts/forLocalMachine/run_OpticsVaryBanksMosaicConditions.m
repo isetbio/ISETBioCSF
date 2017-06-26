@@ -10,7 +10,7 @@ function run_OpticsVaryBanksMosaicConditions(computationInstance)
 %'WvfHumanSubject4'
 %'WvfHumanSubject5'
 
-    opticsModel = 'WvfHumanMeanOTFmagMeanOTFphase'; %'Geisler';
+    opticsModel = 'Geisler'; % 'WvfHumanSubject2'; %'Geisler';
     imagePixels = 1024;
     
     % 'random'; 'frozen0';
@@ -51,7 +51,7 @@ function run_OpticsVaryBanksMosaicConditions(computationInstance)
     computeMosaic = ~true; 
     visualizeMosaic = ~true;
     
-    computeResponses = ~true;
+    computeResponses = true;
     computePhotocurrentResponseInstances = ~true;
     visualizeResponses = ~true;
     visualizeSpatialScheme = ~true;
@@ -71,7 +71,7 @@ function run_OpticsVaryBanksMosaicConditions(computationInstance)
         cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
     elseif (computationInstance  == 1)
         % First half of the conditions in session 1 of 2 parallel MATLAB sessions
-        ramPercentageEmployed = 0.6;  % use 90% of the RAM
+        ramPercentageEmployed = 0.5;  % use 90% of the RAM
         cyclesPerDegreeExamined =  [5];
     elseif (computationInstance  == 2)
         % Second half of the conditions in session 2 of 2 parallel MATLAB sessions
@@ -80,13 +80,15 @@ function run_OpticsVaryBanksMosaicConditions(computationInstance)
     elseif (computationInstance  == 3)
         % Second half of the conditions in session 2 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 0.9;  % use 1/2 the RAM
-        cyclesPerDegreeExamined =  [5 10 20 40 50];
+        cyclesPerDegreeExamined =  [5 10 20 40 60];
     end
     
     
     if (deleteResponseInstances)
         c_BanksEtAlPhotocurrentAndEyeMovements(...
             'opticsModel', opticsModel, ...
+            'blur', true, ...
+            'apertureBlur', true, ...
             'imagePixels', imagePixels, ...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
             'luminances', luminancesExamined, ...
