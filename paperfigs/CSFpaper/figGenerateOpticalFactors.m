@@ -1,6 +1,10 @@
 function figGenerateOpticalFactors()
    
     opticsModels = {'Geisler', 'WvfHuman', 'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanSubject1'};
+    opticsModels = {'Geisler'};
+    
+    blur = true;
+    apertureBlur = false;
     
     % 'singleExposure'; 'timeSeries5msec'
     temporalAnalysis = 'timeSeries5msec';
@@ -29,6 +33,7 @@ function figGenerateOpticalFactors()
     freezeNoise = true;
     
     cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
+    cyclesPerDegreeExamined =  [10 20 40 60]
     luminancesExamined =  [34]; 
     plotLuminanceLines = [false true false];
     
@@ -137,6 +142,8 @@ function figGenerateOpticalFactors()
     function [d, the_rParams, noiseFreeResponse, theOI] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs)
         [d, the_rParams, noiseFreeResponse, theOI] = c_BanksEtAlPhotocurrentAndEyeMovements(...
             'opticsModel', opticsModel, ...
+            'blur', blur, ...
+            'apertureBlur', apertureBlur, ...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
             'luminances', luminancesExamined, ...
             'nTrainingSamples', nTrainingSamples, ...
