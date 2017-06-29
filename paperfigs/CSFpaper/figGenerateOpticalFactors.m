@@ -1,7 +1,8 @@
 function figGenerateOpticalFactors()
    
-    opticsModels = {'Geisler', 'WvfHuman', 'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanSubject1'};
-    opticsModels = {'Geisler'};
+    close all;
+    opticsModels = {'Geisler', 'WvfHuman', 'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanSubject1', 'WvfHumanSubject2'};
+    opticsModelsLabels = {'Geisler', 'wvfMeanCoeff', 'wvfMeanOTF', 'wvfSubject1', 'wvfSubject2'};
     
     blur = true;
     apertureBlur = false;
@@ -33,7 +34,7 @@ function figGenerateOpticalFactors()
     freezeNoise = true;
     
     cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
-    cyclesPerDegreeExamined =  [10 20 40 60]
+    cyclesPerDegreeExamined =  [5 10 20 40 50]
     luminancesExamined =  [34]; 
     plotLuminanceLines = [false true false];
     
@@ -80,64 +81,74 @@ function figGenerateOpticalFactors()
     end % opticsModelIndex
     
         
-    opticsColors = [0 0 0; 1 0 0; 1 0.5 0];
-    opticsColors = cat(1, opticsColors, 0.85*[.4 .5 1]);
-    opticsColors = cat(1, opticsColors, 0.7*[.2 .5 1]);
-    opticsColors = cat(1, opticsColors, 0.55*[.2 .5 1]);
-    opticsColors = cat(1, opticsColors, 0.4*[.2 .5 1]);
-    opticsColors = cat(1, opticsColors, 0.25*[.2 .5 1]);
+    opticsColors = [0 0 0; 1 0 0; 0.4 0.7 1];
+    opticsColors = cat(1, opticsColors, 0.85*[0.95 0.95 0.4] + 0.15*(1-[0.2 0.95 0.9]));
+    opticsColors = cat(1, opticsColors, 0.7*[0.75 0.75 0.4] + 0.3*(1-[0.2 0.75 0.75]));
+    opticsColors = cat(1, opticsColors, 0.55*[0.55 0.55 0.4] + 0.45*(1-[0.2 0.55 0.55]));
+    opticsColors = cat(1, opticsColors, 0.4*[0.35 0.35 0.4] + 0.6*(1-[0.2 0.35 0.36]));
+    opticsColors = cat(1, opticsColors, 0.25*[0.1 0.1 0.4] + 0.75*(1-[0.2 0.1 0.1]));
     
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1800 750]);
+    set(hFig, 'Position', [10 10 1350 450]);
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'colsNum', 3, ...
            'rowsNum', 1, ...
            'heightMargin',   0.04, ...
-           'widthMargin',    0.06, ...
+           'widthMargin',    0.08, ...
            'leftMargin',     0.05, ...
-           'rightMargin',    0.001, ...
-           'bottomMargin',   0.12, ...
+           'rightMargin',    0.005, ...
+           'bottomMargin',   0.15, ...
            'topMargin',      0.02);
-       
     
+    %% OTF slices
+    subplot('Position', subplotPosVectors(1,1).v);
+    plotOTFs(theOIs, opticsModelsLabels, opticsColors);
+    
+    %% CSFs
     subplot('Position', subplotPosVectors(1,2).v);
     addBanksEtAlReferenceLines(the_rParams{1}, plotLuminanceLines);
     hold on;
     refCSF = opticsCSF(1,:);
-    legends = {'Banks et al'};
+    legends = {'Banks et al. (87)'};
     for opticsModelIndex = 1:size(opticsCSF,1)
-        plot(sfRef, opticsCSF(opticsModelIndex,:), 's', 'MarkerSize', 10, 'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)));
-        legends = cat(2, legends, sprintf('%s optics',opticsModels{opticsModelIndex}));
+        if (opticsModelIndex <= 3)
+            markerType  = 's';
+            markerSize = 13;
+        else
+            markerType = 'o';
+            markerSize = 8;
+        end
+
+        plot(sfRef, opticsCSF(opticsModelIndex,:), markerType, 'MarkerSize', markerSize, 'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)));
+        legends = cat(2, legends, opticsModelsLabels{opticsModelIndex});
     end
-    hL = legend(legends, 'Location', 'NorthOutside');
-    set(hL, 'FontSize', 12, 'FontName', 'Menlo');
-    xlabel('spatial frequency (cpd)', 'FontSize', 14, 'FontWeight', 'bold');
-    ylabel('contrast sensitivity', 'FontSize' ,14, 'FontWeight', 'bold');
-    set(gca,'XScale','log','YScale','log', 'FontSize', 14);
-    xlim([1 100]); ylim([1 3000]);
-    grid on; box off;
-    
+    hold off;
+    xlim([1.5 70]); ylim([2.5 3000]);
+    finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity', 'log', 'log', [1 3 10 30 100], [1 3 10 30 100 300 1000 3000], legends, 'SouthWest', true, false);
+
+    %% CSF ratios
     subplot('Position', subplotPosVectors(1,3).v);
     hold on
     legends = {};
     for opticsModelIndex = 2:size(opticsCSF,1)
-        plot(sfRef, opticsCSF(opticsModelIndex,:) ./ refCSF, 's-', 'MarkerSize', 12, 'LineWidth', 1.5, 'MarkerEdgeColor', [0 0 0 ], 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)), 'Color', squeeze(opticsColors(opticsModelIndex,:)), 'MarkerSize', 12);
-        legends = cat(2, legends, sprintf('%s : %s',opticsModels{opticsModelIndex}, opticsModels{1}));
+        if (opticsModelIndex <= 3)
+            markerType  = 's-';
+            markerSize = 13;
+        else
+            markerType = 'o-';
+            markerSize = 8;
+        end
+        plot(sfRef, opticsCSF(opticsModelIndex,:) ./ refCSF, markerType, 'MarkerSize', markerSize, 'LineWidth', 1.5, 'Color', squeeze(opticsColors(opticsModelIndex,:)), 'MarkerEdgeColor', [0 0 0 ], 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)), 'Color', squeeze(opticsColors(opticsModelIndex,:)));
+        legends = cat(2, legends, sprintf('%s : %s',opticsModelsLabels {opticsModelIndex}, opticsModels{1}));
     end
-    hL = legend(legends, 'Location', 'NorthOutside');
-    set(hL, 'FontSize', 12, 'FontName', 'Menlo');
-    xlim([1 100]); ylim([0.25 4]);
-    yTicks = [0.25 0.5 1 2 4];
-    set(gca,'XScale','log','YScale','log', 'YTick', yTicks, 'YTickLabel', yTicks, 'FontSize', 14);
-    xlabel('spatial frequency (cpd)', 'FontSize', 14, 'FontWeight', 'bold');
-    ylabel('contrast sensitivity ratio', 'FontSize' ,14, 'FontWeight', 'bold');
-    grid on; box off;
+    hold off
+
+    xlim([1.5 70]); ylim([0.21 4.0]);
+    finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity ratio', 'log', 'log', [1 3 10 30 100], [0.25 0.5 1 2 4], legends, 'SouthWest', true, false);
     
-    
-    subplot('Position', subplotPosVectors(1,1).v);
-    plotOTFs(theOIs, opticsModels, opticsColors);
     drawnow;
+    NicePlot.exportFigToPDF('OpticsVariations.pdf', hFig, 300);
     
     function [d, the_rParams, noiseFreeResponse, theOI] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs)
         [d, the_rParams, noiseFreeResponse, theOI] = c_BanksEtAlPhotocurrentAndEyeMovements(...
@@ -181,15 +192,15 @@ function figGenerateOpticalFactors()
 
 end
 
-function plotOTFs(theOIs, opticsModels, opticsColors)
+function plotOTFs(theOIs, opticsModelLabels, opticsColors)
     wavelengthsList = [550 450 650];
-    lineStyles = {'-', '--', '-.'};
+    lineStyles = {'-', '--', ':'};
     hold on
     legends = {};
     for wIndex = 1:numel(wavelengthsList)
-        for opticsModelIndex = 1:numel(opticsModels)
+        for opticsModelIndex = 1:numel(opticsModelLabels)
             if (wIndex == 1)
-                legends = cat(2, legends, sprintf('%s optics',opticsModels{opticsModelIndex}));
+                legends = cat(2, legends, opticsModelLabels{opticsModelIndex});
             end
             [otf, otf_fx, otf_fy, psf, psf_x, psf_y] = getOtfPsfData(theOIs{opticsModelIndex}, wavelengthsList(wIndex));
             centerPosition = floor(size(otf,1)/2) + 1;
@@ -197,15 +208,25 @@ function plotOTFs(theOIs, opticsModels, opticsColors)
             % make otf_fx(1) = 0.1, so that the zero data point is plotted
             otf_fx(centerPosition) = 0.1;
             lineColor = squeeze(opticsColors(opticsModelIndex,:));
-            plot(otf_fx(centerPosition:end), otfSlice, '-', 'LineStyle', lineStyles{wIndex}, 'LineWidth', 2, 'Color',lineColor);
+            plot(otf_fx(centerPosition:end), otfSlice, '-', 'LineStyle', lineStyles{wIndex}, 'LineWidth', 1.5, 'Color',lineColor);
         end
     end
     hold off
-    hL = legend(legends, 'Location', 'NorthOutside');
-    set(hL, 'FontSize', 12, 'FontName', 'Menlo');
-    xlim([1 100]); ylim([0 1]);
-    xlabel('spatial frequency (cpd)', 'FontSize', 14, 'FontWeight', 'bold');
-    ylabel('OTF mag', 'FontSize' ,14, 'FontWeight', 'bold');
-    grid on; box off;
-    set(gca,'XScale','log','YScale','linear',  'FontSize', 14);
+    xlim([1.5 70]); ylim([-0.03 1]);
+    finishPlot(gca, 'spatial frequency (cpd)', 'modulation transfer function', 'log', 'linear', [1 3 10 30 100], 0:0.2:1, legends, 'SouthWest', true, false);
+end
+
+
+function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, xTicks, yTicks, theLegends, legendLocation, showGrid, showBox)
+    set(gca, 'FontName', 'Helvetica', 'FontSize', 18, 'FontWeight', 'normal', 'FontAngle', 'normal', 'TickDir', 'both');
+    set(gca, 'XTick', xTicks, 'XTickLabel', xTicks, 'YTick', yTicks, 'yTickLabel', yTicks);
+    t = xlabel(theXlabel);
+    set(t, 'FontWeight', 'bold', 'FontAngle', 'normal');
+    t = ylabel(theYlabel, 'FontSize', 18, 'FontWeight', 'bold');
+    set(t, 'FontWeight', 'bold', 'FontAngle', 'normal');
+    if (showGrid); grid on; else grid off; end;
+    if (showBox); box on; else box off; end;
+    set(gca,'XScale',theXscale,'YScale',theYscale, 'LineWidth', 1.0);
+    hL = legend(theLegends, 'Location', legendLocation);
+    set(hL, 'FontSize', 14, 'FontAngle', 'italic', 'FontName', 'Menlo', 'Box', 'off');
 end
