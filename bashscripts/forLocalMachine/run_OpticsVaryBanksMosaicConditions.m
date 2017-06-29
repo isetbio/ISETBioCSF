@@ -10,7 +10,7 @@ function run_OpticsVaryBanksMosaicConditions(computationInstance)
 %'WvfHumanSubject4'
 %'WvfHumanSubject5'
 
-    opticsModel = 'WvfHuman'; % 'WvfHumanSubject2'; %'Geisler';
+    opticsModel = 'WvfHumanSubject2'; %'Geisler';
     blur = true;
     apertureBlur = false;
     
@@ -37,8 +37,8 @@ function run_OpticsVaryBanksMosaicConditions(computationInstance)
     
     % Conditions 
     lowContrast = 0.0001;
-    highContrast = 0.3;
-    nContrastsPerDirection =  18;
+    highContrast = 0.3; % 0.8;
+    nContrastsPerDirection =  18; %20;
     luminancesExamined =  [34];
     
     % 'isomerizations', 'photocurrents'
@@ -54,7 +54,7 @@ function run_OpticsVaryBanksMosaicConditions(computationInstance)
     computeMosaic = ~true; 
     visualizeMosaic = ~true;
     
-    computeResponses = ~true;
+    computeResponses = true;
     computePhotocurrentResponseInstances = ~true;
     visualizeResponses = ~true;
     visualizeSpatialScheme = ~true;
@@ -75,7 +75,7 @@ function run_OpticsVaryBanksMosaicConditions(computationInstance)
     elseif (computationInstance  == 1)
         % First half of the conditions in session 1 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 0.9;  % use 90% of the RAM
-        cyclesPerDegreeExamined =  [50];
+        cyclesPerDegreeExamined =  [2.5];
     elseif (computationInstance  == 2)
         % Second half of the conditions in session 2 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 0.4;  % use 1/2 the RAM
