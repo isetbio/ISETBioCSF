@@ -1,8 +1,8 @@
 function figGenerateOpticalFactors()
    
     close all;
-    opticsModels = {'Geisler', 'WvfHuman', 'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanSubject1', 'WvfHumanSubject2'};
-    opticsModelsLabels = {'Geisler', 'wvfMeanCoeff', 'wvfMeanOTF', 'wvfSubject1', 'wvfSubject2'};
+    opticsModels = {'Geisler', 'WvfHuman', 'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanSubject1', 'WvfHumanSubject2', 'WvfHumanSubject3', 'WvfHumanSubject4', 'WvfHumanSubject5'};
+    opticsModelsLabels = {'Geisler', 'wvfMeanCoeff', 'wvfMeanOTF  ', 'wvfSubject1 ', 'wvfSubject2 ', 'wvfSubject3 ', 'wvfSubject4 ', 'wvfSubject5 '}; % , 'wvfSubject2'};
     
     blur = true;
     apertureBlur = false;
@@ -34,7 +34,6 @@ function figGenerateOpticalFactors()
     freezeNoise = true;
     
     cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
-    cyclesPerDegreeExamined =  [5 10 20 40 50]
     luminancesExamined =  [34]; 
     plotLuminanceLines = [false true false];
     
@@ -88,6 +87,8 @@ function figGenerateOpticalFactors()
     opticsColors = cat(1, opticsColors, 0.4*[0.35 0.35 0.4] + 0.6*(1-[0.2 0.35 0.36]));
     opticsColors = cat(1, opticsColors, 0.25*[0.1 0.1 0.4] + 0.75*(1-[0.2 0.1 0.1]));
     
+    sfRange = [2 60];
+    
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1350 450]);
     
@@ -103,7 +104,7 @@ function figGenerateOpticalFactors()
     
     %% OTF slices
     subplot('Position', subplotPosVectors(1,1).v);
-    plotOTFs(theOIs, opticsModelsLabels, opticsColors);
+    plotOTFs(theOIs, opticsModelsLabels, opticsColors, sfRange);
     
     %% CSFs
     subplot('Position', subplotPosVectors(1,2).v);
@@ -124,7 +125,7 @@ function figGenerateOpticalFactors()
         legends = cat(2, legends, opticsModelsLabels{opticsModelIndex});
     end
     hold off;
-    xlim([1.5 70]); ylim([2.5 3000]);
+    xlim(sfRange); ylim([2.5 3000]);
     finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity', 'log', 'log', [1 3 10 30 100], [1 3 10 30 100 300 1000 3000], legends, 'SouthWest', true, false);
 
     %% CSF ratios
@@ -133,18 +134,18 @@ function figGenerateOpticalFactors()
     legends = {};
     for opticsModelIndex = 2:size(opticsCSF,1)
         if (opticsModelIndex <= 3)
-            markerType  = 's-';
+            markerType  = '-';
             markerSize = 13;
         else
-            markerType = 'o-';
+            markerType = '-';
             markerSize = 8;
         end
         plot(sfRef, opticsCSF(opticsModelIndex,:) ./ refCSF, markerType, 'MarkerSize', markerSize, 'LineWidth', 1.5, 'Color', squeeze(opticsColors(opticsModelIndex,:)), 'MarkerEdgeColor', [0 0 0 ], 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)), 'Color', squeeze(opticsColors(opticsModelIndex,:)));
-        legends = cat(2, legends, sprintf('%s : %s',opticsModelsLabels {opticsModelIndex}, opticsModels{1}));
+        legends = cat(2, legends, sprintf('%s: %s',opticsModelsLabels {opticsModelIndex}, opticsModels{1}));
     end
     hold off
 
-    xlim([1.5 70]); ylim([0.21 4.0]);
+    xlim(sfRange); ylim([0.21 4.0]);
     finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity ratio', 'log', 'log', [1 3 10 30 100], [0.25 0.5 1 2 4], legends, 'SouthWest', true, false);
     
     drawnow;
@@ -192,9 +193,9 @@ function figGenerateOpticalFactors()
 
 end
 
-function plotOTFs(theOIs, opticsModelLabels, opticsColors)
+function plotOTFs(theOIs, opticsModelLabels, opticsColors, sfRange)
     wavelengthsList = [550 450 650];
-    lineStyles = {'-', '--', ':'};
+    lineStyles = {'-', '--', '-.'};
     hold on
     legends = {};
     for wIndex = 1:numel(wavelengthsList)
@@ -212,7 +213,7 @@ function plotOTFs(theOIs, opticsModelLabels, opticsColors)
         end
     end
     hold off
-    xlim([1.5 70]); ylim([-0.03 1]);
+    xlim(sfRange); ylim([-0.03 1]);
     finishPlot(gca, 'spatial frequency (cpd)', 'modulation transfer function', 'log', 'linear', [1 3 10 30 100], 0:0.2:1, legends, 'SouthWest', true, false);
 end
 
