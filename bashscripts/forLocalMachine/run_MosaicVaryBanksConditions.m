@@ -1,21 +1,14 @@
-function run_OpticsVaryBanksMosaicConditions
+function run_MosaicVaryBanksConditions
  
-    examinedOpticsModels = {...
-        'Geisler' ...
-        'WvfHuman' ...
-        'WvfHumanMeanOTFmagMeanOTFphase' ...
-        'WvfHumanSubject1' ...
-        'WvfHumanSubject2' ...
-        'WvfHumanSubject3' ...
-        'WvfHumanSubject4' ...
-        'WvfHumanSubject5' ...
+    examinedMosaicModels = {...
+        'Banks87' ...
     };
     
-    % Optics to run
-    params.opticsModel = examinedOpticsModels{1};
+    % Mosaic to run
+    params = getParamsForMosaic(examinedMosaicModels{1});
     
     % Simulation steps to perform
-    params.computeMosaic = ~true; 
+    params.computeMosaic = true; 
     params.visualizeMosaic = ~true;
     
     params.computeResponses = true;
@@ -30,15 +23,30 @@ function run_OpticsVaryBanksMosaicConditions
     
     % How to split the computation
     computationInstance = 2;
-    params = getFixedParamsForOpticsImpactExperiment(params,computationInstance);
+    params = getFixedParamsForMosaicImpactExperiment(params,computationInstance);
     
     % Go
     run_BanksPhotocurrentEyeMovementConditions(params);
 end
 
-function params = getFixedParamsForOpticsImpactExperiment(params, computationInstance)
+function params = getParamsForMosaic(mosaicName)
+    switch mosaicName
+        case 'Banks87'
+            params.coneSpacingMicrons = 3.0;
+            params.innerSegmentDiameter = 3.0;    % for a circular sensor
+            params.conePacking = 'hexReg';
+            params.LMSRatio = [0.67 0.33 0];
+            params.mosaicRotationDegs = 30;
+        otherwise
+            error('Unknown mosaic: ''%s''.', mosaicName);
+    end
+end
+
+function params = getFixedParamsForMosaicImpactExperiment(params, computationInstance)
+
+    params.opticsModel = 'WvfHumanMeanOTFmagMeanOTFphase';
     params.blur = true;
-    params.apertureBlur = false;
+    params.apertureBlur = true;
     
     params.imagePixels = 1024;
     
@@ -50,11 +58,6 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     params.nTrainingSamples = 1024;
   
     % Mosaic params
-    params.coneSpacingMicrons = 3.0;
-    params.innerSegmentDiameter = 3.0;    % for a circular sensor
-    params.conePacking = 'hexReg';
-    params.LMSRatio = [0.67 0.33 0];
-    params.mosaicRotationDegs = 30;
     params.integrationTimeMilliseconds =  5.0;
     
     % response params
