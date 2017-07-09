@@ -17,6 +17,7 @@ p.parse(name,paramsList,theProgram,varargin{:});
 
 %% Get fileid
 fileid = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:},'MakeDirectories',false);
+fprintf('Importing %s ...\n', fileid);
 
 %% Read the data
 switch (p.Results.Type)

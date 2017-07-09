@@ -5,7 +5,7 @@ function figGenerateOpticalFactors()
     opticsModelsLabels = {'Geisler', 'wvfMeanCoeff', 'wvfMeanOTF  ', 'wvfSubject1 ', 'wvfSubject2 ', 'wvfSubject3 ', 'wvfSubject4 ', 'wvfSubject5 '}; % , 'wvfSubject2'};
     
     blur = true;
-    apertureBlur = false;
+    apertureBlur = true;
     
     % 'singleExposure'; 'timeSeries5msec'
     temporalAnalysis = 'timeSeries5msec';
@@ -34,6 +34,7 @@ function figGenerateOpticalFactors()
     freezeNoise = true;
     
     cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
+    cyclesPerDegreeExamined =  [2.5 5 10 20 40 50]
     luminancesExamined =  [34]; 
     plotLuminanceLines = [false true false];
     
