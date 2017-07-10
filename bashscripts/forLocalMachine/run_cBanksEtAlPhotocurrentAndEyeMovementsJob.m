@@ -3,8 +3,8 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     % 'WvfHuman', 'Geisler'
     opticsModel = 'WvfHumanMeanOTF';
 
-    % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
-    mosaicType =  'originalBanks';
+    % 'Banks87'; 'ISETbioHexRegNoScones'; 'ISETbioHexRegLMS'; 'ISETbioHexEccBasedNoScones'; 'ISETbioHexEccBasedLMS'
+    mosaicType =  'Banks87';
     
     % 'singleExposure'; 'timeSeries5msec'
     temporalAnalysis = 'timeSeries5msec';
@@ -68,43 +68,13 @@ function run_cBanksEtAlPhotocurrentAndEyeMovementsJob()
     visualizeTransformedSignals = ~true;
     deleteResponseInstances = ~true;
     
-    
-    switch mosaicType
-        case 'originalBanks'
-            % 1. Original Banks et al mosaic params
-            coneSpacingMicrons = 3.0;
-            innerSegmentDiameter = 3.0;    % for a circular sensor
-            conePacking = 'hexReg';
-            LMSRatio = [0.67 0.33 0];
-            mosaicRotationDegs = 30;
+    mp = getParamsForMosaicWithLabel(mosaicType);
+    coneSpacingMicrons = mp.coneSpacingMicrons;
+    innerSegmentDiameter = mp.innerSegmentDiameter;
+    conePacking = mp.conePacking;
+    LMSRatio = mp.LMSRatio;
+    mosaicRotationDegs = mp.mosaicRotationDegs;
             
-        case 'defaultIsetbio'
-            % 2. Default isetbio mosaic params
-            coneSpacingMicrons = 2.0;
-            innerSegmentDiameter = 1.5797; % for a circular sensor; this corresponds to the 1.4 micron square pixel 
-            conePacking = 'hexReg';
-            LMSRatio = [0.67 0.33 0.0];
-            mosaicRotationDegs = 0;
-            
-        case 'fullIsetbioNoScones'
-            % 3. spatially-varying density isetbio mosaic params
-            coneSpacingMicrons = 2.0;
-            innerSegmentDiameter = 1.5797; % for a circular sensor; this corresponds to the 1.4 micron square pixel 
-            conePacking = 'hex';
-            LMSRatio = [0.67 0.33 0];
-            mosaicRotationDegs = 0;
-            
-        case 'fullIsetbioWithScones'
-            % 3. spatially-varying density isetbio mosaic params
-            coneSpacingMicrons = 2.0;
-            innerSegmentDiameter = 1.5797; % for a circular sensor; this corresponds to the 1.4 micron square pixel 
-            conePacking = 'hex';
-            LMSRatio = [0.60 0.30 0.10];
-            mosaicRotationDegs = 0;
-        otherwise
-            error('Unknown mosaicType: ''%s''.', mosaicType);
-    end
-    
     
     switch temporalAnalysis 
         case 'singleExposure'

@@ -2,10 +2,13 @@ function run_MosaicVaryBanksConditions
  
     examinedMosaicModels = {...
         'Banks87' ...
+        'ISETbioHexRegNoScones' ...
+        'ISETbioHexRegLMS' ...
+        'ISETbioHexEccBasedLMS' ...
     };
     
     % Mosaic to run
-    params = getParamsForMosaic(examinedMosaicModels{1});
+    params = getParamsForMosaicWithLabel(examinedMosaicModels{1});
     
     % Simulation steps to perform
     params.computeMosaic = true; 
@@ -29,18 +32,7 @@ function run_MosaicVaryBanksConditions
     run_BanksPhotocurrentEyeMovementConditions(params);
 end
 
-function params = getParamsForMosaic(mosaicName)
-    switch mosaicName
-        case 'Banks87'
-            params.coneSpacingMicrons = 3.0;
-            params.innerSegmentDiameter = 3.0;    % for a circular sensor
-            params.conePacking = 'hexReg';
-            params.LMSRatio = [0.67 0.33 0];
-            params.mosaicRotationDegs = 30;
-        otherwise
-            error('Unknown mosaic: ''%s''.', mosaicName);
-    end
-end
+
 
 function params = getFixedParamsForMosaicImpactExperiment(params, computationInstance)
 
