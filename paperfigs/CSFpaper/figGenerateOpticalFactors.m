@@ -5,7 +5,7 @@ function figGenerateOpticalFactors()
     opticsModelsLabels = {'Geisler', 'wvfMeanCoeff', 'wvfMeanOTF  ', 'wvfSubject1 ', 'wvfSubject2 ', 'wvfSubject3 ', 'wvfSubject4 ', 'wvfSubject5 '}; % , 'wvfSubject2'};
     
     blur = true;
-    apertureBlur = true;
+    apertureBlur = false;
     
     % 'singleExposure'; 'timeSeries5msec'
     temporalAnalysis = 'timeSeries5msec';
@@ -34,7 +34,6 @@ function figGenerateOpticalFactors()
     freezeNoise = true;
     
     cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
-    cyclesPerDegreeExamined =  [2.5 5 10 20 40 50]
     luminancesExamined =  [34]; 
     plotLuminanceLines = [false true false];
     
@@ -88,7 +87,7 @@ function figGenerateOpticalFactors()
     opticsColors = cat(1, opticsColors, 0.4*[0.35 0.35 0.4] + 0.6*(1-[0.2 0.35 0.36]));
     opticsColors = cat(1, opticsColors, 0.25*[0.1 0.1 0.4] + 0.75*(1-[0.2 0.1 0.1]));
     
-    sfRange = [2 60];
+    sfRange = [2 61];
     
     hFig = figure(1); clf;
     set(hFig, 'Position', [10 10 1350 450]);
@@ -150,7 +149,7 @@ function figGenerateOpticalFactors()
     finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity ratio', 'log', 'log', [1 3 10 30 100], [0.25 0.5 1 2 4], legends, 'SouthWest', true, false);
     
     drawnow;
-    NicePlot.exportFigToPDF('OpticsVariations.pdf', hFig, 300);
+    NicePlot.exportFigToPDF('OpticsImpact.pdf', hFig, 300);
     
     function [d, the_rParams, noiseFreeResponse, theOI] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs)
         [d, the_rParams, noiseFreeResponse, theOI] = c_BanksEtAlPhotocurrentAndEyeMovements(...
