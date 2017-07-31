@@ -127,4 +127,11 @@ switch (p.Results.Type)
 end
 fileid = fullfile(filedir,filename);
 
+%% Try to deal with pc by converting long paths to short paths
+if (ispc)
+    fileid = RTW.transformPaths(fileid);
+    filedir = RTW.transformPaths(filedir);
+    filename = RTW.transformPaths(filename);
+end
+
 end
