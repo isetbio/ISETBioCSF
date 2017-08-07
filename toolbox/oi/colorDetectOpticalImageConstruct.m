@@ -50,16 +50,6 @@ theOI = oiSet(theOI,'h fov',oiParams.fieldOfViewDegs);
 
 % Set the pupil diamter
 focalLength = oiGet(theOI,'distance');
-
-figure(114);
-subplot(1,2,1);
-plot(theOI.optics.lens.wave, theOI.optics.lens.spectralDensity, 'k-');
-subplot(1,2,2);
-plot(theOI.optics.lens.wave, theOI.optics.lens.transmittance, 'k-');
-transmittance555 = 0.5*(theOI.optics.lens.transmittance(find(theOI.optics.lens.wave == 550))+...
-theOI.optics.lens.transmittance(find(theOI.optics.lens.wave == 560)))
-pause
-
 desiredFNumber = focalLength/(oiParams.pupilDiamMm/1000);
 theOI  = oiSet(theOI ,'optics fnumber',desiredFNumber);
 pupilDiamMmCheck = 1000*oiGet(theOI,'optics aperture diameter');
