@@ -1,6 +1,8 @@
 function run_GeislerOpticsBanksMosaicConditions(computationInstance)
     
     opticsModel = 'Geisler';
+    pupilDiamMm = 3.0;          % Default is 2, but 3 is more appropriate for 100 cd/m2 monitor
+    
     imagePixels = 1024;
     
     % 'random'; 'frozen0';
@@ -54,6 +56,7 @@ function run_GeislerOpticsBanksMosaicConditions(computationInstance)
     deleteResponseInstances = ~true;
     
     
+    
     % Split computations and specify RAM memory
     if (computationInstance == 0)
         % All conditions in 1 MATLAB session
@@ -70,12 +73,13 @@ function run_GeislerOpticsBanksMosaicConditions(computationInstance)
     elseif (computationInstance  == 3)
         % Second half of the conditions in session 2 of 2 parallel MATLAB sessions
         ramPercentageEmployed = 0.5;  % use 1/2 the RAM
-        cyclesPerDegreeExamined =  [10 20 40 50];
+        cyclesPerDegreeExamined =  [20 40 50];
     end
     
     
     if (deleteResponseInstances)
         c_BanksEtAlPhotocurrentAndEyeMovements(...
+            'pupilDiamMm', pupilDiamMm, ...
             'opticsModel', opticsModel, ...
             'imagePixels', imagePixels, ...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
