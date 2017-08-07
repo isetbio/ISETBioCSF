@@ -12,7 +12,8 @@ function run_OpticsVaryBanksMosaicConditions
     };
     
     % Optics to run
-    params.opticsModel = examinedOpticsModels{1};
+    params.opticsModel = examinedOpticsModels{3};
+    params.pupilDiamMm = 3.0;   % Default is 2 (as in Banks et al 87), but 3 is more appropriate for 100 cd/m2 monitor
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -29,7 +30,7 @@ function run_OpticsVaryBanksMosaicConditions
     params.deleteResponseInstances = ~true;
     
     % How to split the computation
-    computationInstance = 2;
+    computationInstance = 1;
     params = getFixedParamsForOpticsImpactExperiment(params,computationInstance);
     
     % Go
