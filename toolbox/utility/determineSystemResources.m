@@ -15,7 +15,9 @@ function [numberOfCores, ramSizeGBytes, sizeofDoubleInBytes] = determineSystemRe
             ramSizeGBytes = str2double(strrep(q,'G',''));
         end
    else
-       error('No windows support');
+       % Don't know how to optimize on Windows, just stick in standard values.
+       numberOfCores = 1;
+       ramSizeGBytes = 16;
    end
 
    if (employStandardHostComputerResources)

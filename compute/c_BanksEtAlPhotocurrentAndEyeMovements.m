@@ -13,7 +13,7 @@ p.addParameter('luminances',[3.4 34 340],@isnumeric);
 p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('opticsModel','WvfHuman',@ischar);
-p.addParameter('innerSegmentSizeMicrons',sizeForSquareApertureFromDiameterForCircularAperture(3.0), @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
+p.addParameter('innerSegmentSizeMicrons',3.0, @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
 p.addParameter('apertureBlur',true, @islogical);
 p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
 p.addParameter('mosaicRotationDegs', 0, @isnumeric);

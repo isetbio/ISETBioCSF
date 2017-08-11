@@ -4,5 +4,5 @@
 
 An isetbio computational observer for detection thresholds of color stimuli.  The goal of these calculations is to understand how various factors early in the visual pathways limit performance on this simple and rigorously characterized visual task.
 
-Documentation for this project is available at the wiki: https://github.com/isetbio/IBIOColorDetect/wiki.
+Documentation for this project is available at the wiki: https://github.com/isetbio/IBIOColorDetect/wiki. 
 

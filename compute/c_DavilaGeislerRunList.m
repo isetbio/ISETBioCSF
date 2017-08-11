@@ -21,7 +21,7 @@ params.luminances = 10;
  
 params.mosaicRotationDegs = 30;
 params.coneSpacingMicrons = 3;
-params.innerSegmentSizeMicrons = sizeForSquareApertureFromDiameterForCircularAperture(params.coneSpacingMicrons);
+params.innerSegmentSizeMicrons = params.coneSpacingMicrons;
 params.coneDarkNoiseRate = [0 0 0];
 params.LMSRatio = [0.67 0.33 0];
 params.pupilDiamMm = 3;

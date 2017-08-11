@@ -25,7 +25,7 @@ function [validationData, extraData] = c_DavilaGeislerReplicateEyeMovements(vara
 %       'Westheimer'         PSF based on Westheimer line spread function.
 %       'Williams'           PSF based on Williams et al. MTF  
 %   'innerSegmentSizeMicrons' - Diameter of the cone light-collecting area, in microns 
-%       Default: sizeForSquareApertureFromDiameterForCircularAperture(3.0), where 3 microns = 6 min arc for 300 mirons/degree in the human retina.
+%       Default: 3.0, where 3 microns = 6 min arc for 300 mirons/degree in the human retina.
 %   'apertureBlur' - Blur by cone aperture? true/false (default false).
 %   'coneSpacingMicrons' - Cone spacing in microns (3).
 %   'mosaicRotationDegs' - Rotation of hex or hexReg mosaic in degrees (default 0).
@@ -71,7 +71,7 @@ p.addParameter('pupilDiamMm',3,@isnumeric);
 p.addParameter('durationMs',100,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('opticsModel','WvfHuman',@ischar);
-p.addParameter('innerSegmentSizeMicrons',sizeForSquareApertureFromDiameterForCircularAperture(3.0), @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
+p.addParameter('innerSegmentSizeMicrons',3.0, @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
 p.addParameter('apertureBlur', false, @islogical);
 p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
 p.addParameter('mosaicRotationDegs', 0, @isnumeric);

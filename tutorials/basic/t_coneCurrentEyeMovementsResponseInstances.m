@@ -660,7 +660,8 @@ if ((p.Results.visualizeResponses || p.Results.visualizeOuterSegmentFilters))
                 stimData.responseInstanceArray.theMosaicEyeMovements = stimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
             end
             
-            if (p.Results.generatePlots)
+            % Visualization routines work only for coneMosaicHex
+            if (p.Results.generatePlots) && (isa(theMosaic, 'coneMosaicHex'))
                 % Call the figures generation routine
                 hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData, p.Results.visualizeOuterSegmentFilters, p.Results.visualizedResponseNormalization, kk, nParforConditions, p.Results.visualizationFormat);
 
