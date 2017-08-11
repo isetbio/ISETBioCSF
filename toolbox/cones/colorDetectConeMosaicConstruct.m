@@ -20,42 +20,78 @@ p.addParameter('visualizeMosaic',true, @islogical);
 p.parse(varargin{:});
 visualizeMosaic = p.Results.visualizeMosaic;
 
+if (isfield(mosaicParams, 'fovDegs'))
+    error('mosaicParams has fovDegs');
+end
+
 if (ischar(mosaicParams.conePacking))
     if (strcmp(mosaicParams.conePacking, 'hex'))
         resamplingFactor = 6;
-        centerInMM = [0.0 0.0];                    % mosaic eccentricity in MM - this should obey mosaicParams.eccentricityDegs, but it does not do so yet
-        spatiallyVaryingConeDensity = true;        % spatially-varying density (at the mosaic's eccentricity)
-        theMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, [], ...
-            'center', centerInMM*1e-3, ...
+
+        if (~isfield(mosaicParams, 'name'))
+            mosaicParams.name = 'noname';
+        end
+        
+        if (~isfield(mosaicParams, 'sConeMinDistanceFactor'))
+            mosaicParams.sConeMinDistanceFactor = [];
+        end
+        
+        if (~isfield(mosaicParams, 'sConeFreeRadiusMicrons'))
+            mosaicParams.sConeFreeRadiusMicrons = [];
+        end
+        
+        if (~isfield(mosaicParams, 'latticeAdjustmentPositionalToleranceF'))
+            mosaicParams.latticeAdjustmentPositionalToleranceF = 0.01;
+        end
+        
+        if (~isfield(mosaicParams, 'latticeAdjustmentDelaunayToleranceF'))
+            mosaicParams.latticeAdjustmentDelaunayToleranceF = 0.001;
+        end
+        
+        theMosaic = coneMosaicHex(resamplingFactor, ...
+            'name', mosaicParams.name, ...
+            'fovDegs', mosaicParams.fieldOfViewDegs, ...
+            'eccBasedConeDensity', true, ...
+            'sConeMinDistanceFactor', mosaicParams.sConeMinDistanceFactor, ...
+            'sConeFreeRadiusMicrons', mosaicParams.sConeFreeRadiusMicrons, ...              
             'spatialDensity', [0 mosaicParams.LMSRatio]', ...
-            'rotationDegs', mosaicParams.mosaicRotationDegs ...
-            );
-        
-        % Set the pigment light collecting dimensions
-        theMosaic.pigment.pdWidth = mosaicParams.innerSegmentSizeMicrons*1e-6;
-        theMosaic.pigment.pdHeight = mosaicParams.innerSegmentSizeMicrons*1e-6;
-        
+            'latticeAdjustmentPositionalToleranceF', mosaicParams.latticeAdjustmentPositionalToleranceF, ...   
+            'latticeAdjustmentDelaunayToleranceF', mosaicParams.latticeAdjustmentDelaunayToleranceF ...
+        );
+        theMosaic.displayInfo();
+        if (visualizeMosaic)
+            theMosaic.visualizeGrid(); % 'visualizedConeAperture', 'geometricArea');
+        end
     elseif (strcmp(mosaicParams.conePacking, 'hexReg'))
         resamplingFactor = 6;
-        centerInMM = [0.0 0.0];                    % mosaic eccentricity in MM - this should obey mosaicParams.eccentricityDegs, but it does not do so yet
-        spatiallyVaryingConeDensity = false;        % spatially-varying density (at the mosaic's eccentricity)
+
+        if (~isfield(mosaicParams, 'name'))
+            mosaicParams.name = 'noname';
+        end
         
-        % match cone-spacing to inner segment diameter
-        customLambda = mosaicParams.coneSpacingMicrons;
-        theMosaic = coneMosaicHex(resamplingFactor, spatiallyVaryingConeDensity, customLambda, ...
-            'center', centerInMM*1e-3, ...
+        if (~isfield(mosaicParams, 'sConeMinDistanceFactor'))
+            mosaicParams.sConeMinDistanceFactor = [];
+        end
+        
+        if (~isfield(mosaicParams, 'sConeFreeRadiusMicrons'))
+            mosaicParams.sConeFreeRadiusMicrons = [];
+        end
+        
+        theMosaic = coneMosaicHex(resamplingFactor, ...
+            'fovDegs', mosaicParams.fieldOfViewDegs, ...
+            'customLambda', mosaicParams.coneSpacingMicrons, ...
+            'customInnerSegmentDiameter', mosaicParams.innerSegmentSizeMicrons, ... 
+            'eccBasedConeDensity', false, ...
+            'sConeMinDistanceFactor', mosaicParams.sConeMinDistanceFactor, ...
+            'sConeFreeRadiusMicrons', mosaicParams.sConeFreeRadiusMicrons, ...    
             'spatialDensity', [0 mosaicParams.LMSRatio]', ...
             'rotationDegs', mosaicParams.mosaicRotationDegs ...
-            );
+        );
+        theMosaic.displayInfo();
         
-        % Set the pigment light collecting dimensions
-        theMosaic.pigment.pdWidth = mosaicParams.innerSegmentSizeMicrons*1e-6;
-        theMosaic.pigment.pdHeight = mosaicParams.innerSegmentSizeMicrons*1e-6;
-        
-        % Set the pigment geometric dimensions
-        theMosaic.pigment.width = customLambda*1e-6;
-        theMosaic.pigment.height = customLambda*1e-6;
-        
+        if (visualizeMosaic)
+            theMosaic.visualizeGrid(); % 'visualizedConeAperture', 'geometricArea');
+        end
     elseif (strcmp(mosaicParams.conePacking, 'rect'))
         % Construct a cone mosaic with rectangular cone packing
         theMosaic = coneMosaic();
@@ -68,13 +104,13 @@ if (ischar(mosaicParams.conePacking))
         % Set the pigment geometric dimensions
         theMosaic.pigment.width = mosaicParams.coneSpacingMicrons*1e-6;
         theMosaic.pigment.height = mosaicParams.coneSpacingMicrons*1e-6;
+        theMosaic.setSizeToFOV(mosaicParams.fieldOfViewDegs);
     else
-        mosaicParams.conePacking
-        error('Unknown conePacking value');
+        error('Unknown conePacking value:'' %s''.', mosaicParams.conePacking);
     end
 else
     mosaicParams.conePacking
-    error('Unknown conePacking value');
+    error('Unknown conePacking value: ''%s''', mosaicParams.conePacking);
 end
 
 % Set whether to blur by cone aperture
@@ -86,25 +122,6 @@ theMosaic.coneDarkNoiseRate = mosaicParams.coneDarkNoiseRate;
 % Set the outer segment model
 if strcmp(mosaicParams.osModel, 'Linear')
     theMosaic.os = osLinear();
-end
-
-% Set mosaic field of view.  In principle this would be as large as the
-% stimulus, but space and time considerations may lead to it being smaller.
-if (isfield(mosaicParams, 'fieldOfViewDegs'))
-    if (isa(theMosaic, 'coneMosaicHex'))
-        theMosaic.setSizeToFOVForHexMosaic(mosaicParams.fieldOfViewDegs);
-        if ((isfield(mosaicParams, 'realisticSconeSubmosaic')) && (mosaicParams.realisticSconeSubmosaic == true))
-            theMosaic.reassignConeIdentities(...
-                'sConeMinDistanceFactor', 3.0, ...   % min distance between neighboring S-cones = f * local cone separation, to make the S-cone lattice semi-regular
-                'sConeFreeRadiusMicrons', 45);       % 45/300 = 0.15, so S-cone free radius of 0.15 deg (0.3 deg diameter)
-        end
-        if (visualizeMosaic)
-            theMosaic.visualizeGrid(); % 'visualizedConeAperture', 'geometricArea');
-        end
-        theMosaic.displayInfo();
-    else
-        theMosaic.setSizeToFOV(mosaicParams.fieldOfViewDegs);
-    end
 end
 
 % Integration time
