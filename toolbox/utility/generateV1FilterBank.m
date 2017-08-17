@@ -22,7 +22,7 @@ function [V1filterBank, hFig] = generateV1FilterBank(spatialParams, mosaicParams
         % Find the density map around each cone
         eccInMeters = sqrt(sum(coneLocsInMeters.^2, 2));
         ang = atan2(squeeze(coneLocsInMeters(:,2)), squeeze(coneLocsInMeters(:,1)))/pi*180;
-        [~, ~, coneDensity] = coneSize(eccInMeters(:),ang(:));
+        [~, ~, coneDensity] = coneSizeReadData('eccentricity',eccInMeters(:),'angle',ang(:));
     else
         coneDensity = 1;
     end
