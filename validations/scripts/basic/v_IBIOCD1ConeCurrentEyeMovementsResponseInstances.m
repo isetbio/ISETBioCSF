@@ -15,8 +15,31 @@ function ValidationFunction(runTimeParams)
 
     %% Hello
     UnitTest.validationRecord('SIMPLE_MESSAGE', '***** v_IBIOCD1ConeCurentEyeMovementsResponseInstances *****');
-        %% Basic validation - no eye movements
+    
+    %% Get run params
+    rParams = responseParamsGenerate;
+    
+    % Override some defult parameters
+    rParams.spatialParams.fieldOfViewDegs = 1.0;
+    rParams.spatialParams.cyclesPerDegree = 8;
+    rParams.spatialParams.gaussianFWHMDegs = 0.375;
+    % Set duration equal to sampling interval to do just one frame.
+    rParams.temporalParams.stimulusDurationInSeconds = 200/1000;
+    rParams.temporalParams.stimulusSamplingIntervalInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
+    rParams.temporalParams.secondsToInclude = rParams.temporalParams.stimulusDurationInSeconds;
+    % Mosaic params
+    rParams.mosaicParams.integrationTimeInSeconds = rParams.temporalParams.stimulusDurationInSeconds;
+    rParams.mosaicParams.isomerizationNoise = 'frozen';         % Type coneMosaic.validNoiseFlags to get valid values
+    rParams.mosaicParams.osNoise = 'frozen';                    % Type outerSegment.validNoiseFlags to get valid values
+    rParams.mosaicParams.osModel = 'Linear';
+    rParams.mosaicParams.fieldOfViewDegs = 1.0;
+    
+    testDirectionParams = instanceParamsGenerate;
+    testDirectionParams.trialsNum = 64;
+    
+    %% Basic validation - no eye movements
     [validationData1, extraData1] = t_coneCurrentEyeMovementsResponseInstances(...
+        'rParams', rParams, ...
         'employStandardHostComputerResources', true, ...
         'generatePlots', runTimeParams.generatePlots, ...
         'visualizedResponseNormalization', 'submosaicBasedZscore', ...
@@ -32,12 +55,12 @@ function ValidationFunction(runTimeParams)
         'freezeNoise', true);
     UnitTest.validationData('validationData2',validationData2);
     UnitTest.extraData('extraData2',extraData2);
-
+    
     %% Photocurrent validation with frozen emPaths - rect mosaic
     rParams = responseParamsGenerate;
     rParams.spatialParams.gaussianFWHMDegs = 0.35;
     rParams.spatialParams.cyclesPerDegree = 8;
-    rParams.spatialParams.fieldOfViewDegs = 0.6;
+    rParams.spatialParams.fieldOfViewDegs = 0.5;
     rParams.temporalParams.secondsToInclude = 0.24;
     rParams.temporalParams.emPathType = 'frozen';
     rParams.mosaicParams.conePacking = 'rect';
@@ -52,7 +75,7 @@ function ValidationFunction(runTimeParams)
     testDirectionParams.nContrastsPerDirection = 1;
     testDirectionParams.lowContrast = 0.9;
     testDirectionParams.highContrast = 0.9;
-    testDirectionParams.trialsNum = 5;
+    testDirectionParams.trialsNum = 1;
     
     [validationData3, extraData3] = t_coneCurrentEyeMovementsResponseInstances(...
         'employStandardHostComputerResources', true, ...
@@ -67,7 +90,12 @@ function ValidationFunction(runTimeParams)
 
     %% Photocurrent validation with frozen emPaths - hex mosaic
     rParams.mosaicParams.conePacking = 'hex';
-    testDirectionParams.trialsNum = 2;
+    rParams.mosaicParams.fov = 0.5; 
+    rParams.mosaicParams.resamplingFactor = 2;
+    rParams.mosaicParams.latticeAdjustmentPositionalToleranceF =  0.5;    % For production work, this should either not get passed or get set to equal or lower than 0.01      
+    rParams.mosaicParams.latticeAdjustmentDelaunayToleranceF = 0.05;      % For production work, this should either not get passed or get set to equal or lower than 0.001 
+    rParams.mosaicParams.marginF =  1/sqrt(2.0)*0.95;                     % For production work this should not get passed or set to empty
+    testDirectionParams.trialsNum = 1;
 
     [validationData4, extraData4] = t_coneCurrentEyeMovementsResponseInstances(...
         'employStandardHostComputerResources', true, ...
