@@ -131,8 +131,7 @@ extraData = [];
 % t_colorGaborResponseGenerationParams returns a hierarchical struct of
 % parameters used by a number of tutorials and functions in this project.
 if (isempty(rParams))
-    rParams = responseParamsGenerate;
-    
+    rParams = responseParamsGenerate;  
     % Override some defult parameters
     %
     % Set duration equal to sampling interval to do just one frame.
