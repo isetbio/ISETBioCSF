@@ -2,7 +2,12 @@ function figGenerateOpticalFactors()
    
     close all;
     opticsModels = {'Geisler', 'WvfHuman', 'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanSubject1', 'WvfHumanSubject2', 'WvfHumanSubject3', 'WvfHumanSubject4', 'WvfHumanSubject5'};
-    opticsModelsLabels = {'Geisler', 'wvfMeanCoeff', 'wvfMeanOTF  ', 'wvfSubject1 ', 'wvfSubject2 ', 'wvfSubject3 ', 'wvfSubject4 ', 'wvfSubject5 '}; % , 'wvfSubject2'};
+    opticsModelsLabels = {'Geisler', 'wvfMeanCoeff', 'wvfMeanOTF  ', 'wvfSubject1 ', 'wvfSubject2 ', 'wvfSubject3 ', 'wvfSubject4 ', 'wvfSubject5 '};
+    pupilDiamMm = 2;
+    
+    opticsModels = {'Geisler',  'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanSubject1', 'WvfHumanSubject2', 'WvfHumanSubject3'};
+    opticsModelsLabels = {'Geisler',  'wvfMeanOTF  ', 'wvfSubject1 ', 'wvfSubject2 ', 'wvfSubject3 '};
+    pupilDiamMm = 3;
     
     blur = true;
     apertureBlur = false;
@@ -149,11 +154,12 @@ function figGenerateOpticalFactors()
     finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity ratio', 'log', 'log', [1 3 10 30 100], [0.25 0.5 1 2 4], legends, 'SouthWest', true, false);
     
     drawnow;
-    NicePlot.exportFigToPDF('OpticsImpact.pdf', hFig, 300);
+    NicePlot.exportFigToPDF(sprintf('OpticsImpactPupilMM%2.1f.pdf',pupilDiamMm), hFig, 300);
     
     function [d, the_rParams, noiseFreeResponse, theOI] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs)
         [d, the_rParams, noiseFreeResponse, theOI] = c_BanksEtAlPhotocurrentAndEyeMovements(...
             'opticsModel', opticsModel, ...
+            'pupilDiamMm', pupilDiamMm, ...
             'blur', blur, ...
             'apertureBlur', apertureBlur, ...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
