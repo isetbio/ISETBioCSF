@@ -68,7 +68,7 @@ function ValidationFunction(runTimeParams)
     rParams.mosaicParams.isomerizationNoise = 'frozen';
     rParams.mosaicParams.osNoise = 'frozen';
 
-    % Select a small number of contitions
+    % Select a small number of conditions
     testDirectionParams = instanceParamsGenerate();
     testDirectionParams.nAngles = 1;
     testDirectionParams.startAngle = 45;
@@ -92,9 +92,9 @@ function ValidationFunction(runTimeParams)
     rParams.mosaicParams.conePacking = 'hex';
     rParams.mosaicParams.fov = 0.5; 
     rParams.mosaicParams.resamplingFactor = 2;
-    rParams.mosaicParams.latticeAdjustmentPositionalToleranceF =  0.5;    % For production work, this should either not get passed or get set to equal or lower than 0.01      
-    rParams.mosaicParams.latticeAdjustmentDelaunayToleranceF = 0.05;      % For production work, this should either not get passed or get set to equal or lower than 0.001 
-    rParams.mosaicParams.marginF =  1/sqrt(2.0)*0.95;                     % For production work this should not get passed or set to empty
+    rParams.mosaicParams.latticeAdjustmentPositionalToleranceF =  0.5;      % For production work, this should either not get passed or get set to equal or lower than 0.01      
+    rParams.mosaicParams.latticeAdjustmentDelaunayToleranceF = 0.05;        % For production work, this should either not get passed or get set to equal or lower than 0.001 
+    rParams.mosaicParams.marginF =  1;                                      % For production work this should not get passed or set to empty
     testDirectionParams.trialsNum = 1;
 
     [validationData4, extraData4] = t_coneCurrentEyeMovementsResponseInstances(...
@@ -105,6 +105,7 @@ function ValidationFunction(runTimeParams)
         'visualizationFormat', 'montage', ...
         'visualizedResponseNormalization', 'submosaicBasedZscore', ...
         'freezeNoise', true);
+
     UnitTest.validationData('validationData4',validationData4, ...
         'UsingTheFollowingVariableTolerancePairs', ...
          'validationData4.stimData.theMosaicPhotocurrents', 1e-4, ...
@@ -112,7 +113,3 @@ function ValidationFunction(runTimeParams)
         );
     UnitTest.extraData('extraData4',extraData4);
 end
-
-
-
-

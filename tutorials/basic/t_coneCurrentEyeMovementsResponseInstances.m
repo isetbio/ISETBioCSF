@@ -181,7 +181,6 @@ theProgram = mfilename;
 
 %% Delete response instance files.
 if (p.Results.delete)
-    
     % Load the response and ancillary data
     paramsList = constantParamsList;
     paramsList{numel(paramsList)+1} = colorModulationParamsNull;
@@ -210,10 +209,9 @@ if (p.Results.delete)
     end % kk
 end % if (p.Results.delete)
 
-
 %% Maybe we are just visualizing the mosaic - not computing responses
-if ((~p.Results.compute) && ((p.Results.visualizeMosaic) || (p.Results.computeMosaic)) )
-    if (p.Results.computeMosaic)
+if ((~p.Results.compute) && ((p.Results.visualizeMosaic) || (p.Results.computeMosaic)))
+    if (~p.Results.computeMosaic)
         % Create the cone mosaic
         theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams, ...
             'visualizeMosaic', p.Results.visualizeMosaic);
@@ -229,15 +227,8 @@ if ((~p.Results.compute) && ((p.Results.visualizeMosaic) || (p.Results.computeMo
         theMosaic.displayInfo();
     end
     
-    if (p.Results.visualizeMosaic)
-       if (strcmp(rParams.mosaicParams.conePacking, 'hex'))
-           hFig = theMosaic.visualizeGrid('generateNewFigure', true, ...
-            'overlayConeDensityContour', 'measured', ...    % choose between 'measured', 'theoretical', 'none'
-            'coneDensityContourLevelStep', 10000);
-       else
-           hFig = theMosaic.visualizeGrid('generateNewFigure', true);
-       end
-    
+    if (p.Results.visualizeMosaic) && (isa(theMosaic, 'coneMosaicHex'))
+        hFig = theMosaic.visualizeGrid('generateNewFigure', true);
         coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
         data = 0;
         rwObject.write('coneMosaic', data, coneParamsList, theProgram, ...
@@ -296,6 +287,7 @@ if (p.Results.compute)
     
     
     if (p.Results.computeMosaic)
+        disp('before create mosaic\n');
         % Create the cone mosaic
         theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams, ...
             'visualizeMosaic', p.Results.visualizeMosaic);
