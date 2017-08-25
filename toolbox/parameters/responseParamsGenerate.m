@@ -63,3 +63,30 @@ params.mosaicParams.fieldOfViewDegs = params.spatialParams.fieldOfViewDegs;
 
 %% Parameters for plots
 params.plotParams = plotParamsGenerate(varargin{:});
+
+%% Check wether the user asked for fastComputeParams and if he/she did
+%% overide some of the params above
+p = inputParser; p.KeepUnmatched = true;
+p.addParameter('fastComputeParams',false,@islogical);
+p.parse(varargin{:});
+if (p.Results.fastComputeParams)
+% Override some parameters to reduce computational time.
+% This should only be used for validation scripts
+params.spatialParams.fieldOfViewDegs = 1.0;
+params.spatialParams.cyclesPerDegree = 8;
+params.spatialParams.gaussianFWHMDegs = 0.375;
+% Update oiParams accordingly
+params.oiParams.fieldOfViewDegs = params.spatialParams.fieldOfViewDegs;
+% Set duration equal to sampling interval to do just one frame.
+params.temporalParams.stimulusDurationInSeconds = 200/1000;
+params.temporalParams.stimulusSamplingIntervalInSeconds = params.temporalParams.stimulusDurationInSeconds;
+params.temporalParams.secondsToInclude = params.temporalParams.stimulusDurationInSeconds;
+% Mosaic params
+params.mosaicParams.integrationTimeInSeconds = params.temporalParams.stimulusDurationInSeconds;
+params.mosaicParams.isomerizationNoise = 'frozen';         % Type coneMosaic.validNoiseFlags to get valid values
+params.mosaicParams.osNoise = 'frozen';                    % Type outerSegment.validNoiseFlags to get valid values
+params.mosaicParams.osModel = 'Linear';
+params.mosaicParams.fieldOfViewDegs = params.spatialParams.fieldOfViewDegs;
+end
+
+
