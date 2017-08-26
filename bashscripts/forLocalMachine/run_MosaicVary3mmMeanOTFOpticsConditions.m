@@ -1,4 +1,4 @@
-function run_MosaicVaryBanksConditions
+function run_MosaicVary3mmMeanOTFOpticsConditions
  
     examinedMosaicModels = {...
         'Banks87' ...
@@ -12,12 +12,12 @@ function run_MosaicVaryBanksConditions
     
     % Simulation steps to perform
     params.computeMosaic = true; 
-    params.visualizeMosaic = ~true;
+    params.visualizeMosaic = true;
     
     params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
-    params.visualizeSpatialScheme = ~true;
+    params.visualizeSpatialScheme = true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = true;
@@ -25,19 +25,21 @@ function run_MosaicVaryBanksConditions
     params.deleteResponseInstances = ~true;
     
     % How to split the computation
-    computationInstance = 2;
+    computationInstance = 1;
     params = getFixedParamsForMosaicImpactExperiment(params,computationInstance);
+    
+    params.nTrainingSamples = 16
     
     % Go
     run_BanksPhotocurrentEyeMovementConditions(params);
 end
 
 
-
 function params = getFixedParamsForMosaicImpactExperiment(params, computationInstance)
-
-    params.opticsModel = 'WvfHumanMeanOTFmagMeanOTFphase';
-    params.blur = true;
+    % Optics for all subsequent computations
+    params.opticsModel  = 'WvfHumanMeanOTFmagMeanOTFphase';
+    params.pupilDiamMm  = 3.0;   % 3mm pupil is more appropriate for 100 cd/m2 monitor
+    params.blur         = true;
     params.apertureBlur = true;
     
     params.imagePixels = 1024;
@@ -79,7 +81,8 @@ function params = getFixedParamsForMosaicImpactExperiment(params, computationIns
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 0.5;  % use 90% of the RAM
-        params.cyclesPerDegreeExamined =  [2.5];
+        params.cyclesPerDegreeExamined =  [5 10 20 40 50];
+        arams.cyclesPerDegreeExamined = [40 50]
     elseif (computationInstance  == 2)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 0.5;  % use 1/2 the RAM

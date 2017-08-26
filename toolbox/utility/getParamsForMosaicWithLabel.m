@@ -5,7 +5,7 @@ function params = getParamsForMosaicWithLabel(mosaicName)
             params.innerSegmentDiameter = 3.0;    % used by Banks '87
             params.conePacking = 'hexReg';
             params.LMSRatio = [0.67 0.33 0];
-            params.mosaicRotationDegs = 30;
+            params.mosaicRotationDegs = 0;
         case 'ISETbioHexRegNoScones'
             params.coneSpacingMicrons = 2.0;
             params.innerSegmentDiameter = 1.5797; % for a circular sensor; this corresponds to ISETBio's default 1.4 micron square pixel (isetbio still does square apertures)
@@ -24,12 +24,22 @@ function params = getParamsForMosaicWithLabel(mosaicName)
             params.conePacking = 'hex';
             params.LMSRatio = [0.67 0.33 0.0];
             params.mosaicRotationDegs = 0;
+            params.sConeMinDistanceFactor = 3.0;                    % min distance between neighboring S-cones = f * local cone separation - to make the S-cone lattice semi-regular
+            params.sConeFreeRadiusMicrons = 45;
+            params.latticeAdjustmentPositionalToleranceF = 0.01/5;
+            params.latticeAdjustmentDelaunayToleranceF = 0.001/5;
+            params.marginF = 1.2;
         case 'ISETbioHexEccBasedLMS'
             params.coneSpacingMicrons = 2.0;
-            params.innerSegmentDiameter = 1.5797; % for a circular sensor; this corresponds to ISETBio's default 1.4 micron square pixel (isetbio still does square apertures)
+            params.innerSegmentDiameter = 1.5797;   % for a circular sensor; this corresponds to ISETBio's default 1.4 micron square pixel (isetbio still does square apertures)
             params.conePacking = 'hex';
             params.LMSRatio = [0.62 0.31 0.07];
             params.mosaicRotationDegs = 0;
+            params.sConeMinDistanceFactor = 3.0;                    % min distance between neighboring S-cones = f * local cone separation - to make the S-cone lattice semi-regular
+            params.sConeFreeRadiusMicrons = 45;
+            params.latticeAdjustmentPositionalToleranceF = 0.01/5;
+            params.latticeAdjustmentDelaunayToleranceF = 0.001/5;
+            params.marginF = 1.2;
         otherwise
             error('Unknown mosaic: ''%s''.', mosaicName);
     end
