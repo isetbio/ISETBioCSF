@@ -26,9 +26,9 @@ function params = getParamsForMosaicWithLabel(mosaicName)
             params.mosaicRotationDegs = 0;
             params.sConeMinDistanceFactor = 3.0;                    % min distance between neighboring S-cones = f * local cone separation - to make the S-cone lattice semi-regular
             params.sConeFreeRadiusMicrons = 45;
-            params.latticeAdjustmentPositionalToleranceF = 0.01/5;
-            params.latticeAdjustmentDelaunayToleranceF = 0.001/5;
-            params.marginF = 1.2;
+            params.latticeAdjustmentPositionalToleranceF = 0.01/2;
+            params.latticeAdjustmentDelaunayToleranceF = 0.001/2;
+            params.marginF = 1.5;
         case 'ISETbioHexEccBasedLMS'
             params.coneSpacingMicrons = 2.0;
             params.innerSegmentDiameter = 1.5797;   % for a circular sensor; this corresponds to ISETBio's default 1.4 micron square pixel (isetbio still does square apertures)
@@ -37,9 +37,9 @@ function params = getParamsForMosaicWithLabel(mosaicName)
             params.mosaicRotationDegs = 0;
             params.sConeMinDistanceFactor = 3.0;                    % min distance between neighboring S-cones = f * local cone separation - to make the S-cone lattice semi-regular
             params.sConeFreeRadiusMicrons = 45;
-            params.latticeAdjustmentPositionalToleranceF = 0.01/5;
-            params.latticeAdjustmentDelaunayToleranceF = 0.001/5;
-            params.marginF = 1.2;
+            params.latticeAdjustmentPositionalToleranceF = 0.01/2;
+            params.latticeAdjustmentDelaunayToleranceF = 0.001/2;
+            params.marginF = 1.5;
         otherwise
             error('Unknown mosaic: ''%s''.', mosaicName);
     end
