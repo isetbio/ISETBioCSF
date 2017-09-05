@@ -1,6 +1,12 @@
 function params = getParamsForMosaicWithLabel(mosaicName)
     switch mosaicName
-        case 'Banks87'
+        case 'originalBanks'
+            params.coneSpacingMicrons = 3.0;
+            params.innerSegmentDiameter = 3.0;    % used by Banks '87
+            params.conePacking = 'hexReg';
+            params.LMSRatio = [0.67 0.33 0];
+            params.mosaicRotationDegs = 30;
+        case 'originalBanksNoRotation'
             params.coneSpacingMicrons = 3.0;
             params.innerSegmentDiameter = 3.0;    % used by Banks '87
             params.conePacking = 'hexReg';

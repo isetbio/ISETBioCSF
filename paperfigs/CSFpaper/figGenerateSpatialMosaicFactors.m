@@ -1,7 +1,10 @@
 function figGenerateSpatialMosaicFactors()
     
+    close all;
+    
     % 'WvfHuman', 'Geisler'
-    opticsModel = 'Geisler';
+    opticsModel = 'WvfHumanMeanOTFmagMeanOTFphase';
+    pupilDiamMm = 3.0;
     
     % 'singleExposure'; 'timeSeries5msec'
     temporalAnalysis = 'timeSeries5msec';
@@ -11,7 +14,7 @@ function figGenerateSpatialMosaicFactors()
     centeredEMPaths = false;
     
     % 'isomerizations', 'photocurrents'
-    performanceSignal ='isomerizations';
+    performanceSignal = 'isomerizations';
     
     % Use a subset of the trials. Specify [] to use all available trials
     nTrainingSamples = 1024;
@@ -27,7 +30,7 @@ function figGenerateSpatialMosaicFactors()
     spatialPoolingKernelParams.shrinkageFactor = 1.0;  % > 1, results in expansion, < 1 results in shrinking
     useRBFSVMKernel = false;
     ramPercentageEmployed = 1.0;  % use all the RAM
-    freezeNoise = ~true;
+    freezeNoise = true;
     
     
     cyclesPerDegreeExamined =  [5 10 20 40];
@@ -47,10 +50,10 @@ function figGenerateSpatialMosaicFactors()
         case 'timeSeries5msec'
             % For 7.0 milliseconds simulation
             responseStabilizationMilliseconds = 10;
-            responseExtinctionMilliseconds = 150;
+            responseExtinctionMilliseconds = 50;
             integrationTimeMilliseconds =  5.0;
-            lowContrast = 0.0005;
-            highContrast = 0.8;
+            lowContrast = 0.0001;
+            highContrast = 0.3;
             nContrastsPerDirection =  18;
     end
    
@@ -61,21 +64,32 @@ function figGenerateSpatialMosaicFactors()
     visualizeTransformedSignals = ~true;
     
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
-    mosaicRef = 'originalBanks';
-    mosaicTest1 = 'defaultIsetbio';
-    mosaicTest2 = 'fullIsetbioWithScones';
+    mosaicRef = 'originalBanksNoRotation';           
+    mosaicTest1 = 'ISETbioHexRegNoScones';  
+    mosaicTest2 = 'ISETbioHexEccBasedLMS';
     
     % Retrieve reference mosaic ('originalBanks') CSF data
-    [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, referenceMosaicLegend] = paramsForComparativeMosaicAnalysis(mosaicRef);
+    params = getParamsForMosaicWithLabel(mosaicRef);
+    coneSpacingMicrons = params.coneSpacingMicrons;
+    innerSegmentDiameter = params.innerSegmentDiameter;
+    conePacking = params.conePacking;
+    LMSRatio = params.LMSRatio;
+    mosaicRotationDegs = params.mosaicRotationDegs;
+    referenceMosaicLegend = sprintf('Banks, no rotation (LM-only,  hexReg (s=%2.1fum,  a=%2.1fum))', coneSpacingMicrons, innerSegmentDiameter);
     [d, rParamsRef] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
     sfRef = d.cyclesPerDegree;
     for luminanceIndex = 1:size(d.mlptThresholds,1)
         referenceCSF(luminanceIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
     end
-    
-    
+
     % Retrieve 'fullIsetbioWithScones' CSF data
-    [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, mosaicTest1Legend] = paramsForComparativeMosaicAnalysis(mosaicTest1);
+    params = getParamsForMosaicWithLabel(mosaicTest1);
+    coneSpacingMicrons = params.coneSpacingMicrons;
+    innerSegmentDiameter = params.innerSegmentDiameter;
+    conePacking = params.conePacking;
+    LMSRatio = params.LMSRatio;
+    mosaicRotationDegs = params.mosaicRotationDegs;
+    mosaicTest1Legend = sprintf('Isetbio (LM-only,  hexReg (s=%2.1fum,  a=%2.1fum))', coneSpacingMicrons, innerSegmentDiameter);
     [d, rParamsTest1] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
     test1Color = [0.8 0.3 0.9];
     
@@ -88,7 +102,13 @@ function figGenerateSpatialMosaicFactors()
     end
     
     % Retrieve 'defaultIsetbio' CSF data
-    [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, mosaicTest2Legend] = paramsForComparativeMosaicAnalysis(mosaicTest2);
+    params = getParamsForMosaicWithLabel(mosaicTest2);
+    coneSpacingMicrons = params.coneSpacingMicrons;
+    innerSegmentDiameter = params.innerSegmentDiameter;
+    conePacking = params.conePacking;
+    LMSRatio = params.LMSRatio;
+    mosaicRotationDegs = params.mosaicRotationDegs;
+    mosaicTest2Legend = sprintf('Isetbio (LMS,  hex (s=eccBased,  a=%2.1fum))', innerSegmentDiameter);
     [d, rParamsTest2] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
     test2Color = [0.3 0.7 0.99];
     
@@ -130,7 +150,7 @@ function figGenerateSpatialMosaicFactors()
     xlabel('spatial frequency (cpd)', 'FontSize', 16, 'FontWeight', 'bold');
     ylabel('contrast sensitivity ratio', 'FontSize' ,16, 'FontWeight', 'bold');
     set(gca,'XScale','log','YScale','linear', 'FontSize', 16);
-    xlim([1 100]); ylim([0.5 1]);
+    xlim([1 100]); ylim([0.25 2]);
     grid on; box off;
     
     sfIndex = 3;
@@ -142,7 +162,12 @@ function figGenerateSpatialMosaicFactors()
     
     conditionsToVisualize = [18];
     cyclesPerDeg = cyclesPerDegreeExamined(sfIndex);
-    [coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, ~] = paramsForComparativeMosaicAnalysis(mosaicTest2);
+    params = getParamsForMosaicWithLabel(mosaicTest2);
+    coneSpacingMicrons = params.coneSpacingMicrons;
+    innerSegmentDiameter = params.innerSegmentDiameter;
+    conePacking = params.conePacking;
+    LMSRatio = params.LMSRatio;
+    mosaicRotationDegs = params.mosaicRotationDegs;
     noiseFreeResponses = getNoiseFreeResponses(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, cyclesPerDeg, conditionsToVisualize);
     noiseFreeIsomerizations = noiseFreeResponses{1,1}.stimData{conditionsToVisualize}.noiseFreeIsomerizations;
     [~,idx] = max(noiseFreeIsomerizations(:));
@@ -172,6 +197,7 @@ function figGenerateSpatialMosaicFactors()
     function [d, the_rParams] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs)
         [d, the_rParams] = c_BanksEtAlPhotocurrentAndEyeMovements(...
             'opticsModel', opticsModel, ...
+            'pupilDiamMm', pupilDiamMm, ...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
             'luminances', luminancesExamined, ...
             'nTrainingSamples', nTrainingSamples, ...
@@ -197,7 +223,7 @@ function figGenerateSpatialMosaicFactors()
             'visualizeSpatialScheme', visualizeSpatialScheme, ...
             'findPerformance', findPerformance, ...
             'visualizePerformance', visualizePerformance, ...
-            'visualizeTransformedSignals', visualizeTransformedSignals, ...
+            'visualizeKernelTransformedSignals', visualizeTransformedSignals, ...
             'performanceSignal' , performanceSignal, ...
             'performanceClassifier', performanceClassifier, ...
             'useRBFSVMKernel', useRBFSVMKernel, ...
@@ -209,6 +235,7 @@ function figGenerateSpatialMosaicFactors()
     function noiseFreeResponses = getNoiseFreeResponses(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, cyclesPerDeg, conditionsToVisualize)
         [~, ~, noiseFreeResponses] = c_BanksEtAlPhotocurrentAndEyeMovements(...
             'opticsModel', opticsModel, ...
+            'pupilDiamMm', pupilDiamMm, ...
             'cyclesPerDegree', cyclesPerDeg, ...
             'luminances', luminancesExamined, ...
             'nTrainingSamples', nTrainingSamples, ...
@@ -236,7 +263,7 @@ function figGenerateSpatialMosaicFactors()
             'visualizeSpatialScheme', visualizeSpatialScheme, ...
             'findPerformance', findPerformance, ...
             'visualizePerformance', visualizePerformance, ...
-            'visualizeTransformedSignals', visualizeTransformedSignals, ...
+            'visualizeKernelTransformedSignals', visualizeTransformedSignals, ...
             'performanceSignal' , performanceSignal, ...
             'performanceClassifier', performanceClassifier, ...
             'useRBFSVMKernel', useRBFSVMKernel, ...
