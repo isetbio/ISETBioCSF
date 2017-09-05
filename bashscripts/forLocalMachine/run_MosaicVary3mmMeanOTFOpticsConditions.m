@@ -25,10 +25,8 @@ function run_MosaicVary3mmMeanOTFOpticsConditions
     params.deleteResponseInstances = ~true;
     
     % How to split the computation
-    computationInstance = 1;
+    computationInstance = 2;
     params = getFixedParamsForMosaicImpactExperiment(params,computationInstance);
-    
-    params.nTrainingSamples = 16
     
     % Go
     run_BanksPhotocurrentEyeMovementConditions(params);
@@ -80,13 +78,16 @@ function params = getFixedParamsForMosaicImpactExperiment(params, computationIns
         params.cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
-        params.ramPercentageEmployed = 0.5;  % use 90% of the RAM
+        params.ramPercentageEmployed = 0.9;  % use 90% of the RAM
         params.cyclesPerDegreeExamined =  [5 10 20 40 50];
-        arams.cyclesPerDegreeExamined = [40 50]
     elseif (computationInstance  == 2)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 0.5;  % use 1/2 the RAM
-        params.cyclesPerDegreeExamined =  [5 10 20 40 50];
+        params.cyclesPerDegreeExamined =  [5];
+    elseif (computationInstance  == 3)
+        % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
+        params.ramPercentageEmployed = 0.5;  % use 1/2 the RAM
+        params.cyclesPerDegreeExamined =  [10 20 40 50];
     else
         error('computational instance must be 0, 1 or 2');
     end
