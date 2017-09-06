@@ -1,5 +1,7 @@
-function figGenerateSpatialMosaicFactors()
+function figGenerateSpatialMosaicFactorsGeisler()
     
+    error('This is obsolete. Replaced by figGenerateSpatialMosaicFactors()');
+
     % 'WvfHuman', 'Geisler'
     opticsModel = 'Geisler'; % 'WvfHuman';
     

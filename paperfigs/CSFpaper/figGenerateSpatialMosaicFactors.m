@@ -1,6 +1,9 @@
 function figGenerateSpatialMosaicFactors()
     
     close all;
+
+    mosaicModels       = {'originalBanksNoRotation',  'ISETbioHexRegNoScones', 'ISETbioHexRegLMS',     'ISETbioHexEccBasedLMS'};
+    mosaicModelsLabels = {'Banks (LM)',         'ISETbio Hex-Reg   (LM)',   'ISETbio Hex-Reg  (LMS)', 'ISETbio EccBased (LMS)'};
     
     % 'WvfHuman', 'Geisler'
     opticsModel = 'WvfHumanMeanOTFmagMeanOTFphase';
@@ -33,7 +36,7 @@ function figGenerateSpatialMosaicFactors()
     freezeNoise = true;
     
     
-    cyclesPerDegreeExamined =  [5 10 20 40];
+    cyclesPerDegreeExamined =  [5 10 20 40 50];
     luminancesExamined =  [34]; 
     plotLuminanceLines = [false true false];
 
@@ -63,139 +66,175 @@ function figGenerateSpatialMosaicFactors()
     visualizePerformance = true;
     visualizeTransformedSignals = ~true;
     
-    % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
-    mosaicRef = 'originalBanksNoRotation';           
-    mosaicTest1 = 'ISETbioHexRegNoScones';  
-    mosaicTest2 = 'ISETbioHexEccBasedLMS';
     
-    % Retrieve reference mosaic ('originalBanks') CSF data
-    params = getParamsForMosaicWithLabel(mosaicRef);
-    coneSpacingMicrons = params.coneSpacingMicrons;
-    innerSegmentDiameter = params.innerSegmentDiameter;
-    conePacking = params.conePacking;
-    LMSRatio = params.LMSRatio;
-    mosaicRotationDegs = params.mosaicRotationDegs;
-    referenceMosaicLegend = sprintf('Banks, no rotation (LM-only,  hexReg (s=%2.1fum,  a=%2.1fum))', coneSpacingMicrons, innerSegmentDiameter);
-    [d, rParamsRef] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
-    sfRef = d.cyclesPerDegree;
-    for luminanceIndex = 1:size(d.mlptThresholds,1)
-        referenceCSF(luminanceIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
-    end
-
-    % Retrieve 'fullIsetbioWithScones' CSF data
-    params = getParamsForMosaicWithLabel(mosaicTest1);
-    coneSpacingMicrons = params.coneSpacingMicrons;
-    innerSegmentDiameter = params.innerSegmentDiameter;
-    conePacking = params.conePacking;
-    LMSRatio = params.LMSRatio;
-    mosaicRotationDegs = params.mosaicRotationDegs;
-    mosaicTest1Legend = sprintf('Isetbio (LM-only,  hexReg (s=%2.1fum,  a=%2.1fum))', coneSpacingMicrons, innerSegmentDiameter);
-    [d, rParamsTest1] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
-    test1Color = [0.8 0.3 0.9];
-    
-    sfTest1 = d.cyclesPerDegree;
-    if (any(sfTest1-sfRef)~=0)
-        error('sfs do not match');
-    end
-    for luminanceIndex = 1:size(d.mlptThresholds,1)
-        testCSF1(luminanceIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
-    end
-    
-    % Retrieve 'defaultIsetbio' CSF data
-    params = getParamsForMosaicWithLabel(mosaicTest2);
-    coneSpacingMicrons = params.coneSpacingMicrons;
-    innerSegmentDiameter = params.innerSegmentDiameter;
-    conePacking = params.conePacking;
-    LMSRatio = params.LMSRatio;
-    mosaicRotationDegs = params.mosaicRotationDegs;
-    mosaicTest2Legend = sprintf('Isetbio (LMS,  hex (s=eccBased,  a=%2.1fum))', innerSegmentDiameter);
-    [d, rParamsTest2] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
-    test2Color = [0.3 0.7 0.99];
-    
-    sfTest2 = d.cyclesPerDegree;
-    if (any(sfTest2-sfRef)~=0)
-        error('sfs do not match');
-    end
-    for luminanceIndex = 1:size(d.mlptThresholds,1)
-        testCSF2(luminanceIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
-    end
+    % Retrieve reference mosaic
+    for mosaicIndex = 1:numel(mosaicModels)
+        params = getParamsForMosaicWithLabel(mosaicModels{mosaicIndex});
+        coneSpacingMicrons = params.coneSpacingMicrons;
+        innerSegmentDiameter = params.innerSegmentDiameter;
+        conePacking = params.conePacking;
+        LMSRatio = params.LMSRatio;
+        mosaicRotationDegs = params.mosaicRotationDegs;
+        mosaicLegend{mosaicIndex} = sprintf('%s (s=%2.1fum, a=%2.1fum)', mosaicModelsLabels{mosaicIndex}, coneSpacingMicrons, innerSegmentDiameter);
+        [d, rParams{mosaicIndex}] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
+        sfTest{mosaicIndex} = d.cyclesPerDegree;
+        for luminanceIndex = 1:size(d.mlptThresholds,1)
+            mosaicCSF(luminanceIndex,mosaicIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
+        end
+        if (mosaicIndex > 1)
+            if (any(sfTest{mosaicIndex}-sfTest{1})~=0)
+                error('sfs do not match');
+            end
+        end
+        ratioCSF{mosaicIndex} = squeeze(mosaicCSF(1,mosaicIndex,:)) ./ squeeze(mosaicCSF(1,1,:));
+    end % mosaicIndex
     
     
-    % Compute CSF ratios
-    ratioCSF1 = testCSF1 ./ referenceCSF;
-    ratioCSF2 = testCSF2 ./ referenceCSF;
+    sfRange = [2 61];
     
-    hFig = figure(1); clf;
-    set(hFig ,'Position',[100 100 950 1000], 'Color', [1 1 1]);
-    subplot('Position', [0.055 0.30 0.41 0.69]);
-    hold on
-    addBanksEtAlReferenceLines(rParamsTest1, plotLuminanceLines);
-    plot(sfRef, referenceCSF, 'ko', 'MarkerSize', 12, 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 12);
-    plot(sfTest1, testCSF1, 'ko', 'MarkerSize', 10, 'MarkerFaceColor', test1Color, 'MarkerSize', 12);
-    plot(sfTest2, testCSF2, 'ko', 'MarkerSize', 10, 'MarkerFaceColor', test2Color, 'MarkerSize', 12);
-    hL = legend({'Banks et al study', referenceMosaicLegend, mosaicTest1Legend, mosaicTest2Legend}, 'Location', 'NorthEast');
-    set(hL, 'FontSize', 13, 'FontName', 'Menlo');
-    set(gca,'XScale','log','YScale','log', 'FontSize', 16);
-    xlabel('', 'FontSize', 16, 'FontWeight', 'bold');
-    ylabel('contrast sensitivity', 'FontSize' ,16, 'FontWeight', 'bold');
-    xlim([1 100]); ylim([1 5000]);
-    grid on; box off;
+    hFig = figure(2); clf;
+    set(hFig, 'Position', [10 10 960 1400]);
     
-    subplot('Position', [0.055 0.055 0.41 0.20]);
-    hold on
-    plot(sfRef, ratioCSF1, 'ko-', 'MarkerSize', 10, 'MarkerFaceColor', test1Color, 'MarkerSize', 12, 'LineWidth', 1.0);
-    plot(sfRef, ratioCSF2, 'ko-', 'MarkerSize', 10, 'MarkerFaceColor', test2Color, 'MarkerSize', 12, 'LineWidth', 1.0);
-    hL = legend({mosaicTest1Legend, mosaicTest2Legend}, 'Location', 'NorthEast');
-    set(hL, 'FontSize', 13, 'FontName', 'Menlo');
-    xlabel('spatial frequency (cpd)', 'FontSize', 16, 'FontWeight', 'bold');
-    ylabel('contrast sensitivity ratio', 'FontSize' ,16, 'FontWeight', 'bold');
-    set(gca,'XScale','log','YScale','linear', 'FontSize', 16);
-    xlim([1 100]); ylim([0.25 2]);
-    grid on; box off;
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'colsNum', 2, ...
+           'rowsNum', 3, ...
+           'heightMargin',   0.05, ...
+           'widthMargin',    0.03, ...
+           'leftMargin',     0.05, ...
+           'rightMargin',    0.005, ...
+           'bottomMargin',   0.05, ...
+           'topMargin',      0.01);
+       
     
+    %% Extract the mosaic for some frequency
     sfIndex = 3;
-    subplot('Position', [0.50 0.51 0.48 0.48]);
-    plotMosaic(rParamsRef, sfIndex, sprintf('%s', referenceMosaicLegend)); 
-    subplot('Position', [0.50 0.01 0.48 0.48]);
-    plotMosaic(rParamsTest2, sfIndex, sprintf('%s', mosaicTest2Legend));
+    xTickLabels = [-200:20:200];
+    xTicks      = xTickLabels*1e-6;
+    yTicks      = xTicks;
+    yTickLabels = xTickLabels;
+    xLim = 45*[-1 1]*1e-6;
+    yLim = xLim;
+    backgroundColor = [0.1 0.1 0.1];
+    for mosaicIndex = 1:numel(mosaicModels)
+        switch (mosaicIndex)
+            case 1
+                subplot('Position', subplotPosVectors(1,1).v);
+            case 2
+                subplot('Position', subplotPosVectors(1,2).v);
+            case 3
+                subplot('Position', subplotPosVectors(2,1).v);
+            case 4
+                subplot('Position', subplotPosVectors(2,2).v);
+        end % switch
+        plotMosaic(rParams{mosaicIndex}, sfIndex, sprintf('%s', mosaicLegend{mosaicIndex})); 
+        switch (mosaicIndex)
+            case 1
+                finishPlot(gca, '', 'space (microns)', ...
+                    'linear', 'linear', xLim, yLim, ...
+                    xTicks, yTicks, {}, yTickLabels, [], '', false, true, backgroundColor);
+            case 2
+                finishPlot(gca, '', '', ...
+                    'linear', 'linear', xLim, yLim, ...
+                    xTicks, yTicks, {}, {}, [], '', false,  true,  backgroundColor);
+            case 3
+                finishPlot(gca, 'space (microns)', 'space (microns)', ...
+                    'linear', 'linear', xLim, yLim, ...
+                    xTicks, yTicks, xTickLabels, yTickLabels, [], '', false, true,  backgroundColor);
+            case 4
+                finishPlot(gca, 'space (microns)', '', ...
+                    'linear', 'linear', xLim, yLim, ...
+                    xTicks, yTicks, xTickLabels, {}, [], '', false, true,  backgroundColor);
+                subplot('Position', subplotPosVectors(2,2).v);
+        end % switch
+    end % mosaicIndex
+
+    %% CSFs
+    mosaicColors = [0 0 0; 1 0 0; 0.4 0.7 1; 0 0.8 0; 0 0.3 0.8];
+    subplot('Position', subplotPosVectors(3,1).v);
+    %addBanksEtAlReferenceLines(rParams{1}, plotLuminanceLines);
+    hold on;
+    legends = {} %{'Banks et al. (87) - 2mm'};
+    for mosaicModelIndex = 1:size(mosaicCSF,2)
+        if (mosaicModelIndex == 1)
+            % reference mosaic
+            markerType  = 's-';
+            markerSize = 13;
+        else
+            markerType = 'o-';
+            markerSize = 8;
+        end
+        plot(sfTest{1}, squeeze(mosaicCSF(1,mosaicModelIndex,:)), markerType, 'MarkerSize', markerSize, 'MarkerEdgeColor', [0 0 0], ...
+            'MarkerFaceColor', squeeze(mosaicColors(mosaicModelIndex,:)), ...
+            'LineWidth', 1.5, ...
+            'Color', squeeze(mosaicColors(mosaicModelIndex,:)));
+        legends = cat(2, legends, mosaicModelsLabels{mosaicModelIndex});
+    end % mosaicIndex
     
+    hold off;
+    xTickLabels = [1 3 10 30 100];
+    xTicks      = xTickLabels;
+    yTickLabels = [1 3 10 30 100 300 1000 3000];
+    yTicks      = yTickLabels;
+    xLim = sfRange;
+    yLim = [2.1 3000];
     
-    conditionsToVisualize = [18];
-    cyclesPerDeg = cyclesPerDegreeExamined(sfIndex);
-    params = getParamsForMosaicWithLabel(mosaicTest2);
-    coneSpacingMicrons = params.coneSpacingMicrons;
-    innerSegmentDiameter = params.innerSegmentDiameter;
-    conePacking = params.conePacking;
-    LMSRatio = params.LMSRatio;
-    mosaicRotationDegs = params.mosaicRotationDegs;
-    noiseFreeResponses = getNoiseFreeResponses(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, cyclesPerDeg, conditionsToVisualize);
-    noiseFreeIsomerizations = noiseFreeResponses{1,1}.stimData{conditionsToVisualize}.noiseFreeIsomerizations;
-    [~,idx] = max(noiseFreeIsomerizations(:));
-    [~, timeBinOfMaxResponse] = ind2sub(size(noiseFreeIsomerizations), idx);
-    noiseFreeIsomerizations = noiseFreeIsomerizations(:, timeBinOfMaxResponse);
+    finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity', ...
+        'log', 'log', xLim, yLim, xTicks, yTicks, ...
+        xTickLabels, yTickLabels, legends, 'SouthWest', true, false, [1 1 1]);
+
+    
+    %% CSF ratios
+    subplot('Position', subplotPosVectors(3,2).v);
+    hold on
+    legends = {};
+    for mosaicModelIndex = 2:size(mosaicCSF,2)
+        if (mosaicModelIndex == 1)
+            % reference mosaic
+            markerType  = 's-';
+            markerSize = 13;
+        else
+            markerType = 'o-';
+            markerSize = 8;
+        end
+        plot(sfTest{1}, squeeze(mosaicCSF(1,mosaicModelIndex,:)) ./ squeeze(mosaicCSF(1,1,:)), markerType, ...
+            'MarkerSize', markerSize, 'MarkerFaceColor', squeeze(mosaicColors(mosaicModelIndex,:)), 'MarkerEdgeColor', [0 0 0], ...
+            'LineWidth', 1.5, ...
+            'Color', squeeze(mosaicColors(mosaicModelIndex,:)));
+        legends = cat(2, legends, sprintf('%s: %s', mosaicModelsLabels{mosaicModelIndex}, mosaicModelsLabels{1}));
+    end
+    
+    yTickLabels =  [0.125 0.25 0.5 1 2];
+    yTicks      = yTickLabels;
+    yLim        = [0.120 2.0];
+    
+    finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity ratio', ...
+        'log', 'log', xLim, yLim, xTicks, yTicks, ...
+        xTickLabels, yTickLabels, legends, 'SouthEast', true, false, [1 1 1]);
+    
+    drawnow
+    NicePlot.exportFigToPDF(sprintf('ConeMosaicImpactPupilMM%2.1f.pdf',pupilDiamMm), hFig, 300);
+     
+%     conditionsToVisualize = [18];
+%     cyclesPerDeg = cyclesPerDegreeExamined(sfIndex);
+%     params = getParamsForMosaicWithLabel(mosaicModels{3});
+%     coneSpacingMicrons = params.coneSpacingMicrons;
+%     innerSegmentDiameter = params.innerSegmentDiameter;
+%     conePacking = params.conePacking;
+%     LMSRatio = params.LMSRatio;
+%     mosaicRotationDegs = params.mosaicRotationDegs;
+%     noiseFreeResponses = getNoiseFreeResponses(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, cyclesPerDeg, conditionsToVisualize);
+%     noiseFreeIsomerizations = noiseFreeResponses{1,1}.stimData{conditionsToVisualize}.noiseFreeIsomerizations;
+%     [~,idx] = max(noiseFreeIsomerizations(:));
+%     [~, timeBinOfMaxResponse] = ind2sub(size(noiseFreeIsomerizations), idx);
+%     noiseFreeIsomerizations = noiseFreeIsomerizations(:, timeBinOfMaxResponse);
    
-    figure(hFig);
-    theAxes = axes('Position',[0.06,0.305,0.2,0.2]);
-    plotMosaicActivation(theAxes, rParamsTest2, sfIndex, noiseFreeIsomerizations, 'isomerizations', cyclesPerDeg);
+%     figure(hFig);
+%     theAxes = axes('Position',[0.06,0.305,0.2,0.2]);
+%     plotMosaicActivation(theAxes, rParamsTest2, sfIndex, noiseFreeIsomerizations, 'isomerizations', cyclesPerDeg);
 
-    sfIndex = sfIndex + 1;
-    cyclesPerDeg = cyclesPerDegreeExamined(sfIndex);
-    noiseFreeResponses = getNoiseFreeResponses(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, cyclesPerDeg, conditionsToVisualize);
-    noiseFreeIsomerizations = noiseFreeResponses{1,1}.stimData{conditionsToVisualize}.noiseFreeIsomerizations;
-    [~,idx] = max(noiseFreeIsomerizations(:));
-    [~, timeBinOfMaxResponse] = ind2sub(size(noiseFreeIsomerizations), idx);
-    noiseFreeIsomerizations = noiseFreeIsomerizations(:, timeBinOfMaxResponse);
-    
-    figure(hFig);
-    theAxes = axes('Position',[0.26,0.305,0.2,0.2]);
-    plotMosaicActivation(theAxes, rParamsTest2, sfIndex, noiseFreeIsomerizations, 'isomerizations',cyclesPerDeg);
-
-    
-    
-    drawnow;
 
     function [d, the_rParams] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs)
-        [d, the_rParams] = c_BanksEtAlPhotocurrentAndEyeMovements(...
+        [d, the_rParams, noiseFreeResponse, theOI] = c_BanksEtAlPhotocurrentAndEyeMovements(...
             'opticsModel', opticsModel, ...
             'pupilDiamMm', pupilDiamMm, ...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
@@ -233,7 +272,7 @@ function figGenerateSpatialMosaicFactors()
     end
 
     function noiseFreeResponses = getNoiseFreeResponses(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, cyclesPerDeg, conditionsToVisualize)
-        [~, ~, noiseFreeResponses] = c_BanksEtAlPhotocurrentAndEyeMovements(...
+        [~, ~, noiseFreeResponses, ~] = c_BanksEtAlPhotocurrentAndEyeMovements(...
             'opticsModel', opticsModel, ...
             'pupilDiamMm', pupilDiamMm, ...
             'cyclesPerDegree', cyclesPerDeg, ...
@@ -282,10 +321,13 @@ function plotMosaic(rParamsAllConds, sfIndex, titleString)
     theProgram = 't_coneCurrentEyeMovementsResponseInstances';
     rwObject = IBIOColorDetectReadWriteBasic;
     theMosaic = rwObject.read('coneMosaic', coneParamsList, theProgram, 'type', 'mat');
-    theMosaic.visualizeGrid('axesHandle', gca);
-    title(gca, sprintf('%s', titleString), 'FontWeight', 'normal', 'FontWeight', 'bold', 'FontSize', 16);
+    visualizedAperture = 'lightCollectingArea'; % choose between 'both', 'lightCollectingArea', 'geometricArea'
+    apertureShape = 'disks';                 % choose between 'hexagons' and 'disks'
+    theMosaic.visualizeGrid('axesHandle', gca, ...
+        'visualizedConeAperture', visualizedAperture, ...
+        'apertureShape', apertureShape);    
     conesNum = numel(find(theMosaic.pattern(:) > 1));
-    %xlabel(gca, sprintf('%2.0f microns, cones: %d', theMosaic.width*1e6, conesNum), 'FontWeight', 'Bold', 'FontSize', 18);
+    title(gca, sprintf('%s (cones: %d)', titleString, conesNum));
 end
 
 function plotMosaicActivation(axesHandle, rParamsAllConds, sfIndex, activationMap, signalName, cpd)
@@ -346,3 +388,28 @@ function addBanksEtAlReferenceLines(rParamsAllConds, plotLuminanceLine)
     end
 end
 
+
+function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, theXLim, theYLim, xTicks, yTicks, xTickLabels, yTickLabels, theLegends, legendLocation, showGrid, showBox, backgroundColor)
+    set(gca, 'FontName', 'Helvetica', 'FontSize', 18, 'FontWeight', 'normal', 'FontAngle', 'normal', 'TickDir', 'both');
+    set(gca, 'XTick', xTicks, 'XTickLabel', xTickLabels, 'YTick', yTicks, 'yTickLabel', yTickLabels);
+    if (~isempty(theXlabel))
+        t = xlabel(theXlabel);
+        set(t, 'FontWeight', 'bold', 'FontAngle', 'normal');
+    end
+    if (~isempty(theYlabel))
+        t = ylabel(theYlabel);
+        set(t, 'FontWeight', 'bold', 'FontAngle', 'normal');
+    end
+    if (showGrid); grid on; else grid off; end;
+    if (showBox); box on; else box off; end;
+    set(gca, 'XScale',theXscale,'YScale',theYscale, 'LineWidth', 1.0);
+    set(gca, 'XLim',theXLim,'YLim',theYLim);
+    set(gca, 'Color', backgroundColor);
+    axis square
+    if (~isempty(theLegends))
+        hL = legend(theLegends, 'Location', legendLocation);
+        set(hL, 'FontSize', 14, 'FontWeight', 'Bold', 'FontAngle', 'italic', 'FontName', 'Menlo', 'Box', 'off');
+    end
+    hTitle=get(gca,'title');
+    set(hTitle, 'FontSize', 14);
+end

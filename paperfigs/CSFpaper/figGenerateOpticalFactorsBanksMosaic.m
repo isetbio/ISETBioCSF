@@ -1,5 +1,7 @@
 function figGenerateOpticalFactorsBanksMosaic()
 
+    error('This is obsolete. Replaced by figGenerateOpticalFactors()');
+    
     loadParams();
     opticsModels = {'Geisler', 'WvfHuman', 'WvfHumanMeanOTFmagMeanOTFphase'};
     
