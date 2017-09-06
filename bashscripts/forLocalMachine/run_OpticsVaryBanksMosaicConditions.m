@@ -12,14 +12,14 @@ function run_OpticsVaryBanksMosaicConditions
     };
     
     % Optics to run
-    params.opticsModel = examinedOpticsModels{3};
+    params.opticsModel = examinedOpticsModels{5};
     params.pupilDiamMm = 3.0;   % Default is 2 (as in Banks et al 87), but 3 is more appropriate for 100 cd/m2 monitor
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -52,7 +52,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
   
     % Mosaic params
     params.coneSpacingMicrons = 3.0;
-    params.innerSegmentDiameter = 3.0;    % for a circular sensor
+    params.innerSegmentDiameter = 2.6587; % 3.0;    % for a circular sensor
     params.conePacking = 'hexReg';
     params.LMSRatio = [0.67 0.33 0];
     params.mosaicRotationDegs = 30;
