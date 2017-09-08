@@ -2,17 +2,6 @@ function figGenerateOpticalFactors()
    
     close all;
     
-    pupilDiamMm = 2;
-    %pupilDiamMm = 3;
-    
-    if (pupilDiamMm == 2)
-        opticsModels = {'Geisler', 'WvfHuman', 'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanSubject1', 'WvfHumanSubject2', 'WvfHumanSubject3', 'WvfHumanSubject4', 'WvfHumanSubject5'};
-        opticsModelsLabels = {'Geisler', 'wvfMeanCoeff', 'wvfMeanOTF  ', 'wvfSubject1 ', 'wvfSubject2 ', 'wvfSubject3 ', 'wvfSubject4 ', 'wvfSubject5 '};
-    else
-        opticsModels = {'Geisler',  'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanSubject1', 'WvfHumanSubject2'};%, 'WvfHumanSubject3'};
-        opticsModelsLabels = {'Geisler',  'wvfMeanOTF  ', 'wvfSubject1 ', 'wvfSubject2 '}; % , 'wvfSubject3 '};
-    end
-    
     blur = true;
     apertureBlur = false;
     
@@ -75,40 +64,10 @@ function figGenerateOpticalFactors()
     % 'originalBanks'; 'defaultIsetbio';  'fullIsetbioNoScones'; 'fullIsetbioWithScones'
     mosaicTest = 'originalBanks';
     luminanceIndex = 1;
-
-    for opticsModelIndex = 1:numel(opticsModels)
-        opticsModel = opticsModels{opticsModelIndex};
-        % Retrieve reference mosaic ('originalBanks') CSF data
-        params = getParamsForMosaicWithLabel(mosaicTest);
-        coneSpacingMicrons = params.coneSpacingMicrons;
-        innerSegmentDiameter = params.innerSegmentDiameter;
-        conePacking = params.conePacking;
-        LMSRatio = params.LMSRatio;
-        mosaicRotationDegs = params.mosaicRotationDegs;
     
-        if (innerSegmentDiameter==3)
-            fprintf(2,'Setting inner segment diam to 2.6587 - optics computations performed before changing the code\n');
-            innerSegmentDiameter = 2.6587
-        end
-        
-        [d, the_rParams{opticsModelIndex}, ~, theOIs{opticsModelIndex}] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
-        sfRef = d.cyclesPerDegree;
-        opticsCSF(opticsModelIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1)); 
-    end % opticsModelIndex
-    
-        
-    opticsColors = [0 0 0; 1 0 0; 0.4 0.7 1];
-    opticsColors = cat(1, opticsColors, 0.85*[0.95 0.95 0.4] + 0.15*(1-[0.2 0.95 0.9]));
-    opticsColors = cat(1, opticsColors, 0.7*[0.75 0.75 0.4] + 0.3*(1-[0.2 0.75 0.75]));
-    opticsColors = cat(1, opticsColors, 0.55*[0.55 0.55 0.4] + 0.45*(1-[0.2 0.55 0.55]));
-    opticsColors = cat(1, opticsColors, 0.4*[0.35 0.35 0.4] + 0.6*(1-[0.2 0.35 0.36]));
-    opticsColors = cat(1, opticsColors, 0.25*[0.1 0.1 0.4] + 0.75*(1-[0.2 0.1 0.1]));
-    
-    sfRange = [2 61];
-    wavelengthsList = [550 450 650 700];
-    
+    % Plotting params
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 960 1400]);
+    set(hFig, 'Position', [10 10 960 1400], 'Color', [1 1 1]);
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'colsNum', 2, ...
@@ -119,94 +78,181 @@ function figGenerateOpticalFactors()
            'rightMargin',    0.005, ...
            'bottomMargin',   0.05, ...
            'topMargin',      0.01);
+       
+       
+    sfRange = [2 71];
+    csfRange = [2.1 5000];
+    wavelengthsList = [550 450]; %  650 700];
     
-    %% OTF slices
-    xTicks = [1 3 10 30 100];
-    yTicks = 0:0.2:1;
-    xTickLabels = xTicks;
-    yTickLabels = yTicks;
-    xLim = sfRange;
-    yLim = [-0.02 1.0];
-    backgroundColor = [1 1 1];
+    pupilDiamsExamined = [2 3];
     
-    subplot('Position', subplotPosVectors(1,1).v);
-    plotOTFs(theOIs, opticsModelsLabels, opticsColors, sfRange, wavelengthsList(1));
-    finishPlot(gca, '', 'modulation transfer function', 'log', 'linear', ...
-        xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, {}, '', true, false, backgroundColor);
+    for pupilDiamIndex = 1:numel(pupilDiamsExamined)
+        pupilDiamMm = pupilDiamsExamined(pupilDiamIndex);
+        
+        if (pupilDiamMm == 2)
+            opticsModels = {'Geisler', 'WvfHuman', 'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanSubject1', 'WvfHumanSubject2', 'WvfHumanSubject3', 'WvfHumanSubject4', 'WvfHumanSubject5'};
+            opticsModelsLabels = {'Geisler', 'wvfMeanCoeff', 'wvfMeanOTF  ', 'wvfSubject1 ', 'wvfSubject2 ', 'wvfSubject3 ', 'wvfSubject4 ', 'wvfSubject5 '};
+            opticsColors = [...
+                0.5 0.5 0.5; ...
+                1 0 0; ...
+                0.4 0.7 1; ...
+                0.85*[0.95 0.95 0.4]+0.15*(1-[0.2 0.95 0.9]); ...
+                0.70*[0.75 0.75 0.4]+0.30*(1-[0.2 0.75 0.75]); ...
+                0.55*[0.55 0.55 0.4]+0.45*(1-[0.2 0.55 0.55]); ...
+                0.40*[0.35 0.35 0.4]+0.60*(1-[0.2 0.35 0.36]); ...
+                0.25*[0.10 0.10 0.4]+0.75*(1-[0.2 0.10 0.10]) ...
+            ];
     
-    subplot('Position', subplotPosVectors(1,2).v);
-    plotOTFs(theOIs, opticsModelsLabels, opticsColors, sfRange, wavelengthsList(2));
-    finishPlot(gca, '', '', 'log', 'linear', ...
-        xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, {}, '', true, false, backgroundColor);
+        elseif (pupilDiamMm == 3)
+            opticsModels = {'Geisler',  'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanSubject1', 'WvfHumanSubject2'};%, 'WvfHumanSubject3'};
+            opticsModelsLabels = {'Geisler (2 mm)',  'wvfMeanOTF   ', 'wvfSubject1  ', 'wvfSubject2  '}; % , 'wvfSubject3 '};
+            opticsColors = [...
+                0.5 0.5 0.5; ...
+                0.4 0.7 1; ...
+                0.85*[0.95 0.95 0.4]+0.15*(1-[0.2 0.95 0.9]); ...
+                0.70*[0.75 0.75 0.4]+0.30*(1-[0.2 0.75 0.75]); ...
+                0.55*[0.55 0.55 0.4]+0.45*(1-[0.2 0.55 0.55]); ...
+                0.40*[0.35 0.35 0.4]+0.60*(1-[0.2 0.35 0.36]); ...
+                0.25*[0.10 0.10 0.4]+0.75*(1-[0.2 0.10 0.10]) ...
+                ];
+        end
     
-    subplot('Position', subplotPosVectors(2,1).v);
-    plotOTFs(theOIs, opticsModelsLabels, opticsColors, sfRange, wavelengthsList(3));
-    finishPlot(gca, 'spatial frequency (cpd)', 'modulation transfer function', 'log', 'linear', ...
-        xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, {}, '', true, false, backgroundColor);
+        opticsCSF = [];
+        tmpPupilDiamMM = nan;
+        for opticsModelIndex = 1:numel(opticsModels)
+            opticsModel = opticsModels{opticsModelIndex};
+            
+            % Retrieve reference mosaic ('originalBanks') CSF data
+            params = getParamsForMosaicWithLabel(mosaicTest);
+            coneSpacingMicrons = params.coneSpacingMicrons;
+            innerSegmentDiameter = params.innerSegmentDiameter;
+            conePacking = params.conePacking;
+            LMSRatio = params.LMSRatio;
+            mosaicRotationDegs = params.mosaicRotationDegs;
     
-    subplot('Position', subplotPosVectors(2,2).v);
-    plotOTFs(theOIs, opticsModelsLabels, opticsColors, sfRange, wavelengthsList(4));
-    finishPlot(gca, 'spatial frequency (cpd)', '', 'log', 'linear', ...
-        xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, {}, '', true, false, backgroundColor);
+            if (innerSegmentDiameter==3)
+                fprintf(2,'Setting inner segment diam to 2.6587 - optics computations performed before changing the code\n');
+                innerSegmentDiameter = 2.6587
+            end
+        
+            if ((pupilDiamMm == 3) && (strcmp(opticsModel, 'Geisler')))
+                % Use the 2mm Geisler CSF as reference
+                tmpPupilDiamMM = pupilDiamMm;
+                pupilDiamMm = 2;
+            end
+            [d, the_rParams{opticsModelIndex}, ~, theOIs{opticsModelIndex}] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs);
+            
+            if ((~isnan(tmpPupilDiamMM)) && (strcmp(opticsModel, 'Geisler')))
+                % Restore the correct pupilMM
+                pupilDiamMm = tmpPupilDiamMM;
+            end
+            
+            sfRef = d.cyclesPerDegree;
+            opticsCSF(opticsModelIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1)); 
+        end % opticsModelIndex
     
-    %% CSFs
-    subplot('Position', subplotPosVectors(3,1).v);
-    addBanksEtAlReferenceLines(the_rParams{1}, plotLuminanceLines);
-    xTickLabels = [1 3 10 30 100];
-    xTicks      = xTickLabels;
-    yTickLabels = [1 3 10 30 100 300 1000 3000];
-    yTicks      = yTickLabels;
-    xLim = sfRange;
-    yLim = [2.1 3000];
     
-    
-    hold on;
-    refCSF = opticsCSF(1,:);
-    legends = {'Banks et al. (87)'};
-    for opticsModelIndex = 1:size(opticsCSF,1)
-        if (opticsModelIndex <= 3)
-            markerType  = 's';
-            markerSize = 13;
+        %% OTF slices
+        xTicks = [1 3 10 30 100];
+        yTicks = 0:0.2:1;
+        xTickLabels = xTicks;
+        yTickLabels = yTicks;
+        xLim = sfRange;
+        yLim = [-0.02 1.0];
+        backgroundColor = [1 1 1];
+
+        figure(hFig);
+        subplot('Position', subplotPosVectors(1,pupilDiamIndex).v);
+        legends = plotOTFs(theOIs, opticsModelsLabels, opticsColors,sfRange, wavelengthsList, pupilDiamMm);
+
+        if (pupilDiamIndex == 1)
+            yLabel = 'modulation transfer function';
         else
-            markerType = 'o';
-            markerSize = 8;
+            yLabel = '';
+        end
+    
+        finishPlot(gca, '', yLabel, 'log', 'linear', ...
+            xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, legends, 'SouthWest', true, false, backgroundColor);
+    
+    
+        %% CSFs
+        subplot('Position', subplotPosVectors(2,pupilDiamIndex).v);
+        addBanksEtAlReferenceLines(the_rParams{1}, plotLuminanceLines);
+        xTickLabels = [1 3 10 30 100];
+        xTicks      = xTickLabels;
+        yTickLabels = [1 3 10 30 100 300 1000 3000];
+        yTicks      = yTickLabels;
+        xLim = sfRange;
+        yLim = csfRange;
+    
+    
+        hold on;
+        refCSF = opticsCSF(1,:);
+        legends = {'Banks et al. (87)'};
+        for opticsModelIndex = 1:size(opticsCSF,1)
+            if (isempty(strfind(opticsModelsLabels{opticsModelIndex}, 'Subject')))
+                markerType  = 's';
+                markerSize = 13;
+            else
+                markerType = 'o';
+                markerSize = 8;
+            end
+            markerColor = squeeze(opticsColors(opticsModelIndex,:));
+            
+            plot(sfRef, opticsCSF(opticsModelIndex,:), markerType, ...
+                'LineWidth', 1.5, ...
+                'MarkerSize', markerSize, 'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor', markerColor);
+            legends = cat(2, legends, opticsModelsLabels{opticsModelIndex});
+        end
+        hold off;
+        if (pupilDiamIndex == 1)
+            yLabel = 'contrast sensitivity';
+        else
+            yLabel = '';
         end
 
-        plot(sfRef, opticsCSF(opticsModelIndex,:), markerType, 'MarkerSize', markerSize, 'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)));
-        legends = cat(2, legends, opticsModelsLabels{opticsModelIndex});
-    end
-    hold off;
-    finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity', 'log', 'log', ...
-        xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, ...
-        legends, 'SouthWest', true, false, backgroundColor);
+        finishPlot(gca, '', yLabel, 'log', 'log', ...
+            xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, ...
+            legends, 'SouthWest', true, false, backgroundColor);
     
-    %% CSF ratios
-    subplot('Position', subplotPosVectors(3,2).v);
-    hold on
-    legends = {};
-    for opticsModelIndex = 2:size(opticsCSF,1)
-        if (opticsModelIndex <= 3)
-            markerType  = 's-';
-            markerSize = 13;
-        else
-            markerType = 'o-';
-            markerSize = 8;
+        %% CSF ratios
+        subplot('Position', subplotPosVectors(3,pupilDiamIndex).v);
+        hold on
+        legends = {};
+        for opticsModelIndex = 2:size(opticsCSF,1)
+            if (isempty(strfind(opticsModelsLabels{opticsModelIndex}, 'Subject')))
+                markerType  = 's-';
+                markerSize = 13;
+            else
+                markerType = 'o-';
+                markerSize = 8;
+            end
+
+            markerColor = squeeze(opticsColors(opticsModelIndex,:));
+            plot(sfRef, opticsCSF(opticsModelIndex,:) ./ refCSF, markerType, 'MarkerSize', markerSize, ...
+                'LineWidth', 1.5, ...
+                'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor', markerColor);
+            legends = cat(2, legends, sprintf('%s: %s',opticsModelsLabels{opticsModelIndex}, opticsModelsLabels{1}));
         end
-   
-        plot(sfRef, opticsCSF(opticsModelIndex,:) ./ refCSF, markerType, 'MarkerSize', markerSize, ...
-            'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor', squeeze(opticsColors(opticsModelIndex,:)));
-        legends = cat(2, legends, sprintf('%s: %s',opticsModelsLabels {opticsModelIndex}, opticsModels{1}));
-    end
-    hold off
-    yTickLabels =  [0.125 0.25 0.5 1 2];
-    yTicks      = yTickLabels;
-    yLim        = [0.21 4.0];
+        hold off
+        yTickLabels =  [0.125 0.25 0.5 1 2 4 8];
+        yTicks      = yTickLabels;
+        yLim        = [0.21 8.0];
+
+        if (pupilDiamIndex == 1)
+            yLabel = 'contrast sensitivity ratio';
+        else
+            yLabel = '';
+        end
     
-    finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity ratio', 'log', 'log', ...
-        xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, ...
-        legends, 'SouthWest', true, false, backgroundColor);
-    drawnow;
-    NicePlot.exportFigToPDF(sprintf('OpticsImpactPupilMM%2.1f.pdf',pupilDiamMm), hFig, 300);
+        finishPlot(gca, 'spatial frequency (cpd)', yLabel, 'log', 'log', ...
+            xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, ...
+            legends, 'SouthWest', true, false, backgroundColor);
+        drawnow;
+    end % pupilDiamIndex
+    
+    %Export to PDF
+    NicePlot.exportFigToPDF(sprintf('OpticsImpactPupilMM2and3.pdf'), hFig, 300);
     
     
     function [d, the_rParams, noiseFreeResponse, theOI] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs)
@@ -252,24 +298,33 @@ function figGenerateOpticalFactors()
 
 end
 
-function plotOTFs(theOIs, opticsModelLabels, opticsColors, sfRange, targetWavelength)
+function legends = plotOTFs(theOIs, opticsModelsLabels, opticsColors,  sfRange, targetWavelengths, pupilDiamMm)
     
-    lineStyle = '-';
+    lineStyles = {'-', '-.'};
     hold on
     legends = {};
-    for opticsModelIndex = 1:numel(opticsModelLabels)
-        legends = cat(2, legends, opticsModelLabels{opticsModelIndex});
-        [otf, otf_fx, otf_fy, psf, psf_x, psf_y] = getOtfPsfData(theOIs{opticsModelIndex}, targetWavelength);
-        centerPosition = floor(size(otf,1)/2) + 1;
-        otfSlice = squeeze(otf(centerPosition, centerPosition:end));
-        % make otf_fx(1) = 0.1, so that the zero data point is plotted
-        otf_fx(centerPosition) = 0.1;
-        lineColor = squeeze(opticsColors(opticsModelIndex,:));
-        plot(otf_fx(centerPosition:end), otfSlice, '-', 'LineStyle', lineStyle, 'LineWidth', 1.5, 'Color',lineColor);
+    for waveIndex = 1:numel(targetWavelengths)
+        for opticsModelIndex = 1:numel(opticsModelsLabels)
+            if (waveIndex == 1)
+                legends = cat(2, legends, sprintf('%s', opticsModelsLabels{opticsModelIndex}));
+            end
+            [otf, otf_fx, otf_fy, psf, psf_x, psf_y] = getOtfPsfData(theOIs{opticsModelIndex}, targetWavelengths(waveIndex));
+            centerPosition = floor(size(otf,1)/2) + 1;
+            otfSlice = squeeze(otf(centerPosition, centerPosition:end));
+            % make otf_fx(1) non-zero, so that the zero data point is plotted
+            % on a log scale
+            %otf_fx(centerPosition) = 0.1;
+            lineColor = squeeze(opticsColors(opticsModelIndex,:));
+            lineWidth = 1.5;
+            if (~isempty(strfind(opticsModelsLabels{opticsModelIndex}, 'Geisler')))
+                lineWidth = 4.0;
+            end
+            plot(otf_fx(centerPosition:end), otfSlice, '-', 'LineStyle', lineStyles{waveIndex}, 'LineWidth', lineWidth, 'Color',lineColor);
+        end
     end
     hold off
     xlim(sfRange); ylim([-0.03 1]);
-    title(sprintf('%d nm', targetWavelength));
+    title(sprintf('%2.1f mm pupil', pupilDiamMm));
 end
 
 
@@ -295,5 +350,5 @@ function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, theXLim, th
         set(hL, 'FontSize', 14, 'FontWeight', 'Bold', 'FontAngle', 'italic', 'FontName', 'Menlo', 'Box', 'off');
     end
     hTitle=get(gca,'title');
-    set(hTitle, 'FontSize', 14);
+    set(hTitle, 'FontSize', 16);
 end

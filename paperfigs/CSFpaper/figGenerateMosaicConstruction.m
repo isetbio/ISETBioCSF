@@ -10,7 +10,7 @@ makeNew = true;
 if (makeNew)
     % Set coneMosaicHex - specific params
     params.resamplingFactor = 9;                            % 9 is good;how fine to sample the hex mosaic positions with an underlying rect mosaic
-    params.fovDegs = 1*[1 1];                             % FOV in degrees ([width height], default: 0.25x0.25
+    params.fovDegs = 0.5*[1 1];                             % FOV in degrees ([width height], default: 0.25x0.25
     params.eccBasedConeDensity = true;                      % if true, generate a mosaic where cone spacing varies with eccentricity (Curcio model)
     params.customLambda = [];                               % cone spacing in microns (only used with regular hex mosaics)
     params.rotationDegs = 0;                                % rotation of the mosaic, in degrees 0 = , 30 = (makes sense with regular hex mosaics)

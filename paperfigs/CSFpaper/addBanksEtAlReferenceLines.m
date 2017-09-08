@@ -3,7 +3,7 @@ function addBanksEtAlReferenceLines(rParamsAllConds, plotLuminanceLine)
     lumIndex = 1;
     rParams = rParamsAllConds{sfIndex,lumIndex};
     luminanceColors = [0 1 0; 0 0 1; 1 0 0; 0 0 0];
-    luminanceColors = [0 0 0; 0 0 0; 0 0 0; 0 0 0];
+    luminanceColors = [0.5 0.5 0.5; 0.5 0.5 0.5; 0 0 0; 0 0 0];
     % Add unshifted version for reference
     banksFactor = 1;
     [A,B,C,D,E] = LoadDigitizedBanksFigure2;
@@ -17,17 +17,17 @@ function addBanksEtAlReferenceLines(rParamsAllConds, plotLuminanceLine)
         
         if (plotLuminanceLine(1))
             % 3.4 cd/m2
-            plot(E(:,1),E(:,2)*banksFactor,'-','LineWidth',1.0, 'Color', squeeze(luminanceColors(1,:)));
+            plot(E(:,1),E(:,2)*banksFactor,'-','LineWidth',4, 'Color', squeeze(luminanceColors(1,:)));
         end
         
         if (plotLuminanceLine(2))
             % 34 cd/m2
-            plot(D(:,1),D(:,2)*banksFactor,'-','LineWidth',1.0, 'Color', squeeze(luminanceColors(2,:)));
+            plot(D(:,1),D(:,2)*banksFactor,'-','LineWidth',4, 'Color', squeeze(luminanceColors(2,:)));
         end
         
         if (plotLuminanceLine(3))
             % 340 cd/m2
-            plot(C(:,1),C(:,2)*banksFactor,'-','LineWidth',1.0, 'Color', squeeze(luminanceColors(3,:)));
+            plot(C(:,1),C(:,2)*banksFactor,'-','LineWidth',1.5, 'Color', squeeze(luminanceColors(3,:)));
         end
     end
 end

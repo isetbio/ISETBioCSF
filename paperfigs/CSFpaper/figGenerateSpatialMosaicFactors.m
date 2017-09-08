@@ -2,8 +2,10 @@ function figGenerateSpatialMosaicFactors()
     
     close all;
 
-    mosaicModels       = {'originalBanksNoRotation',  'ISETbioHexRegNoScones', 'ISETbioHexRegLMS',     'ISETbioHexEccBasedLMS'};
-    mosaicModelsLabels = {'Banks (LM)',         'ISETbio Hex-Reg   (LM)',   'ISETbio Hex-Reg  (LMS)', 'ISETbio EccBased (LMS)'};
+    mosaicModels       = {'originalBanksNoRotation',  'ISETbioHexRegNoScones',  'ISETbioHexRegLMS',     'ISETbioHexEccBasedLMS'};
+    mosaicModelsFullLabels = {'Banks''87, 3um/3um',   'ISETbio 2um/1.6um',    'ISETbio 2um/1.6um',  'ISETbio ecc-based/1.6um'};
+    mosaicModelsLabels = {'Banks''87',   'ISETbio 2um/1.6um (LM)',    'ISETbio 2um/1.6um (LMS)',  'ISETbio ecc-based/1.6um (LMS)'};
+    mosaicConeTypes = {'LM', 'LM', 'LMS', 'LMS'};
     
     % 'WvfHuman', 'Geisler'
     opticsModel = 'WvfHumanMeanOTFmagMeanOTFphase';
@@ -90,7 +92,8 @@ function figGenerateSpatialMosaicFactors()
     end % mosaicIndex
     
     
-    sfRange = [2 61];
+    sfRange = [2 71];
+    csfRange = [2.1 5000];
     
     hFig = figure(2); clf;
     set(hFig, 'Position', [10 10 960 1400]);
@@ -107,7 +110,7 @@ function figGenerateSpatialMosaicFactors()
        
     
     %% Extract the mosaic for some frequency
-    sfIndex = 3;
+    sfIndex = 1;
     xTickLabels = [-200:20:200];
     xTicks      = xTickLabels*1e-6;
     yTicks      = xTicks;
@@ -126,7 +129,7 @@ function figGenerateSpatialMosaicFactors()
             case 4
                 subplot('Position', subplotPosVectors(2,2).v);
         end % switch
-        plotMosaic(rParams{mosaicIndex}, sfIndex, sprintf('%s', mosaicLegend{mosaicIndex})); 
+        plotMosaic(rParams{mosaicIndex}, sfIndex, sprintf('%s', mosaicModelsFullLabels{mosaicIndex}), mosaicConeTypes{mosaicIndex}); 
         switch (mosaicIndex)
             case 1
                 finishPlot(gca, '', 'space (microns)', ...
@@ -153,7 +156,7 @@ function figGenerateSpatialMosaicFactors()
     subplot('Position', subplotPosVectors(3,1).v);
     %addBanksEtAlReferenceLines(rParams{1}, plotLuminanceLines);
     hold on;
-    legends = {} %{'Banks et al. (87) - 2mm'};
+    legends = {}; %{'Banks et al. (87) - 2mm'};
     for mosaicModelIndex = 1:size(mosaicCSF,2)
         if (mosaicModelIndex == 1)
             % reference mosaic
@@ -176,7 +179,7 @@ function figGenerateSpatialMosaicFactors()
     yTickLabels = [1 3 10 30 100 300 1000 3000];
     yTicks      = yTickLabels;
     xLim = sfRange;
-    yLim = [2.1 3000];
+    yLim = csfRange;
     
     finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity', ...
         'log', 'log', xLim, yLim, xTicks, yTicks, ...
@@ -209,7 +212,7 @@ function figGenerateSpatialMosaicFactors()
     
     finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity ratio', ...
         'log', 'log', xLim, yLim, xTicks, yTicks, ...
-        xTickLabels, yTickLabels, legends, 'SouthEast', true, false, [1 1 1]);
+        xTickLabels, yTickLabels, legends, 'SouthWest', true, false, [1 1 1]);
     
     drawnow
     NicePlot.exportFigToPDF(sprintf('ConeMosaicImpactPupilMM%2.1f.pdf',pupilDiamMm), hFig, 300);
@@ -313,7 +316,7 @@ function figGenerateSpatialMosaicFactors()
 
 end
 
-function plotMosaic(rParamsAllConds, sfIndex, titleString)
+function plotMosaic(rParamsAllConds, sfIndex, titleString, coneTypes)
     lumIndex = 1;
     rParams = rParamsAllConds{sfIndex,lumIndex};
     fprintf('Loading a previously saved cone mosaic\n');
@@ -327,7 +330,7 @@ function plotMosaic(rParamsAllConds, sfIndex, titleString)
         'visualizedConeAperture', visualizedAperture, ...
         'apertureShape', apertureShape);    
     conesNum = numel(find(theMosaic.pattern(:) > 1));
-    title(gca, sprintf('%s (cones: %d)', titleString, conesNum));
+    title(gca, sprintf('%s (%d %s cones)', titleString, conesNum, coneTypes));
 end
 
 function plotMosaicActivation(axesHandle, rParamsAllConds, sfIndex, activationMap, signalName, cpd)
@@ -411,5 +414,5 @@ function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, theXLim, th
         set(hL, 'FontSize', 14, 'FontWeight', 'Bold', 'FontAngle', 'italic', 'FontName', 'Menlo', 'Box', 'off');
     end
     hTitle=get(gca,'title');
-    set(hTitle, 'FontSize', 14);
+    set(hTitle, 'FontSize', 16);
 end
