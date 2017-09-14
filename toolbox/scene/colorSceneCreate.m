@@ -228,20 +228,37 @@ switch (colorModulationParams.modulationType)
         theScene = sceneSet(theScene, 'h fov', fieldOfViewDegs);
         
         debug = false;
-        if (debug)
-            figure(122); clf;
-            subplot(1,2,1);
+        if (debug) && (colorModulationParams.contrast > 0)
+            hFig = figure(); clf;
+            set(hFig, 'Position', [10 10  900 400]);
+            subplot(1,3,1);
             imagesc(sceneGet(theScene, 'RGB'));
             title('RGB rendition');
             axis 'image'
 
-            subplot(1,2,2);
-            imagesc(sceneGet(theScene, 'luminance'));
-            title('luminance map');
+            subplot(1,3,2);
+            lumMap = sceneGet(theScene, 'luminance');
+            [lumMapLevels, ia, ic] = unique(lumMap(:));
+            if (numel(lumMapLevels) == 1)
+                XLim = [1 2];
+            else
+                XLim = [1 numel(lumMapLevels)];
+            end
+            
+            imagesc(lumMap);
+            title(sprintf('luminance map. mean lum: %2.4f', sceneGet(theScene, 'mean lum')));
             axis 'image'
             colormap(gray(1024))
+            
+            subplot(1,3,3);
+            bar(1:numel(ia),ia(:));
+            set(gca, 'XLim', XLim);
+            xlabel('value index');
+            ylabel('count');
+            title(sprintf('# of values: %d', numel(lumMapLevels)));
+            axis('square')
+            
             drawnow
-            pause
         end
 
     case 'AO'
