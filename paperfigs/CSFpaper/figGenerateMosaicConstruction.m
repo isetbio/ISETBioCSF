@@ -6,7 +6,7 @@ ieInit; clear; close all;
 % Set random seed to obtain replicable results
 rng(1235);
 
-makeNew = true;
+makeNew = false;
 if (makeNew)
     % Set coneMosaicHex - specific params
     params.resamplingFactor = 9;                            % 9 is good;how fine to sample the hex mosaic positions with an underlying rect mosaic
@@ -41,7 +41,7 @@ if (makeNew)
 else
     fprintf('\nLoading mosaic ... ');
     % Load the mosaic
-    load('theHexMosaic0.5_1.2.mat');
+    load('theHexMosaic.mat');
     fprintf('Done\n');
 end
 
@@ -58,7 +58,7 @@ hFig = theHexMosaic.plotMosaicProgression(...
     );
 
 % Export to PDF
-% NicePlot.exportFigToPDF('mosaicConstruction.pdf', hFig, 300);
+NicePlot.exportFigToPDF('HexMosaicConstruction.pdf', hFig, 300);
     
 % Show the final LMS mosaic
 visualizedAperture = 'both'; % choose between 'both', 'lightCollectingArea', 'geometricArea'

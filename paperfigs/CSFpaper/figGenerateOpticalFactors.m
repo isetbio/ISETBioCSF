@@ -171,8 +171,15 @@ function figGenerateOpticalFactors()
             yLabel = '';
         end
     
+        if (pupilDiamIndex == 1)
+            panelLabel = '(A)';
+        else
+            panelLabel = '(D)';
+        end
+        
         finishPlot(gca, '', yLabel, 'log', 'linear', ...
-            xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, legends, 'SouthWest', true, false, backgroundColor);
+            xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, {panelLabel, [50 0.95]}, ...
+            legends, 'SouthWest', true, false, backgroundColor);
     
     
         %% CSFs
@@ -211,8 +218,14 @@ function figGenerateOpticalFactors()
             yLabel = '';
         end
 
+        if (pupilDiamIndex == 1)
+            panelLabel = '(B)';
+        else
+            panelLabel = '(E)';
+        end
+        
         finishPlot(gca, '', yLabel, 'log', 'log', ...
-            xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, ...
+            xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, {panelLabel, [50 3200]}, ...
             legends, 'SouthWest', true, false, backgroundColor);
     
         %% CSF ratios
@@ -245,8 +258,14 @@ function figGenerateOpticalFactors()
             yLabel = '';
         end
     
+        if (pupilDiamIndex == 1)
+            panelLabel = '(C)';
+        else
+            panelLabel = '(F)';
+        end
+        
         finishPlot(gca, 'spatial frequency (cpd)', yLabel, 'log', 'log', ...
-            xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, ...
+            xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, {panelLabel, [50 6.5]}, ...
             legends, 'SouthWest', true, false, backgroundColor);
         drawnow;
     end % pupilDiamIndex
@@ -328,7 +347,7 @@ function legends = plotOTFs(theOIs, opticsModelsLabels, opticsColors,  sfRange, 
 end
 
 
-function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, theXLim, theYLim, xTicks, yTicks, xTickLabels, yTickLabels, theLegends, legendLocation, showGrid, showBox, backgroundColor)
+function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, theXLim, theYLim, xTicks, yTicks, xTickLabels, yTickLabels, panelLabelAndPos, theLegends, legendLocation, showGrid, showBox, backgroundColor)
     set(gca, 'FontName', 'Helvetica', 'FontSize', 18, 'FontWeight', 'normal', 'FontAngle', 'normal', 'TickDir', 'both');
     set(gca, 'XTick', xTicks, 'XTickLabel', xTickLabels, 'YTick', yTicks, 'yTickLabel', yTickLabels);
     if (~isempty(theXlabel))
@@ -351,4 +370,9 @@ function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, theXLim, th
     end
     hTitle=get(gca,'title');
     set(hTitle, 'FontSize', 16);
+    
+    % Label plot
+    panelLabel = panelLabelAndPos{1};
+    panelLabelPos = panelLabelAndPos{2};
+    text(panelLabelPos(1), panelLabelPos(2), panelLabel, 'Color', [0 0 0], 'FontSize', 26, 'FontWeight', 'bold');
 end
