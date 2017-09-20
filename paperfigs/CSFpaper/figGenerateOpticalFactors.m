@@ -1,6 +1,9 @@
 function figGenerateOpticalFactors()
    
     close all;
+    % cd to wherver this script resides
+    [localDir,~] = fileparts(which(mfilename()));
+    cd(localDir)
     
     blur = true;
     apertureBlur = false;
@@ -67,7 +70,7 @@ function figGenerateOpticalFactors()
     
     % Plotting params
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 960 1400], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 0 960 1370], 'Color', [1 1 1]);
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'colsNum', 2, ...
@@ -178,7 +181,7 @@ function figGenerateOpticalFactors()
         end
         
         finishPlot(gca, '', yLabel, 'log', 'linear', ...
-            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [52 0.975]}, ...
+            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [51.5 0.975]}, ...
             legends, 'SouthWest', true, false, backgroundColor);
     
     
@@ -222,7 +225,7 @@ function figGenerateOpticalFactors()
         end
         
         finishPlot(gca, '', yLabel, 'log', 'log', ...
-            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [52 4200]}, ...
+            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [51.5 4200]}, ...
             legends, 'SouthWest', true, false, backgroundColor);
     
         %% CSF ratios
@@ -262,12 +265,13 @@ function figGenerateOpticalFactors()
         end
         
         finishPlot(gca, 'spatial frequency (cpd)', yLabel, 'log', 'log', ...
-            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [52 7.3]}, ...
+            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [51.5 7.3]}, ...
             legends, 'SouthWest', true, false, backgroundColor);
         drawnow;
     end % pupilDiamIndex
     
     %Export to PDF
+    cd(localDir);
     NicePlot.exportFigToPDF(sprintf('OpticsImpactPupilMM2and3.pdf'), hFig, 300);
     
     
