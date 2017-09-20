@@ -6,19 +6,20 @@ ieInit; clear; close all;
 % Set random seed to obtain replicable results
 rng(1235);
 
-makeNew = false;
+makeNew = true;
 if (makeNew)
     % Set coneMosaicHex - specific params
     params.resamplingFactor = 9;                            % 9 is good;how fine to sample the hex mosaic positions with an underlying rect mosaic
-    params.fovDegs = 0.5*[1 1];                             % FOV in degrees ([width height], default: 0.25x0.25
+    params.fovDegs = [0.75 0.4];                            % FOV in degrees ([width height], default: 0.25x0.25
     params.eccBasedConeDensity = true;                      % if true, generate a mosaic where cone spacing varies with eccentricity (Curcio model)
     params.customLambda = [];                               % cone spacing in microns (only used with regular hex mosaics)
     params.rotationDegs = 0;                                % rotation of the mosaic, in degrees 0 = , 30 = (makes sense with regular hex mosaics)
     params.customInnerSegmentDiameter = [];                 % inner segment diameter, in microns (empty for isetbio default) 
+    params.spatialDensity = [0 0.6 0.3 0.1];                % K/L/M/S cone densities
     params.sConeMinDistanceFactor = 3.0;                    % min distance between neighboring S-cones = f * local cone separation - to make the S-cone lattice semi-regular
     params.sConeFreeRadiusMicrons = 45;                     % radius of S-cone free retina, in microns
-    params.latticeAdjustmentPositionalToleranceF = 0.01;  % determines cone delta movement tolerance for terminating iterative adjustment - by default this is 0.01 (here setting it lower for faster, but less acurate mosaic generation)
-    params.latticeAdjustmentDelaunayToleranceF = 0.001;   % determines position tolerance for triggering another Delaunay triangularization - by default this is 0.001 (here setting it lower for faster, but less acurate mosaic generation)
+    params.latticeAdjustmentPositionalToleranceF = 0.01;    % determines cone delta movement tolerance for terminating iterative adjustment - by default this is 0.01 (here setting it lower for faster, but less acurate mosaic generation)
+    params.latticeAdjustmentDelaunayToleranceF = 0.001;     % determines position tolerance for triggering another Delaunay triangularization - by default this is 0.001 (here setting it lower for faster, but less acurate mosaic generation)
     params.marginF = 1.5;
     saveLatticeAdjustmentProgression = true;                % set to true, only if interested to see how the mosaic lattice is iteratively adjusted when eccBasedConeDensity is true               
 
@@ -27,6 +28,7 @@ if (makeNew)
         'fovDegs', params.fovDegs, ...
         'eccBasedConeDensity', params.eccBasedConeDensity, ...
         'rotationDegs', params.rotationDegs, ...
+        'spatialDensity', params.spatialDensity, ...
         'sConeMinDistanceFactor', params.sConeMinDistanceFactor, ...    
         'sConeFreeRadiusMicrons', params.sConeFreeRadiusMicrons, ...    
         'customLambda', params.customLambda, ...
