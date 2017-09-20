@@ -82,6 +82,9 @@ function figGenerateOpticalFactors()
        
     sfRange = [2 71];
     csfRange = [2.1 5000];
+    sfTicks = [1 3 10 30 100];
+    sfTickLabels = sfTicks;
+        
     wavelengthsList = [550 450]; %  650 700];
     
     pupilDiamsExamined = [2 3];
@@ -153,17 +156,14 @@ function figGenerateOpticalFactors()
     
     
         %% OTF slices
-        xTicks = [1 3 10 30 100];
         yTicks = 0:0.2:1;
-        xTickLabels = xTicks;
         yTickLabels = yTicks;
-        xLim = sfRange;
         yLim = [-0.02 1.0];
         backgroundColor = [1 1 1];
 
         figure(hFig);
         subplot('Position', subplotPosVectors(1,pupilDiamIndex).v);
-        legends = plotOTFs(theOIs, opticsModelsLabels, opticsColors,sfRange, wavelengthsList, pupilDiamMm);
+        legends = plotOTFs(theOIs, opticsModelsLabels, opticsColors, sfRange, wavelengthsList, pupilDiamMm);
 
         if (pupilDiamIndex == 1)
             yLabel = 'modulation transfer function';
@@ -178,18 +178,15 @@ function figGenerateOpticalFactors()
         end
         
         finishPlot(gca, '', yLabel, 'log', 'linear', ...
-            xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, {panelLabel, [50 0.95]}, ...
+            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [52 0.975]}, ...
             legends, 'SouthWest', true, false, backgroundColor);
     
     
         %% CSFs
         subplot('Position', subplotPosVectors(2,pupilDiamIndex).v);
         addBanksEtAlReferenceLines(the_rParams{1}, plotLuminanceLines);
-        xTickLabels = [1 3 10 30 100];
-        xTicks      = xTickLabels;
         yTickLabels = [1 3 10 30 100 300 1000 3000];
         yTicks      = yTickLabels;
-        xLim = sfRange;
         yLim = csfRange;
     
     
@@ -225,7 +222,7 @@ function figGenerateOpticalFactors()
         end
         
         finishPlot(gca, '', yLabel, 'log', 'log', ...
-            xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, {panelLabel, [50 3200]}, ...
+            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [52 4200]}, ...
             legends, 'SouthWest', true, false, backgroundColor);
     
         %% CSF ratios
@@ -265,7 +262,7 @@ function figGenerateOpticalFactors()
         end
         
         finishPlot(gca, 'spatial frequency (cpd)', yLabel, 'log', 'log', ...
-            xLim, yLim, xTicks, yTicks, xTickLabels, yTickLabels, {panelLabel, [50 6.5]}, ...
+            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [52 7.3]}, ...
             legends, 'SouthWest', true, false, backgroundColor);
         drawnow;
     end % pupilDiamIndex
