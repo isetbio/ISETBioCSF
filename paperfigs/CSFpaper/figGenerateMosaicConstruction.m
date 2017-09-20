@@ -3,10 +3,14 @@ function figGenerateMosaicConstruction()
 %% Initialize
 ieInit; clear; close all;
 
+% cd to wherver this script resides
+[localDir,~] = fileparts(which(mfilename()));
+cd(localDir)
+
 % Set random seed to obtain replicable results
 rng(1235);
 
-makeNew = true;
+makeNew = false;
 if (makeNew)
     % Set coneMosaicHex - specific params
     params.resamplingFactor = 9;                            % 9 is good;how fine to sample the hex mosaic positions with an underlying rect mosaic
@@ -60,11 +64,11 @@ hFig = theHexMosaic.plotMosaicProgression(...
     );
 
 % Export to PDF
+cd(localDir)
 NicePlot.exportFigToPDF('HexMosaicConstruction.pdf', hFig, 300);
     
 % Show the final LMS mosaic
 visualizedAperture = 'both'; % choose between 'both', 'lightCollectingArea', 'geometricArea'
 theHexMosaic.visualizeGrid('visualizedConeAperture', visualizedAperture, 'generateNewFigure', true);
 end
-
 

@@ -3,8 +3,8 @@ function figGenerateSpatialMosaicFactors()
     close all;
 
     mosaicModels       = {'originalBanksNoRotation',  'ISETbioHexRegNoScones',  'ISETbioHexRegLMS',     'ISETbioHexEccBasedLMS'};
-    mosaicModelsFullLabels = {'Banks''87, 3um/3um',   'ISETbio 2um/1.6um',    'ISETbio 2um/1.6um',  'ISETbio ecc-based/1.6um'};
-    mosaicModelsLabels = {'Banks''87',   'ISETbio 2um/1.6um (LM)',    'ISETbio 2um/1.6um (LMS)',  'ISETbio ecc-based/1.6um (LMS)'};
+    mosaicModelsFullLabels = {'Banks et al.''87, 3um/3um',   'ISETbio 2um/1.6um',    'ISETbio 2um/1.6um',  'ISETbio ecc-based/1.6um'};
+    mosaicModelsLabels = {'Banks et al.''87',   'ISETbio 2um/1.6um (LM)',    'ISETbio 2um/1.6um (LMS)',  'ISETbio ecc-based/1.6um (LMS)'};
     mosaicConeTypes = {'LM', 'LM', 'LMS', 'LMS'};
     
     % 'WvfHuman', 'Geisler'
@@ -115,9 +115,9 @@ function figGenerateSpatialMosaicFactors()
     xTicks      = xTickLabels*1e-6;
     yTicks      = xTicks;
     yTickLabels = xTickLabels;
-    xLim = 45*[-1 1]*1e-6;
+    xLim = 65*[-1 1]*1e-6;
     yLim = xLim;
-    backgroundColor = [0.1 0.1 0.1];
+    backgroundColor = [1 1 1];
     for mosaicIndex = 1:numel(mosaicModels)
         switch (mosaicIndex)
             case 1
@@ -132,21 +132,33 @@ function figGenerateSpatialMosaicFactors()
         plotMosaic(rParams{mosaicIndex}, sfIndex, sprintf('%s', mosaicModelsFullLabels{mosaicIndex}), mosaicConeTypes{mosaicIndex}); 
         switch (mosaicIndex)
             case 1
+                panelLabelPosAndColor{1} = '(A)';
+                panelLabelPosAndColor{2} = [-62 60]*1e-6;
+                panelLabelPosAndColor{3} = [0 0 0];
                 finishPlot(gca, '', 'space (microns)', ...
                     'linear', 'linear', xLim, yLim, ...
-                    xTicks, yTicks, {}, yTickLabels, [], '', false, true, backgroundColor);
+                    xTicks, yTicks, {}, yTickLabels, panelLabelPosAndColor, [],'', false, true, backgroundColor);
             case 2
+                panelLabelPosAndColor{1} = '(B)';
+                panelLabelPosAndColor{2} = [-62 60]*1e-6;
+                panelLabelPosAndColor{3} = [0 0 0];
                 finishPlot(gca, '', '', ...
                     'linear', 'linear', xLim, yLim, ...
-                    xTicks, yTicks, {}, {}, [], '', false,  true,  backgroundColor);
+                    xTicks, yTicks, {}, {}, panelLabelPosAndColor, [],  '', false,  true,  backgroundColor);
             case 3
+                panelLabelPosAndColor{1} = '(C)';
+                panelLabelPosAndColor{2} = [-62 60]*1e-6;
+                panelLabelPosAndColor{3} = [0 0 0];
                 finishPlot(gca, 'space (microns)', 'space (microns)', ...
                     'linear', 'linear', xLim, yLim, ...
-                    xTicks, yTicks, xTickLabels, yTickLabels, [], '', false, true,  backgroundColor);
+                    xTicks, yTicks, xTickLabels, yTickLabels, panelLabelPosAndColor, [], '', false, true,  backgroundColor);
             case 4
+                panelLabelPosAndColor{1} = '(D)';
+                panelLabelPosAndColor{2} = [-62 60]*1e-6;
+                panelLabelPosAndColor{3} = [0 0 0];
                 finishPlot(gca, 'space (microns)', '', ...
                     'linear', 'linear', xLim, yLim, ...
-                    xTicks, yTicks, xTickLabels, {}, [], '', false, true,  backgroundColor);
+                    xTicks, yTicks, xTickLabels, {},  panelLabelPosAndColor, [],'', false, true,  backgroundColor);
                 subplot('Position', subplotPosVectors(2,2).v);
         end % switch
     end % mosaicIndex
@@ -164,12 +176,13 @@ function figGenerateSpatialMosaicFactors()
             markerSize = 13;
         else
             markerType = 'o-';
-            markerSize = 8;
+            markerSize = 10;
         end
         plot(sfTest{1}, squeeze(mosaicCSF(1,mosaicModelIndex,:)), markerType, 'MarkerSize', markerSize, 'MarkerEdgeColor', [0 0 0], ...
             'MarkerFaceColor', squeeze(mosaicColors(mosaicModelIndex,:)), ...
             'LineWidth', 1.5, ...
             'Color', squeeze(mosaicColors(mosaicModelIndex,:)));
+        title(' ');
         legends = cat(2, legends, mosaicModelsLabels{mosaicModelIndex});
     end % mosaicIndex
     
@@ -180,10 +193,13 @@ function figGenerateSpatialMosaicFactors()
     yTicks      = yTickLabels;
     xLim = sfRange;
     yLim = csfRange;
-    
+    panelLabelPosAndColor{1} = '(E)';
+    panelLabelPosAndColor{2} = [2.25 3600];
+    panelLabelPosAndColor{3} = [0 0 0];
+                
     finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity', ...
-        'log', 'log', xLim, yLim, xTicks, yTicks, ...
-        xTickLabels, yTickLabels, legends, 'SouthWest', true, false, [1 1 1]);
+        'log', 'log', xLim, yLim, xTicks, yTicks,  ...
+        xTickLabels, yTickLabels, panelLabelPosAndColor, legends, 'SouthWest', true, false, [1 1 1]);
 
     
     %% CSF ratios
@@ -197,12 +213,13 @@ function figGenerateSpatialMosaicFactors()
             markerSize = 13;
         else
             markerType = 'o-';
-            markerSize = 8;
+            markerSize = 10;
         end
         plot(sfTest{1}, squeeze(mosaicCSF(1,mosaicModelIndex,:)) ./ squeeze(mosaicCSF(1,1,:)), markerType, ...
             'MarkerSize', markerSize, 'MarkerFaceColor', squeeze(mosaicColors(mosaicModelIndex,:)), 'MarkerEdgeColor', [0 0 0], ...
             'LineWidth', 1.5, ...
             'Color', squeeze(mosaicColors(mosaicModelIndex,:)));
+        title(' ');
         legends = cat(2, legends, sprintf('%s: %s', mosaicModelsLabels{mosaicModelIndex}, mosaicModelsLabels{1}));
     end
     
@@ -210,9 +227,12 @@ function figGenerateSpatialMosaicFactors()
     yTicks      = yTickLabels;
     yLim        = [0.120 2.0];
     
+    panelLabelPosAndColor{1} = '(F)';
+    panelLabelPosAndColor{2} = [2.25 1.8];
+    panelLabelPosAndColor{3} = [0 0 0];
     finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity ratio', ...
         'log', 'log', xLim, yLim, xTicks, yTicks, ...
-        xTickLabels, yTickLabels, legends, 'SouthWest', true, false, [1 1 1]);
+        xTickLabels, yTickLabels, panelLabelPosAndColor, legends, 'SouthWest', true, false, [1 1 1]);
     
     drawnow
     NicePlot.exportFigToPDF(sprintf('ConeMosaicImpactPupilMM%2.1f.pdf',pupilDiamMm), hFig, 300);
@@ -392,7 +412,7 @@ function addBanksEtAlReferenceLines(rParamsAllConds, plotLuminanceLine)
 end
 
 
-function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, theXLim, theYLim, xTicks, yTicks, xTickLabels, yTickLabels, theLegends, legendLocation, showGrid, showBox, backgroundColor)
+function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, theXLim, theYLim, xTicks, yTicks, xTickLabels, yTickLabels, panelLabelPosAndColor, theLegends, legendLocation, showGrid, showBox, backgroundColor)
     set(gca, 'FontName', 'Helvetica', 'FontSize', 18, 'FontWeight', 'normal', 'FontAngle', 'normal', 'TickDir', 'both');
     set(gca, 'XTick', xTicks, 'XTickLabel', xTickLabels, 'YTick', yTicks, 'yTickLabel', yTickLabels);
     if (~isempty(theXlabel))
@@ -411,8 +431,13 @@ function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, theXLim, th
     axis square
     if (~isempty(theLegends))
         hL = legend(theLegends, 'Location', legendLocation);
-        set(hL, 'FontSize', 14, 'FontWeight', 'Bold', 'FontAngle', 'italic', 'FontName', 'Menlo', 'Box', 'off');
+        set(hL, 'FontSize', 13, 'FontWeight', 'Bold', 'FontAngle', 'italic', 'FontName', 'Menlo', 'Box', 'off');
     end
     hTitle=get(gca,'title');
-    set(hTitle, 'FontSize', 16);
+    set(hTitle, 'FontSize', 18);
+    
+    % Label plot
+    panelLabel = panelLabelPosAndColor{1};
+    panelLabelPos = panelLabelPosAndColor{2};
+    text(panelLabelPos(1), panelLabelPos(2), panelLabel, 'Color', panelLabelPosAndColor{3}, 'FontSize', 26, 'FontWeight', 'bold');
 end
