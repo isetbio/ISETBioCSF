@@ -111,11 +111,11 @@ function figGenerateSpatialMosaicFactors()
     
     %% Extract the mosaic for some frequency
     sfIndex = 1;
-    xTickLabels = [-200:20:200];
+    xTickLabels = [-40:20:40];
     xTicks      = xTickLabels*1e-6;
-    yTicks      = xTicks;
+    yTicks      = [-40:20:20];
     yTickLabels = xTickLabels;
-    xLim = 65*[-1 1]*1e-6;
+    xLim = 45*[-1 1]*1e-6;
     yLim = xLim;
     backgroundColor = [1 1 1];
     for mosaicIndex = 1:numel(mosaicModels)
@@ -130,35 +130,31 @@ function figGenerateSpatialMosaicFactors()
                 subplot('Position', subplotPosVectors(2,2).v);
         end % switch
         plotMosaic(rParams{mosaicIndex}, sfIndex, sprintf('%s', mosaicModelsFullLabels{mosaicIndex}), mosaicConeTypes{mosaicIndex}); 
+        panelLabelPosAndColor{2} = [-61 42]*1e-6;
+        panelLabelPosAndColor{3} = [0 0 0];
+        box = true;
+        
         switch (mosaicIndex)
             case 1
                 panelLabelPosAndColor{1} = '(A)';
-                panelLabelPosAndColor{2} = [-62 60]*1e-6;
-                panelLabelPosAndColor{3} = [0 0 0];
                 finishPlot(gca, '', 'space (microns)', ...
                     'linear', 'linear', xLim, yLim, ...
-                    xTicks, yTicks, {}, yTickLabels, panelLabelPosAndColor, [],'', false, true, backgroundColor);
+                    xTicks, yTicks, {}, yTickLabels, panelLabelPosAndColor, [],'', false, box, backgroundColor);
             case 2
                 panelLabelPosAndColor{1} = '(B)';
-                panelLabelPosAndColor{2} = [-62 60]*1e-6;
-                panelLabelPosAndColor{3} = [0 0 0];
                 finishPlot(gca, '', '', ...
                     'linear', 'linear', xLim, yLim, ...
-                    xTicks, yTicks, {}, {}, panelLabelPosAndColor, [],  '', false,  true,  backgroundColor);
+                    xTicks, yTicks, {}, {}, panelLabelPosAndColor, [],  '', false,  box,  backgroundColor);
             case 3
                 panelLabelPosAndColor{1} = '(C)';
-                panelLabelPosAndColor{2} = [-62 60]*1e-6;
-                panelLabelPosAndColor{3} = [0 0 0];
                 finishPlot(gca, 'space (microns)', 'space (microns)', ...
                     'linear', 'linear', xLim, yLim, ...
-                    xTicks, yTicks, xTickLabels, yTickLabels, panelLabelPosAndColor, [], '', false, true,  backgroundColor);
+                    xTicks, yTicks, xTickLabels, yTickLabels, panelLabelPosAndColor, [], '', false, box,  backgroundColor);
             case 4
                 panelLabelPosAndColor{1} = '(D)';
-                panelLabelPosAndColor{2} = [-62 60]*1e-6;
-                panelLabelPosAndColor{3} = [0 0 0];
                 finishPlot(gca, 'space (microns)', '', ...
                     'linear', 'linear', xLim, yLim, ...
-                    xTicks, yTicks, xTickLabels, {},  panelLabelPosAndColor, [],'', false, true,  backgroundColor);
+                    xTicks, yTicks, xTickLabels, {},  panelLabelPosAndColor, [],'', false, box,  backgroundColor);
                 subplot('Position', subplotPosVectors(2,2).v);
         end % switch
     end % mosaicIndex
@@ -189,12 +185,12 @@ function figGenerateSpatialMosaicFactors()
     hold off;
     xTickLabels = [1 3 10 30 100];
     xTicks      = xTickLabels;
-    yTickLabels = [1 3 10 30 100 300 1000 3000];
+    yTickLabels = [1 3 10 30 100 300 1000];
     yTicks      = yTickLabels;
     xLim = sfRange;
     yLim = csfRange;
     panelLabelPosAndColor{1} = '(E)';
-    panelLabelPosAndColor{2} = [2.25 3600];
+    panelLabelPosAndColor{2} = [1.1 3600];
     panelLabelPosAndColor{3} = [0 0 0];
                 
     finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity', ...
@@ -223,12 +219,12 @@ function figGenerateSpatialMosaicFactors()
         legends = cat(2, legends, sprintf('%s: %s', mosaicModelsLabels{mosaicModelIndex}, mosaicModelsLabels{1}));
     end
     
-    yTickLabels =  [0.125 0.25 0.5 1 2];
+    yTickLabels =  [0.125 0.25 0.5 1];
     yTicks      = yTickLabels;
     yLim        = [0.120 2.0];
     
     panelLabelPosAndColor{1} = '(F)';
-    panelLabelPosAndColor{2} = [2.25 1.8];
+    panelLabelPosAndColor{2} = [1.1 1.8];
     panelLabelPosAndColor{3} = [0 0 0];
     finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity ratio', ...
         'log', 'log', xLim, yLim, xTicks, yTicks, ...
@@ -439,5 +435,5 @@ function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, theXLim, th
     % Label plot
     panelLabel = panelLabelPosAndColor{1};
     panelLabelPos = panelLabelPosAndColor{2};
-    text(panelLabelPos(1), panelLabelPos(2), panelLabel, 'Color', panelLabelPosAndColor{3}, 'FontSize', 26, 'FontWeight', 'bold');
+    text(panelLabelPos(1), panelLabelPos(2), panelLabel, 'Color', panelLabelPosAndColor{3}, 'FontSize', 30, 'FontWeight', 'bold');
 end
