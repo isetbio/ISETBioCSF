@@ -211,11 +211,11 @@ end % if (p.Results.delete)
 
 %% Maybe we are just visualizing the mosaic - not computing responses
 if ((~p.Results.compute) && ((p.Results.visualizeMosaic) || (p.Results.computeMosaic)))
-    if (~p.Results.computeMosaic)
+    if (p.Results.computeMosaic)
         % Create the cone mosaic
+        mosaicParams = rParams.mosaicParams;
         theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams, ...
             'visualizeMosaic', p.Results.visualizeMosaic);
-        
         % Save cone mosaic
         coneParamsList = {rParams.topLevelDirParams, rParams.mosaicParams};
         rwObject.write('coneMosaic', theMosaic, coneParamsList, theProgram, 'type', 'mat');
@@ -287,7 +287,6 @@ if (p.Results.compute)
     
     
     if (p.Results.computeMosaic)
-        disp('before create mosaic\n');
         % Create the cone mosaic
         theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams, ...
             'visualizeMosaic', p.Results.visualizeMosaic);
