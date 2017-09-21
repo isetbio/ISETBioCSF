@@ -159,7 +159,7 @@ function figGenerateOpticalFactors()
     
     
         %% OTF slices
-        yTicks = 0:0.2:1;
+        yTicks = 0:0.2:0.9;
         yTickLabels = yTicks;
         yLim = [-0.02 1.0];
         backgroundColor = [1 1 1];
@@ -181,14 +181,14 @@ function figGenerateOpticalFactors()
         end
         
         finishPlot(gca, '', yLabel, 'log', 'linear', ...
-            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [51.5 0.975]}, ...
+            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [1.0 0.975]}, ...
             legends, 'SouthWest', true, false, backgroundColor);
     
     
         %% CSFs
         subplot('Position', subplotPosVectors(2,pupilDiamIndex).v);
         addBanksEtAlReferenceLines(the_rParams{1}, plotLuminanceLines);
-        yTickLabels = [1 3 10 30 100 300 1000 3000];
+        yTickLabels = [1 3 10 30 100 300 1000];
         yTicks      = yTickLabels;
         yLim = csfRange;
     
@@ -225,7 +225,7 @@ function figGenerateOpticalFactors()
         end
         
         finishPlot(gca, '', yLabel, 'log', 'log', ...
-            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [51.5 4200]}, ...
+            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [1.0 4200]}, ...
             legends, 'SouthWest', true, false, backgroundColor);
     
         %% CSF ratios
@@ -248,7 +248,7 @@ function figGenerateOpticalFactors()
             legends = cat(2, legends, sprintf('%s: %s',opticsModelsLabels{opticsModelIndex}, opticsModelsLabels{1}));
         end
         hold off
-        yTickLabels =  [0.125 0.25 0.5 1 2 4 8];
+        yTickLabels =  [0.125 0.25 0.5 1 2 4];
         yTicks      = yTickLabels;
         yLim        = [0.21 8.0];
 
@@ -265,7 +265,7 @@ function figGenerateOpticalFactors()
         end
         
         finishPlot(gca, 'spatial frequency (cpd)', yLabel, 'log', 'log', ...
-            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [51.5 7.3]}, ...
+            sfRange, yLim, sfTicks, yTicks, sfTickLabels, yTickLabels, {panelLabel, [1.0 7.3]}, ...
             legends, 'SouthWest', true, false, backgroundColor);
         drawnow;
     end % pupilDiamIndex
@@ -375,5 +375,5 @@ function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, theXLim, th
     % Label plot
     panelLabel = panelLabelAndPos{1};
     panelLabelPos = panelLabelAndPos{2};
-    text(panelLabelPos(1), panelLabelPos(2), panelLabel, 'Color', [0 0 0], 'FontSize', 26, 'FontWeight', 'bold');
+    text(panelLabelPos(1), panelLabelPos(2), panelLabel, 'Color', [0 0 0], 'FontSize', 30, 'FontWeight', 'bold');
 end

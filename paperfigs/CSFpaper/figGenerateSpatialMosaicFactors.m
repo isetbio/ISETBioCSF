@@ -130,7 +130,7 @@ function figGenerateSpatialMosaicFactors()
                 subplot('Position', subplotPosVectors(2,2).v);
         end % switch
         plotMosaic(rParams{mosaicIndex}, sfIndex, sprintf('%s', mosaicModelsFullLabels{mosaicIndex}), mosaicConeTypes{mosaicIndex}); 
-        panelLabelPosAndColor{2} = [-61 42]*1e-6;
+        panelLabelPosAndColor{2} = [-62 42]*1e-6;
         panelLabelPosAndColor{3} = [0 0 0];
         box = true;
         
@@ -190,7 +190,7 @@ function figGenerateSpatialMosaicFactors()
     xLim = sfRange;
     yLim = csfRange;
     panelLabelPosAndColor{1} = '(E)';
-    panelLabelPosAndColor{2} = [1.1 3600];
+    panelLabelPosAndColor{2} = [1.0 3600];
     panelLabelPosAndColor{3} = [0 0 0];
                 
     finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity', ...
@@ -224,7 +224,7 @@ function figGenerateSpatialMosaicFactors()
     yLim        = [0.120 2.0];
     
     panelLabelPosAndColor{1} = '(F)';
-    panelLabelPosAndColor{2} = [1.1 1.8];
+    panelLabelPosAndColor{2} = [1.0 1.8];
     panelLabelPosAndColor{3} = [0 0 0];
     finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity ratio', ...
         'log', 'log', xLim, yLim, xTicks, yTicks, ...
