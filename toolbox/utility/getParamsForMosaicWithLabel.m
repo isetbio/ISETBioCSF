@@ -30,10 +30,10 @@ function params = getParamsForMosaicWithLabel(mosaicName)
             params.conePacking = 'hex';
             params.LMSRatio = [0.67 0.33 0.0];
             params.mosaicRotationDegs = 0;
-            params.sConeMinDistanceFactor = 3.0;                    % min distance between neighboring S-cones = f * local cone separation - to make the S-cone lattice semi-regular
-            params.sConeFreeRadiusMicrons = 45;
-            params.latticeAdjustmentPositionalToleranceF = 0.01/2;
-            params.latticeAdjustmentDelaunayToleranceF = 0.001/2;
+            params.sConeMinDistanceFactor = [];                     % no special treatment of S-cones
+            params.sConeFreeRadiusMicrons = [];                     % no special treatment of S-cones
+            params.latticeAdjustmentPositionalToleranceF = [];      
+            params.latticeAdjustmentDelaunayToleranceF = [];
             params.marginF = [];                                    % marginF set according to FOV
         case 'ISETbioHexEccBasedLMS'
             params.coneSpacingMicrons = 2.0;
@@ -41,10 +41,21 @@ function params = getParamsForMosaicWithLabel(mosaicName)
             params.conePacking = 'hex';
             params.LMSRatio = [0.62 0.31 0.07];
             params.mosaicRotationDegs = 0;
-            params.sConeMinDistanceFactor = 3.0;                    % min distance between neighboring S-cones = f * local cone separation - to make the S-cone lattice semi-regular
-            params.sConeFreeRadiusMicrons = 45;
-            params.latticeAdjustmentPositionalToleranceF = 0.01/2;
-            params.latticeAdjustmentDelaunayToleranceF = 0.001/2;
+            params.sConeMinDistanceFactor = [];                     % no special treatment of S-cones
+            params.sConeFreeRadiusMicrons = [];                     % no special treatment of S-cones
+            params.latticeAdjustmentPositionalToleranceF = [];
+            params.latticeAdjustmentDelaunayToleranceF = [];
+            params.marginF = [];                                    % marginF set according to FOV
+        case 'ISETbioHexEccBasedLMSrealistic'
+            params.coneSpacingMicrons = 2.0;
+            params.innerSegmentDiameter = 1.5797;   % for a circular sensor; this corresponds to ISETBio's default 1.4 micron square pixel (isetbio still does square apertures)
+            params.conePacking = 'hex';
+            params.LMSRatio = [0.60 0.30 0.10];     % More S-cones because S-cones in the S-cone free region will be eliminated - Also needed to generate a different folder
+            params.mosaicRotationDegs = 0;
+            params.sConeMinDistanceFactor = 3;                     % no special treatment of S-cones
+            params.sConeFreeRadiusMicrons = 45;                     % no special treatment of S-cones
+            params.latticeAdjustmentPositionalToleranceF = 0.01;
+            params.latticeAdjustmentDelaunayToleranceF = 0.001;
             params.marginF = [];                                    % marginF set according to FOV
         otherwise
             error('Unknown mosaic: ''%s''.', mosaicName);
