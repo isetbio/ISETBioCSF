@@ -1,31 +1,34 @@
 function run_MosaicVary3mmMeanOTFOpticsConditions
- 
+% This is the script used to assess the impact of the mosaic's spatial structure on the CSF
+% The optics used here is the 3mm pupil, meanOTF model
+%
     examinedMosaicModels = {...
         'originalBanksNoRotation' ...
         'ISETbioHexRegNoScones' ...
         'ISETbioHexRegLMS' ...
         'ISETbioHexEccBasedLMS' ...
+        'ISETbioHexEccBasedLMSrealistic' ...
     };
     
     % Mosaic to run
-    params = getParamsForMosaicWithLabel(examinedMosaicModels{3});
+    params = getParamsForMosaicWithLabel(examinedMosaicModels{4});
     
     % Simulation steps to perform
     params.computeMosaic = true; 
     params.visualizeMosaic = true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
     % How to split the computation
-    computationInstance = 2;
+    computationInstance = 3;
     params = getFixedParamsForMosaicImpactExperiment(params,computationInstance);
     
     % Go
@@ -36,7 +39,7 @@ end
 function params = getFixedParamsForMosaicImpactExperiment(params, computationInstance)
     % Optics for all subsequent computations
     params.opticsModel  = 'WvfHumanMeanOTFmagMeanOTFphase';
-    params.pupilDiamMm  = 3.0;   % 3mm pupil is more appropriate for 100 cd/m2 monitor
+    params.pupilDiamMm  = 3.0;          % 3mm pupil is more appropriate for 100 cd/m2 monitor
     params.blur         = true;
     params.apertureBlur = true;
     
@@ -46,7 +49,7 @@ function params = getFixedParamsForMosaicImpactExperiment(params, computationIns
     params.emPathType = 'frozen0'; %random'; %'random';     
     params.centeredEMPaths = false;
    
-    % Use a subset of the trials. Specify [] to use all available trials
+    % Use a subset of the trials.
     params.nTrainingSamples = 1024;
   
     % Mosaic params
@@ -87,7 +90,7 @@ function params = getFixedParamsForMosaicImpactExperiment(params, computationIns
     elseif (computationInstance  == 3)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 0.5;  % use 1/2 the RAM
-        params.cyclesPerDegreeExamined =  [10 20 40 50];
+        params.cyclesPerDegreeExamined =  [20];
     else
         error('computational instance must be 0, 1 or 2');
     end

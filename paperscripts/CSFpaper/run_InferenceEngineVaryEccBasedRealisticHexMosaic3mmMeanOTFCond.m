@@ -1,61 +1,62 @@
-function run_OpticsVaryBanksMosaicConditions
- 
-    examinedOpticsModels = {...
-        'Geisler' ...
-        'WvfHuman' ...
-        'WvfHumanMeanOTFmagMeanOTFphase' ...
-        'WvfHumanSubject1' ...
-        'WvfHumanSubject2' ...
-        'WvfHumanSubject3' ...
-        'WvfHumanSubject4' ...
-        'WvfHumanSubject5' ...
-    };
+function run_InferenceEngineVaryEccBasedRealisticHexMosaic3mmMeanOTFCond
+% This is the script used to assess the impact of the inference engine
+% The optics used here is the 3mm pupil, meanOTF model, and the mosaic is
+% the ecc-based hex mosaic with realistic S-cone positions
+
+    examinedInferenceEngines = {...
+        'mlpt' ...
+        'svmV1FilterBank' ...
+        };
     
-    % Optics to run
-    params.opticsModel = examinedOpticsModels{5};
-    params.pupilDiamMm = 3.0;   % Default is 2 (as in Banks et al 87), but 3 is more appropriate for 100 cd/m2 monitor
+    % Inference engine to run
+    params.performanceClassifier = examinedInferenceEngines{1};
     
     % Simulation steps to perform
-    params.computeMosaic = ~true; 
-    params.visualizeMosaic = ~true;
+    params.computeMosaic = true; 
+    params.visualizeMosaic = true;
     
     params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
-    params.visualizeSpatialScheme = ~true;
+    params.visualizeSpatialScheme = true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
     % How to split the computation
-    computationInstance = 1;
-    params = getFixedParamsForOpticsImpactExperiment(params,computationInstance);
+    computationInstance = 3;
+    params = getFixedParamsForInferenceEngineImpactExperiment(params,computationInstance);
     
     % Go
     run_BanksPhotocurrentEyeMovementConditions(params);
+    
+    fprintf('Analyze mosaic to make sure we have the desired LMS ratios in the S-cone region');
 end
 
-function params = getFixedParamsForOpticsImpactExperiment(params, computationInstance)
-    params.blur = true;
-    params.apertureBlur = false;
+function params = getFixedParamsForInferenceEngineImpactExperiment(params,computationInstance)
+    % Optics for all subsequent computations
+    params.opticsModel  = 'WvfHumanMeanOTFmagMeanOTFphase';
+    params.pupilDiamMm  = 3.0;  
+    params.blur         = true;
+    params.apertureBlur = true;
     
     params.imagePixels = 1024;
     
     % 'random'; 'frozen0';
     params.emPathType = 'frozen0'; %random'; %'random';     
     params.centeredEMPaths = false;
-   
-    % Use a subset of the trials. Specify [] to use all available trials
+    
+     % Use a subset of the trials.
     params.nTrainingSamples = 1024;
-  
+    
     % Mosaic params
-    params.coneSpacingMicrons = 3.0;
-    params.innerSegmentDiameter = 2.6587; % 3.0;    % for a circular sensor
-    params.conePacking = 'hexReg';
-    params.LMSRatio = [0.67 0.33 0];
-    params.mosaicRotationDegs = 30;
+    mosaicParams = getParamsForMosaicWithLabel('ISETbioHexEccBasedLMSrealistic');
+    fNames = fieldnames(mosaicParams);
+    for k = 1:numel(fNames)
+        params.(fNames{k}) = mosaicParams.(fNames{k});
+    end
     params.integrationTimeMilliseconds =  5.0;
     
     % response params
@@ -71,9 +72,6 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     % 'isomerizations', 'photocurrents'
     params.performanceSignal = 'isomerizations';
     
-    %'mlpt'% 'svmV1FilterBank';
-    params.performanceClassifier = 'mlpt';
-    
     % Freeze noise for repeatable results
     params.freezeNoise = true;
     
@@ -84,14 +82,19 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
         params.cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
-        params.ramPercentageEmployed = 0.5;  % use 90% of the RAM
-        params.cyclesPerDegreeExamined =  [2.5];
+        params.ramPercentageEmployed = 0.9;  % use 90% of the RAM
+        params.cyclesPerDegreeExamined =  [5 10 20 40 50];
     elseif (computationInstance  == 2)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 0.5;  % use 1/2 the RAM
-        params.cyclesPerDegreeExamined =  [5 10 20 40 50];
+        params.cyclesPerDegreeExamined =  [5];
+    elseif (computationInstance  == 3)
+        % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
+        params.ramPercentageEmployed = 0.5;  % use 1/2 the RAM
+        params.cyclesPerDegreeExamined =  [20];
     else
         error('computational instance must be 0, 1 or 2');
     end
+    
 end
 
