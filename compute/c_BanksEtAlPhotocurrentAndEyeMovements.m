@@ -56,6 +56,13 @@ p.addParameter('parforWorkersNumForClassification', 6, @isnumeric);
 % MOSAIC OPTIONS
 p.addParameter('integrationTime', 5.0/1000, @isnumeric);
 
+% HEX MOSAIC OPTIONS
+p.addParameter('sConeMinDistanceFactor', 3.0, @isnumeric); % min distance between neighboring S-cones = f * local cone separation - to make the S-cone lattice semi-regular
+p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
+p.addParameter('latticeAdjustmentPositionalToleranceF', 0.01, @isnumeric);
+p.addParameter('latticeAdjustmentDelaunayToleranceF', 0.001, @isnumeric);
+p.addParameter('marginF', [], @isnumeric);     
+            
 % DIAGNOSTIC OPTIONS
 p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('displayResponseComputationProgress', false, @islogical);
@@ -174,10 +181,13 @@ for ll = 1:length(p.Results.luminances)
         );
 
         % Modify mosaic parameters
+        if (isfield(rParams.mosaicParams, 'realisticSconeSubmosaic'))
+            error('The realisticSconeSubmosaic has been removed. Pass directly sConeMinDistanceFactor and sConeFreeRadiusMicrons\n');
+        end
+        
         rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
             'conePacking', p.Results.conePacking, ...                       
             'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs, ... 
-            'realisticSconeSubmosaic', true, ...             % if true, there will be no S-cones in the central 0.3 degs, and the S-cone lattice will be semiregular
             'innerSegmentSizeMicrons',p.Results.innerSegmentSizeMicrons, ...
             'coneSpacingMicrons', p.Results.coneSpacingMicrons, ...
             'apertureBlur',p.Results.apertureBlur, ...
@@ -185,10 +195,18 @@ for ll = 1:length(p.Results.luminances)
             'coneDarkNoiseRate',p.Results.coneDarkNoiseRate,...
             'LMSRatio',p.Results.LMSRatio,...
             'integrationTimeInSeconds', p.Results.integrationTime, ...
-            'isomerizationNoise', 'random',...               % select from {'random', 'frozen', 'none'}
-            'osNoise', 'random', ...                % select from {'random', 'frozen', 'none'}
+            'isomerizationNoise', 'random',...                  % select from {'random', 'frozen', 'none'}
+            'osNoise', 'random', ...                            % select from {'random', 'frozen', 'none'}
             'osModel', 'Linear');
 
+        if strcmp(p.Results.conePacking, 'hex')
+            rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
+                'sConeMinDistanceFactor', p.Results.sConeMinDistanceFactor, ...
+                'sConeFreeRadiusMicrons', p.Results.sConeFreeRadiusMicrons, ...
+                'latticeAdjustmentPositionalToleranceF', p.Results.latticeAdjustmentPositionalToleranceF, ...
+                'latticeAdjustmentDelaunayToleranceF', p.Results.latticeAdjustmentDelaunayToleranceF, ...
+                'marginF', p.Results.marginF);
+        end
 
         % Make sure mosaic noise parameters match the frozen noise flag passed in
         if (p.Results.freezeNoise)
