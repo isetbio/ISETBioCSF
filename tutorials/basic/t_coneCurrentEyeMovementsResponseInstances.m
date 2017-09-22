@@ -117,6 +117,7 @@ end
 varargout{1} = [];   % Impulse responses if (visualizeOuterSegmentFilters is true)
 varargout{2} = [];   % noise-free responses
 varargout{3} = [];   % the optical image optics
+varargout{4} = [];   % the cone mosaic
 
 %% Clear
 if (nargin == 0)
@@ -233,6 +234,11 @@ if ((~p.Results.compute) && ((p.Results.visualizeMosaic) || (p.Results.computeMo
         data = 0;
         rwObject.write('coneMosaic', data, coneParamsList, theProgram, ...
             'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');   
+    end
+    
+    if (p.Results.visualizeMosaic)
+        % Return the mosaic
+        varargout{4} = theMosaic;
     end
 end
 

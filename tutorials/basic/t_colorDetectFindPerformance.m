@@ -205,8 +205,9 @@ if (p.Results.compute)
     % If everything is working right, rParams and ancillaryData.rParams
     % should be identical structs. Same for testDirectionParams and ancillaryParams.instanceParams
     % Check for that below.
-    checkStructs('rParams', rParams, 'ancillaryParams.rParams', ancillaryData.rParams, 'ignoredFields', {'plotParams'});
-    checkStructs('testDirectionParams', testDirectionParams, 'ancillaryParams.instanceParams', ancillaryData.instanceParams);
+    displayStructs = false;
+    checkStructs('rParams', rParams, 'ancillaryParams-rParams', ancillaryData.rParams, 'ignoredFields', {'plotParams'}, 'displayStructs', displayStructs);
+    checkStructs('testDirectionParams', testDirectionParams, 'ancillaryParams.instanceParams', ancillaryData.instanceParams, 'displayStructs', false);
     fprintf('done\n');
     
     tic
@@ -366,6 +367,7 @@ function checkStructs(struct1Name, struct1, struct2Name, struct2, varargin)
     %% Parse input
     p = inputParser;
     p.addParameter('ignoredFields',{},@iscell);
+    p.addParameter('displayStructs', false);
     p.parse(varargin{:});
 
     % Deal with ignored fields
@@ -378,6 +380,11 @@ function checkStructs(struct1Name, struct1, struct2Name, struct2, varargin)
         end
     end
     
+    if (p.Results.displayStructs)
+        disp(UnitTest.displayNicelyFormattedStruct(struct1, struct1Name, '', 60));
+        disp(UnitTest.displayNicelyFormattedStruct(struct2, struct2Name, '', 60));
+    end
+
     graphMismatchedData = false;
 
     defaultTolerance = 1e-6;
