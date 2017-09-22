@@ -11,8 +11,6 @@ function figGenerateSpatialMosaicFactors()
     opticsModel = 'WvfHumanMeanOTFmagMeanOTFphase';
     pupilDiamMm = 3.0;
     
-    % 'singleExposure'; 'timeSeries5msec'
-    temporalAnalysis = 'timeSeries5msec';
     
     % 'random'; 'frozen0';
     emPathType = 'frozen0'; %random'; %'random';     
@@ -36,31 +34,17 @@ function figGenerateSpatialMosaicFactors()
     useRBFSVMKernel = false;
     ramPercentageEmployed = 1.0;  % use all the RAM
     freezeNoise = true;
-    
-    
+        
     cyclesPerDegreeExamined =  [5 10 20 40 50];
     luminancesExamined =  [34]; 
-    plotLuminanceLines = [false true false];
 
-    switch temporalAnalysis 
-        case 'singleExposure'
-            % For 100 ms simulation
-            responseStabilizationMilliseconds = 0;
-            responseExtinctionMilliseconds = 100;
-            integrationTimeMilliseconds =  100;
-            lowContrast = 0.001;
-            highContrast = 0.3;
-            nContrastsPerDirection =  12;    
-            
-        case 'timeSeries5msec'
-            % For 7.0 milliseconds simulation
-            responseStabilizationMilliseconds = 10;
-            responseExtinctionMilliseconds = 50;
-            integrationTimeMilliseconds =  5.0;
-            lowContrast = 0.0001;
-            highContrast = 0.3;
-            nContrastsPerDirection =  18;
-    end
+    responseStabilizationMilliseconds = 10;
+    responseExtinctionMilliseconds = 50;
+    integrationTimeMilliseconds =  5.0;
+    lowContrast = 0.0001;
+    highContrast = 0.3;
+    nContrastsPerDirection =  18;
+
    
     % What to do ?
     visualizeSpatialScheme = ~true;
@@ -233,24 +217,6 @@ function figGenerateSpatialMosaicFactors()
     drawnow
     NicePlot.exportFigToPDF(sprintf('ConeMosaicImpactPupilMM%2.1f.pdf',pupilDiamMm), hFig, 300);
      
-%     conditionsToVisualize = [18];
-%     cyclesPerDeg = cyclesPerDegreeExamined(sfIndex);
-%     params = getParamsForMosaicWithLabel(mosaicModels{3});
-%     coneSpacingMicrons = params.coneSpacingMicrons;
-%     innerSegmentDiameter = params.innerSegmentDiameter;
-%     conePacking = params.conePacking;
-%     LMSRatio = params.LMSRatio;
-%     mosaicRotationDegs = params.mosaicRotationDegs;
-%     noiseFreeResponses = getNoiseFreeResponses(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs, cyclesPerDeg, conditionsToVisualize);
-%     noiseFreeIsomerizations = noiseFreeResponses{1,1}.stimData{conditionsToVisualize}.noiseFreeIsomerizations;
-%     [~,idx] = max(noiseFreeIsomerizations(:));
-%     [~, timeBinOfMaxResponse] = ind2sub(size(noiseFreeIsomerizations), idx);
-%     noiseFreeIsomerizations = noiseFreeIsomerizations(:, timeBinOfMaxResponse);
-   
-%     figure(hFig);
-%     theAxes = axes('Position',[0.06,0.305,0.2,0.2]);
-%     plotMosaicActivation(theAxes, rParamsTest2, sfIndex, noiseFreeIsomerizations, 'isomerizations', cyclesPerDeg);
-
 
     function [d, the_rParams] = getData(coneSpacingMicrons, innerSegmentDiameter, conePacking, LMSRatio, mosaicRotationDegs)
         [d, the_rParams, noiseFreeResponse, theOI] = c_BanksEtAlPhotocurrentAndEyeMovements(...
@@ -419,8 +385,8 @@ function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, theXLim, th
         t = ylabel(theYlabel);
         set(t, 'FontWeight', 'bold', 'FontAngle', 'normal');
     end
-    if (showGrid); grid on; else grid off; end;
-    if (showBox); box on; else box off; end;
+    if (showGrid); grid on; else; grid off; end
+    if (showBox); box on; else; box off; end
     set(gca, 'XScale',theXscale,'YScale',theYscale, 'LineWidth', 1.0);
     set(gca, 'XLim',theXLim,'YLim',theYLim);
     set(gca, 'Color', backgroundColor);

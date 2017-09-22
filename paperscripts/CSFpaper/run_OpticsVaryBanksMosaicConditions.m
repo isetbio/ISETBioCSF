@@ -76,6 +76,18 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     %'mlpt'% 'svmV1FilterBank';
     params.performanceClassifier = 'mlpt';
     
+    params.performanceTrialsUsed = params.nTrainingSamples;
+    
+    % SVM-related
+    params.useRBFSVMKernel = false;
+    % Spatial pooling kernel parameters
+    params.spatialPoolingKernelParams.type = 'V1QuadraturePair';  % Choose between 'V1CosUnit' 'V1SinUnit' 'V1QuadraturePair';
+    params.spatialPoolingKernelParams.activationFunction = 'energy';  % Choose between 'energy' and 'fullWaveRectifier'
+    params.spatialPoolingKernelParams.adjustForConeDensity = false;
+    params.spatialPoolingKernelParams.temporalPCAcoeffs = Inf;  % Inf, results in no PCA, just the raw time series
+    params.spatialPoolingKernelParams.shrinkageFactor = 1.0;  % > 1, results in expansion, < 1 results in shrinking 
+    
+    
     % Freeze noise for repeatable results
     params.freezeNoise = true;
     

@@ -5,24 +5,40 @@ function run_InferenceEngineVaryEccBasedRealisticHexMosaic3mmMeanOTFCond
 
     examinedInferenceEngines = {...
         'mlpt' ...
+        'svm' ...
         'svmV1FilterBank' ...
         };
     
     % Inference engine to run
-    params.performanceClassifier = examinedInferenceEngines{1};
+    params.performanceClassifier = examinedInferenceEngines{2};
+    
+    % Trials computed
+    params.nTrainingSamples = 1024;
+    
+    % Perhaps use a subset of the trials.
+    params.performanceTrialsUsed = 1024;
+    
+    params.useRBFSVMKernel = false;
+    
+    % Spatial pooling kernel parameters
+    params.spatialPoolingKernelParams.type = 'V1QuadraturePair';  % Choose between 'V1CosUnit' 'V1SinUnit' 'V1QuadraturePair';
+    params.spatialPoolingKernelParams.activationFunction = 'energy';  % Choose between 'energy' and 'fullWaveRectifier'
+    params.spatialPoolingKernelParams.adjustForConeDensity = false;
+    params.spatialPoolingKernelParams.temporalPCAcoeffs = Inf;  % Inf, results in no PCA, just the raw time series
+    params.spatialPoolingKernelParams.shrinkageFactor = 1.0;  % > 1, results in expansion, < 1 results in shrinking 
     
     % Simulation steps to perform
-    params.computeMosaic = true; 
-    params.visualizeMosaic = true;
+    params.computeMosaic = ~true; 
+    params.visualizeMosaic = ~true;
     
     params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
-    params.visualizeSpatialScheme = true;
+    params.visualizeSpatialScheme = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
-    params.visualizePerformance = true;
+    params.findPerformance = true;
+    params.visualizePerformance = ~true;
     params.deleteResponseInstances = ~true;
     
     % How to split the computation
@@ -30,7 +46,11 @@ function run_InferenceEngineVaryEccBasedRealisticHexMosaic3mmMeanOTFCond
     params = getFixedParamsForInferenceEngineImpactExperiment(params,computationInstance);
     
     % Go
-    run_BanksPhotocurrentEyeMovementConditions(params);
+    theMosaic = run_BanksPhotocurrentEyeMovementConditions(params);
+    
+    theMosaic.displayInfo();
+    theMosaic.reassignConeIdentities('sConeFreeRadiusMicrons', 100);
+    theMosaic.visualizeGrid('generateNewFigure', true);
     
     fprintf('Analyze mosaic to make sure we have the desired LMS ratios in the S-cone region');
 end
@@ -48,15 +68,17 @@ function params = getFixedParamsForInferenceEngineImpactExperiment(params,comput
     params.emPathType = 'frozen0'; %random'; %'random';     
     params.centeredEMPaths = false;
     
-     % Use a subset of the trials.
-    params.nTrainingSamples = 1024;
-    
     % Mosaic params
-    mosaicParams = getParamsForMosaicWithLabel('ISETbioHexEccBasedLMSrealistic');
+    mosaicParams = getParamsForMosaicWithLabel('ISETbioHexEccBasedLMS');
     fNames = fieldnames(mosaicParams);
     for k = 1:numel(fNames)
         params.(fNames{k}) = mosaicParams.(fNames{k});
     end
+    fprintf(2,'Channgin tolerances for now\n')
+    mosaicParams.latticeAdjustmentPositionalToleranceF =  0.01/5;
+    mosaicParams.latticeAdjustmentDelaunayToleranceF = 0.001/5;
+
+
     params.integrationTimeMilliseconds =  5.0;
     
     % response params
@@ -91,7 +113,7 @@ function params = getFixedParamsForInferenceEngineImpactExperiment(params,comput
     elseif (computationInstance  == 3)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 0.5;  % use 1/2 the RAM
-        params.cyclesPerDegreeExamined =  [20];
+        params.cyclesPerDegreeExamined =  [5 10 20 40 50];
     else
         error('computational instance must be 0, 1 or 2');
     end
