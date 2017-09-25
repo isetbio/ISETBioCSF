@@ -1,7 +1,10 @@
 function figGenerateSpatialMosaicFactors()
     
     close all;
-
+    % cd to wherver this script resides
+    [localDir,~] = fileparts(which(mfilename()));
+    cd(localDir)
+    
     mosaicModels       = {'originalBanksNoRotation',  'ISETbioHexRegNoScones',  'ISETbioHexRegLMS',     'ISETbioHexEccBasedLMS'};
     mosaicModelsFullLabels = {'Banks et al.''87, 3um/3um',   'ISETbio 2um/1.6um',    'ISETbio 2um/1.6um',  'ISETbio ecc-based/1.6um'};
     mosaicModelsLabels = {'Banks et al.''87',   'ISETbio 2um/1.6um (LM)',    'ISETbio 2um/1.6um (LMS)',  'ISETbio ecc-based/1.6um (LMS)'};
@@ -149,8 +152,8 @@ function figGenerateSpatialMosaicFactors()
     %addBanksEtAlReferenceLines(rParams{1}, plotLuminanceLines);
     hold on;
     legends = {}; %{'Banks et al. (87) - 2mm'};
-    for mosaicModelIndex = 1:size(mosaicCSF,2)
-        if (mosaicModelIndex == 1)
+    for mosaicIndex= 1:size(mosaicCSF,2)
+        if (mosaicIndex== 1)
             % reference mosaic
             markerType  = 's-';
             markerSize = 13;
@@ -158,12 +161,12 @@ function figGenerateSpatialMosaicFactors()
             markerType = 'o-';
             markerSize = 10;
         end
-        plot(sfTest{1}, squeeze(mosaicCSF(1,mosaicModelIndex,:)), markerType, 'MarkerSize', markerSize, 'MarkerEdgeColor', [0 0 0], ...
-            'MarkerFaceColor', squeeze(mosaicColors(mosaicModelIndex,:)), ...
+        plot(sfTest{1}, squeeze(mosaicCSF(1,mosaicIndex,:)), markerType, 'MarkerSize', markerSize, 'MarkerEdgeColor', [0 0 0], ...
+            'MarkerFaceColor', squeeze(mosaicColors(mosaicIndex,:)), ...
             'LineWidth', 1.5, ...
-            'Color', squeeze(mosaicColors(mosaicModelIndex,:)));
+            'Color', squeeze(mosaicColors(mosaicIndex,:)));
         title(' ');
-        legends = cat(2, legends, mosaicModelsLabels{mosaicModelIndex});
+        legends = cat(2, legends, mosaicModelsLabels{mosaicIndex});
     end % mosaicIndex
     
     hold off;
@@ -186,8 +189,8 @@ function figGenerateSpatialMosaicFactors()
     subplot('Position', subplotPosVectors(3,2).v);
     hold on
     legends = {};
-    for mosaicModelIndex = 2:size(mosaicCSF,2)
-        if (mosaicModelIndex == 1)
+    for mosaicIndex= 2:size(mosaicCSF,2)
+        if (mosaicIndex== 1)
             % reference mosaic
             markerType  = 's-';
             markerSize = 13;
@@ -195,12 +198,13 @@ function figGenerateSpatialMosaicFactors()
             markerType = 'o-';
             markerSize = 10;
         end
-        plot(sfTest{1}, squeeze(mosaicCSF(1,mosaicModelIndex,:)) ./ squeeze(mosaicCSF(1,1,:)), markerType, ...
-            'MarkerSize', markerSize, 'MarkerFaceColor', squeeze(mosaicColors(mosaicModelIndex,:)), 'MarkerEdgeColor', [0 0 0], ...
+
+        plot(sfTest{1}, ratioCSF{mosaicIndex}, markerType, ...
+            'MarkerSize', markerSize, 'MarkerFaceColor', squeeze(mosaicColors(mosaicIndex,:)), 'MarkerEdgeColor', [0 0 0], ...
             'LineWidth', 1.5, ...
-            'Color', squeeze(mosaicColors(mosaicModelIndex,:)));
+            'Color', squeeze(mosaicColors(mosaicIndex,:)));
         title(' ');
-        legends = cat(2, legends, sprintf('%s: %s', mosaicModelsLabels{mosaicModelIndex}, mosaicModelsLabels{1}));
+        legends = cat(2, legends, sprintf('%s: %s', mosaicModelsLabels{mosaicIndex}, mosaicModelsLabels{1}));
     end
     
     yTickLabels =  [0.125 0.25 0.5 1];
@@ -215,6 +219,7 @@ function figGenerateSpatialMosaicFactors()
         xTickLabels, yTickLabels, panelLabelPosAndColor, legends, 'SouthWest', true, false, [1 1 1]);
     
     drawnow
+    cd(localDir);
     NicePlot.exportFigToPDF(sprintf('ConeMosaicImpactPupilMM%2.1f.pdf',pupilDiamMm), hFig, 300);
      
 

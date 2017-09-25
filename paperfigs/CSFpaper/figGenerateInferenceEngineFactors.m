@@ -1,12 +1,17 @@
 function figGenerateInferenceEngineFactors()
 
     close all;
+    % cd to wherver this script resides
+    [localDir,~] = fileparts(which(mfilename()));
+    cd(localDir)
+    
     inferenceEngines = {...
         'mlpt' ...
         'svmV1FilterBank' ...
         'svm' ...
     };
-    inferenceEngineLabels = inferenceEngines
+
+    inferenceEngineLabels = {'MLPT', 'SVM-V1 filter bank', 'SVM (60 xtPCAs)'};
 
 
     % Trials computed
@@ -37,7 +42,7 @@ function figGenerateInferenceEngineFactors()
     ramPercentageEmployed = 1.0;  % use all the RAM
     freezeNoise = true;
         
-    cyclesPerDegreeExamined =  [50];
+    cyclesPerDegreeExamined =  [5 10 20 40 50];
     luminancesExamined =  [34]; 
 
     responseStabilizationMilliseconds = 10;
@@ -55,7 +60,6 @@ function figGenerateInferenceEngineFactors()
     
     
     for inferenceEngineIndex = 1:numel(inferenceEngines)
-        
         performanceClassifier = inferenceEngines{inferenceEngineIndex};
         performanceSignal = 'isomerizations';
         d = getData();
@@ -70,13 +74,37 @@ function figGenerateInferenceEngineFactors()
             end
         end
         ratioCSF{inferenceEngineIndex} = squeeze(inferenceCSF(1,inferenceEngineIndex,:)) ./ squeeze(inferenceCSF(1,1,:));
-        
     end % inferenceEngineIndex
     
-    inferenceColors = [1 0 0; 0 0 1; 1 0 1];
+    sfRange = [2 71];
+    csfRange = [2.1 5000];
+    xTickLabels = [1 3 10 30 100];
+    xTicks      = xTickLabels;
+    yTickLabels = [1 3 10 30 100 300 1000];
+    yTicks      = yTickLabels;
+    xLim = sfRange;
+    yLim = csfRange;
     
-    figure(1); clf;
-    hold on
+    inferenceColors = [0 0 0; 1 0 0; 0.4 0.7 1];
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'colsNum', 2, ...
+           'rowsNum', 1, ...
+           'heightMargin',   0.05, ...
+           'widthMargin',    0.05, ...
+           'leftMargin',     0.05, ...
+           'rightMargin',    0.005, ...
+           'bottomMargin',   0.14, ...
+           'topMargin',      0.01);
+       
+    hFig = figure(3); clf;
+    set(hFig, 'Position', [10 10 960 400]);
+
+    %% CSFs
+    subplot('Position', subplotPosVectors(1,1).v);
+        
+    legends = {};
+    hold on;
     for inferenceEngineIndex = 1:numel(inferenceEngines)
         
         if (inferenceEngineIndex == 1)
@@ -87,12 +115,59 @@ function figGenerateInferenceEngineFactors()
             markerType = 'o-';
             markerSize = 10;
         end
-        
+        title = ' ';
+        legends = cat(2, legends, sprintf('%s', inferenceEngineLabels{inferenceEngineIndex}));
         plot(sfTest{1}, squeeze(inferenceCSF(1,inferenceEngineIndex,:)), markerType, 'MarkerSize', markerSize, 'MarkerEdgeColor', [0 0 0], ...
             'MarkerFaceColor', squeeze(inferenceColors(inferenceEngineIndex,:)), ...
             'LineWidth', 1.5, ...
             'Color', squeeze(inferenceColors(inferenceEngineIndex,:)));
-    end
+    end % inferenceEngineIndex
+    hold off;
+    panelLabelPosAndColor{1} = '(A)';
+    panelLabelPosAndColor{2} = [1.0 3600];
+    panelLabelPosAndColor{3} = [0 0 0];
+                
+    finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity', ...
+        'log', 'log', xLim, yLim, xTicks, yTicks,  ...
+        xTickLabels, yTickLabels, panelLabelPosAndColor, legends, 'SouthWest', true, false, [1 1 1]);
+    
+    %% CSF ratios
+    subplot('Position', subplotPosVectors(1,2).v);
+    hold on
+    legends = {};
+    for inferenceEngineIndex = 2:numel(inferenceEngines)
+        
+        if (inferenceEngineIndex == 1)
+            % reference inference engine
+            markerType  = 's-';
+            markerSize = 13;
+        else
+            markerType = 'o-';
+            markerSize = 10;
+        end
+        
+        plot(sfTest{1}, ratioCSF{inferenceEngineIndex}, markerType, ...
+            'MarkerSize', markerSize, 'MarkerFaceColor', squeeze(inferenceColors(inferenceEngineIndex,:)), 'MarkerEdgeColor', [0 0 0], ...
+            'LineWidth', 1.5, ...
+            'Color', squeeze(inferenceColors(inferenceEngineIndex,:)));
+        legends = cat(2, legends, sprintf('%s: %s', inferenceEngineLabels{inferenceEngineIndex}, inferenceEngineLabels{1}));
+    end % inferenenceEngineIndex
+    
+    yTickLabels =  [0.03 0.05 0.1 0.2];
+    yTicks      = yTickLabels;
+    yLim        = [0.021 0.3];
+    
+    panelLabelPosAndColor{1} = '(B)';
+    panelLabelPosAndColor{2} = [1.0 0.27];
+    panelLabelPosAndColor{3} = [0 0 0];
+    finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity ratio', ...
+        'log', 'log', xLim, yLim, xTicks, yTicks, ...
+        xTickLabels, yTickLabels, panelLabelPosAndColor, legends, 'SouthWest', true, false, [1 1 1]);
+    
+    drawnow
+    cd(localDir);
+    NicePlot.exportFigToPDF(sprintf('InferenceEngine.pdf'), hFig, 300);
+    
     
     function d  = getData()
         [d, the_rParams, noiseFreeResponse, theOI] = c_BanksEtAlPhotocurrentAndEyeMovements(...
@@ -132,5 +207,36 @@ function figGenerateInferenceEngineFactors()
             );
     end
 
+end
+
+
+function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, theXLim, theYLim, xTicks, yTicks, xTickLabels, yTickLabels, panelLabelPosAndColor, theLegends, legendLocation, showGrid, showBox, backgroundColor)
+    set(gca, 'FontName', 'Helvetica', 'FontSize', 18, 'FontWeight', 'normal', 'FontAngle', 'normal', 'TickDir', 'both');
+    set(gca, 'XTick', xTicks, 'XTickLabel', xTickLabels, 'YTick', yTicks, 'yTickLabel', yTickLabels);
+    if (~isempty(theXlabel))
+        t = xlabel(theXlabel);
+        set(t, 'FontWeight', 'bold', 'FontAngle', 'normal');
+    end
+    if (~isempty(theYlabel))
+        t = ylabel(theYlabel);
+        set(t, 'FontWeight', 'bold', 'FontAngle', 'normal');
+    end
+    if (showGrid); grid on; else; grid off; end
+    if (showBox); box on; else; box off; end
+    set(gca, 'XScale',theXscale,'YScale',theYscale, 'LineWidth', 1.0);
+    set(gca, 'XLim',theXLim,'YLim',theYLim);
+    set(gca, 'Color', backgroundColor);
+    axis square
+    if (~isempty(theLegends))
+        hL = legend(theLegends, 'Location', legendLocation);
+        set(hL, 'FontSize', 13, 'FontWeight', 'Bold', 'FontAngle', 'italic', 'FontName', 'Menlo', 'Box', 'off');
+    end
+    hTitle=get(gca,'title');
+    set(hTitle, 'FontSize', 18);
+    
+    % Label plot
+    panelLabel = panelLabelPosAndColor{1};
+    panelLabelPos = panelLabelPosAndColor{2};
+    text(panelLabelPos(1), panelLabelPos(2), panelLabel, 'Color', panelLabelPosAndColor{3}, 'FontSize', 30, 'FontWeight', 'bold');
 end
 
