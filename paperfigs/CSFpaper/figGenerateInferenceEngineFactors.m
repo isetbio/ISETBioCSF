@@ -58,11 +58,16 @@ function figGenerateInferenceEngineFactors()
     visualizePerformance = true;
     visualizeTransformedSignals = ~true;
     
+    plottedSFindices = [];
     
     for inferenceEngineIndex = 1:numel(inferenceEngines)
         performanceClassifier = inferenceEngines{inferenceEngineIndex};
         performanceSignal = 'isomerizations';
-        d = getData();
+        [d, psychometricFunctions] = getData();
+        for sfIndex = 1:numel(psychometricFunctions)
+            psychoFuncionData{inferenceEngineIndex, sfIndex} = psychometricFunctions{sfIndex}{1};
+        end
+
         sfTest{inferenceEngineIndex} = d.cyclesPerDegree;
         for luminanceIndex = 1:size(d.mlptThresholds,1)
             inferenceCSF(luminanceIndex,inferenceEngineIndex,:) = 1./([d.mlptThresholds(luminanceIndex,:).thresholdContrasts]*d.mlptThresholds(1).testConeContrasts(1));
@@ -76,6 +81,98 @@ function figGenerateInferenceEngineFactors()
         ratioCSF{inferenceEngineIndex} = squeeze(inferenceCSF(1,inferenceEngineIndex,:)) ./ squeeze(inferenceCSF(1,1,:));
     end % inferenceEngineIndex
     
+    
+    
+    inferenceColors = [0 0 0; 1 0 0; 0.4 0.7 1];
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'colsNum', 2, ...
+           'rowsNum', 2, ...
+           'heightMargin',   0.09, ...
+           'widthMargin',    0.07, ...
+           'leftMargin',     0.07, ...
+           'rightMargin',    0.005, ...
+           'bottomMargin',   0.07, ...
+           'topMargin',      0.02);
+       
+    hFig = figure(3); clf;
+    set(hFig, 'Position', [10 10 960 880]);
+
+    %% Psychometric functions
+    xTicks = -4:0.5:0.5;
+    yTicks = 0.0:0.1:0.9; 
+    xTickLabels = xTicks;
+    yTickLabels = yTicks;
+    theContrastLims = [-4.05 -0.45];
+    theFractionCorrectLims = [0.19 1.0];
+    sfs = sfTest{1};
+    
+    sfIndex = 1;
+    subplot('Position', subplotPosVectors(1,1).v);
+    legends = {};
+    hold on
+    for inferenceEngineIndex = 1:numel(inferenceEngines)
+        
+        if (inferenceEngineIndex == 1)
+            % reference inference engine
+            markerType  = 's';
+            markerSize = 13;
+        else
+            markerType = 'o';
+            markerSize = 10;
+        end
+        legends = cat(2, legends, sprintf('%s', inferenceEngineLabels{inferenceEngineIndex}));
+        d = psychoFuncionData{inferenceEngineIndex, sfIndex};
+        plot(log10(d.x), d.y,  markerType, 'MarkerSize', markerSize, ...
+            'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor', squeeze(inferenceColors(inferenceEngineIndex,:)));
+    end
+    for inferenceEngineIndex = 1:numel(inferenceEngines)
+        d = psychoFuncionData{inferenceEngineIndex, sfIndex};
+        plot(log10(d.xFit),d.yFit,'r','LineWidth', 2.0, 'Color', squeeze(inferenceColors(inferenceEngineIndex,:)));
+        plot(log10(d.thresholdContrast*[1 1]), [0 d.criterionFraction],'--', 'LineWidth', 1.5, 'Color', squeeze(inferenceColors(inferenceEngineIndex,:)));
+    end % inferenceEngineIndex
+    
+    titleLabel = sprintf('%2.1fcpd', sfs(sfIndex));
+    
+    hold off;
+    panelLabelPosAndColor{1} = '(A)';
+    panelLabelPosAndColor{2} = [-4.75 0.99];
+    panelLabelPosAndColor{3} = [0 0 0];
+    finishPsychometricPlot(gca, 'log10(contrast)', 'fraction correct', theContrastLims, theFractionCorrectLims, xTicks, yTicks, xTickLabels, yTickLabels, legends, 'SouthWest', panelLabelPosAndColor, titleLabel);
+   
+
+    sfIndex = 4;
+    subplot('Position', subplotPosVectors(1,2).v);
+    
+    hold on
+    for inferenceEngineIndex = 1:numel(inferenceEngines)
+        sfs = sfTest{inferenceEngineIndex};
+        if (inferenceEngineIndex == 1)
+            % reference inference engine
+            markerType  = 's';
+            markerSize = 13;
+        else
+            markerType = 'o';
+            markerSize = 10;
+        end
+        d = psychoFuncionData{inferenceEngineIndex, sfIndex};
+        plot(log10(d.x), d.y,  markerType, 'MarkerSize', markerSize, ...
+            'MarkerEdgeColor', [0 0 0], 'MarkerFaceColor', squeeze(inferenceColors(inferenceEngineIndex,:)));
+    end
+    for inferenceEngineIndex = 1:numel(inferenceEngines)
+        d = psychoFuncionData{inferenceEngineIndex, sfIndex};
+        plot(log10(d.xFit),d.yFit,'r','LineWidth', 2.0, 'Color', squeeze(inferenceColors(inferenceEngineIndex,:)));
+        plot(log10(d.thresholdContrast*[1 1]), [0 d.criterionFraction],'--', 'LineWidth', 1.5, 'Color', squeeze(inferenceColors(inferenceEngineIndex,:)));
+    end % inferenceEngineIndex
+    
+    titleLabel = sprintf('%2.1fcpd', sfs(sfIndex));
+    hold off;
+    panelLabelPosAndColor{1} = '(B)';
+    panelLabelPosAndColor{2} = [-4.75 0.99];
+    panelLabelPosAndColor{3} = [0 0 0];
+    finishPsychometricPlot(gca, 'log10(contrast)', '',theContrastLims, theFractionCorrectLims, xTicks, yTicks, xTickLabels, yTickLabels, legends, 'SouthWest', panelLabelPosAndColor, titleLabel);
+    
+    
     sfRange = [2 71];
     csfRange = [2.1 5000];
     xTickLabels = [1 3 10 30 100];
@@ -85,23 +182,8 @@ function figGenerateInferenceEngineFactors()
     xLim = sfRange;
     yLim = csfRange;
     
-    inferenceColors = [0 0 0; 1 0 0; 0.4 0.7 1];
-    
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'colsNum', 2, ...
-           'rowsNum', 1, ...
-           'heightMargin',   0.05, ...
-           'widthMargin',    0.05, ...
-           'leftMargin',     0.05, ...
-           'rightMargin',    0.005, ...
-           'bottomMargin',   0.14, ...
-           'topMargin',      0.01);
-       
-    hFig = figure(3); clf;
-    set(hFig, 'Position', [10 10 960 400]);
-
     %% CSFs
-    subplot('Position', subplotPosVectors(1,1).v);
+    subplot('Position', subplotPosVectors(2,1).v);
         
     legends = {};
     hold on;
@@ -123,7 +205,7 @@ function figGenerateInferenceEngineFactors()
             'Color', squeeze(inferenceColors(inferenceEngineIndex,:)));
     end % inferenceEngineIndex
     hold off;
-    panelLabelPosAndColor{1} = '(A)';
+    panelLabelPosAndColor{1} = '(C)';
     panelLabelPosAndColor{2} = [1.0 3600];
     panelLabelPosAndColor{3} = [0 0 0];
                 
@@ -132,7 +214,7 @@ function figGenerateInferenceEngineFactors()
         xTickLabels, yTickLabels, panelLabelPosAndColor, legends, 'SouthWest', true, false, [1 1 1]);
     
     %% CSF ratios
-    subplot('Position', subplotPosVectors(1,2).v);
+    subplot('Position', subplotPosVectors(2,2).v);
     hold on
     legends = {};
     for inferenceEngineIndex = 2:numel(inferenceEngines)
@@ -157,7 +239,7 @@ function figGenerateInferenceEngineFactors()
     yTicks      = yTickLabels;
     yLim        = [0.021 0.3];
     
-    panelLabelPosAndColor{1} = '(B)';
+    panelLabelPosAndColor{1} = '(D)';
     panelLabelPosAndColor{2} = [1.0 0.27];
     panelLabelPosAndColor{3} = [0 0 0];
     finishPlot(gca, 'spatial frequency (cpd)', 'contrast sensitivity ratio', ...
@@ -169,8 +251,8 @@ function figGenerateInferenceEngineFactors()
     NicePlot.exportFigToPDF(sprintf('InferenceEngine.pdf'), hFig, 300);
     
     
-    function d  = getData()
-        [d, the_rParams, noiseFreeResponse, theOI] = c_BanksEtAlPhotocurrentAndEyeMovements(...
+    function [d,psychometricFunctions]  = getData()
+        [d, ~, ~, ~, ~, psychometricFunctions] = c_BanksEtAlPhotocurrentAndEyeMovements(...
             'opticsModel', opticsModel, ...
             'pupilDiamMm', pupilDiamMm, ...
             'cyclesPerDegree', cyclesPerDegreeExamined, ...
@@ -209,6 +291,39 @@ function figGenerateInferenceEngineFactors()
 
 end
 
+
+function finishPsychometricPlot(gca, theXlabel, theYlabel, XLim, YLim, xTicks, yTicks, xTickLabels, yTickLabels, theLegends, legendLocation, panelLabelPosAndColor, titleLabel)
+
+    set(gca, 'FontName', 'Helvetica', 'FontSize', 18, 'FontWeight', 'normal', 'FontAngle', 'normal', 'TickDir', 'both');
+    set(gca, 'XTick', xTicks, 'XTickLabel', xTickLabels, 'YTick', yTicks, 'yTickLabel', yTickLabels);
+    set(gca, 'XLim',XLim,'YLim',YLim);
+    
+    grid on
+    box off
+    if (~isempty(theXlabel))
+        t = xlabel(theXlabel);
+        set(t, 'FontWeight', 'bold', 'FontAngle', 'normal');
+    end
+    if (~isempty(theYlabel))
+        t = ylabel(theYlabel);
+        set(t, 'FontWeight', 'bold', 'FontAngle', 'normal');
+    end
+    
+    axis 'square'
+    if (~isempty(theLegends))
+        hL = legend(theLegends, 'Location', legendLocation);
+        set(hL, 'FontSize', 13, 'FontWeight', 'Bold', 'FontAngle', 'italic', 'FontName', 'Menlo', 'Box', 'off');
+    end
+    title(titleLabel);
+    hTitle=get(gca,'title');
+    set(hTitle, 'FontSize', 18);
+    
+    % Label plot
+    panelLabel = panelLabelPosAndColor{1};
+    panelLabelPos = panelLabelPosAndColor{2};
+    text(panelLabelPos(1), panelLabelPos(2), panelLabel, 'Color', panelLabelPosAndColor{3}, 'FontSize', 30, 'FontWeight', 'bold');
+    
+end
 
 function finishPlot(gca, theXlabel, theYlabel, theXscale, theYscale, theXLim, theYLim, xTicks, yTicks, xTickLabels, yTickLabels, panelLabelPosAndColor, theLegends, legendLocation, showGrid, showBox, backgroundColor)
     set(gca, 'FontName', 'Helvetica', 'FontSize', 18, 'FontWeight', 'normal', 'FontAngle', 'normal', 'TickDir', 'both');

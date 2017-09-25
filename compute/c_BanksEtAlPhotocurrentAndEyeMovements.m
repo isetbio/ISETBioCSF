@@ -96,6 +96,7 @@ varargout{2} = [];  % rParamsAllConds
 varargout{3} = [];  % noise-free responses
 varargout{4} = [];  % the optical image optics
 varargout{5} = [];  % the cone mosaic
+varargout{6} = {};  % the psychometric functions
 
 %% Make sure we really want to delete the response files
 if (p.Results.deleteResponseInstances)
@@ -327,7 +328,7 @@ for ll = 1:length(p.Results.luminances)
             %% Fit psychometric functions
             if (p.Results.fitPsychometric)
                 banksEtAlReplicate.cyclesPerDegree(ll,cc) = p.Results.cyclesPerDegree(cc);
-                banksEtAlReplicate.mlptThresholds(ll,cc) = ...
+                [banksEtAlReplicate.mlptThresholds(ll,cc), psychometricFunctions{ll,cc}] = ...
                     t_plotDetectThresholdsOnLMPlane(...
                         'rParams',rParams, ...
                         'instanceParams',testDirectionParams, ...
@@ -359,6 +360,10 @@ for ll = 1:length(p.Results.luminances)
         rParamsAllConds{cc,ll} = rParams;
     end % cc
 end % ll
+
+if ((p.Results.findPerformance) || (p.Results.visualizePerformance)) && (p.Results.fitPsychometric)
+    varargout{6} = psychometricFunctions;
+end
 
 if (p.Results.visualizeResponses)
     varargout{3} = noiseFreeResponses;
