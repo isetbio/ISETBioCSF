@@ -50,12 +50,12 @@ function params = getParamsForMosaicWithLabel(mosaicName)
             params.coneSpacingMicrons = 2.0;
             params.innerSegmentDiameter = 1.5797;   % for a circular sensor; this corresponds to ISETBio's default 1.4 micron square pixel (isetbio still does square apertures)
             params.conePacking = 'hex';
-            params.LMSRatio = [0.60 0.30 0.10];     % More S-cones because S-cones in the S-cone free region will be eliminated - Also needed to generate a different folder
+            params.LMSRatio = [0.61 0.31 0.08];     % More S-cones because S-cones in the S-cone free region will be eliminated - Also needed to generate a different folder
             params.mosaicRotationDegs = 0;
             params.sConeMinDistanceFactor = 3;                     % no special treatment of S-cones
             params.sConeFreeRadiusMicrons = 45;                     % no special treatment of S-cones
-            params.latticeAdjustmentPositionalToleranceF = 0.01;
-            params.latticeAdjustmentDelaunayToleranceF = 0.001;
+            params.latticeAdjustmentPositionalToleranceF = [];
+            params.latticeAdjustmentDelaunayToleranceF = [];
             params.marginF = [];                                    % marginF set according to FOV
         otherwise
             error('Unknown mosaic: ''%s''.', mosaicName);
