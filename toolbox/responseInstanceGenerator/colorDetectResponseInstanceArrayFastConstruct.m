@@ -37,9 +37,12 @@ p.addParameter('osMeanCurrents', [], @isnumeric);
 p.addParameter('computePhotocurrentResponseInstances', true, @islogical);
 p.addParameter('computeNoiseFreeSignals', true, @islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
+p.addParameter('visualizeOIsequence', false, @islogical);
+p.addParameter('visualizeMosaicWithFirstEMpath', false, @islogical);
 p.addParameter('paramsList', {}, @iscell);
 p.parse(varargin{:});
 currentSeed = p.Results.seed;
+
 
 %% Start computation time measurement
 if (p.Results.displayTrialBlockPartitionDiagnostics)
@@ -86,7 +89,16 @@ end
 
 
 %%  Visualize the oiSequence
-%theOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
+if (p.Results.visualizeOIsequence)
+    [~, hFig] = theOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
+    % Save figure
+    theProgram = mfilename;
+    rwObject = IBIOColorDetectReadWriteBasic;
+    data = 0;
+    fileName = sprintf('OISequence');
+    rwObject.write(fileName, data, p.Results.paramsList, theProgram, ...
+           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+end
 
 %% Co-visualize the optical image and the cone mosaic
 if (p.Results.visualizeSpatialScheme)
@@ -101,10 +113,27 @@ clear(varsToClear{:});
 
 %% Generate eye movement paths for all instances
 eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theMosaic.integrationTime);
-theEMpaths = colorDetectMultiTrialEMPathGenerate(...
+[theEMpaths, theEMpathsMicrons] = colorDetectMultiTrialEMPathGenerate(...
     theMosaic, nTrials, eyeMovementsNum, temporalParams.emPathType, ...
     'centeredEMPaths', p.Results.centeredEMPaths, ...
     'seed', currentSeed);
+
+if (p.Results.visualizeMosaicWithFirstEMpath)
+    visualizedTrial = 1;
+    hFig = theMosaic.visualizeGrid(...
+        'overlayEMpathMicrons', squeeze(theEMpathsMicrons(visualizedTrial,:,:)), ...  % expects emPath in microns, not cone units
+        'apertureShape', 'disks', ...
+        'visualizedConeAperture', 'lightCollectingArea', ...
+        'labelConeTypes', true,...
+        'generateNewFigure', true);
+    % Save figure
+    theProgram = mfilename;
+    rwObject = IBIOColorDetectReadWriteBasic;
+    data = 0;
+    fileName = sprintf('MosaicAndFirstEMpath');
+    rwObject.write(fileName, data, p.Results.paramsList, theProgram, ...
+           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+end
 
 [isomerizations, photocurrents, osImpulseResponseFunctions, osMeanCurrents] = ...
      theMosaic.computeForOISequence(theOIsequence, ...
