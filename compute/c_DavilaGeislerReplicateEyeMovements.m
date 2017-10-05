@@ -41,12 +41,15 @@ function [validationData, extraData] = c_DavilaGeislerReplicateEyeMovements(vara
 %   'highContrast' - value (default 0.1). High contrast.
 %   'contrastScale' - 'log'/'linear' (default 'log'). Contrast scale.
 %   'computeResponses' - true/false (default true).  Compute responses.
+%   'computePhotocurrentResponseInstances' - true/false (default false). Compute photocurrent responses
 %   'findPerformance' - true/false (default true).  Find performance.
 %   'thresholdMethod' - string (default 'mlpt').  How to find performance ('mlpt', 'mlpe', 'svm')
 %   'thresholdPCA' - value (default 60).  Number of PCA components to keep for SVM method.
 %   'fitPsychometric' - true/false (default true).  Fit psychometric functions.
 %   'thresholdCriterionFraction' value (default 0.75). Criterion corrrect for threshold.
 %   'generatePlots' - true/false (default true).  No plots are generated unless this is true.
+%   'visualizeOIsequence' - true/false (default false). Visualize the sequence of optical images
+%   'visualizeMosaicWithFirstEMpath' - true/false (default false). Visualize the mosaic with the first EMpath superimposed
 %   'visualizeResponses' - true/false (default false).  Do the fancy response visualization when generating responses.
 %   'visualizedResponseNormalization' - string (default 'submosaicBasedZscore'). How to normalize visualized responses
 %        'submosaicBasedZscore'       [DHB Note:] Say what these do, please (default).
@@ -62,9 +65,9 @@ p = inputParser;
 
 %% -- PARAMS DEFINED IN c_DavilaGeislerReplicate (as of April 27, 2017) ---
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
-p.addParameter('nTrainingSamples',500,@isnumeric);
+p.addParameter('nTrainingSamples',32,@isnumeric);
 p.addParameter('spotDiametersMinutes',[0.5 1 5 10 20 40],@isnumeric);
-p.addParameter('backgroundSizeDegs',2.1,@isnumeric);
+p.addParameter('backgroundSizeDegs',50/60,@isnumeric);
 p.addParameter('wavelength',550,@isnumeric);
 p.addParameter('luminances',[10],@isnumeric);
 p.addParameter('pupilDiamMm',3,@isnumeric);
@@ -84,13 +87,13 @@ p.addParameter('lowContrast',1e-6,@isnumeric);
 p.addParameter('highContrast',1e-2,@isnumeric);
 p.addParameter('contrastScale','log',@ischar);
 p.addParameter('computeResponses',true,@islogical);
+p.addParameter('computePhotocurrentResponseInstances', false, @islogical);
 p.addParameter('findPerformance',true,@islogical);
-%p.addParameter('thresholdMethod','mlpt',@ischar);
 p.addParameter('thresholdPCA',60,@isnumeric);
 p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('thresholdCriterionFraction',0.75,@isnumeric);
 p.addParameter('generatePlots',true,@islogical);
-p.addParameter('visualizeResponses',false,@islogical);
+p.addParameter('visualizeResponses',true,@islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotSpatialSummation',true,@islogical);
@@ -100,9 +103,9 @@ p.addParameter('freezeNoise',true,@islogical);
 % RESPONSE COMPUTATION OPTIONS
 p.addParameter('emPathType','frozen0',@(x)ismember(x, {'none', 'frozen', 'frozen0', 'random'}));
 p.addParameter('centeredEMPaths',false, @islogical); 
-p.addParameter('responseStabilizationMilliseconds', 80, @isnumeric);
-p.addParameter('responseExtinctionMilliseconds', 200, @isnumeric);
-p.addParameter('computeMosaic',false,@islogical);
+p.addParameter('responseStabilizationMilliseconds', 10, @isnumeric);
+p.addParameter('responseExtinctionMilliseconds', 20, @isnumeric);
+p.addParameter('computeMosaic',true,@islogical);
 
 % MOSAIC OPTIONS
 p.addParameter('integrationTime', 5.0/1000, @isnumeric);
@@ -112,7 +115,7 @@ p.addParameter('sConeMinDistanceFactor', 3.0, @isnumeric); % min distance betwee
 p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
 p.addParameter('latticeAdjustmentPositionalToleranceF', 0.01, @isnumeric);
 p.addParameter('latticeAdjustmentDelaunayToleranceF', 0.001, @isnumeric);
-p.addParameter('marginF', [], @isnumeric);     
+p.addParameter('marginF', 1/sqrt(2.0), @isnumeric);     
 
 % DIAGNOSTIC OPTIONS
 p.addParameter('displayTrialBlockPartitionDiagnostics', true, @islogical);
@@ -120,7 +123,9 @@ p.addParameter('displayResponseComputationProgress', false, @islogical);
 
 % RESPONSE MAP VISUALIZATION OPTIONS
 p.addParameter('visualizeMosaic',true, @islogical); 
-p.addParameter('visualizeSpatialScheme', false, @islogical);
+p.addParameter('visualizeOIsequence', true, @islogical);
+p.addParameter('visualizeMosaicWithFirstEMpath', true, @islogical);
+p.addParameter('visualizeSpatialScheme', true, @islogical);
 p.addParameter('visualizeKernelTransformedSignals',false, @islogical);
 p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('visualizePerformance', false, @islogical);
@@ -138,7 +143,6 @@ p.addParameter('spatialPoolingKernelParams', spatialPoolingKernelParams, @isstru
 p.addParameter('useRBFSVMKernel', false, @islogical);
 p.addParameter('thresholdMethod', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'mlpt', 'mlpe'}));
 p.addParameter('thresholdSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
-
 p.parse(varargin{:});
 
 %% Get the parameters we need
@@ -241,7 +245,8 @@ for ll = 1:length(p.Results.luminances)
         end
         
         rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
-            'fieldOfViewDegs', 1.1*p.Results.backgroundSizeDegs, ...  
+            'fieldOfViewDegs', p.Results.backgroundSizeDegs, ... 
+            'marginF', p.Results.marginF, ...
             'innerSegmentSizeMicrons',p.Results.innerSegmentSizeMicrons, ...
             'apertureBlur',p.Results.apertureBlur, ...
             'mosaicRotationDegs',p.Results.mosaicRotationDegs,...
@@ -259,8 +264,8 @@ for ll = 1:length(p.Results.luminances)
                 'sConeMinDistanceFactor', p.Results.sConeMinDistanceFactor, ...
                 'sConeFreeRadiusMicrons', p.Results.sConeFreeRadiusMicrons, ...
                 'latticeAdjustmentPositionalToleranceF', p.Results.latticeAdjustmentPositionalToleranceF, ...
-                'latticeAdjustmentDelaunayToleranceF', p.Results.latticeAdjustmentDelaunayToleranceF, ...
-                'marginF', p.Results.marginF);
+                'latticeAdjustmentDelaunayToleranceF', p.Results.latticeAdjustmentDelaunayToleranceF ...
+                );
         end
         
         % Make sure mosaic noise parameters match the frozen noise flag
@@ -313,7 +318,10 @@ for ll = 1:length(p.Results.luminances)
                'rParams',rParams,...
                'testDirectionParams',testDirectionParams,...
                'compute',true,...
+               'computePhotocurrentResponseInstances', p.Results.computePhotocurrentResponseInstances, ...
                'computeMosaic', (ll == 1) && (dd == 1) && (p.Results.computeMosaic), ...
+               'visualizeOIsequence', p.Results.visualizeOIsequence, ....
+               'visualizeMosaicWithFirstEMpath', p.Results.visualizeMosaicWithFirstEMpath, ...
                'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
                'visualizeResponses',p.Results.visualizeResponses, ...
                'visualizeMosaic', p.Results.visualizeMosaic, ...
@@ -328,6 +336,7 @@ for ll = 1:length(p.Results.luminances)
                'rParams',rParams,...
                'testDirectionParams',testDirectionParams,...
                'compute', false,...
+               'computePhotocurrentResponseInstances', false, ...
                'computeMosaic', false, ...
                'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
                'visualizeResponses',p.Results.visualizeResponses, ...

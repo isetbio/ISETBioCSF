@@ -53,6 +53,7 @@ function [validationData, extraData, varargout] = t_coneCurrentEyeMovementsRespo
 %     'visualizeMosaic' - true/false (default true). Wether to visualize the cone mosaic
 %     'visualizeOptics' - true/false (default true). Wether to visualize the cone mosaic
 %     'visualizeSpatialScheme' - true/false (default false). Visualize the relationship between mosaic and stimulus.
+%     'visualizeOIsequence' - true/false (default false). Visualize the sequence of optical images
 %     'visualizeResponses' - true/false (default true). Call the fancy visualize response routine
 %     'visualizedConditionIndices' - list of conditions indices for which to visualize respondrd (default: empty - all conditions)
 %     'visualizeOuterSegmentFilters' - true/false (default false). Visualize the outer segment impulse response functions.
@@ -90,6 +91,8 @@ p.addParameter('visualizeResponses',true,@islogical);
 p.addParameter('visualizedConditionIndices', [], @isnumeric);
 p.addParameter('visualizeOuterSegmentFilters',false, @islogical);
 p.addParameter('visualizeSpatialScheme',false,@islogical);
+p.addParameter('visualizeOIsequence', false, @islogical);
+p.addParameter('visualizeMosaicWithFirstEMpath', false, @islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('workerID', [], @isnumeric);
@@ -419,6 +422,8 @@ if (p.Results.compute)
                 'computePhotocurrentResponseInstances', p.Results.computePhotocurrentResponseInstances, ...
                 'computeNoiseFreeSignals', true, ....
                 'visualizeSpatialScheme', (p.Results.visualizeSpatialScheme & (trialBlock == 1)), ...
+                'visualizeOIsequence', false, ...
+                'visualizeMosaicWithFirstEMpath', false, ...
                 'paramsList', paramsList...
                 );
                 
@@ -490,7 +495,6 @@ if (p.Results.compute)
         
         % Parfor over blocks of trials
         parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum) 
-
             % Get the parallel pool worker ID
             t = getCurrentTask();
             
@@ -512,6 +516,8 @@ if (p.Results.compute)
                     'computePhotocurrentResponseInstances', p.Results.computePhotocurrentResponseInstances, ...
                     'computeNoiseFreeSignals', true, ...
                     'visualizeSpatialScheme', (p.Results.visualizeSpatialScheme & (trialBlock == 1)), ...
+                    'visualizeOIsequence', (p.Results.visualizeOIsequence & (trialBlock == 1)), ...
+                    'visualizeMosaicWithFirstEMpath', (p.Results.visualizeMosaicWithFirstEMpath & (trialBlock == 1)), ...
                     'paramsList', paramsList);
             
             % Save data temporarily
