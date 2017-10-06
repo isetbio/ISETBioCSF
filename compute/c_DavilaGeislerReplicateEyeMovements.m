@@ -1,11 +1,257 @@
-function [validationData, extraData] = c_DavilaGeislerReplicateEyeMovements(varargin)
+function varargout =  c_DavilaGeislerReplicateEyeMovements(varargin)
 % c_DavilaGeislerReplicate(varargin)
 %
 % Compute thresholds to replicate spatial summation calculations of Davila and Geisler, more or less.
 %
 % This looks at thresholds as a function of spot size.  Our stimuli are
 % monochromatic rather than monitor based, but to first order that should not make much difference
-%
+
+%% Set the default output
+varargout = {};
+varargout{1} = [];  % thresholds for different stimulus sizes and background luminances
+varargout{2} = [];  % extraData
+
+%% Parse the input params
+userParams = parseUserParams(varargin{:});
+
+% Generate runParams
+[rParams, testDirectionParams, thresholdParams] = runParams(userParams);
+
+%% Loop over spatial frequency
+for backgroundLumIndex = 1:length(userParams.luminances)
+    for stimDiamIndex = 1:length(userParams.spotDiametersMinutes)
+        
+        % Update rParams for current stimDiamIndex and backgroundLumIndex
+        rParams = updateRunParams(rParams, userParams, backgroundLumIndex, stimDiamIndex);
+
+        % Compute response instances
+        if ((userParams.computeResponses) || ...
+            (userParams.visualizeResponses) || (userParams.visualizeSpatialScheme) ||  (userParams.visualizeMosaic) ...     
+           )
+        % Call the core response computation routine to either generate or visualize the responses
+        t_coneCurrentEyeMovementsResponseInstances(...
+               'rParams',rParams,...
+               'testDirectionParams',testDirectionParams,...
+               'compute',userParams.computeResponses,...
+               'computePhotocurrentResponseInstances', userParams.computePhotocurrentResponseInstances, ...
+               'computeMosaic', (backgroundLumIndex == 1) && (stimDiamIndex == 1) && (userParams.computeMosaic), ...
+               'freezeNoise', userParams.freezeNoise, ...
+               'centeredEMPaths', userParams.centeredEMPaths, ... 
+               'generatePlots', userParams.generatePlots,...
+               'visualizeOIsequence', userParams.visualizeOIsequence, ....
+               'visualizeMosaicWithFirstEMpath', userParams.visualizeMosaicWithFirstEMpath, ...
+               'visualizedResponseNormalization', userParams.visualizedResponseNormalization, ...
+               'visualizeResponses',userParams.visualizeResponses, ...
+               'visualizeMosaic', userParams.visualizeMosaic, ...         
+               'visualizeSpatialScheme', userParams.visualizeSpatialScheme,...
+               'visualizeOuterSegmentFilters', false...
+           ); 
+        end
+    
+        % Find performance, template max likeli
+        if (userParams.findPerformance) || (userParams.visualizePerformance)
+            % Compute psychometric function
+            t_colorDetectFindPerformance(...
+                'rParams',rParams, ...
+                'testDirectionParams',testDirectionParams, ...
+                'thresholdParams',thresholdParams, ...
+                'compute',userParams.findPerformance, ...
+                'visualizeSpatialScheme', userParams.visualizeSpatialScheme, ...
+                'visualizeKernelTransformedSignals', userParams.visualizeKernelTransformedSignals, ...
+                'plotSvmBoundary',false, ...
+                'plotPsychometric', (userParams.visualizePerformance) & (~userParams.fitPsychometric), ...
+                'freezeNoise',userParams.freezeNoise);
+        
+            % Fit psychometric function
+            if (userParams.fitPsychometric)
+                davilaGeislerReplicate.spotDiametersMinutes(backgroundLumIndex,stimDiamIndex) = userParams.spotDiametersMinutes(stimDiamIndex);
+                davilaGeislerReplicate.mlptThresholds(backgroundLumIndex,stimDiamIndex) = ...
+                    t_fitPsychometricFunctions(...
+                        'rParams',rParams,'instanceParams',...
+                        testDirectionParams,'thresholdParams',...
+                        thresholdParams, ...
+                        'generatePlots',userParams.generatePlots && userParams.plotPsychometric);
+                %close all;
+            end
+        end
+        
+    end % stimDiamIndex
+end % backgroundLumIndex
+
+[dataOut, extraData] = exportPerformanceData(rParams, userParams, mfilename);
+if (nargout > 0)
+    varargout{1} = dataOut;
+    varargout{2} = extraData;
+end
+end
+
+
+% -------- HELPER FUNCTIONS ---------
+
+function [dataOut, extraData] = exportPerformanceData(rParams, userParams, writeProgram)
+dataOut = [];
+extraData = [];
+    
+% This read and write does not distinguish the number of backgrounds
+% studied, and so can screw up if the number of backgrounds changes 
+% between a run that generated the data and one that read it back.  If
+% everything else is in place, it is quick to regenerate the data by just
+% doing the fit psychometric step, which is pretty quick.
+if (userParams.fitPsychometric) && ((userParams.findPerformance) || (userParams.visualizePerformance))
+    fprintf('Writing performance data ... ');
+    paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
+    rwObject = IBIOColorDetectReadWriteBasic;
+    rwObject.write('davilaGeislerReplicateEyeMovements',davilaGeislerReplicate,paramsList,writeProgram);
+    fprintf('done\n');
+
+    % Read data back in
+    fprintf('Reading performance data ...');
+    paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
+    rwObject = IBIOColorDetectReadWriteBasic;
+    davilaGeislerReplicate = rwObject.read('davilaGeislerReplicateEyeMovements',paramsList,writeProgram);
+    fprintf('done\n');
+
+    % Returned data
+    dataOut.spotDiametersMinutes = davilaGeislerReplicate.spotDiametersMinutes;
+    dataOut.mlptThresholds = davilaGeislerReplicate.mlptThresholds;
+    dataOut.luminances = userParams.luminances;
+    extraData.paramsList = paramsList;
+    extraData.userParams = userParams;
+
+    % Make a plot of estimated threshold versus training set size
+    %
+    % The way the plot is coded counts on the test contrasts never changing
+    % across the conditions, which we could explicitly check for here.
+    if (userParams.generatePlots && userParams.plotSpatialSummation)
+        % Some numbers we need
+        spotAreasMin2 = pi*((userParams.spotDiametersMinutes/2).^2);
+        maxThresholdEnergies = rParams.maxSpotLuminanceCdM2*rParams.temporalParams.stimulusDurationInSeconds*spotAreasMin2;
+
+        % Davila-Geisler style plot
+        hFig = figure; clf; hold on
+        fontBump = 4;
+        markerBump = -4;
+        set(gcf,'Position',[100 100 450 650]);
+        set(gca,'FontSize', 14+fontBump);
+        theColors = ['r' 'g' 'b'];
+        legendStr = cell(length(userParams.luminances),1);
+        for ll = 1:length(userParams.luminances)
+            theColorIndex = rem(ll,length(theColors)) + 1;
+            plot(spotAreasMin2,[davilaGeislerReplicate.mlptThresholds(ll,:).thresholdContrasts].*maxThresholdEnergies, ...
+                [theColors(theColorIndex) 'o-'],'MarkerSize',12+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',3);  
+            legendStr{ll} = sprintf('%0.1f cd/m2',userParams.luminances(ll));
+        end
+
+        % Add Davila Geisler curve
+        downShift = 0.8;
+        A = LoadDigitizedDavilaGeislerFigure2;
+        A(:,2) = (10^-downShift)*A(:,2);
+        plot(A(:,1),A(:,2),'k:','LineWidth',1);
+
+        set(gca,'XScale','log');
+        set(gca,'YScale','log');
+        xlabel('Log10 Spot Area (square arc minutes)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+        ylabel('Log10 Threshold Energy', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+        xlim([1e-2 1e4]); ylim([1e-3 1e3]);
+        legend(legendStr,'Location','NorthWest','FontSize',rParams.plotParams.labelFontSize+fontBump);
+        box off; grid on
+        if (userParams.blur)
+            title(sprintf('Computational Observer CSF - w/ blur'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
+            rwObject.write('davilaGeislerReplicateWithBlur',hFig,paramsList,writeProgram,'Type','figure');
+        else
+            title(sprintf('Computational Observer CSF - no blur'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
+            rwObject.write('davilaGeislerReplicateNoBlur',hFig,paramsList,writeProgram,'Type','figure');
+        end
+
+        % Plot it the way we plot our data
+        hFig1 = figure;
+        set(gcf,'Position',[100 100 450 650]);
+        set(gca,'FontSize', rParams.plotParams.axisFontSize+fontBump);
+        legendStr = cell(length(userParams.luminances),1);
+        for ll = 1:length(userParams.luminances)
+            theColorIndex = rem(ll,length(theColors)) + 1;
+            plot(spotAreasMin2,[davilaGeislerReplicate.mlptThresholds(ll,:).thresholdContrasts], ...
+                [theColors(theColorIndex) 'o-'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
+            legendStr{ll} = sprintf('%0.1f cd/m2',userParams.luminances(ll));
+        end
+
+        set(gca,'XScale','log');
+        set(gca,'YScale','log');
+         xlabel('Log10 Spot Area (square arc minutes)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+        ylabel('Log10 Threshold Contrast (arb. units)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+        xlim([1e-2 1e4]);
+        ylim([1e-5 1e1]);
+        axis('square');
+        legend(legendStr,'Location','NorthWest','FontSize',rParams.plotParams.labelFontSize+fontBump);
+        box off; grid on
+        if (userParams.blur)
+            title(sprintf('Computational Observer CSF - w/ blur'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
+            rwObject.write('davilaGeislerReplicateWithBlur1',hFig1,paramsList,writeProgram,'Type','figure');
+        else
+            title(sprintf('Computational Observer CSF - no blur'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
+            rwObject.write('davilaGeislerReplicateNoBlur1',hFig1,paramsList,writeProgram,'Type','figure');
+        end
+
+        % Save data for plots in convenient form
+        plotData.spotAreasMin2 = spotAreasMin2;
+        plotData.thresholdEnergy = [davilaGeislerReplicate.mlptThresholds(:,:).thresholdContrasts].*maxThresholdEnergies;
+        plotData.thresholdContrasts = [davilaGeislerReplicate.mlptThresholds(:,:).thresholdContrasts];
+        plotData.digitizedAreasMin2 = A(:,1)';
+        plotData.digitizedEnergy = A(:,2)';
+        if (userParams.blur)
+            rwObject.write('davilaGeislerReplicatePlotDataWithBlur',plotData,paramsList,writeProgram);
+
+        else
+            rwObject.write('davilaGeislerReplicatePlotDataNoBlur',plotData,paramsList,writeProgram);
+        end
+    end
+end
+end
+
+
+function [rParams, testDirectionParams, thresholdParams] = runParams(userParams)
+% Start with default
+rParams = responseParamsGenerate('spatialType','spot','backgroundType','AO','modulationType','AO');
+
+%% Set the  topLevelDir name
+if (~userParams.useScratchTopLevelDirName)
+    rParams.topLevelDirParams.name = mfilename;
+end
+
+%% Parameters that define the LM instances we'll generate here
+testDirectionParams = instanceParamsGenerate('instanceType','contrasts');
+testDirectionParams = modifyStructParams(testDirectionParams, ...
+    'trialsNum', userParams.nTrainingSamples, ...
+    'nContrastsPerDirection', userParams.nContrastsPerDirection, ...
+    'lowContrast', userParams.lowContrast, ...
+    'highContrast', userParams.highContrast, ...
+    'contrastScale', userParams.contrastScale ...  
+    );
+    
+%% Parameters related to how we find thresholds from responses
+thresholdParams = thresholdParamsGenerate;
+
+%%  --- MODIFICATIONS FOR SVM SPATIAL SUMMATOR PREPROCESSING ---
+thresholdParams = modifyStructParams(thresholdParams, ...
+    'criterionFraction', userParams.thresholdCriterionFraction, ...
+    'method', userParams.thresholdMethod, ...
+    'STANDARDIZE', false, ...                    % Standardize data for PCA
+    'standardizeSVMpredictors', false, ...       % Standardize data for SVM
+    'useRBFKernel', userParams.useRBFSVMKernel, ...
+    'PCAComponents', userParams.thresholdPCA, ...
+    'signalSource', userParams.thresholdSignal ...
+    )
+userParams.spatialPoolingKernelParams
+if (strcmp(thresholdParams.method, 'svmGaussianRF')) 
+    thresholdParams = modifyStructParams(thresholdParams, ...
+        'spatialPoolingKernelParams', userParams.spatialPoolingKernelParams);  
+end       
+end
+
+
+
+function userParams = parseUserParams(paramsList)
+
 % Key/value pairs
 %   'useScratchTopLevelDirName'- true/false (default false). 
 %      When true, the top level output directory is [scratch]. 
@@ -65,13 +311,15 @@ p = inputParser;
 
 %% -- PARAMS DEFINED IN c_DavilaGeislerReplicate (as of April 27, 2017) ---
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
-p.addParameter('nTrainingSamples',32,@isnumeric);
-p.addParameter('spotDiametersMinutes',[0.5 1 5 10 20 40],@isnumeric);
-p.addParameter('backgroundSizeDegs',50/60,@isnumeric);
+p.addParameter('nTrainingSamples',1024,@isnumeric);
+p.addParameter('spotDiametersMinutes',[0.5 1 5 10 20],@isnumeric);
+p.addParameter('backgroundSizeDegs',30/60,@isnumeric);
 p.addParameter('wavelength',550,@isnumeric);
 p.addParameter('luminances',[10],@isnumeric);
 p.addParameter('pupilDiamMm',3,@isnumeric);
-p.addParameter('durationMs',100,@isnumeric);
+p.addParameter('stimDurationMs',100,@isnumeric);
+p.addParameter('stimRefreshRateHz', 50, @isnumeric);
+
 p.addParameter('blur',true,@islogical);
 p.addParameter('opticsModel','WvfHuman',@ischar);
 p.addParameter('innerSegmentSizeMicrons',3.0, @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
@@ -141,369 +389,148 @@ spatialPoolingKernelParams = struct(...
     
 p.addParameter('spatialPoolingKernelParams', spatialPoolingKernelParams, @isstruct);
 p.addParameter('useRBFSVMKernel', false, @islogical);
-p.addParameter('thresholdMethod', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'mlpt', 'mlpe'}));
+p.addParameter('thresholdMethod', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'mlpt', 'mlptGaussianRF','mlpe'}));
 p.addParameter('thresholdSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
-p.parse(varargin{:});
+p.parse(paramsList);
 
-%% Get the parameters we need
-%
-% Start with default
-rParams = responseParamsGenerate('spatialType','spot','backgroundType','AO','modulationType','AO');
+userParams = p.Results;
 
-%% Set the  topLevelDir name
-if (~p.Results.useScratchTopLevelDirName)
-    rParams.topLevelDirParams.name = mfilename;
 end
 
-%% Loop over spatial frequency
-for ll = 1:length(p.Results.luminances)
-    for dd = 1:length(p.Results.spotDiametersMinutes)
+% Update run params
+function rParams = updateRunParams(rParams, userParams, backgroundLumIndex,stimDiamIndex)
+% Update the spatial params
+rParams = updateSpatialParams(rParams, userParams, stimDiamIndex); 
+
+% Update the background wavelength
+rParams.backgroundParams.backgroundWavelengthsNm = [userParams.wavelength];
+
+% Scale radiance to produce desired background levels
+rParams = updateBackgroundAndSpotParams(rParams, userParams, backgroundLumIndex);
+
+% Update the temporal params
+rParams = updateTemporalParams(rParams, userParams);
+
+% Blur
+rParams.oiParams = modifyStructParams(rParams.oiParams, ...
+    'blur', userParams.blur, ...
+    'pupilDiamMm', userParams.pupilDiamMm, ...
+    'opticsModel', userParams.opticsModel);
+
+% Update mosaic params
+rParams = updateMosaicParams(rParams, userParams);
+end
+
+
+function rParams = updateMosaicParams(rParams, userParams)
+
+rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
+    'fieldOfViewDegs', userParams.backgroundSizeDegs, ... 
+    'marginF', userParams.marginF, ...
+    'innerSegmentSizeMicrons',userParams.innerSegmentSizeMicrons, ...
+    'apertureBlur',userParams.apertureBlur, ...
+    'mosaicRotationDegs',userParams.mosaicRotationDegs,...
+    'coneDarkNoiseRate',userParams.coneDarkNoiseRate,...
+    'LMSRatio',userParams.LMSRatio,...
+    'coneSpacingMicrons', userParams.coneSpacingMicrons, ...
+    'conePacking', userParams.conePacking, ...
+    'integrationTimeInSeconds', userParams.integrationTime, ...
+    'isomerizationNoise', 'random',...              % select from {'random', 'frozen', 'none'}
+    'osNoise', 'random', ...                        % select from {'random', 'frozen', 'none'}
+    'osModel', 'Linear');
         
-        % Get stimulus parameters correct
-        %
-        % Spatial 
-        rParams.spatialParams.spotSizeDegs = p.Results.spotDiametersMinutes(dd)/60;
-        rParams.spatialParams.backgroundSizeDegs = p.Results.backgroundSizeDegs;
-        rParams.spatialParams.fieldOfViewDegs = 1.1*p.Results.backgroundSizeDegs;
-        rParams.spatialParams.row = p.Results.imagePixels;
-        rParams.spatialParams.col = p.Results.imagePixels;
-        rParams.spatialParams.viewingDistance = 7.16;  
-                         
-        % Set background wavelength
-        rParams.backgroundParams.backgroundWavelengthsNm = [p.Results.wavelength];
-        
-        % Scale radiance to produce desired background levels
-        deltaWl = 10;
-        S = [p.Results.wavelength deltaWl 2];
-        wls = SToWls(S);
-        load T_xyz1931
-        T_xyz = SplineCmf(S_xyz1931,683*T_xyz1931,S);
-        radiancePerUW = AOMonochromaticCornealPowerToRadiance(wls,rParams.backgroundParams.backgroundWavelengthsNm,1,rParams.oiParams.pupilDiamMm,rParams.spatialParams.backgroundSizeDegs^2);
-        xyzPerUW = T_xyz*radiancePerUW*(wls(2)-wls(1));
-        desiredLumCdM2 = p.Results.luminances(ll);
-        rParams.backgroundParams.backgroundCornealPowerUW = desiredLumCdM2/xyzPerUW(2);
-        
-        % Scale spot parameters into what we think a reasonable range is.
-        % In Davila & Geisler, they give thresholds in what they call
-        % threshold energy, which is spotLuminance*durationSecs*areaMinutes2.
-        %
-        % Just to get things into a reasonable scale, we'll find a
-        % luminance corresponding to a threshold energy of 10 for our
-        % smallest spot.
-        maxThresholdEnergy = 10;
-        minSpotAreaMin2 = pi*(min(p.Results.spotDiametersMinutes)/2)^2;
-        maxSpotLuminanceCdM2 = maxThresholdEnergy/((p.Results.durationMs/1000)*minSpotAreaMin2);
-        rParams.colorModulationParams.startWl = p.Results.wavelength;
-        rParams.colorModulationParams.endWl = p.Results.wavelength+deltaWl;
-        rParams.colorModulationParams.deltaWl = deltaWl;
-        rParams.colorModulationParams.spotWavelengthNm = p.Results.wavelength;
-        rParams.colorModulationParams.spotCornealPowerUW = maxSpotLuminanceCdM2/xyzPerUW(2);
-        rParams.colorModulationParams.contrast = 1;
-        
-        % Blur
-        rParams.oiParams = modifyStructParams(rParams.oiParams, ...
-        	'blur', p.Results.blur, ...
-            'pupilDiamMm', p.Results.pupilDiamMm, ...
-            'opticsModel', p.Results.opticsModel);
-        
-        % Their stimulus intervals were 100 msec each.
-        %
-        % Equate stimulusSamplingIntervalInSeconds to stimulusDurationInSeconds to generate 1 time point only.
-        % Their main calculation was without eye movements
-        stimulusDurationInSeconds = 100/1000;
-        
-        %%  --- ADDITIONS FOR EYE-MOVEMENTS / PHOTOCURRENTS ---
-        % Assume a frame rate (in Hz). This is only used to sample the 100 ms stimulus pulse
-        frameRate = 50;
-        windowTauInSeconds = nan; % square-wave
-        stimulusSamplingIntervalInSeconds = 1/frameRate;
-        
-        % Pre-stimulus time: allow photocurrent response to stabilize
-        responseStabilizationSeconds = ceil(p.Results.responseStabilizationMilliseconds/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
-        % Post-stimulus time: allow photocurrent response to return to baseline
-        responseExtinctionSeconds = ceil(p.Results.responseExtinctionMilliseconds/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
-        secondsToInclude = responseStabilizationSeconds+stimulusDurationInSeconds+responseExtinctionSeconds;
-        rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
-            'frameRate', frameRate, ...
-            'windowTauInSeconds', windowTauInSeconds, ...
-            'stimulusSamplingIntervalInSeconds', stimulusSamplingIntervalInSeconds, ...
-            'stimulusDurationInSeconds', stimulusDurationInSeconds, ...
-            'secondsToInclude', secondsToInclude, ...
-            'secondsForResponseStabilization', responseStabilizationSeconds, ...
-            'secondsForResponseExtinction', responseExtinctionSeconds, ...
-            'secondsToIncludeOffset', 0/1000, ...
-            'emPathType', p.Results.emPathType ...
+% Additional params for eccentricity-based mosaics
+if strcmp(userParams.conePacking, 'hex')
+    rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
+        'sConeMinDistanceFactor', userParams.sConeMinDistanceFactor, ...
+        'sConeFreeRadiusMicrons', userParams.sConeFreeRadiusMicrons, ...
+        'latticeAdjustmentPositionalToleranceF', userParams.latticeAdjustmentPositionalToleranceF, ...
+        'latticeAdjustmentDelaunayToleranceF', userParams.latticeAdjustmentDelaunayToleranceF ...
         );
-        %%  --- END OF ADDITIONS FOR EYE-MOVEMENTS / PHOTOCURRENTS ---
-        
-        
-        % Set up mosaic parameters. NOTE THAT IN THIS VERSION (WITH EYE MOVEMENTS)
-        % WE DO NOT INTEGRATE FOR THE ENTIRE STIMULUS 
-        
-        if (isfield(rParams.mosaicParams, 'realisticSconeSubmosaic'))
-            error('The realisticSconeSubmosaic has been removed. Pass directly sConeMinDistanceFactor and sConeFreeRadiusMicrons\n');
-        end
-        
-        rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
-            'fieldOfViewDegs', p.Results.backgroundSizeDegs, ... 
-            'marginF', p.Results.marginF, ...
-            'innerSegmentSizeMicrons',p.Results.innerSegmentSizeMicrons, ...
-            'apertureBlur',p.Results.apertureBlur, ...
-            'mosaicRotationDegs',p.Results.mosaicRotationDegs,...
-            'coneDarkNoiseRate',p.Results.coneDarkNoiseRate,...
-            'LMSRatio',p.Results.LMSRatio,...
-            'coneSpacingMicrons', p.Results.coneSpacingMicrons, ...
-            'conePacking', p.Results.conePacking, ...
-        	'integrationTimeInSeconds', p.Results.integrationTime, ...   % <<<<<<<<< DIFFERENT FOR EYE MOVEMENTS
-        	'isomerizationNoise', 'random',...              % select from {'random', 'frozen', 'none'}
-        	'osNoise', 'random', ...                        % select from {'random', 'frozen', 'none'}
-        	'osModel', 'Linear');
-        
-        if strcmp(p.Results.conePacking, 'hex')
-            rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
-                'sConeMinDistanceFactor', p.Results.sConeMinDistanceFactor, ...
-                'sConeFreeRadiusMicrons', p.Results.sConeFreeRadiusMicrons, ...
-                'latticeAdjustmentPositionalToleranceF', p.Results.latticeAdjustmentPositionalToleranceF, ...
-                'latticeAdjustmentDelaunayToleranceF', p.Results.latticeAdjustmentDelaunayToleranceF ...
-                );
-        end
-        
-        % Make sure mosaic noise parameters match the frozen noise flag
-        % passed in.  Doing this here means that things work on down the
-        % chain, while if we don't then there is a problem because routines
-        % create the wrong directory.
-        if (p.Results.freezeNoise)
-            if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
-                rParams.mosaicParams.isomerizationNoise = 'frozen';
-            end
-            if (strcmp(rParams.mosaicParams.osNoise, 'random'))
-                rParams.mosaicParams.osNoise = 'frozen';
-            end
-        end
-
-        % Parameters that define the LM instances we'll generate here
-        %
-        % Use default LMPlane.
-        testDirectionParams = instanceParamsGenerate('instanceType','contrasts');
-        testDirectionParams = modifyStructParams(testDirectionParams, ...
-            'trialsNum', p.Results.nTrainingSamples, ...
-            'nContrastsPerDirection', p.Results.nContrastsPerDirection, ...
-            'lowContrast', p.Results.lowContrast, ...
-        	'highContrast', p.Results.highContrast, ...
-        	'contrastScale', p.Results.contrastScale ...                       % choose between 'linear' and 'log'
-            );
-        
-        % Parameters related to how we find thresholds from responses
-        thresholdParams = thresholdParamsGenerate;
-
-        %%  --- MODIFICATIONS FOR SVM SPATIAL SUMMATOR PREPROCESSING ---
-        thresholdParams = modifyStructParams(thresholdParams, ...
-        	'criterionFraction', p.Results.thresholdCriterionFraction, ...
-        	'method', p.Results.thresholdMethod, ...
-            'STANDARDIZE', false, ...                    % Standardize data for PCA
-            'standardizeSVMpredictors', false, ...       % Standardize data for SVM
-            'useRBFKernel', p.Results.useRBFSVMKernel, ...
-        	'PCAComponents', p.Results.thresholdPCA, ...
-            'signalSource', p.Results.thresholdSignal ...
-            );
-        if (strcmp(thresholdParams.method, 'svmGaussianRF'))
-            thresholdParams = modifyStructParams(thresholdParams, ...
-                'spatialPoolingKernelParams', p.Results.spatialPoolingKernelParams);  
-        end
-        
-        
-        %% Compute response instances
-        if (p.Results.computeResponses)
-           t_coneCurrentEyeMovementsResponseInstances(...
-               'rParams',rParams,...
-               'testDirectionParams',testDirectionParams,...
-               'compute',true,...
-               'computePhotocurrentResponseInstances', p.Results.computePhotocurrentResponseInstances, ...
-               'computeMosaic', (ll == 1) && (dd == 1) && (p.Results.computeMosaic), ...
-               'visualizeOIsequence', p.Results.visualizeOIsequence, ....
-               'visualizeMosaicWithFirstEMpath', p.Results.visualizeMosaicWithFirstEMpath, ...
-               'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
-               'visualizeResponses',p.Results.visualizeResponses, ...
-               'visualizeMosaic', p.Results.visualizeMosaic, ...
-               'generatePlots',p.Results.generatePlots,...
-               'freezeNoise',p.Results.freezeNoise, ...
-               'centeredEMPaths',p.Results.centeredEMPaths, ...                 % new
-               'visualizeSpatialScheme', p.Results.visualizeSpatialScheme); ...   % new
-        end
-        
-        if ((p.Results.visualizeResponses) || (p.Results.visualizeSpatialScheme)) ||  (p.Results.visualizeMosaic) 
-            t_coneCurrentEyeMovementsResponseInstances(...
-               'rParams',rParams,...
-               'testDirectionParams',testDirectionParams,...
-               'compute', false,...
-               'computePhotocurrentResponseInstances', false, ...
-               'computeMosaic', false, ...
-               'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
-               'visualizeResponses',p.Results.visualizeResponses, ...
-               'visualizeMosaic', p.Results.visualizeMosaic, ...
-               'generatePlots', true,...
-               'freezeNoise',p.Results.freezeNoise, ...
-               'centeredEMPaths',p.Results.centeredEMPaths, ...                                 
-               'visualizeSpatialScheme', p.Results.visualizeSpatialScheme, ...
-               'visualizeOuterSegmentFilters', false);
-        end
-    
-        %% Find performance, template max likeli
-        if (p.Results.findPerformance) || (p.Results.visualizePerformance)
-            t_colorDetectFindPerformance(...
-                'rParams',rParams, ...
-                'testDirectionParams',testDirectionParams, ...
-                'thresholdParams',thresholdParams, ...
-                'compute',p.Results.findPerformance, ...
-                'visualizeSpatialScheme', p.Results.visualizeSpatialScheme, ...
-                'visualizeKernelTransformedSignals', p.Results.visualizeKernelTransformedSignals, ...
-                'plotSvmBoundary',false, ...
-                'plotPsychometric',false, ...
-                'freezeNoise',p.Results.freezeNoise);
-        end
-        
-        %% Fit psychometric functions
-        if (p.Results.fitPsychometric)
-            davilaGeislerReplicate.spotDiametersMinutes(ll,dd) = p.Results.spotDiametersMinutes(dd);
-            davilaGeislerReplicate.mlptThresholds(ll,dd) = ...
-                t_fitPsychometricFunctions(...
-                    'rParams',rParams,'instanceParams',...
-                    testDirectionParams,'thresholdParams',...
-                    thresholdParams, ...
-                    'generatePlots',p.Results.generatePlots && p.Results.plotPsychometric);
-            %close all;
-        end
+end
+     
+% Make sure mosaic noise parameters match the frozen noise flag
+% passed in.  Doing this here means that things work on down the
+% chain, while if we don't then there is a problem because routines
+% create the wrong directory.
+if (userParams.freezeNoise)
+    if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
+        rParams.mosaicParams.isomerizationNoise = 'frozen';
+    end
+    if (strcmp(rParams.mosaicParams.osNoise, 'random'))
+        rParams.mosaicParams.osNoise = 'frozen';
     end
 end
-%% Write out the data
+end
 
+
+function rParams = updateTemporalParams(rParams, userParams)
+
+stimulusDurationInSeconds = userParams.stimDurationMs/1000;
+stimulusSamplingIntervalInSeconds = 1/userParams.stimRefreshRateHz;
+windowTauInSeconds = nan; % square-wave
+                
+% Pre-stimulus time: allow photocurrent response to stabilize
+responseStabilizationSeconds = ceil(userParams.responseStabilizationMilliseconds/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
+
+% Post-stimulus time: allow photocurrent response to return to baseline
+responseExtinctionSeconds = ceil(userParams.responseExtinctionMilliseconds/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
+
+secondsToInclude = responseStabilizationSeconds+stimulusDurationInSeconds+responseExtinctionSeconds;
+rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
+    'frameRate', userParams.stimRefreshRateHz, ...
+    'windowTauInSeconds', windowTauInSeconds, ...
+    'stimulusSamplingIntervalInSeconds', stimulusSamplingIntervalInSeconds, ...
+    'stimulusDurationInSeconds', stimulusDurationInSeconds, ...
+    'secondsToInclude', secondsToInclude, ...
+    'secondsForResponseStabilization', responseStabilizationSeconds, ...
+    'secondsForResponseExtinction', responseExtinctionSeconds, ...
+    'secondsToIncludeOffset', 0/1000, ...
+    'emPathType', userParams.emPathType ...
+);
+end
+
+
+
+function rParams = updateSpatialParams(rParams, userParams, stimDiamIndex)
+rParams.spatialParams.spotSizeDegs       = userParams.spotDiametersMinutes(stimDiamIndex)/60;
+rParams.spatialParams.backgroundSizeDegs = userParams.backgroundSizeDegs;
+rParams.spatialParams.fieldOfViewDegs    = 1.1*userParams.backgroundSizeDegs;
+rParams.spatialParams.row                = userParams.imagePixels;
+rParams.spatialParams.col                = userParams.imagePixels;
+rParams.spatialParams.viewingDistance    = 7.16;  
+end
+
+function rParams = updateBackgroundAndSpotParams(rParams, userParams, backgroundLumIndex)
+
+%% Background params
+deltaWl = 10;
+S = [userParams.wavelength deltaWl 2];
+wls = SToWls(S);
+load T_xyz1931
+T_xyz = SplineCmf(S_xyz1931,683*T_xyz1931,S);
+radiancePerUW = AOMonochromaticCornealPowerToRadiance(wls,rParams.backgroundParams.backgroundWavelengthsNm,1,rParams.oiParams.pupilDiamMm,rParams.spatialParams.backgroundSizeDegs^2);
+xyzPerUW = T_xyz*radiancePerUW*(wls(2)-wls(1));
+desiredLumCdM2 = userParams.luminances(backgroundLumIndex);
+rParams.backgroundParams.backgroundCornealPowerUW = desiredLumCdM2/xyzPerUW(2);
+
+%% Spot params
+% Scale spot parameters into what we think a reasonable range is.
+% In Davila & Geisler, they give thresholds in what they call
+% threshold energy, which is spotLuminance*durationSecs*areaMinutes2.
 %
-% This read and write does not distinguish the number of backgrounds
-% studied, and so can screw up if the number of backgrounds changes 
-% between a run that generated the data and one that read it back.  If
-% everything else is in place, it is quick to regenerate the data by just
-% doing the fit psychometric step, which is pretty quick.
-if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.visualizePerformance))
-    fprintf('Writing performance data ... ');
-    paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
-    rwObject = IBIOColorDetectReadWriteBasic;
-    writeProgram = mfilename;
-    rwObject.write('davilaGeislerReplicateEyeMovements',davilaGeislerReplicate,paramsList,writeProgram);
-    fprintf('done\n');
+% Just to get things into a reasonable scale, we'll find a
+% luminance corresponding to a threshold energy of 10 for our
+% smallest spot.
 
-    %% Read data back in
-    fprintf('Reading performance data ...');
-    % nameParams = rParams.spatialParams;
-    % nameParams.spotSizeDegs = 0;
-    % nameParams.backgroundSizeDegs = 0;
-    % nameParams.fieldOfViewDegs = 0;
-    % paramsList = {rParams.topLevelDirParams, nameParams, rParams.temporalParams, rParams.oiParams, rParams.mosaicParams, rParams.backgroundParams, testDirectionParams};
-    paramsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams, thresholdParams};
-    rwObject = IBIOColorDetectReadWriteBasic;
-    writeProgram = mfilename;
-    davilaGeislerReplicate = rwObject.read('davilaGeislerReplicateEyeMovements',paramsList,writeProgram);
-    fprintf('done\n');
-
-
-
-    %% Output validation data
-    if (nargout > 0)
-        validationData.spotDiametersMinutes = davilaGeislerReplicate.spotDiametersMinutes;
-        validationData.mlptThresholds = davilaGeislerReplicate.mlptThresholds;
-        validationData.luminances = p.Results.luminances;
-        extraData.paramsList = paramsList;
-        extraData.p.Results = p.Results;
-    end
-
-
-    %% Make a plot of estimated threshold versus training set size
-    %
-    % The way the plot is coded counts on the test contrasts never changing
-    % across the conditions, which we could explicitly check for here.
-    if (p.Results.generatePlots && p.Results.plotSpatialSummation)
-        % Some numbers we need
-        spotAreasMin2 = pi*((p.Results.spotDiametersMinutes/2).^2);
-        maxThresholdEnergies = maxSpotLuminanceCdM2*rParams.temporalParams.stimulusDurationInSeconds*spotAreasMin2;
-
-        % Davila-Geisler style plot
-        hFig = figure; clf; hold on
-        fontBump = 4;
-        markerBump = -4;
-        set(gcf,'Position',[100 100 450 650]);
-        set(gca,'FontSize', 14+fontBump);
-        theColors = ['r' 'g' 'b'];
-        legendStr = cell(length(p.Results.luminances),1);
-        for ll = 1:length(p.Results.luminances)
-            theColorIndex = rem(ll,length(theColors)) + 1;
-            plot(spotAreasMin2,[davilaGeislerReplicate.mlptThresholds(ll,:).thresholdContrasts].*maxThresholdEnergies, ...
-                [theColors(theColorIndex) 'o-'],'MarkerSize',12+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',3);  
-            legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
-        end
-
-        % Add Davila Geisler curve
-        downShift = 0.8;
-        A = LoadDigitizedDavilaGeislerFigure2;
-        A(:,2) = (10^-downShift)*A(:,2);
-        plot(A(:,1),A(:,2),'k:','LineWidth',1);
-
-        set(gca,'XScale','log');
-        set(gca,'YScale','log');
-        xlabel('Log10 Spot Area (square arc minutes)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-        ylabel('Log10 Threshold Energy', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-        xlim([1e-2 1e4]); ylim([1e-3 1e3]);
-        legend(legendStr,'Location','NorthWest','FontSize',rParams.plotParams.labelFontSize+fontBump);
-        box off; grid on
-        if (p.Results.blur)
-            title(sprintf('Computational Observer CSF - w/ blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
-            rwObject.write('davilaGeislerReplicateWithBlur',hFig,paramsList,writeProgram,'Type','figure');
-        else
-            title(sprintf('Computational Observer CSF - no blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
-            rwObject.write('davilaGeislerReplicateNoBlur',hFig,paramsList,writeProgram,'Type','figure');
-        end
-
-        % Plot it the way we plot our data
-        hFig1 = figure;
-        set(gcf,'Position',[100 100 450 650]);
-        set(gca,'FontSize', rParams.plotParams.axisFontSize+fontBump);
-        legendStr = cell(length(p.Results.luminances),1);
-        for ll = 1:length(p.Results.luminances)
-            theColorIndex = rem(ll,length(theColors)) + 1;
-            plot(spotAreasMin2,[davilaGeislerReplicate.mlptThresholds(ll,:).thresholdContrasts], ...
-                [theColors(theColorIndex) 'o-'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
-            legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
-        end
-
-        set(gca,'XScale','log');
-        set(gca,'YScale','log');
-         xlabel('Log10 Spot Area (square arc minutes)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-        ylabel('Log10 Threshold Contrast (arb. units)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-        xlim([1e-2 1e4]);
-        ylim([1e-3 1e3]);
-        axis('square');
-        legend(legendStr,'Location','NorthWest','FontSize',rParams.plotParams.labelFontSize+fontBump);
-        box off; grid on
-        if (p.Results.blur)
-            title(sprintf('Computational Observer CSF - w/ blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
-            rwObject.write('davilaGeislerReplicateWithBlur1',hFig1,paramsList,writeProgram,'Type','figure');
-        else
-            title(sprintf('Computational Observer CSF - no blur',rParams.mosaicParams.fieldOfViewDegs'),'FontSize',rParams.plotParams.titleFontSize+fontBump);
-            rwObject.write('davilaGeislerReplicateNoBlur1',hFig1,paramsList,writeProgram,'Type','figure');
-        end
-
-        % Save data for plots in convenient form
-        plotData.spotAreasMin2 = spotAreasMin2;
-        plotData.thresholdEnergy = [davilaGeislerReplicate.mlptThresholds(:,:).thresholdContrasts].*maxThresholdEnergies;
-        plotData.thresholdContrasts = [davilaGeislerReplicate.mlptThresholds(:,:).thresholdContrasts];
-        plotData.digitizedAreasMin2 = A(:,1)';
-        plotData.digitizedEnergy = A(:,2)';
-        if (p.Results.blur)
-            rwObject.write('davilaGeislerReplicatePlotDataWithBlur',plotData,paramsList,writeProgram);
-
-        else
-            rwObject.write('davilaGeislerReplicatePlotDataNoBlur',plotData,paramsList,writeProgram);
-        end
-    end
+maxThresholdEnergy = 10;
+minSpotAreaMin2 = pi*(min(userParams.spotDiametersMinutes)/2)^2;
+rParams.maxSpotLuminanceCdM2 = maxThresholdEnergy/((userParams.stimDurationMs/1000)*minSpotAreaMin2);
+rParams.colorModulationParams.startWl = userParams.wavelength;
+rParams.colorModulationParams.endWl = userParams.wavelength+deltaWl;
+rParams.colorModulationParams.deltaWl = deltaWl;
+rParams.colorModulationParams.spotWavelengthNm = userParams.wavelength;
+rParams.colorModulationParams.spotCornealPowerUW = rParams.maxSpotLuminanceCdM2/xyzPerUW(2);
+rParams.colorModulationParams.contrast = 1;
 end
-
-end
-
+    
