@@ -78,7 +78,7 @@ for backgroundLumIndex = 1:length(userParams.luminances)
     end % stimDiamIndex
 end % backgroundLumIndex
 
-[dataOut, extraData] = exportPerformanceData(rParams, userParams, mfilename);
+[dataOut, extraData] = exportPerformanceData(rParams, userParams, thresholdParams, davilaGeislerReplicate, mfilename);
 if (nargout > 0)
     varargout{1} = dataOut;
     varargout{2} = extraData;
@@ -88,7 +88,7 @@ end
 
 % -------- HELPER FUNCTIONS ---------
 
-function [dataOut, extraData] = exportPerformanceData(rParams, userParams, writeProgram)
+function [dataOut, extraData] = exportPerformanceData(rParams, userParams, thresholdParams, davilaGeislerReplicate, writeProgram)
 dataOut = [];
 extraData = [];
     
