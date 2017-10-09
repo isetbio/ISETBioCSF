@@ -24,7 +24,7 @@ function [spatialPoolingFilter, hFig] = generateSpatialPoolingKernel(spatialPara
     else
         coneDensity = 1;
     end
-    
+
     switch(spatialParams.spatialType)
         case 'pedestalDisk' 
             spatialModulation = pedestalModulationDisk(spatialParams, 1.0);
@@ -43,8 +43,9 @@ function [spatialPoolingFilter, hFig] = generateSpatialPoolingKernel(spatialPara
     spatialPoolingFilter = makeSpatialPoolingFilter(spatialParams, coneLocsInDegs, xaxis, yaxis, coneDensity, thresholdParams.spatialPoolingKernelParams);
     
     if (visualizeSpatialScheme)
+        coneRadiusMicrons = mosaicParams.innerSegmentSizeMicrons/2;
         hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, ...
-            thresholdParams.spatialPoolingKernelParams, spatialPoolingFilter, coneLocsInDegs, mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs);
+            thresholdParams.spatialPoolingKernelParams, spatialPoolingFilter, coneLocsInDegs, mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs, coneRadiusMicrons);
     
         % Save figure
         theProgram = mfilename;
@@ -74,7 +75,7 @@ function spatialPoolingFilter = makeSpatialPoolingFilter(spatialParams, coneLocs
         otherwise
             error('Do not know how to get testDiameter from ''%s''.', spatialParams.spatialType)
     end
-    
+  
     switch spatialPoolingKernelParams.type
         case 'GaussianRF'
             if (spatialPoolingKernelParams.shrinkageFactor > 0)

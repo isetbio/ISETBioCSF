@@ -1,12 +1,12 @@
 function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, ...
-            spatialPoolingKernelParams, spatialPoolingFilter, coneLocsInDegs, mosaicFOVDegs, stimulusFOVDegs)
+            spatialPoolingKernelParams, spatialPoolingFilter, coneLocsInDegs, mosaicFOVDegs, stimulusFOVDegs, coneRadiusMicrons)
         
         
     zLevels = [0.025:0.05:1.0];
     zLevels = [-fliplr(zLevels) zLevels];
         
 
-    coneRadius = 1.0/300;
+    coneRadius = coneRadiusMicrons/300;
     coneX = coneRadius * cos(2*pi*(0:30:360)/360);
     coneY = coneRadius * sin(2*pi*(0:30:360)/360);
     quantizationLevels = 1024;

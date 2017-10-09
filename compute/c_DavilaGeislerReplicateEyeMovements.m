@@ -23,7 +23,7 @@ for backgroundLumIndex = 1:length(userParams.luminances)
         
         % Update rParams for current stimDiamIndex and backgroundLumIndex
         rParams = updateRunParams(rParams, userParams, backgroundLumIndex, stimDiamIndex);
-
+ 
         % Compute response instances
         if ((userParams.computeResponses) || ...
             (userParams.visualizeResponses) || (userParams.visualizeSpatialScheme) ||  (userParams.visualizeMosaic) ...     
@@ -48,7 +48,7 @@ for backgroundLumIndex = 1:length(userParams.luminances)
            ); 
         end
     
-        % Find performance, template max likeli
+        % Find performance
         if (userParams.findPerformance) || (userParams.visualizePerformance)
             % Compute psychometric function
             t_colorDetectFindPerformance(...
@@ -74,7 +74,6 @@ for backgroundLumIndex = 1:length(userParams.luminances)
                 %close all;
             end
         end
-        
     end % stimDiamIndex
 end % backgroundLumIndex
 
@@ -235,6 +234,7 @@ thresholdParams = thresholdParamsGenerate;
 thresholdParams = modifyStructParams(thresholdParams, ...
     'criterionFraction', userParams.thresholdCriterionFraction, ...
     'method', userParams.thresholdMethod, ...
+    'spatialPoolingKernelParams', userParams.spatialPoolingKernelParams, ...
     'STANDARDIZE', false, ...                    % Standardize data for PCA
     'standardizeSVMpredictors', false, ...       % Standardize data for SVM
     'useRBFKernel', userParams.useRBFSVMKernel, ...
@@ -423,7 +423,7 @@ end
 
 
 function rParams = updateMosaicParams(rParams, userParams)
-
+%
 rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
     'fieldOfViewDegs', userParams.backgroundSizeDegs, ... 
     'marginF', userParams.marginF, ...

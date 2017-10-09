@@ -22,10 +22,15 @@ function [noStimData, stimData] = transformDataWithSpatialPoolingFilter(noStimDa
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
         noStimData.responseInstanceArray.theMosaicPhotocurrents = squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicPhotocurrents, spatialPoolingKernel.poolingWeights), spatialDimension));
         stimData.responseInstanceArray.theMosaicPhotocurrents = squeeze(sum(bsxfun(@times, stimData.responseInstanceArray.theMosaicPhotocurrents, spatialPoolingKernel.poolingWeights), spatialDimension));
+        noStimData.noiseFreePhotocurrents = sum(bsxfun(@times, noStimData.noiseFreePhotocurrents, spatialPoolingKernel.poolingWeights(:)),1);
+        stimData.noiseFreePhotocurrents= sum(bsxfun(@times, stimData.noiseFreePhotocurrents, spatialPoolingKernel.poolingWeights(:)),1);
     else
         noStimData.responseInstanceArray.theMosaicIsomerizations= squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicIsomerizations, spatialPoolingKernel.poolingWeights), spatialDimension));
         stimData.responseInstanceArray.theMosaicIsomerizations = squeeze(sum(bsxfun(@times, stimData.responseInstanceArray.theMosaicIsomerizations, spatialPoolingKernel.poolingWeights), spatialDimension));
+        noStimData.noiseFreeIsomerizations = sum(bsxfun(@times, noStimData.noiseFreeIsomerizations, spatialPoolingKernel.poolingWeights(:)),1);
+        stimData.noiseFreeIsomerizations = sum(bsxfun(@times, stimData.noiseFreeIsomerizations, spatialPoolingKernel.poolingWeights(:)),1);
     end
+    
     
     % Visualize transformed signals
     if (visualizeSignals) 

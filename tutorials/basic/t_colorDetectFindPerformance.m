@@ -135,11 +135,11 @@ constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.o
 %% svmV1FilterBank - related checks and computations
 if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaicParams.conePacking, 'hexReg')) && ... 
    ((strcmp(thresholdParams.method, 'svmV1FilterBank')))
-    error('Currently, classification using the ''svmV1FilterBank'' method is only implemented for spatially-varying density hex mosaics.\n')
+    error('Currently, classification using the ''svmV1FilterBank'' method is only implemented for  hex mosaics.\n')
 end
 if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaicParams.conePacking, 'hexReg')) && ...
    (strcmp(thresholdParams.method, 'svmGaussianRF'))
-    error('Currently, classification using the ''svmGaussianRF'' method is only implemented for spatially-varying density hex mosaics.\n')
+    error('Currently, classification using the ''svmGaussianRF'' method is only implemented for  hex mosaics.\n')
 end
 
 if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
@@ -149,7 +149,7 @@ if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
         'spatialPoolingKernel', V1filterBank);
 end
 
-if (strcmp(thresholdParams.method, 'svmGaussianRF')) || (strcmp(thresholdParams.method, 'mlgtGaussianRF'))
+if (strcmp(thresholdParams.method, 'svmGaussianRF')) || (strcmp(thresholdParams.method, 'mlptGaussianRF'))
     gaussianPoolingKernel = generateSpatialPoolingKernel(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams, constantParamsList);
     thresholdParams = modifyStructParams(thresholdParams, ...
         'spatialPoolingKernel', gaussianPoolingKernel);

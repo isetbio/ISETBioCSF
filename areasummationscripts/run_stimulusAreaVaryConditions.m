@@ -24,8 +24,8 @@ function run_stimulusAreaVaryConditions
         %'mosaic' ...
         %'responses' ...
         'pooledSignal' ...
-        %'performance' ...
-        %'spatialScheme' ...    % graphic generated only during response computation
+        'performance' ...
+        'spatialScheme' ...    % graphic generated only during response computation
         %'mosaic+emPath' ...    % graphic generated  only during response computation
         %'oiSequence' ...       % graphic generated  only during response computation
 
@@ -42,10 +42,10 @@ function params = getParamsForStimulusAresVaryConditions()
 
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
-    params.spotDiametersMinutes = [0.5 1 5 10 20];
+    params.spotDiametersMinutes = [0.5 1 5 10 20 40];
     
     % Stimulus background in degs
-    params.backgroundSizeDegs = 30/60;
+    params.backgroundSizeDegs = 50/60;
     
     % Stimulus wavelength in nm
     params.wavelength = 550;
@@ -140,7 +140,7 @@ function params = getParamsForStimulusAresVaryConditions()
 	params.thresholdSignal = 'isomerizations';
     
     % Which inference engine to use to measure performance? Options are: 'mlpt', 'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'mlpt', 'mlpe'})); Threshold method to use
-    params.thresholdMethod =  'mlpt';
+    params.thresholdMethod =  'mlptGaussianRF'; % 'mlpt'; % 'mlptGaussianRF';
 
     % What performance (percent correct) do we require to declare that we reached the visibility threshold?
     params.thresholdCriterionFraction = 0.75;
@@ -149,17 +149,21 @@ function params = getParamsForStimulusAresVaryConditions()
     params.thresholdPCA = 60;
     
     %% Spatial pooling params
-    % default spatialPoolingKernel for use with 'svmGaussianRF' treshold method
+    % Extent of spatial pooling mechanism (in degrees)
+    % If positive, sigma = spatialPoolingExtent * stimulus size
+    % if negative, sigma =-spatialPooingExtent
+    spatialPoolingExtent = -2/60; 
+    
     params.spatialPoolingKernelParams = struct(...
         'type',  'GaussianRF', ...
-        'shrinkageFactor', 0.75', ...
+        'shrinkageFactor', spatialPoolingExtent, ... 
         'activationFunction', 'linear', ...
         'temporalPCAcoeffs', Inf, ...   ;  % Inf, results in no PCA, just the raw time series
         'adjustForConeDensity', false);
 end
 
 function params = visualizationParams(params, visualizationScheme)
-
+%
     availableVisualizations = {...
         'mosaic', ...
         'mosaic+emPath', ...
@@ -170,7 +174,6 @@ function params = visualizationParams(params, visualizationScheme)
         'performance' ...
     };
     
-
     for k = 1:numel(visualizationScheme)
         assert(ismember(visualizationScheme{k}, availableVisualizations), sprintf('Visualization ''%s'' is not available', visualizationScheme{k}));
     end
