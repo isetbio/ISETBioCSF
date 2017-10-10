@@ -1,14 +1,22 @@
 function run_stimulusAreaVaryConditions
+    
+    [theDir,~] = fileparts(which(mfilename()));
+    cd(theDir);
 
-    %% Simulation params
-    params = getParamsForStimulusAresVaryConditions();
+
+    %% Inference engine and spatial summation sigma
+    thresholdMethod = 'mlptGaussianRF'; % 'mlpt';
+    spatialPoolingSigmaArcMin = 6;  % 1,2,4,6,8
+    
+    %% Assemble all simulation params in a struct
+    params = getParamsForStimulusAresVaryConditions(thresholdMethod, spatialPoolingSigmaArcMin);
     
     %% Simulation steps to perform
     % Re-compute the mosaic (true) or load it from the disk (false)
-    params.computeMosaic = true; 
+    params.computeMosaic = ~true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     
     % Compute photocurrents as well?
     params.computePhotocurrentResponseInstances = ~true;
@@ -17,13 +25,16 @@ function run_stimulusAreaVaryConditions
     params.findPerformance = ~true;
     
     % Fit the psychometric function? Set to true to obtain the threshols
-    params.fitPsychometric = ~true;
+    params.fitPsychometric = true;
+    
+    % Do not use the default plotting routine
+    params.plotSpatialSummation = false;  % we will do our own plotting
     
     %% VISUALIZATION PARAMS
     visualizationScheme = {...
         %'mosaic' ...
         %'responses' ...
-        'pooledSignal' ...
+        %'pooledSignal' ...
         'performance' ...
         'spatialScheme' ...    % graphic generated only during response computation
         %'mosaic+emPath' ...    % graphic generated  only during response computation
@@ -32,20 +43,84 @@ function run_stimulusAreaVaryConditions
     };
     params = visualizationParams(params, visualizationScheme);
 
-    % Go
-    [dataOut, extraData] = c_DavilaGeislerReplicateEyeMovements(params);
-    dataOut
+    %% Go
+    [dataOut, extraData, rParams] = c_DavilaGeislerReplicateEyeMovements(params);
+    
+    %% Plot thresholds
+    if strcmp(thresholdMethod,'mlpt')
+        figurePDFname = sprintf('isomerizationsNoSpatialSummarion.pdf');
+    else
+        figurePDFname = sprintf('isomerizationsSpatialSummationSigma%2.1fArcMin.pdf',spatialPoolingSigmaArcMin);
+    end
+    
+    generateThresholdPlot(dataOut, rParams, figurePDFname);
+end
+
+% ----- HELPER ROUTINES -----
+function generateThresholdPlot(dataOut, params, figurePDFname)
+    % Plot data
+    if strcmp(params.thresholdParams.method, 'mlpt')
+        spatialPoolingSigmaMinArc = nan;
+    else
+        if (params.thresholdParams.spatialPoolingKernelParams.shrinkageFactor<0)
+            spatialPoolingSigmaMinArc = abs(params.thresholdParams.spatialPoolingKernelParams.shrinkageFactor)*60;
+        else
+            spatialPoolingSigmaMinArc = params.thresholdParams.spatialPoolingKernelParams.shrinkageFactor * dataOut.spotDiametersMinutes;
+        end
+    end
+    
+    spotAreasMin2 = pi*((dataOut.spotDiametersMinutes/2).^2);
+    summationAreaMin2 = pi * (2*spatialPoolingSigmaMinArc)^2;
+    maxThresholdEnergies = params.maxSpotLuminanceCdM2 * params.temporalParams.stimulusDurationInSeconds*spotAreasMin2;
+
+    lumIndex = 1;
+    thresholdContrasts = [dataOut.mlptThresholds(lumIndex,:).thresholdContrasts];
+    thresholdEnergies = thresholdContrasts.*maxThresholdEnergies;
+    
+    thresholdEnergyRange = [0.04 10];
+    thresholdRange = [3*1e-5 1*1e-1];
+    
+    hFig = figure(100); clf;
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1000 450]);
+    subplot(1,2,1);
+    % Add Davila Geisler curve
+    downShift = 0.8;
+    A = LoadDigitizedDavilaGeislerFigure2;
+    A(:,2) = (10^-downShift)*A(:,2);
+    plot(A(:,1),A(:,2),'k--','LineWidth',1);
+    hold on;
+    plot(spotAreasMin2, thresholdEnergies, 'bo-', 'MarkerSize', 14, 'MarkerFaceColor', [0.5 0.5 1], 'LineWidth', 1.5);
+    if (~isnan(spatialPoolingSigmaMinArc))
+        plot(summationAreaMin2*[1 1], [thresholdEnergyRange(1) thresholdEnergyRange(2)], 'r-',  'LineWidth', 1.5);
+    end
+    axis 'square'; grid on;
+    set(gca,'XScale','log','YScale','log', 'YLim', thresholdEnergyRange, 'FontSize', 16);
+    xlabel('log10 spot area (square arc minutes)', 'FontSize', 18, 'FontWeight', 'bold');
+    ylabel('log10 threshold energy', 'FontSize', 18, 'FontWeight', 'bold');
+        
+    subplot(1,2,2);
+    plot(spotAreasMin2, thresholdContrasts, 'bo-', 'MarkerSize', 14, 'MarkerFaceColor', [0.5 0.5 1], 'LineWidth', 1.5);
+    hold on;
+    plot(summationAreaMin2*[1 1],  [thresholdRange(1) thresholdRange(2)], 'r-',  'LineWidth', 1.5);
+    axis 'square'; grid on;
+    set(gca,'XScale','log','YScale','log',  'YLim', thresholdRange, 'FontSize', 16);
+    xlabel('log10 spot area (square arc minutes)', 'FontSize', 18, 'FontWeight', 'bold');
+    ylabel('log10 threshold contrast (arbitrary units)', 'FontSize', 18, 'FontWeight', 'bold');
+    drawnow;
+    
+    NicePlot.exportFigToPDF(figurePDFname, hFig, 300);
+    
 end
 
 
-function params = getParamsForStimulusAresVaryConditions()
+function params = getParamsForStimulusAresVaryConditions(thresholdMethod, spatialPoolingSigmaArcMin)
 
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
-    params.spotDiametersMinutes = [0.5 1 5 10 20 40];
+    params.spotDiametersMinutes = [0.5 1 5 10 20];
     
     % Stimulus background in degs
-    params.backgroundSizeDegs = 50/60;
+    params.backgroundSizeDegs = 30/60;
     
     % Stimulus wavelength in nm
     params.wavelength = 550;
@@ -81,7 +156,7 @@ function params = getParamsForStimulusAresVaryConditions()
     params.contrastScale = 'log';
 
     % Response instances to generate
-    params.nTrainingSamples = 1024;
+    params.nTrainingSamples = 256;
     
     
     %% OPTICS PARAMS
@@ -140,7 +215,7 @@ function params = getParamsForStimulusAresVaryConditions()
 	params.thresholdSignal = 'isomerizations';
     
     % Which inference engine to use to measure performance? Options are: 'mlpt', 'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'mlpt', 'mlpe'})); Threshold method to use
-    params.thresholdMethod =  'mlptGaussianRF'; % 'mlpt'; % 'mlptGaussianRF';
+    params.thresholdMethod = thresholdMethod;
 
     % What performance (percent correct) do we require to declare that we reached the visibility threshold?
     params.thresholdCriterionFraction = 0.75;
@@ -149,14 +224,9 @@ function params = getParamsForStimulusAresVaryConditions()
     params.thresholdPCA = 60;
     
     %% Spatial pooling params
-    % Extent of spatial pooling mechanism (in degrees)
-    % If positive, sigma = spatialPoolingExtent * stimulus size
-    % if negative, sigma =-spatialPooingExtent
-    spatialPoolingExtent = -1/60; 
-    
     params.spatialPoolingKernelParams = struct(...
         'type',  'GaussianRF', ...
-        'shrinkageFactor', spatialPoolingExtent, ... 
+        'shrinkageFactor', -spatialPoolingSigmaArcMin/60, ...  % If positive, sigma = spatialPoolingExtent * stimulus size, If negative, sigma =-spatialPoolingExtent
         'activationFunction', 'linear', ...
         'temporalPCAcoeffs', Inf, ...   ;  % Inf, results in no PCA, just the raw time series
         'adjustForConeDensity', false);

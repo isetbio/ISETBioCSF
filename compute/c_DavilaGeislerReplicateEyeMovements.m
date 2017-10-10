@@ -10,6 +10,7 @@ function varargout =  c_DavilaGeislerReplicateEyeMovements(varargin)
 varargout = {};
 varargout{1} = [];  % thresholds for different stimulus sizes and background luminances
 varargout{2} = [];  % extraData
+varargout{3} = [];  % rParams
 
 %% Parse the input params
 userParams = parseUserParams(varargin{:});
@@ -81,6 +82,8 @@ end % backgroundLumIndex
 if (nargout > 0)
     varargout{1} = dataOut;
     varargout{2} = extraData;
+    rParams.thresholdParams = thresholdParams;
+    varargout{3} = rParams;
 end
 end
 
@@ -176,7 +179,7 @@ if (userParams.fitPsychometric) && ((userParams.findPerformance) || (userParams.
 
         set(gca,'XScale','log');
         set(gca,'YScale','log');
-         xlabel('Log10 Spot Area (square arc minutes)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
+        xlabel('Log10 Spot Area (square arc minutes)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
         ylabel('Log10 Threshold Contrast (arb. units)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
         xlim([1e-2 1e4]);
         ylim([1e-5 1e1]);
@@ -240,8 +243,8 @@ thresholdParams = modifyStructParams(thresholdParams, ...
     'useRBFKernel', userParams.useRBFSVMKernel, ...
     'PCAComponents', userParams.thresholdPCA, ...
     'signalSource', userParams.thresholdSignal ...
-    )
-userParams.spatialPoolingKernelParams
+    );
+
 if (strcmp(thresholdParams.method, 'svmGaussianRF')) 
     thresholdParams = modifyStructParams(thresholdParams, ...
         'spatialPoolingKernelParams', userParams.spatialPoolingKernelParams);  
