@@ -5,19 +5,19 @@ function run_stimulusAreaVaryConditions
     
     %% Simulation steps to perform
     % Re-compute the mosaic (true) or load it from the disk (false)
-    params.computeMosaic = ~true; 
+    params.computeMosaic = true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     
     % Compute photocurrents as well?
     params.computePhotocurrentResponseInstances = ~true;
     
     % Find the performance (true) or load performance data from the disk (false)
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     
     % Fit the psychometric function? Set to true to obtain the threshols
-    params.fitPsychometric = true;
+    params.fitPsychometric = ~true;
     
     %% VISUALIZATION PARAMS
     visualizationScheme = {...
@@ -152,7 +152,7 @@ function params = getParamsForStimulusAresVaryConditions()
     % Extent of spatial pooling mechanism (in degrees)
     % If positive, sigma = spatialPoolingExtent * stimulus size
     % if negative, sigma =-spatialPooingExtent
-    spatialPoolingExtent = -2/60; 
+    spatialPoolingExtent = -1/60; 
     
     params.spatialPoolingKernelParams = struct(...
         'type',  'GaussianRF', ...
