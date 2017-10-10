@@ -5,14 +5,18 @@ function run_stimulusAreaVaryConditions
 
 
     %% Inference engine and spatial summation sigma
-    thresholdMethod = 'mlptGaussianRF'; % 'mlpt';
+    thresholdSignal = 'isomerizations';  % choose from {'isomerizations', 'photocurrents'}
+    thresholdMethod = 'mlptGaussianRF';  % choose from {'mlpt', 'mlptGaussianRF'}
     spatialPoolingSigmaArcMin = 6;  % 1,2,4,6,8
     
-    %% Do not employ optics (adaptive optics simulation)
-    employOptics = false;
+    %% Optics to employ. Choose from
+    % 'none' : adaptive optics simulation
+    % 'WvfHuman' : default human wavefront - based optics
+    % 'Geisler' : Geisler optics
+    employedOptics = 'WvfHuman';        % 
     
     %% Assemble all simulation params in a struct
-    params = getParamsForStimulusAresVaryConditions(thresholdMethod, spatialPoolingSigmaArcMin, employOptics);
+    params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
     
     %% Simulation steps to perform
     % Re-compute the mosaic (true) or load it from the disk (false)
@@ -61,7 +65,7 @@ end
 
 % ----- HELPER ROUTINES -----
 
-function params = getParamsForStimulusAresVaryConditions(thresholdMethod, spatialPoolingSigmaArcMin, employOptics)
+function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics)
 
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
@@ -112,9 +116,12 @@ function params = getParamsForStimulusAresVaryConditions(thresholdMethod, spatia
     params.pupilDiamMm = 3;
     
     % Apply default human optics ?
-    params.blur = employOptics;
-	params.opticsModel = 'WvfHuman';
-    
+    if (strcmp(employedOptics, 'none'))
+        params.blur = false;
+    else
+        params.blur = true;
+    end
+    params.opticsModel = employedOptics;
     
     %% MOSAIC PARAMS
     % Use a regularly-packed hegagonal mosaic (available packing options: 'rect', 'hex', 'hexReg')
@@ -160,7 +167,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdMethod, spatia
     
     %% Performance params
     % What signal to use to measure performance? Options are: 'isomerizations', 'photocurrents'
-	params.thresholdSignal = 'isomerizations';
+	params.thresholdSignal = thresholdSignal;
     
     % Which inference engine to use to measure performance? Options are: 'mlpt', 'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'mlpt', 'mlpe'})); Threshold method to use
     params.thresholdMethod = thresholdMethod;
