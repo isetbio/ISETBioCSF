@@ -67,6 +67,7 @@ theOI = oiSet(theOI,'optics',optics);
 % Take out optical blurring if requested
 optics = oiGet(theOI,'optics');
 if (~oiParams.blur)
+    fprintf(2,'Taking out OTF\n');
     optics = opticsSet(optics,'OTF',ones(size(opticsGet(optics,'OTF'))));
 end
 theOI = oiSet(theOI,'optics',optics);
