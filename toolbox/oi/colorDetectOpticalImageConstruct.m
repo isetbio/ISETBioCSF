@@ -33,6 +33,7 @@ end
 
 % Take opticsModel into account.
 switch (oiParams.opticsModel)
+    case 'None'
     case 'WvfHuman'
     case aCustomWvfModel
         fprintf('Computing custom OTF optics\n')

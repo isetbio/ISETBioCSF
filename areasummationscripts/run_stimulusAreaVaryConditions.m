@@ -6,21 +6,22 @@ function run_stimulusAreaVaryConditions
 
     %% Inference engine and spatial summation sigma
     thresholdSignal = 'isomerizations';  % choose from {'isomerizations', 'photocurrents'}
-    thresholdMethod = 'mlptGaussianRF';  % choose from {'mlpt', 'mlptGaussianRF'}
-    spatialPoolingSigmaArcMin = 6;  % 1,2,4,6,8
+    thresholdMethod = 'mlpt'; % 'mlptGaussianRF';  % choose from {'mlpt', 'mlptGaussianRF'}
+    spatialPoolingSigmaArcMin = 0.25  % 0.25 0.5 1,2,4,6,8
     
     %% Optics to employ. Choose from
-    % 'none' : adaptive optics simulation
-    % 'WvfHuman' : default human wavefront - based optics
-    % 'Geisler' : Geisler optics
-    employedOptics = 'WvfHuman';        % 
+    % 'None'          ; no optics, sets param.blur to false
+    % 'WvfHuman'      : default human wavefront - based optics
+    % 'DavilaGeisler' : DavilaGeisler optics
+    % DavilaGeislerLsfAsPsf
+    employedOptics = 'None'; 
     
     %% Assemble all simulation params in a struct
     params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
     
     %% Simulation steps to perform
     % Re-compute the mosaic (true) or load it from the disk (false)
-    params.computeMosaic = true; 
+    params.computeMosaic = false; 
     
     % Re-compute the responses (true) or load them from the disk (false)
     params.computeResponses = true;
@@ -69,7 +70,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
-    params.spotDiametersMinutes = [1 5 10 20 40];
+    params.spotDiametersMinutes = [1 2.5 5 10 20 40];
     
     % Stimulus background in degs
     params.backgroundSizeDegs = 55/60;
@@ -116,7 +117,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.pupilDiamMm = 3;
     
     % Apply default human optics ?
-    if (strcmp(employedOptics, 'none'))
+    if (strcmp(lower(employedOptics), 'none'))
         params.blur = false;
     else
         params.blur = true;
