@@ -6,25 +6,24 @@ function run_stimulusAreaVaryConditions
 
     %% Inference engine and spatial summation sigma
     thresholdSignal = 'isomerizations';  % choose from {'isomerizations', 'photocurrents'}
-    thresholdMethod = 'mlpt'; % 'mlptGaussianRF';  % choose from {'mlpt', 'mlptGaussianRF'}
-    spatialPoolingSigmaArcMin = 0.25  % 0.25 0.5 1,2,4,6,8
+    thresholdMethod = 'mlptGaussianRF';  % choose from {'mlpt', 'mlptGaussianRF'}
+    spatialPoolingSigmaArcMin = 8;  % 0.25, 0.5, 1,2,4,6,8
     
-    %% Optics to employ. Choose from
-    % 'None'          ; no optics, sets param.blur to false
-    % 'WvfHuman'      : default human wavefront - based optics
-    % 'DavilaGeisler' : DavilaGeisler optics
-    % DavilaGeislerLsfAsPsf
-    employedOptics = 'None'; 
+    %% Optics to employ. Choose from:
+    % 'none' : adaptive optics simulation
+    % 'WvfHuman' : default human wavefront - based optics
+    % 'Geisler' : Geisler optics
+    employedOptics = 'Geisler';        % 
     
     %% Assemble all simulation params in a struct
     params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
     
     %% Simulation steps to perform
     % Re-compute the mosaic (true) or load it from the disk (false)
-    params.computeMosaic = false; 
+    params.computeMosaic = ~true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     
     % Compute photocurrents as well?
     params.computePhotocurrentResponseInstances = ~true;
@@ -51,14 +50,14 @@ function run_stimulusAreaVaryConditions
     };
     params = visualizationParams(params, visualizationScheme);
 
-    %% Go
+    %% Go !
     [dataOut, extraData, rParams] = c_DavilaGeislerReplicateEyeMovements(params);
     
     %% Plot thresholds
     if strcmp(thresholdMethod,'mlpt')
-        figurePDFname = sprintf('isomerizationsNoSpatialSummarion.pdf');
+        figurePDFname = sprintf('isomerizationsNoSpatialSummarion_Optics%s.pdf', employedOptics);
     else
-        figurePDFname = sprintf('isomerizationsSpatialSummationSigma%2.1fArcMin.pdf',spatialPoolingSigmaArcMin);
+        figurePDFname = sprintf('isomerizationsSpatialSummationSigma%2.1fArcMin_Optics%s.pdf',spatialPoolingSigmaArcMin, employedOptics);
     end
     
     generateThresholdPlot(dataOut, rParams, figurePDFname);
@@ -189,7 +188,6 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 end
 
 function params = visualizationParams(params, visualizationScheme)
-%
     availableVisualizations = {...
         'mosaic', ...
         'mosaic+emPath', ...
@@ -220,6 +218,7 @@ function params = visualizationParams(params, visualizationScheme)
     params.visualizePerformance = ismember('performance', visualizationScheme);
 end
 
+%% Visualize the performace curve
 function generateThresholdPlot(dataOut, params, figurePDFname)
     % Plot data
     if strcmp(params.thresholdParams.method, 'mlpt')
@@ -234,7 +233,7 @@ function generateThresholdPlot(dataOut, params, figurePDFname)
     
     spotAreasMin2 = pi*((dataOut.spotDiametersMinutes/2).^2);
     summationAreaMin2 = pi * (2*spatialPoolingSigmaMinArc)^2;
-    maxThresholdEnergies = params.maxSpotLuminanceCdM2 * params.temporalParams.stimulusDurationInSeconds*spotAreasMin2;
+    maxThresholdEnergies = params.maxSpotLuminanceCdM2 * params.temporalParams.stimulusDurationInSeconds*spotAreasMin2
 
     lumIndex = 1;
     thresholdContrasts = [dataOut.mlptThresholds(lumIndex,:).thresholdContrasts];
@@ -250,19 +249,22 @@ function generateThresholdPlot(dataOut, params, figurePDFname)
     downShift = 0.8;
     A = LoadDigitizedDavilaGeislerFigure2;
     A(:,2) = (10^-downShift)*A(:,2);
-    plot(A(:,1),A(:,2),'k--','LineWidth',1);
+    plot(A(:,1),A(:,2),'k.', 'MarkerSize', 20, 'MarkerEdgeColor', [0.5 0.5 0.5],'LineWidth',1.5);
     hold on;
-    plot(spotAreasMin2, thresholdEnergies, 'bo-', 'MarkerSize', 14, 'MarkerFaceColor', [0.5 0.5 1], 'LineWidth', 1.5);
+    plot(spotAreasMin2, thresholdEnergies, '-', 'Color', [0.2 0.2 1], 'LineWidth', 2.0);
+    plot(spotAreasMin2, thresholdEnergies, 'bo', 'MarkerSize', 14, 'MarkerFaceColor', [0.7 0.9 1], 'LineWidth', 1.5);
     if (~isnan(spatialPoolingSigmaMinArc))
         plot(summationAreaMin2*[1 1], [thresholdEnergyRange(1) thresholdEnergyRange(2)], 'r-',  'LineWidth', 1.5);
     end
+    
+    
     axis 'square'; grid on;
     set(gca,'XScale','log','YScale','log', 'YLim', thresholdEnergyRange, 'FontSize', 16);
     xlabel('log10 spot area (square arc minutes)', 'FontSize', 18, 'FontWeight', 'bold');
     ylabel('log10 threshold energy', 'FontSize', 18, 'FontWeight', 'bold');
         
     subplot(1,2,2);
-    plot(spotAreasMin2, thresholdContrasts, 'bo-', 'MarkerSize', 14, 'MarkerFaceColor', [0.5 0.5 1], 'LineWidth', 1.5);
+    plot(spotAreasMin2, thresholdContrasts, 'bo-', 'MarkerSize', 14, 'MarkerFaceColor', [0.7 0.9 1], 'LineWidth', 1.5);
     hold on;
     plot(summationAreaMin2*[1 1],  [thresholdRange(1) thresholdRange(2)], 'r-',  'LineWidth', 1.5);
     axis 'square'; grid on;
