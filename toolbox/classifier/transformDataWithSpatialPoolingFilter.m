@@ -12,12 +12,17 @@ function [noStimData, stimData] = transformDataWithSpatialPoolingFilter(noStimDa
         end
     end
     
-    % Subtract the noStimData so that zero modulation gives zero response for both isomerizations and photocurrrents
     repsDimension = 1;
     spatialDimension = 2;
     temporalDimension = 3;
-    [noStimData, stimData] = subtractMeanOfNoStimData(noStimData, stimData, thresholdParams.signalSource, repsDimension, temporalDimension);
-
+        
+    
+    if (thresholdParams.spatialPoolingKernelParams.subtractMeanOfNullResponseBeforeSummation)
+        % Subtract the noStimData so that zero modulation gives zero response for both isomerizations and photocurrrents
+        [noStimData, stimData] = subtractMeanOfNoStimData(noStimData, stimData, thresholdParams.signalSource, repsDimension, temporalDimension);
+    end
+    
+    % Do weighted spatial summation
     spatialPoolingKernel = thresholdParams.spatialPoolingKernel;
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
         noStimData.responseInstanceArray.theMosaicPhotocurrents = squeeze(sum(bsxfun(@times, noStimData.responseInstanceArray.theMosaicPhotocurrents, spatialPoolingKernel.poolingWeights), spatialDimension));
