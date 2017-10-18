@@ -31,8 +31,7 @@ function [validationData,extraData] = t_colorDetectFindPerformance(varargin)
 %      all? Other plot options only have an effect if this is true.
 %   'visualizeSpatialScheme' - true/false (default false). Visualize the post-receptoral spatial pooling scheme
 %   'visualizeKernelTransformedSignals' - true/false (default false). Visualize the output of the post-receptoral spatial pooling scheme
-%   'plotPsychometric' - true/false (default false).  Produce
-%       psychometric function output graphs.
+%   'plotPsychometric' - true/false (default false). Produce psychometric function output graphs.
 %   'plotSvmBoundary' - true/false (default false).  Plot classification boundary
 %   'plotPCAAxis1' - First PCA component to plot (default 1)
 %   'plotPCAAxis2' - Second PCA component to plot (default 2)
