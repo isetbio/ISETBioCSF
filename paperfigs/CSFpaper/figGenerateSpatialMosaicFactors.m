@@ -5,7 +5,7 @@ function figGenerateSpatialMosaicFactors()
     [localDir,~] = fileparts(which(mfilename()));
     cd(localDir)
     
-    mosaicModels       = {'originalBanksNoRotation',  'ISETbioHexRegNoScones',  'ISETbioHexRegLMS',     'ISETbioHexEccBasedLMS'};
+    mosaicModels       = {'originalBanksNoRotation',  'ISETbioHexRegNoScones',  'ISETbioHexRegLMS',     'ISETbioHexEccBasedLMSrealistic'};
     mosaicModelsFullLabels = {'Banks et al.''87, 3um/3um',   'ISETbio 2um/1.6um',    'ISETbio 2um/1.6um',  'ISETbio ecc-based/1.6um'};
     mosaicModelsLabels = {'Banks et al.''87',   'ISETbio 2um/1.6um (LM)',    'ISETbio 2um/1.6um (LMS)',  'ISETbio ecc-based/1.6um (LMS)'};
     mosaicConeTypes = {'LM', 'LM', 'LMS', 'LMS'};
@@ -38,7 +38,7 @@ function figGenerateSpatialMosaicFactors()
     ramPercentageEmployed = 1.0;  % use all the RAM
     freezeNoise = true;
         
-    cyclesPerDegreeExamined =  [5 10 20 40 50];
+    cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
     luminancesExamined =  [34]; 
 
     responseStabilizationMilliseconds = 10;
