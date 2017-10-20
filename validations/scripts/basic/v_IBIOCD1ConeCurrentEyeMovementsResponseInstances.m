@@ -20,6 +20,7 @@ function ValidationFunction(runTimeParams)
     rParams = responseParamsGenerate('fastComputeParams', true);
     
     %% Basic validation - no eye movements
+    if (1==2)
     [validationData1, extraData1] = t_coneCurrentEyeMovementsResponseInstances(...
         'rParams', rParams, ...
         'employStandardHostComputerResources', true, ...
@@ -49,7 +50,8 @@ function ValidationFunction(runTimeParams)
     rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
     rParams.mosaicParams.isomerizationNoise = 'frozen';
     rParams.mosaicParams.osNoise = 'frozen';
-
+    end
+    
     % Select a small number of conditions
     testDirectionParams = instanceParamsGenerate();
     testDirectionParams.nAngles = 1;
@@ -59,6 +61,7 @@ function ValidationFunction(runTimeParams)
     testDirectionParams.highContrast = 0.9;
     testDirectionParams.trialsNum = 1;
     
+    if (1==2)
     [validationData3, extraData3] = t_coneCurrentEyeMovementsResponseInstances(...
         'employStandardHostComputerResources', true, ...
         'rParams', rParams, ...
@@ -69,7 +72,8 @@ function ValidationFunction(runTimeParams)
         'freezeNoise', true);
     UnitTest.validationData('validationData3',validationData3);
     UnitTest.extraData('extraData3',extraData3);
-
+    end
+    
     %% Photocurrent validation with frozen emPaths - hex mosaic
     rParams.mosaicParams.conePacking = 'hex';
     rParams.mosaicParams.fov = 0.5; 
