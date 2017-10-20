@@ -20,7 +20,6 @@ function ValidationFunction(runTimeParams)
     rParams = responseParamsGenerate('fastComputeParams', true);
     
     %% Basic validation - no eye movements
-    if (1==2)
     [validationData1, extraData1] = t_coneCurrentEyeMovementsResponseInstances(...
         'rParams', rParams, ...
         'employStandardHostComputerResources', true, ...
@@ -50,7 +49,6 @@ function ValidationFunction(runTimeParams)
     rParams.mosaicParams.fieldOfViewDegs = rParams.spatialParams.fieldOfViewDegs;
     rParams.mosaicParams.isomerizationNoise = 'frozen';
     rParams.mosaicParams.osNoise = 'frozen';
-    end
     
     % Select a small number of conditions
     testDirectionParams = instanceParamsGenerate();
@@ -61,7 +59,6 @@ function ValidationFunction(runTimeParams)
     testDirectionParams.highContrast = 0.9;
     testDirectionParams.trialsNum = 1;
     
-    if (1==2)
     [validationData3, extraData3] = t_coneCurrentEyeMovementsResponseInstances(...
         'employStandardHostComputerResources', true, ...
         'rParams', rParams, ...
@@ -72,15 +69,14 @@ function ValidationFunction(runTimeParams)
         'freezeNoise', true);
     UnitTest.validationData('validationData3',validationData3);
     UnitTest.extraData('extraData3',extraData3);
-    end
     
     %% Photocurrent validation with frozen emPaths - hex mosaic
     rParams.mosaicParams.conePacking = 'hex';
-    rParams.mosaicParams.fov = 0.5; 
+    rParams.mosaicParams.fov = 0.3; 
     rParams.mosaicParams.resamplingFactor = 2;
     rParams.mosaicParams.latticeAdjustmentPositionalToleranceF =  0.5;      % For production work, this should either not get passed or get set to equal or lower than 0.01      
-    rParams.mosaicParams.latticeAdjustmentDelaunayToleranceF = 0.05;        % For production work, this should either not get passed or get set to equal or lower than 0.001 
-    rParams.mosaicParams.marginF =  1;                                      % For production work this should not get passed or set to empty
+    rParams.mosaicParams.latticeAdjustmentDelaunayToleranceF = 0.5;        % For production work, this should either not get passed or get set to equal or lower than 0.001 
+    rParams.mosaicParams.marginF =  1/sqrt(2.0);                            % For production work this should not get passed or set to empty
     testDirectionParams.trialsNum = 1;
 
     [validationData4, extraData4] = t_coneCurrentEyeMovementsResponseInstances(...
