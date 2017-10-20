@@ -6,6 +6,7 @@ function varargout = v_IBIOCD1ConeCurrentEyeMovementsResponseInstances(varargin)
 %
 % The 1 in the filename is to make sure that's gets run in the right order
 % on a run through all validation scripts.
+%
 
     varargout = UnitTest.runValidationRun(@ValidationFunction, nargout, varargin);
 end
