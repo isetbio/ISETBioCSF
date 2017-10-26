@@ -7,7 +7,7 @@ function run_stimulusAreaVaryConditions
     %% Inference engine and spatial summation sigma
     thresholdSignal = 'isomerizations';  % choose from {'isomerizations', 'photocurrents'}
     thresholdMethod = 'mlpt'; % 'mlptGaussianRF';  % choose from {'mlpt', 'mlptGaussianRF'}
-    spatialPoolingSigmaArcMin = 0.25  % 0.25 0.5 1,2,4,6,8
+    spatialPoolingSigmaArcMin = 0.25;  % 0.25 0.5 1,2,4,6,8
     
     %% Optics to employ. Choose from
     % 'None'          ; no optics, sets param.blur to false
@@ -111,12 +111,11 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     % Response instances to generate
     params.nTrainingSamples = 1024;
     
-    
     %% OPTICS PARAMS
     % Pupil diameter in mm
     params.pupilDiamMm = 3;
     
-    % Apply default human optics ?
+    % Remove optical blur ?
     if (strcmp(lower(employedOptics), 'none'))
         params.blur = false;
     else

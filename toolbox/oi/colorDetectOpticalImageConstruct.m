@@ -31,9 +31,9 @@ else
     aCustomWvfModel = {''};
 end
 
+
 % Take opticsModel into account.
 switch (oiParams.opticsModel)
-    case 'None'
     case 'WvfHuman'
     case aCustomWvfModel
         fprintf('Computing custom OTF optics\n')
@@ -43,10 +43,13 @@ switch (oiParams.opticsModel)
         theOI = theCustomOI;
     case {'Geisler', 'GeislerLsfAsPsf', 'DavilaGeisler', 'DavilaGeislerLsfAsPsf', 'Westheimer', 'Williams'}
         theOI = ptb.oiSetPtbOptics(theOI,'opticsModel',oiParams.opticsModel);
+    case {'None', 'none'}
+        theOI = ptb.oiSetPtbOptics(theOI,'opticsModel', 'DavilaGeisler');
     otherwise
         error('Unknown opticsModel string passed');
 end
 
+% Set the FOV
 theOI = oiSet(theOI,'h fov',oiParams.fieldOfViewDegs);
 
 % Set the pupil diamter
@@ -67,9 +70,16 @@ theOI = oiSet(theOI,'optics',optics);
 
 % Take out optical blurring if requested
 optics = oiGet(theOI,'optics');
-if (~oiParams.blur)
+if (~oiParams.blur) || (strcmp(lower(oiParams.opticsModel), 'none'))
     fprintf(2,'Taking out OTF\n');
-    optics = opticsSet(optics,'OTF',ones(size(opticsGet(optics,'OTF'))));
+    % OLD WAY. This does not work properly because of symmetry issues
+    %optics = opticsSet(optics,'OTF',ones(size(opticsGet(optics,'OTF'))));
+    % NEW WAY. Starting with a Geisler OTF, then
+    oldOTF = opticsGet(optics,'OTF');
+    newOTF = oldOTF * 10000;
+    newOTF(newOTF<1) = 0;
+    newOTF(newOTF>1) = 1;
+    optics = opticsSet(optics,'otf data',newOTF); % ones(size(opticsGet(optics,'OTF'))));
 end
 theOI = oiSet(theOI,'optics',optics);
 
