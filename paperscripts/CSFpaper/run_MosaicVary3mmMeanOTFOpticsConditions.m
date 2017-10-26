@@ -13,16 +13,16 @@ function run_MosaicVary3mmMeanOTFOpticsConditions
     params = getParamsForMosaicWithLabel(examinedMosaicModels{4});
     
     % Simulation steps to perform
-    params.computeMosaic = true; 
-    params.visualizeMosaic = true;
+    params.computeMosaic = ~true; 
+    params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
-    params.visualizeSpatialScheme = true;
+    params.visualizeSpatialScheme = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
@@ -89,7 +89,7 @@ function params = getFixedParamsForMosaicImpactExperiment(params, computationIns
     if (computationInstance == 0)
         % All conditions in 1 MATLAB session
         params.ramPercentageEmployed = 1.0;  % use all the RAM
-        params.cyclesPerDegreeExamined =  [5 10 20 40 50];
+        params.cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 0.9;  % use 90% of the RAM
