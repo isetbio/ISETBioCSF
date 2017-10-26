@@ -1,4 +1,11 @@
 function params = getParamsForMosaicWithLabel(mosaicName)
+
+    params.sConeMinDistanceFactor = [];                     % no special treatment of S-cones
+    params.sConeFreeRadiusMicrons = [];                     % no special treatment of S-cones
+    params.latticeAdjustmentPositionalToleranceF = [];      
+    params.latticeAdjustmentDelaunayToleranceF = [];
+    params.marginF = [];
+    
     switch mosaicName
         case 'originalBanks'
             params.coneSpacingMicrons = 3.0;
