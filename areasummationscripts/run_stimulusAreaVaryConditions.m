@@ -14,13 +14,16 @@ function run_stimulusAreaVaryConditions
     
     employedOptics = 'WvfHuman'; 
 
-    
-    for spatialPoolingSigmaArcMin = [6,8] %[0.25,0.5,1,2,4,6,8]
-        runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
+    spatialSummationData = containers.Map();
+    spatialPoolingSigmaArcMinList = [0.25,0.5,1,2,4,6,8];
+    for k = 1:numel(spatialPoolingSigmaArcMinList)
+        spatialPoolingSigmaArcMin = spatialPoolingSigmaArcMinList(k);
+        spatialSummationData(spatialPoolingSigmaArcMin) = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
     end
+    save(sprintf('SummationData_%s',employedOptics), spatialSummationData);
 end
 
-function runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics)
+function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics)
     
     fprintf('Running summation sigma: %2.3f arc min', spatialPoolingSigmaArcMin);
     [theDir,~] = fileparts(which(mfilename()));
@@ -71,7 +74,7 @@ function runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigm
         figurePDFname = sprintf('isomerizationsSpatialSummationSigma%2.2fArcMin_Optics%s.pdf',spatialPoolingSigmaArcMin, employedOptics);
     end
     
-    generateThresholdPlot(dataOut, rParams, figurePDFname);
+    plotData = generateThresholdPlot(dataOut, rParams, figurePDFname);
 end
 
 % ----- HELPER ROUTINES -----
@@ -121,7 +124,6 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     % Response instances to generate
     params.nTrainingSamples = 1024;
     
-    
     %% OPTICS PARAMS
     % Pupil diameter in mm
     params.pupilDiamMm = 3;
@@ -167,7 +169,6 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 
     % Freze the random noise generator so as to obtain repeatable results?
     params.freezeNoise = true;
-    
     
     %% Eye movement params
     % What type of eye movement path to use (options are: 'frozen','frozen0', or 'random')
@@ -231,7 +232,7 @@ function params = visualizationParams(params, visualizationScheme)
 end
 
 %% Visualize the performace curve
-function generateThresholdPlot(dataOut, params, figurePDFname)
+function plotData = generateThresholdPlot(dataOut, params, figurePDFname)
     % Plot data
     if strcmp(params.thresholdParams.method, 'mlpt')
         spatialPoolingSigmaMinArc = nan;
@@ -268,7 +269,6 @@ function generateThresholdPlot(dataOut, params, figurePDFname)
         plot(summationAreaMin2*[1 1], [thresholdEnergyRange(1) thresholdEnergyRange(2)], 'r-',  'LineWidth', 1.5);
     end
     
-    
     axis 'square'; grid on;
     set(gca,'XScale','log','YScale','log', 'YLim', thresholdEnergyRange, 'FontSize', 16);
     xlabel('log10 spot area (square arc minutes)', 'FontSize', 18, 'FontWeight', 'bold');
@@ -288,4 +288,11 @@ function generateThresholdPlot(dataOut, params, figurePDFname)
     drawnow;
     NicePlot.exportFigToPDF(figurePDFname, hFig, 300);
     
+    % Return data used in plot
+    plotData.DavilaGeislerFigure.spotAras = squeeze(A(:,1));
+    plotData.DavilaGeislerFigure.thresholdsEnergy = squeeze(A(:,2));
+    plotData.spotArea = spotAreasMin2;
+    plotData.thresholdsEnergy = thresholdEnergies;
+    plotData.thresholdContrasts = thresholdContrasts;
+    plotData.summationArea = summationAreaMin2;
 end
