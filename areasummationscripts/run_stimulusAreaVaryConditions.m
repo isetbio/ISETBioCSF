@@ -18,9 +18,10 @@ function run_stimulusAreaVaryConditions
     spatialPoolingSigmaArcMinList = [0.25,0.5,1,2,4,6,8];
     for k = 1:numel(spatialPoolingSigmaArcMinList)
         spatialPoolingSigmaArcMin = spatialPoolingSigmaArcMinList(k);
-        spatialSummationData(spatialPoolingSigmaArcMin) = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
+        spatialSummationData(sprintf('summation_sigma_ArcMin_%2.2f',spatialPoolingSigmaArcMin)) = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
     end
-    save(sprintf('SummationData_%s',employedOptics), spatialSummationData);
+    
+    save(sprintf('SummationData_%s.mat',employedOptics), 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
 end
 
 function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics)
