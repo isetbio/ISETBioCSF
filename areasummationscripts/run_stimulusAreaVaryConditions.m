@@ -15,7 +15,7 @@ function run_stimulusAreaVaryConditions
     employedOptics = 'WvfHuman'; 
 
     spatialSummationData = containers.Map();
-    spatialPoolingSigmaArcMinList = [0.25,0.5,1,2,4,6,8];
+    spatialPoolingSigmaArcMinList = 0.25; % [0.25,0.5,1,2,4,6,8];
     for k = 1:numel(spatialPoolingSigmaArcMinList)
         spatialPoolingSigmaArcMin = spatialPoolingSigmaArcMinList(k);
         spatialSummationData(sprintf('summation_sigma_ArcMin_%2.2f',spatialPoolingSigmaArcMin)) = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
@@ -38,13 +38,13 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     params.computeMosaic = ~true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     
     % Compute photocurrents as well?
     params.computePhotocurrentResponseInstances = ~true;
     
     % Find the performance (true) or load performance data from the disk (false)
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     
     % Fit the psychometric function? Set to true to obtain the threshols
     params.fitPsychometric = true;
@@ -84,7 +84,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
-    params.spotDiametersMinutes = [1 2.5 5 10 20 40];
+    params.spotDiametersMinutes = [0.3568]; % 0.6181 2.5 5 10 20 40];
     
     % Stimulus background in degs
     params.backgroundSizeDegs = 55/60;
