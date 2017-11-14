@@ -49,6 +49,8 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     % Fit the psychometric function? Set to true to obtain the threshols
     params.fitPsychometric = true;
     
+    params.ramPercentageEmployed = 0.45;
+    
     % Do not use the default plotting routine
     params.plotSpatialSummation = false;  % we will do our own plotting
     

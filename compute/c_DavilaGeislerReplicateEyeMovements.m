@@ -376,6 +376,8 @@ function userParams = modifyDefaultsBasedOnUserParams(paramsList)
     % MOSAIC OPTIONS
     p.addParameter('integrationTime', 5.0/1000, @isnumeric);
 
+    p.addParameter('ramPercentageEmployed', 1.0, @isnumeric);
+    
     % HEX MOSAIC OPTIONS
     p.addParameter('sConeMinDistanceFactor', 3.0, @isnumeric); % min distance between neighboring S-cones = f * local cone separation - to make the S-cone lattice semi-regular
     p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
