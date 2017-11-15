@@ -12,16 +12,16 @@ function run_stimulusAreaVaryConditions
     % 'DavilaGeislerLsfAsPsf'
     % 'DavilaGeisler'
     
-    employedOptics = 'WvfHuman'; 
+    employedOptics = 'None'; 
 
     spatialSummationData = containers.Map();
-    spatialPoolingSigmaArcMinList = 0.25; % [0.25,0.5,1,2,4,6,8];
+    spatialPoolingSigmaArcMinList = [1];
     for k = 1:numel(spatialPoolingSigmaArcMinList)
         spatialPoolingSigmaArcMin = spatialPoolingSigmaArcMinList(k);
         spatialSummationData(sprintf('summation_sigma_ArcMin_%2.2f',spatialPoolingSigmaArcMin)) = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
     end
     
-    save(sprintf('SummationData_%s.mat',employedOptics), 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
+    save(sprintf('SummationDataExtendedRange_%s.mat',employedOptics), 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
 end
 
 function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics)
@@ -49,7 +49,7 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     % Fit the psychometric function? Set to true to obtain the threshols
     params.fitPsychometric = true;
     
-    params.ramPercentageEmployed = 0.45;
+    params.ramPercentageEmployed = 0.95;
     
     % Do not use the default plotting routine
     params.plotSpatialSummation = false;  % we will do our own plotting
@@ -86,7 +86,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
-    params.spotDiametersMinutes = [0.3568]; % 0.6181 2.5 5 10 20 40];
+    params.spotDiametersMinutes = [0.3568 0.6181 1 2.5 5 10 20];
     
     % Stimulus background in degs
     params.backgroundSizeDegs = 55/60;
