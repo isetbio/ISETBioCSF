@@ -15,7 +15,7 @@ function run_stimulusAreaVaryConditions
     employedOptics = 'None'; 
 
     spatialSummationData = containers.Map();
-    spatialPoolingSigmaArcMinList = [1];
+    spatialPoolingSigmaArcMinList = [1.5];
     for k = 1:numel(spatialPoolingSigmaArcMinList)
         spatialPoolingSigmaArcMin = spatialPoolingSigmaArcMinList(k);
         spatialSummationData(sprintf('summation_sigma_ArcMin_%2.2f',spatialPoolingSigmaArcMin)) = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
@@ -38,7 +38,7 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     params.computeMosaic = ~true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     
     % Compute photocurrents as well?
     params.computePhotocurrentResponseInstances = ~true;
