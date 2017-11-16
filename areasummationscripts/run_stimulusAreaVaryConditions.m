@@ -12,7 +12,7 @@ function run_stimulusAreaVaryConditions
     % 'DavilaGeislerLsfAsPsf'
     % 'DavilaGeisler'
     
-    employedOptics = 'None'; 
+    employedOptics = 'WvfHuman'; 
 
     spatialSummationData = containers.Map();
     spatialPoolingSigmaArcMinList = [1.5];
@@ -38,7 +38,7 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     params.computeMosaic = ~true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     
     % Compute photocurrents as well?
     params.computePhotocurrentResponseInstances = ~true;
