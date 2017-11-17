@@ -91,7 +91,6 @@ if (nargout > 0)
 end
 end
 
-
 % -------- HELPER FUNCTIONS ---------
 
 %% runParams
