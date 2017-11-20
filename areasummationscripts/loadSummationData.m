@@ -1,13 +1,13 @@
 function loadSummationData()
 
     % Load wvf data
-    employedOptics = 'None';
+    employedOptics = 'WvfHuman';
     datafile = sprintf('SummationDataExtendedRange_%s.mat',employedOptics);
     load(datafile, 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
     spatialSummationDataWvfOptics = spatialSummationData;
     
     % Load no optics data
-    employedOptics = 'None';
+    employedOptics = 'NoOptics';
     datafile = sprintf('SummationDataExtendedRange_%s.mat',employedOptics);
     load(datafile, 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
     spatialSummationDataNoOptics = spatialSummationData;
