@@ -31,10 +31,13 @@ else
     aCustomWvfModel = {''};
 end
 
-
 % Take opticsModel into account.
 switch (oiParams.opticsModel)
     case 'WvfHuman'
+    case 'AOoptics'
+        theOI = oiWithAOoptics(theOI);  
+    case {'None', 'none'}
+        theOI = ptb.oiSetPtbOptics(theOI,'opticsModel', 'DeltaFunction');
     case aCustomWvfModel
         fprintf('Computing custom OTF optics\n')
         [theOIdef, theCustomOI, Zcoeffs, ~] = oiWithCustomOptics(oiParams.pupilDiamMm, oiParams.opticsModel);
@@ -43,8 +46,6 @@ switch (oiParams.opticsModel)
         theOI = theCustomOI;
     case {'Geisler', 'GeislerLsfAsPsf', 'DavilaGeisler', 'DavilaGeislerLsfAsPsf', 'Westheimer', 'Williams'}
         theOI = ptb.oiSetPtbOptics(theOI,'opticsModel',oiParams.opticsModel);
-    case {'None', 'none'}
-        theOI = ptb.oiSetPtbOptics(theOI,'opticsModel', 'DeltaFunction');
     otherwise
         error('Unknown opticsModel string passed');
 end

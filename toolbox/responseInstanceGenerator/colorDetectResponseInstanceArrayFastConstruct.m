@@ -99,59 +99,8 @@ if (p.Results.visualizeOIsequence)
     rwObject.write(fileName, data, p.Results.paramsList, theProgram, ...
            'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
        
-    % visualize the scene and the optical image
-    visualizedPercentange = 0.2;
-    sceneLuminance = sceneGet(modulatedScene, 'luminance');
-    spatialSupport = sceneGet(modulatedScene, 'spatial support');
-    xSupport = squeeze(spatialSupport(1,:,1));
-    ySupport = squeeze(spatialSupport(:,1,2));
-    idx = find((abs(squeeze(spatialSupport(:,:,1))) < max(xSupport)*visualizedPercentange) & ...
-               (abs(squeeze(spatialSupport(:,:,2))) < max(ySupport)*visualizedPercentange));
-    maxSceneLuminance = max(max(sceneLuminance(idx)));
-    minSceneLuminance = min(min(sceneLuminance(idx)));      
-    
-    oiIlluminance = oiGet(oiModulated,'illuminance');
-	oiSpatialSupport = oiGet(oiModulated, 'spatial support');
-    oiXSupport = squeeze(oiSpatialSupport(1,:,1));
-    oiYSupport = squeeze(oiSpatialSupport(:,1,2));
-    idx = find((abs(squeeze(oiSpatialSupport(:,:,1))) < max(oiXSupport)*visualizedPercentange) & ...
-               (abs(squeeze(oiSpatialSupport(:,:,2))) < max(oiYSupport)*visualizedPercentange));
-    maxOIILuminance = max(max(oiIlluminance(idx)));
-    minOIILuminance = min(min(oiIlluminance(idx)));
-    
-    
-    hFig = figure(99); clf;
-    set(hFig, 'Position', [10 10 1000 700], 'Color', [1 1 1]);
-    subplot(1,2,1)
-    pcolor(xSupport, ySupport, (sceneLuminance-minSceneLuminance)/(maxSceneLuminance-minSceneLuminance));
-    set(gca, 'CLim', [0 1])
-    hold on;
-    plot([0 0], [ySupport(1) ySupport(end)], 'w-');
-    plot([xSupport(1) xSupport(end)], [0 0], 'w-');
-    hold off
-    axis 'image';
-    set(gca, 'XLim', [-max(xSupport) max(xSupport)]*visualizedPercentange, 'XTick', [0], ...
-             'YLim', [-max(ySupport) max(ySupport)]*visualizedPercentange, 'YTick', [0]);
-    set(gca, 'FontSize', 16);
-    title('scene lluminance');
-    subplot(1,2,2)
-    pcolor(oiXSupport, oiYSupport, (oiIlluminance-minOIILuminance)/(maxOIILuminance-minOIILuminance));
-    set(gca, 'CLim', [0 1])
-    hold on;
-    plot([0 0], [ySupport(1) ySupport(end)], 'w-');
-    plot([xSupport(1) xSupport(end)], [0 0], 'w-');
-    hold off
-    axis 'image';
-    set(gca, 'XLim', [-max(oiXSupport) max(oiXSupport)]*visualizedPercentange, 'XTick', [0], ...
-             'YLim', [-max(oiYSupport) max(oiYSupport)]*visualizedPercentange, 'YTick', [0]);
-    set(gca, 'FontSize', 16);
-    title('optical image illuminance');
-    colormap(jet(1024));
-    drawnow
-    
-    fileName = sprintf('SceneLuminanceAndIlluminance');
-    rwObject.write(fileName, data, p.Results.paramsList, theProgram, ...
-           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+    % Also visualize the modulated scene luminance and retinal illuminance
+    visualizeSceneLuminanceAndIlluminance(modulatedScene, oiModulated, p.Results.paramsList);
 end
 
 %% Co-visualize the optical image and the cone mosaic
