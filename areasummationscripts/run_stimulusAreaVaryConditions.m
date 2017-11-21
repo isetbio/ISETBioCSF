@@ -6,13 +6,15 @@ function run_stimulusAreaVaryConditions
     
     
     %% Optics to employ. Choose from:
-    % 'None' : adaptive optics simulation
-    % 'WvfHuman' : default human wavefront - based optics
+    % 'None': delta function PSF
+    % 'AOoptics' : diffraction-limited with forced 6mm pupil
+    % 'WvfHuman' : default human wavefront - based optics with mean (across subjects) Z-coeffs
+    % 'WvfHumanMeanOTFmagMeanOTFphase' : human wavefront - based optics with mean (across subjects) OTF
     % 'Geisler' : Geisler optics
     % 'DavilaGeislerLsfAsPsf'
     % 'DavilaGeisler'
     
-    employedOptics = 'WvfHuman'; 
+    employedOptics = 'AOoptics';
 
     spatialSummationData = containers.Map();
     spatialPoolingSigmaArcMinList = [1.5];
@@ -35,7 +37,7 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     
     %% Simulation steps to perform
     % Re-compute the mosaic (true) or load it from the disk (false)
-    params.computeMosaic = ~true; 
+    params.computeMosaic = true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
     params.computeResponses = true;
@@ -61,9 +63,9 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
         'pooledSignal' ...
         'performance' ...
         'spatialScheme' ...    % graphic generated only during response computation
+        'oiSequence' ...
         %'mosaic+emPath' ...    % graphic generated  only during response computation
-        %'oiSequence' ...       % graphic generated  only during response computation
-
+        %'oiSequence' ...       % graphic generated  only during response computatio
     };
     params = visualizationParams(params, visualizationScheme);
 
@@ -87,7 +89,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
     params.spotDiametersMinutes = [0.3568 0.6181 1 2.5 5 10 20];
-    
+   
     % Stimulus background in degs
     params.backgroundSizeDegs = 55/60;
     
@@ -110,7 +112,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 	params.responseExtinctionMilliseconds = 20;
 
     % How many pixels to use to same the stimulus
-    params.imagePixels = 400;
+    params.imagePixels = 1000;
     
     % Lowest examined stimulus contrast
     params.lowContrast = 1e-6;
@@ -127,17 +129,13 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     % Response instances to generate
     params.nTrainingSamples = 1024;
     
-    %% OPTICS PARAMS
-    % Pupil diameter in mm
-    params.pupilDiamMm = 3;
-    
-    % Apply default human optics ?
-    if (strcmp(lower(employedOptics), 'none'))
-        params.blur = false;
-    else
-        params.blur = true;
-    end
+    %% OPTICS model and pupil size
     params.opticsModel = employedOptics;
+    if (strcmpi(lower(params.opticsModel), 'aooptics'))
+        params.pupilDiamMm = 6;
+    else
+        params.pupilDiamMm = 3;
+    end
     
     %% MOSAIC PARAMS
     % Use a regularly-packed hegagonal mosaic (available packing options: 'rect', 'hex', 'hexReg')
@@ -152,8 +150,8 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     % Cone aperture (inner-segment) diameter in microns
 	params.innerSegmentSizeMicrons = 3.0;
     
-    % Apply aperture low-pass filtering ?
-	params.apertureBlur = false;
+    % Apply aperture low-pass
+	params.apertureBlur = true;
     
     % Spatial density of L, M and S cones (sum: 1.0)
     params.LMSRatio = [0.67 0.33 0];
@@ -201,6 +199,13 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
         'activationFunction', 'linear', ...
         'temporalPCAcoeffs', Inf, ...   ;  % Inf, results in no PCA, just the raw time series
         'adjustForConeDensity', false);
+    
+    
+    % Fastrun  params
+    %params.spotDiametersMinutes = [0.3568];
+    %params.backgroundSizeDegs = 10/60;
+    %params.nContrastsPerDirection = 2; 
+    %params.nTrainingSamples = 2;
 end
 
 function params = visualizationParams(params, visualizationScheme)
