@@ -1,7 +1,7 @@
 function visualizeSceneLuminanceAndIlluminance(modulatedScene, oiModulated, paramsList)
 
     % visualize the scene and the optical image
-    visualizedPercentage = 0.2;
+    visualizedPercentage = 0.1;
     sceneLuminance = sceneGet(modulatedScene, 'luminance');
     spatialSupport = sceneGet(modulatedScene, 'spatial support');
     xSupport = squeeze(spatialSupport(1,:,1));

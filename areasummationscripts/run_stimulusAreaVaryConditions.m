@@ -37,7 +37,7 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     
     %% Simulation steps to perform
     % Re-compute the mosaic (true) or load it from the disk (false)
-    params.computeMosaic = true; 
+    params.computeMosaic = ~true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
     params.computeResponses = true;
@@ -112,7 +112,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 	params.responseExtinctionMilliseconds = 20;
 
     % How many pixels to use to same the stimulus
-    params.imagePixels = 1000;
+    params.imagePixels = 1000*4;
     
     % Lowest examined stimulus contrast
     params.lowContrast = 1e-6;
