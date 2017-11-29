@@ -14,7 +14,7 @@ function run_stimulusAreaVaryConditions
     % 'DavilaGeislerLsfAsPsf'
     % 'DavilaGeisler'
     
-    employedOptics = 'AOoptics';
+    employedOptics = 'AOoptics'; %'WvfHumanMeanOTFmagMeanOTFphase';
 
     spatialSummationData = containers.Map();
     spatialPoolingSigmaArcMinList = [1.5];
@@ -24,11 +24,13 @@ function run_stimulusAreaVaryConditions
     end
     
     save(sprintf('SummationDataExtendedRange_%s.mat',employedOptics), 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
+
+
 end
 
 function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics)
     
-    fprintf('Running summation sigma: %2.3f arc min', spatialPoolingSigmaArcMin);
+    fprintf('Running summation sigma: %2.3f arc min\n\n', spatialPoolingSigmaArcMin);
     [theDir,~] = fileparts(which(mfilename()));
     cd(theDir);
     
@@ -40,13 +42,13 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     params.computeMosaic = ~true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     
     % Compute photocurrents as well?
     params.computePhotocurrentResponseInstances = ~true;
     
     % Find the performance (true) or load performance data from the disk (false)
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     
     % Fit the psychometric function? Set to true to obtain the threshols
     params.fitPsychometric = true;
@@ -62,8 +64,8 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
         %'responses' ...
         'pooledSignal' ...
         'performance' ...
-        'spatialScheme' ...    % graphic generated only during response computation
-        'oiSequence' ...
+        %'spatialScheme' ...    % graphic generated only during response computation
+        %'oiSequence' ...
         %'mosaic+emPath' ...    % graphic generated  only during response computation
         %'oiSequence' ...       % graphic generated  only during response computatio
     };
@@ -91,7 +93,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.spotDiametersMinutes = [0.3568 0.6181 1 2.5 5 10 20];
    
     % Stimulus background in degs
-    params.backgroundSizeDegs = 55/60;
+    params.backgroundSizeDegs = 35/60;
     
     % Stimulus wavelength in nm
     params.wavelength = 550;
@@ -112,7 +114,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 	params.responseExtinctionMilliseconds = 20;
 
     % How many pixels to use to same the stimulus
-    params.imagePixels = 1000*4;
+    params.imagePixels = 2048;
     
     % Lowest examined stimulus contrast
     params.lowContrast = 1e-6;
