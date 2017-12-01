@@ -14,10 +14,10 @@ function run_stimulusAreaVaryConditions
     % 'DavilaGeislerLsfAsPsf'
     % 'DavilaGeisler'
     
-    employedOptics = 'AOoptics'; %'WvfHumanMeanOTFmagMeanOTFphase';
+    employedOptics = 'WvfHumanMeanOTFmagMeanOTFphase';
 
     spatialSummationData = containers.Map();
-    spatialPoolingSigmaArcMinList = [0.25];
+    spatialPoolingSigmaArcMinList = [0.5];
     for k = 1:numel(spatialPoolingSigmaArcMinList)
         spatialPoolingSigmaArcMin = spatialPoolingSigmaArcMinList(k);
         spatialSummationData(sprintf('summation_sigma_ArcMin_%2.2f',spatialPoolingSigmaArcMin)) = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
@@ -39,10 +39,10 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     
     %% Simulation steps to perform
     % Re-compute the mosaic (true) or load it from the disk (false)
-    params.computeMosaic = ~true; 
+    params.computeMosaic = true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     
     % Compute photocurrents as well?
     params.computePhotocurrentResponseInstances = ~true;
@@ -90,7 +90,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
-    params.spotDiametersMinutes = [0.3568 0.6181 1 2.5 5 10]; % 20];
+    params.spotDiametersMinutes = [0.3568 0.6181 1 2.5 5 10 20];
    
     % Stimulus background in degs
     params.backgroundSizeDegs = 35/60;
