@@ -262,7 +262,7 @@ function plotData = generateThresholdPlot(dataOut, params, figurePDFname)
     thresholdContrasts = [dataOut.mlptThresholds(lumIndex,:).thresholdContrasts];
     thresholdEnergies = thresholdContrasts.*maxThresholdEnergies;
     
-    thresholdEnergyRange = [0.03 10];
+    thresholdEnergyRange = [0.01 10];
     thresholdRange = [3*1e-5 1*1e-1];
     
     hFig = figure(100); clf;
