@@ -31,42 +31,42 @@ function visualizeSceneLuminanceAndIlluminance(modulatedScene, oiModulated, para
     
     % Draw
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', 1, ...
-           'colsNum', 2, ...
-           'heightMargin',   0.02, ...
-           'widthMargin',    0.02, ...
-           'leftMargin',     0.04, ...
+           'rowsNum', 2, ...
+           'colsNum', 1, ...
+           'heightMargin',   0.04, ...
+           'widthMargin',    0.01, ...
+           'leftMargin',     0.01, ...
            'rightMargin',    0.006, ...
-           'bottomMargin',   0.07, ...
-           'topMargin',      0.04);
+           'bottomMargin',   0.02, ...
+           'topMargin',      0.02);
     
        
     hFig = figure(99); clf;
-    set(hFig, 'Position', [10 10 2560/2 1290/2], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 1290 2560], 'Color', [1 1 1]);
     subplot('Position', subplotPosVectors(1,1).v);
     pcolor(xSupport, ySupport, sceneLuminance);
     hold on;
-    plot(xSupport, squeeze(sceneLuminance(sceneMidRow,:))*ySupport(end)*visualizedPercentage*0.95, 'y-', 'LineWidth', 1.5);
+    plot(xSupport+(xSupport(2)-xSupport(1))/2, squeeze(sceneLuminance(sceneMidRow,:))*ySupport(end)*visualizedPercentage*0.95, 'y-', 'LineWidth', 1.5);
     plot([0 0], [ySupport(1) ySupport(end)], 'w-');
     plot([xSupport(1) xSupport(end)], [0 0], 'w-');
     hold off
     axis 'image';
     set(gca, 'XLim', [-max(xSupport) max(xSupport)]*visualizedPercentage, 'XTick', [0], ...
              'YLim', [-max(ySupport) max(ySupport)]*visualizedPercentage, 'YTick', [0], 'CLim', [0 1]);
-    set(gca, 'FontSize', 16);
+    set(gca, 'FontSize', 20);
     title('scene lluminance');
     
-    subplot('Position', subplotPosVectors(1,2).v);
+    subplot('Position', subplotPosVectors(2,1).v);
     pcolor(oiXSupport, oiYSupport, oiIlluminance);
     hold on;
-    plot(oiXSupport, squeeze(oiIlluminance(oiMidRow,:))*oiYSupport(end)*visualizedPercentageOI*0.95, 'y-','LineWidth', 1.5);
+    plot(oiXSupport+(oiXSupport(2)-oiXSupport(1))/2, squeeze(oiIlluminance(oiMidRow,:))*oiYSupport(end)*visualizedPercentageOI*0.95, 'y-','LineWidth', 1.5);
     plot([0 0], [ySupport(1) ySupport(end)], 'w-');
     plot([xSupport(1) xSupport(end)], [0 0], 'w-');
     hold off
     axis 'image';
     set(gca, 'XLim', [-max(oiXSupport) max(oiXSupport)]*visualizedPercentageOI, 'XTick', [0], ...
              'YLim', [-max(oiYSupport) max(oiYSupport)]*visualizedPercentageOI, 'YTick', [0], 'CLim', [0 1]);
-    set(gca, 'FontSize', 16);
+    set(gca, 'FontSize', 20);
     title('optical image illuminance');
     colormap(jet(1024));
     drawnow;
