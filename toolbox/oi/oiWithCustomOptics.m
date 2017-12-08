@@ -23,6 +23,7 @@ function [theOI, theCustomOI, Zcoeffs, populationOTFdata] = oiWithCustomOptics(p
     % Pull out the optics structure
     optics = oiGet(theCustomOI,'optics');
     wavelengthsListToCompute = opticsGet(optics,'wave');
+    
     % Compute 
     [customOTFdata, Zcoeffs, populationOTFdata] = computeCustomOTF(Zcoeffs, pupilDiameterMM, wavelengthsListToCompute, opticsModel);
     
