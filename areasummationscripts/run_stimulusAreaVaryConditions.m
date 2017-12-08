@@ -6,27 +6,31 @@ function run_stimulusAreaVaryConditions
     
     
     %% Optics to employ. Choose from:
-    % 'None' : adaptive optics simulation
-    % 'WvfHuman' : default human wavefront - based optics
+    % 'None': delta function PSF
+    % 'AOoptics' : diffraction-limited with forced 6mm pupil
+    % 'WvfHuman' : default human wavefront - based optics with mean (across subjects) Z-coeffs
+    % 'WvfHumanMeanOTFmagMeanOTFphase' : human wavefront - based optics with mean (across subjects) OTF
     % 'Geisler' : Geisler optics
     % 'DavilaGeislerLsfAsPsf'
     % 'DavilaGeisler'
     
-    employedOptics = 'WvfHuman'; 
+    employedOptics = 'WvfHumanMeanOTFmagMeanOTFphase';
 
     spatialSummationData = containers.Map();
-    spatialPoolingSigmaArcMinList = 0.25; % [0.25,0.5,1,2,4,6,8];
+    spatialPoolingSigmaArcMinList = [0.5];
     for k = 1:numel(spatialPoolingSigmaArcMinList)
         spatialPoolingSigmaArcMin = spatialPoolingSigmaArcMinList(k);
         spatialSummationData(sprintf('summation_sigma_ArcMin_%2.2f',spatialPoolingSigmaArcMin)) = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
     end
     
-    save(sprintf('SummationData_%s.mat',employedOptics), 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
+    save(sprintf('SummationDataExtendedRange_%s.mat',employedOptics), 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
+
+
 end
 
 function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics)
     
-    fprintf('Running summation sigma: %2.3f arc min', spatialPoolingSigmaArcMin);
+    fprintf('Running summation sigma: %2.3f arc min\n\n', spatialPoolingSigmaArcMin);
     [theDir,~] = fileparts(which(mfilename()));
     cd(theDir);
     
@@ -35,7 +39,7 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     
     %% Simulation steps to perform
     % Re-compute the mosaic (true) or load it from the disk (false)
-    params.computeMosaic = ~true; 
+    params.computeMosaic = true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
     params.computeResponses = true;
@@ -49,7 +53,7 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     % Fit the psychometric function? Set to true to obtain the threshols
     params.fitPsychometric = true;
     
-    params.ramPercentageEmployed = 0.45;
+    params.ramPercentageEmployed = 0.95;
     
     % Do not use the default plotting routine
     params.plotSpatialSummation = false;  % we will do our own plotting
@@ -60,10 +64,10 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
         %'responses' ...
         'pooledSignal' ...
         'performance' ...
-        'spatialScheme' ...    % graphic generated only during response computation
+        %'spatialScheme' ...    % graphic generated only during response computation
+        %'oiSequence' ...
         %'mosaic+emPath' ...    % graphic generated  only during response computation
-        %'oiSequence' ...       % graphic generated  only during response computation
-
+        %'oiSequence' ...       % graphic generated  only during response computatio
     };
     params = visualizationParams(params, visualizationScheme);
 
@@ -86,10 +90,10 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
-    params.spotDiametersMinutes = [0.3568]; % 0.6181 2.5 5 10 20 40];
-    
+    params.spotDiametersMinutes = [0.3568 0.6181 1 2.5 5 10 20];
+   
     % Stimulus background in degs
-    params.backgroundSizeDegs = 55/60;
+    params.backgroundSizeDegs = 35/60;
     
     % Stimulus wavelength in nm
     params.wavelength = 550;
@@ -110,7 +114,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 	params.responseExtinctionMilliseconds = 20;
 
     % How many pixels to use to same the stimulus
-    params.imagePixels = 400;
+    params.imagePixels = 2048;
     
     % Lowest examined stimulus contrast
     params.lowContrast = 1e-6;
@@ -127,17 +131,13 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     % Response instances to generate
     params.nTrainingSamples = 1024;
     
-    %% OPTICS PARAMS
-    % Pupil diameter in mm
-    params.pupilDiamMm = 3;
-    
-    % Apply default human optics ?
-    if (strcmp(lower(employedOptics), 'none'))
-        params.blur = false;
-    else
-        params.blur = true;
-    end
+    %% OPTICS model and pupil size
     params.opticsModel = employedOptics;
+    if (strcmpi(lower(params.opticsModel), 'aooptics'))
+        params.pupilDiamMm = 6;
+    else
+        params.pupilDiamMm = 3;
+    end
     
     %% MOSAIC PARAMS
     % Use a regularly-packed hegagonal mosaic (available packing options: 'rect', 'hex', 'hexReg')
@@ -152,8 +152,8 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     % Cone aperture (inner-segment) diameter in microns
 	params.innerSegmentSizeMicrons = 3.0;
     
-    % Apply aperture low-pass filtering ?
-	params.apertureBlur = false;
+    % Apply aperture low-pass
+	params.apertureBlur = true;
     
     % Spatial density of L, M and S cones (sum: 1.0)
     params.LMSRatio = [0.67 0.33 0];
@@ -201,6 +201,13 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
         'activationFunction', 'linear', ...
         'temporalPCAcoeffs', Inf, ...   ;  % Inf, results in no PCA, just the raw time series
         'adjustForConeDensity', false);
+    
+    
+    % Fastrun  params
+    %params.spotDiametersMinutes = [0.3568];
+    %params.backgroundSizeDegs = 10/60;
+    %params.nContrastsPerDirection = 2; 
+    %params.nTrainingSamples = 2;
 end
 
 function params = visualizationParams(params, visualizationScheme)
@@ -255,7 +262,7 @@ function plotData = generateThresholdPlot(dataOut, params, figurePDFname)
     thresholdContrasts = [dataOut.mlptThresholds(lumIndex,:).thresholdContrasts];
     thresholdEnergies = thresholdContrasts.*maxThresholdEnergies;
     
-    thresholdEnergyRange = [0.03 10];
+    thresholdEnergyRange = [0.01 10];
     thresholdRange = [3*1e-5 1*1e-1];
     
     hFig = figure(100); clf;

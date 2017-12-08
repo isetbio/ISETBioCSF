@@ -98,6 +98,9 @@ if (p.Results.visualizeOIsequence)
     fileName = sprintf('OISequence');
     rwObject.write(fileName, data, p.Results.paramsList, theProgram, ...
            'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+       
+    % Also visualize the modulated scene luminance and retinal illuminance
+    visualizeSceneLuminanceAndIlluminance(modulatedScene, oiModulated, p.Results.paramsList);
 end
 
 %% Co-visualize the optical image and the cone mosaic

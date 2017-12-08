@@ -31,10 +31,13 @@ else
     aCustomWvfModel = {''};
 end
 
-
 % Take opticsModel into account.
 switch (oiParams.opticsModel)
     case 'WvfHuman'
+    case 'AOoptics'
+        theOI = oiWithAOoptics(theOI);  
+    case {'None', 'none'}
+        theOI = ptb.oiSetPtbOptics(theOI,'opticsModel', 'DeltaFunction');
     case aCustomWvfModel
         fprintf('Computing custom OTF optics\n')
         [theOIdef, theCustomOI, Zcoeffs, ~] = oiWithCustomOptics(oiParams.pupilDiamMm, oiParams.opticsModel);
@@ -43,8 +46,6 @@ switch (oiParams.opticsModel)
         theOI = theCustomOI;
     case {'Geisler', 'GeislerLsfAsPsf', 'DavilaGeisler', 'DavilaGeislerLsfAsPsf', 'Westheimer', 'Williams'}
         theOI = ptb.oiSetPtbOptics(theOI,'opticsModel',oiParams.opticsModel);
-    case {'None', 'none'}
-        theOI = ptb.oiSetPtbOptics(theOI,'opticsModel', 'DavilaGeisler');
     otherwise
         error('Unknown opticsModel string passed');
 end
@@ -52,7 +53,7 @@ end
 % Set the FOV
 theOI = oiSet(theOI,'h fov',oiParams.fieldOfViewDegs);
 
-% Set the pupil diamter
+% Set the pupil diameter
 focalLength = oiGet(theOI,'distance');
 desiredFNumber = focalLength/(oiParams.pupilDiamMm/1000);
 theOI  = oiSet(theOI ,'optics fnumber',desiredFNumber);
@@ -70,16 +71,10 @@ theOI = oiSet(theOI,'optics',optics);
 
 % Take out optical blurring if requested
 optics = oiGet(theOI,'optics');
-if (~oiParams.blur) || (strcmp(lower(oiParams.opticsModel), 'none'))
-    fprintf(2,'Taking out OTF\n');
-    % OLD WAY. This does not work properly because of symmetry issues
-    %optics = opticsSet(optics,'OTF',ones(size(opticsGet(optics,'OTF'))));
-    % NEW WAY. Starting with a Geisler OTF, then
-    oldOTF = opticsGet(optics,'OTF');
-    newOTF = oldOTF * 10000;
-    newOTF(newOTF<1) = 0;
-    newOTF(newOTF>1) = 1;
-    optics = opticsSet(optics,'otf data',newOTF); % ones(size(opticsGet(optics,'OTF'))));
+if (~oiParams.blur)
+    fprintf(2,'\n\nTaking out OTF\n\n\n');
+    % This does not work properly because of symmetry issues
+    optics = opticsSet(optics,'OTF',ones(size(opticsGet(optics,'OTF'))));
 end
 theOI = oiSet(theOI,'optics',optics);
 

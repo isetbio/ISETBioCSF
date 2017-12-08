@@ -11,8 +11,14 @@ function visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, paramsList)
     coneLocsInDegs(:,2) = coneLocsInMeters(:,2) / theMosaic.height * theMosaic.fov(2);
     
     support = oiGet(thePeakOI, 'spatial support', 'microns');
-    micronsPerDegree = oiGet(thePeakOI, 'width')*1e6 / oiGet(thePeakOI, 'hfov'); % 290;
+    micronsPerDegree = oiGet(thePeakOI, 'width')*1e6 / oiGet(thePeakOI, 'hfov');
 
+    % Generate cone aperture outline
+    apertureRadiusMicrons = 0.5*diameterForCircularApertureFromWidthForSquareAperture(theMosaic.pigment.pdWidth)*1e6;
+    innerSegmentRadiusDegs = apertureRadiusMicrons/micronsPerDegree;
+    apertureOutline.xDegs = cosd(0:15:360)*innerSegmentRadiusDegs;
+    apertureOutline.yDegs = sind(0:15:360)*innerSegmentRadiusDegs;
+    
     xaxis = support(1,:,1)/micronsPerDegree;
     yaxis = support(:,1,2)/micronsPerDegree;
     illumMap = oiCalculateIlluminance(thePeakOI);
@@ -42,7 +48,12 @@ function visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, paramsList)
     axis 'xy';
     axis 'image'
     hold on;
-    plot(squeeze(coneLocsInDegs(:,1)), squeeze(coneLocsInDegs(:,2)), 'k.', 'MarkerSize', 8);
+    for coneIndex = 1:size(coneLocsInDegs,1)
+        xAperture = coneLocsInDegs(coneIndex,1) + apertureOutline.xDegs;
+        yAperture = coneLocsInDegs(coneIndex,2) + apertureOutline.yDegs;
+        plot(xAperture, yAperture, 'r-');
+    end
+    
     hold off;
     set(gca, 'CLim', [0 1], 'YTickLabel', {}, 'XLim', mosaicFOV(1)/2*[-1 1]*1.1, 'YLim', mosaicFOV(2)/2*[-1 1]*1.1);
     set(gca, 'FontSize', 18);

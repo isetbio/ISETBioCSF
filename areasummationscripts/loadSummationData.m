@@ -1,14 +1,14 @@
 function loadSummationData()
 
     % Load wvf data
-    employedOptics = 'WvfHumanOptics';
-    datafile = sprintf('SummationData_%s.mat',employedOptics);
+    employedOptics = 'WvfHuman';
+    datafile = sprintf('SummationDataExtendedRange_%s.mat',employedOptics);
     load(datafile, 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
     spatialSummationDataWvfOptics = spatialSummationData;
     
     % Load no optics data
     employedOptics = 'NoOptics';
-    datafile = sprintf('SummationData_%s.mat',employedOptics);
+    datafile = sprintf('SummationDataExtendedRange_%s.mat',employedOptics);
     load(datafile, 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
     spatialSummationDataNoOptics = spatialSummationData;
     
@@ -46,14 +46,14 @@ function plotTheData(spatialPoolingSigmaArcMinList, spatialSummationDataWvfOptic
         ISETbioThresholdContrastsNoOptics = plotDataNoOptics.thresholdContrasts;
         
         % Render the plot
-        thresholdRange = [1e-4 1e-1];
+        thresholdRange = [0.5*1e-4 1e-1];
         subplot('Position', subplotPosVectors(1,k).v);
         plot(ISETbioSpotAreasArcMinSquared, ISETbioThresholdContrastsWvfOptics, 'ro-', 'MarkerSize', 12, 'MarkerFaceColor', [0.9 0.6 0.7], 'LineWidth', 1.5);
         hold on;
         plot(ISETbioSpotAreasArcMinSquared, ISETbioThresholdContrastsNoOptics, 'bo-', 'MarkerSize', 12, 'MarkerFaceColor', [0.5 0.6 0.9], 'LineWidth', 1.5);
         plot(ISETbioSummationAreaArcMinSquared*[1 1], thresholdRange, 'kv-', 'LineWidth', 1.5);
         hold off
-        set(gca, 'XLim', [0.5*1e0 2*1e3], 'YLim', [1e-4 0.5*1e-1], 'XTick', 10.^[-2:1:4], 'XScale', 'log', 'YScale', 'log', 'FontSize', 16);
+        set(gca, 'XLim', [1e-1 2*1e3], 'YLim', [0.5*1e-4 0.5*1e-1], 'XTick', 10.^[-2:1:4], 'XScale', 'log', 'YScale', 'log', 'FontSize', 16);
         grid on;
         xlabel('spot area (arc min^2)', 'FontSize', 18, 'FontWeight', 'bold');
         if (k==1)

@@ -5,10 +5,10 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
     zLevels = [0.025:0.05:1.0];
     zLevels = [-fliplr(zLevels) zLevels];
         
-
-    coneRadius = coneRadiusMicrons/300;
-    coneX = coneRadius * cos(2*pi*(0:30:360)/360);
-    coneY = coneRadius * sin(2*pi*(0:30:360)/360);
+    micronsPerDegree = 300;
+    coneRadiusDegs = coneRadiusMicrons/micronsPerDegree;
+    coneX = coneRadiusDegs * cos(2*pi*(0:30:360)/360);
+    coneY = coneRadiusDegs * sin(2*pi*(0:30:360)/360);
     quantizationLevels = 1024;
     
     if (strcmp(spatialPoolingKernelParams.type, 'GaussianRF'))
