@@ -99,7 +99,7 @@ end
 if (~strcmp(rParams.oiParams.opticsModel,'WvfHuman'))
     error('This routine only knows about WvfHuman optics model');
 end
-gaborOI = oiCreate('wvf human');
+gaborOI = oiCreate('wvf human',[],[],330);
 gaborOI = oiSet(gaborOI,'h fov',rParams.spatialParams.fieldOfViewDegs);
 
 % Set pupil diameter

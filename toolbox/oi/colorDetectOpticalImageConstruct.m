@@ -18,7 +18,7 @@ function [theOI, varargout] = colorDetectOpticalImageConstruct(oiParams)
 varargout = {};
 
 % Basic create.
-theOI = oiCreate('wvf human', oiParams.pupilDiamMm);
+theOI = oiCreate('wvf human', oiParams.pupilDiamMm,[],[],330);
 
 % Is a custom Wvf model requested?
 wvfModels = availableCustomWvfOpticsModels();
