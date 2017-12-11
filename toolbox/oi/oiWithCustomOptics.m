@@ -1,4 +1,4 @@
-function [theOI, theCustomOI, Zcoeffs, populationOTFdata] = oiWithCustomOptics(pupilDiameterMM, opticsModel)
+function [theOI, theCustomOI, Zcoeffs, populationOTFdata] = oiWithCustomOptics(pupilDiameterMM, umPerDegree, opticsModel)
     % 
     theOI = oiCreate('wvf human', pupilDiameterMM);
     theCustomOI = theOI;
@@ -25,7 +25,7 @@ function [theOI, theCustomOI, Zcoeffs, populationOTFdata] = oiWithCustomOptics(p
     wavelengthsListToCompute = opticsGet(optics,'wave');
     
     % Compute 
-    [customOTFdata, Zcoeffs, populationOTFdata] = computeCustomOTF(Zcoeffs, pupilDiameterMM, wavelengthsListToCompute, opticsModel);
+    [customOTFdata, Zcoeffs, populationOTFdata] = computeCustomOTF(Zcoeffs, pupilDiameterMM, umPerDegree, wavelengthsListToCompute, opticsModel);
     
     % Update optics with new OTF data
     optics = opticsSet(optics,'otf data',customOTFdata.otf);
@@ -34,17 +34,17 @@ function [theOI, theCustomOI, Zcoeffs, populationOTFdata] = oiWithCustomOptics(p
     theCustomOI = oiSet(theCustomOI,'optics',optics);
 end
 
-function [customOTFdata, Zcoeffs, populationOTFdata] = computeCustomOTF(Zcoeffs, pupilDiameterMM, wavelengths, opticsModel)
+function [customOTFdata, Zcoeffs, populationOTFdata] = computeCustomOTF(Zcoeffs, pupilDiameterMM, umPerDegree, wavelengths, opticsModel)
 
     if ismember(opticsModel, {'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase'})
-        [customOTFdata, Zcoeffs,  populationOTFdata] = computeMeanSubjectOTF(Zcoeffs, pupilDiameterMM, wavelengths, opticsModel);
+        [customOTFdata, Zcoeffs,  populationOTFdata] = computeMeanSubjectOTF(Zcoeffs, pupilDiameterMM, umPerDegree, wavelengths, opticsModel);
     else
-        [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, pupilDiameterMM, wavelengths, opticsModel);
+        [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, pupilDiameterMM, umPerDegree, wavelengths, opticsModel);
         populationOTFdata = [];
     end
 end
 
-function [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, pupilDiameterMM, wavelengths, opticsModel)
+function [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, pupilDiameterMM, umPerDegree, wavelengths, opticsModel)
      % Make WVF for this subject   
      switch opticsModel
          case 'WvfHumanSubject1'
@@ -63,7 +63,7 @@ function [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, pupilDiamet
      
      % Make WVF for this subject  
      Zcoeffs = Zcoeffs(:,subjectIndex);
-     wvfSubject = makeWVF(Zcoeffs, wavelengths, pupilDiameterMM, sprintf('subject-%d', subjectIndex));
+     wvfSubject = makeWVF(Zcoeffs, wavelengths, pupilDiameterMM, umPerDegree, sprintf('subject-%d', subjectIndex));
      optics = oiGet(wvf2oi(wvfSubject),'optics'); 
      
      % Get OTF
@@ -90,13 +90,13 @@ function [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, pupilDiamet
      customOTFdata.otf = otf;
 end
 
-function [customOTFdata, Zcoeffs, otfSubjects] = computeMeanSubjectOTF(Zcoeffs, pupilDiameterMM, wavelengths,  opticsModel)
+function [customOTFdata, Zcoeffs, otfSubjects] = computeMeanSubjectOTF(Zcoeffs, pupilDiameterMM, umPerDegree, wavelengths,  opticsModel)
     
     subjectsNum = size(Zcoeffs,2);
     for subjectIndex = 1:subjectsNum
         fprintf('Computing wavefront data for subject %d/%d\n', subjectIndex,subjectsNum);
         % Make WVF for this subject      
-        wvfSubject = makeWVF(Zcoeffs(:,subjectIndex), wavelengths, pupilDiameterMM, sprintf('subject-%d', subjectIndex));
+        wvfSubject = makeWVF(Zcoeffs(:,subjectIndex), wavelengths, pupilDiameterMM, umPerDegree, sprintf('subject-%d', subjectIndex));
         optics = oiGet(wvf2oi(wvfSubject),'optics');
         
         % Get OTF
@@ -173,9 +173,9 @@ function centerOfMass = computeCenterOfMass(PSF)
     centerOfMass = [centerOfMassX centerOfMassY];
 end
 
-function theWVF = makeWVF(zcoeffs, wavelengthsToCompute, pupilDiameterMM, name)
+function theWVF = makeWVF(zcoeffs, wavelengthsToCompute, pupilDiameterMM, umPerDegree, name)
     theWVF = wvfCreate(...
-    			'umPerDegree', 330, ...
+    			'umPerDegree', umPerDegree, ...
                 'calc wavelengths',wavelengthsToCompute,...
                 'zcoeffs',zcoeffs,...
                 'name', name);

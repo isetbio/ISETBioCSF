@@ -30,4 +30,5 @@ oiParams.offAxis = false;
 oiParams.blur = true;
 oiParams.lens = true;
 oiParams.pupilDiamMm = 3;
+oiParams.umPerDegree = 300;
 oiParams.opticsModel = 'WvfHuman';
