@@ -1,4 +1,4 @@
-function [theOI, theCustomOI, Zcoeffs, populationOTFdata] = oiWithCustomOptics(pupilDiameterMM, umPerDegree, opticsModel)
+function [theOI, theCustomOI, Zcoeffs, populationOTFdata] = oiWithCustomOptics(opticsModel, pupilDiameterMM, umPerDegree)
     % 
     theOI = oiCreate('wvf human', pupilDiameterMM);
     theCustomOI = theOI;

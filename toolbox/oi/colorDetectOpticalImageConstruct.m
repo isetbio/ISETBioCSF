@@ -40,7 +40,7 @@ switch (oiParams.opticsModel)
         theOI = ptb.oiSetPtbOptics(theOI,'opticsModel', 'DeltaFunction');
     case aCustomWvfModel
         fprintf('Computing custom OTF optics\n')
-        [theOIdef, theCustomOI, Zcoeffs, ~] = oiWithCustomOptics(oiParams.pupilDiamMm, oiParams.umPerDegree, oiParams.opticsModel);
+        [theOIdef, theCustomOI, Zcoeffs, ~] = oiWithCustomOptics(oiParams.opticsModel, oiParams.pupilDiamMm, oiParams.umPerDegree);
         varargout{1} = Zcoeffs;
         plotOIs(theOIdef, theCustomOI);
         theOI = theCustomOI;
