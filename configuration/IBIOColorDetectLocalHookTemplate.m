@@ -28,7 +28,6 @@ function IBIOColorDetectLocalHook
 fprintf('IBIOColorDetect local hook.\n');
 projectName = 'IBIOColorDetect';
 
-
 %% UnitTestToolbox and RemoteDataToolbox setup.
 %
 % If you customize your rdt-config json file, you will want to place it
@@ -56,7 +55,6 @@ p = struct(...
 generatePreferenceGroup(p);
 UnitTest.usePreferencesForProject(p.projectName);
 
-
 %% Output directory.
 %
 % This is where the project writes its output.  By default, we'll stick it
@@ -66,8 +64,12 @@ outputBaseDir = fullfile(tbUserFolder(), 'output', projectName);
 if (7 ~= exist(outputBaseDir, 'dir'))
     mkdir(outputBaseDir);
 end
-
 setpref(projectName, 'outputBaseDir', outputBaseDir);
+
+%% Backwards compatibility prefs
+setpref('IBIOColorDetectBackCompat','oiWithCustomOptics',true);
+
+setpref('IBIOColorDetectBackCompat','oiWithCustomOptics',false);
 
 end
 
