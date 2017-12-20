@@ -1,6 +1,6 @@
-function [theOI, theCustomOI, Zcoeffs, populationOTFdata] = oiWithCustomOptics(opticsModel, pupilDiameterMM, umPerDegree)
+function [theOI, theCustomOI, Zcoeffs, populationOTFdata] = oiWithCustomOptics(opticsModel, calcPupilDiameterMM, umPerDegree)
     % 
-    theOI = oiCreate('wvf human', pupilDiameterMM);
+    theOI = oiCreate('wvf human', calcPupilDiameterMM);
     theCustomOI = theOI;
 
     % Save rng state. 
@@ -9,12 +9,29 @@ function [theOI, theCustomOI, Zcoeffs, populationOTFdata] = oiWithCustomOptics(o
     % Set rng seed to 1 to ensure we always get the same Zcoeffs
     rng(1);
     
-    % Load the 4.5 mm pupil diameter Thibos data set
-    measPupilDiameterMM = 4.5;
+    % This controls whether we are backwards compatible prior to fixing up
+    % which data we load and the measured pupil diameter
+    oiWithCustomOpticsBackCompat = false;
+    if (ispref('IBIOColorDetectBackCompat','oiWithCustomOptics'))
+        if (getpref('IBIOColorDetectBackCompat','oiWithCustomOptics'))
+            oiWithCustomOpticsBackCompat = true;
+        end
+    end
+        
+    % Load the Thibos data set.  If we load 7.5 mm, we can compute for
+    % anything possible.  The old code loaded 4.5 mm, which was not ideal.
+    % This problem wasn't caught previuosly because we weren't setting the
+    % measured pupil diameter.  That is also fixed contingent on the same
+    % preference.
+    if (oiWithCustomOpticsBackCompat)
+        measPupilDiameterMM = 4.5;
+    else
+        measPupilDiameterMM = 7.5;
+    end
     [Zcoeffs_SampleMean, Zcoeffs_S] = wvfLoadThibosVirtualEyes(measPupilDiameterMM);
 
-    subjectsNum  = 100;
     % Generate Z-coeffs for subjectsNum
+    subjectsNum  = 100;
     Zcoeffs = ieMvnrnd(Zcoeffs_SampleMean, Zcoeffs_S, subjectsNum)'; 
 
     % Restore current rng state
@@ -25,7 +42,7 @@ function [theOI, theCustomOI, Zcoeffs, populationOTFdata] = oiWithCustomOptics(o
     wavelengthsListToCompute = opticsGet(optics,'wave');
     
     % Compute 
-    [customOTFdata, Zcoeffs, populationOTFdata] = computeCustomOTF(Zcoeffs, pupilDiameterMM, umPerDegree, wavelengthsListToCompute, opticsModel);
+    [customOTFdata, Zcoeffs, populationOTFdata] = computeCustomOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengthsListToCompute, opticsModel);
     
     % Update optics with new OTF data
     optics = opticsSet(optics,'otf data',customOTFdata.otf);
@@ -34,17 +51,17 @@ function [theOI, theCustomOI, Zcoeffs, populationOTFdata] = oiWithCustomOptics(o
     theCustomOI = oiSet(theCustomOI,'optics',optics);
 end
 
-function [customOTFdata, Zcoeffs, populationOTFdata] = computeCustomOTF(Zcoeffs, pupilDiameterMM, umPerDegree, wavelengths, opticsModel)
+function [customOTFdata, Zcoeffs, populationOTFdata] = computeCustomOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths, opticsModel)
 
     if ismember(opticsModel, {'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase'})
-        [customOTFdata, Zcoeffs,  populationOTFdata] = computeMeanSubjectOTF(Zcoeffs, pupilDiameterMM, umPerDegree, wavelengths, opticsModel);
+        [customOTFdata, Zcoeffs,  populationOTFdata] = computeMeanSubjectOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths, opticsModel);
     else
-        [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, pupilDiameterMM, umPerDegree, wavelengths, opticsModel);
+        [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths, opticsModel);
         populationOTFdata = [];
     end
 end
 
-function [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, pupilDiameterMM, umPerDegree, wavelengths, opticsModel)
+function [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths, opticsModel)
      % Make WVF for this subject   
      switch opticsModel
          case 'WvfHumanSubject1'
@@ -63,7 +80,7 @@ function [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, pupilDiamet
      
      % Make WVF for this subject  
      Zcoeffs = Zcoeffs(:,subjectIndex);
-     wvfSubject = makeWVF(Zcoeffs, wavelengths, pupilDiameterMM, umPerDegree, sprintf('subject-%d', subjectIndex));
+     wvfSubject = makeWVF(Zcoeffs, wavelengths, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, sprintf('subject-%d', subjectIndex));
      optics = oiGet(wvf2oi(wvfSubject),'optics'); 
      
      % Get OTF
@@ -90,13 +107,13 @@ function [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, pupilDiamet
      customOTFdata.otf = otf;
 end
 
-function [customOTFdata, Zcoeffs, otfSubjects] = computeMeanSubjectOTF(Zcoeffs, pupilDiameterMM, umPerDegree, wavelengths,  opticsModel)
+function [customOTFdata, Zcoeffs, otfSubjects] = computeMeanSubjectOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths,  opticsModel)
     
     subjectsNum = size(Zcoeffs,2);
     for subjectIndex = 1:subjectsNum
         fprintf('Computing wavefront data for subject %d/%d\n', subjectIndex,subjectsNum);
         % Make WVF for this subject      
-        wvfSubject = makeWVF(Zcoeffs(:,subjectIndex), wavelengths, pupilDiameterMM, umPerDegree, sprintf('subject-%d', subjectIndex));
+        wvfSubject = makeWVF(Zcoeffs(:,subjectIndex), wavelengths, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, sprintf('subject-%d', subjectIndex));
         optics = oiGet(wvf2oi(wvfSubject),'optics');
         
         % Get OTF
@@ -173,13 +190,31 @@ function centerOfMass = computeCenterOfMass(PSF)
     centerOfMass = [centerOfMassX centerOfMassY];
 end
 
-function theWVF = makeWVF(zcoeffs, wavelengthsToCompute, pupilDiameterMM, umPerDegree, name)
+function theWVF = makeWVF(zcoeffs, wavelengthsToCompute, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, name)
     theWVF = wvfCreate(...
     			'umPerDegree', umPerDegree, ...
                 'calc wavelengths',wavelengthsToCompute,...
                 'zcoeffs',zcoeffs,...
                 'name', name);
-    theWVF = wvfSet(theWVF,'calc pupil size',pupilDiameterMM);
+            
+    % This controls whether we are backwards compatible prior to fixing
+    % this routine to deal correctly with the measured pupil diameter.
+    oiWithCustomOpticsBackCompat = false;
+    if (ispref('IBIOColorDetectBackCompat','oiWithCustomOptics'))
+        if (getpref('IBIOColorDetectBackCompat','oiWithCustomOptics'))
+            oiWithCustomOpticsBackCompat = true;
+        end
+    end
+    
+    % Set measured pupil size
+    if (~oiWithCustomOpticsBackCompat)
+        theWVF = wvfSet(theWVF,'measured pupil size', measPupilDiameterMM);
+    end
+    
+    % And pupil size for calculation
+    theWVF = wvfSet(theWVF,'calc pupil size',calcPupilDiameterMM);
+    
+    % Now compute the PSF
     theWVF = wvfComputePSF(theWVF);
 end
 
