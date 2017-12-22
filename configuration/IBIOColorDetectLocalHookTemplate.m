@@ -67,9 +67,7 @@ end
 setpref(projectName, 'outputBaseDir', outputBaseDir);
 
 %% Backwards compatibility prefs
-setpref('IBIOColorDetectBackCompat','oiWithCustomOptics',true);
-
-setpref('IBIOColorDetectBackCompat','oiWithCustomOptics',false);
+% setpref('IBIOColorDetectBackCompat','oiWithCustomOptics',true);
 
 end
 
