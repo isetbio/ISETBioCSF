@@ -55,10 +55,29 @@ function [customOTFdata, Zcoeffs, populationOTFdata] = computeCustomOTF(Zcoeffs,
 
     if ismember(opticsModel, {'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase'})
         [customOTFdata, Zcoeffs,  populationOTFdata] = computeMeanSubjectOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths, opticsModel);
+    elseif (strcmp(opticsModel, 'DiffractionLimited'))
+        [customOTFdata, Zcoeffs] = computeDiffractionLimitedOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths);
+        populationOTFdata = [];
     else
         [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths, opticsModel);
         populationOTFdata = [];
     end
+end
+
+function [customOTFdata, Zcoeffs] = computeDiffractionLimitedOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths)
+    % Make WVF for this subject
+    subjectIndex = 1;
+    allZeroZcoeffs = 0 * Zcoeffs(:,subjectIndex);
+    measPupilDiameterMM = calcPupilDiameterMM;
+    
+    wvfDiffractionLimited = makeWVF(allZeroZcoeffs, wavelengths, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, sprintf('subject-%d', subjectIndex));
+     
+    % Generate multi-band OTF
+    [otf,optics] = computeMultiBandOTF(wvfDiffractionLimited, wavelengths);
+     
+    customOTFdata.xSfGridCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
+    customOTFdata.ySfGridCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
+    customOTFdata.otf = otf;
 end
 
 function [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths, opticsModel)
@@ -81,26 +100,9 @@ function [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, measPupilDi
      % Make WVF for this subject  
      Zcoeffs = Zcoeffs(:,subjectIndex);
      wvfSubject = makeWVF(Zcoeffs, wavelengths, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, sprintf('subject-%d', subjectIndex));
-     optics = oiGet(wvf2oi(wvfSubject),'optics'); 
      
-     % Get OTF
-     otf = opticsGet(optics, 'otf');
-        
-     % Get PSF at reference wavelength
-     referencePSF = wvfGet(wvfSubject, 'psf', 550);
-     
-     % Center PSFs
-     for waveIndex = 1:numel(wavelengths)
-        % Get OTF at  wavelength
-        theWaveOTF = squeeze(otf(:,:,waveIndex));
-            
-        if (waveIndex == 1)
-           [theWaveOTF, translationVector] = otfWithZeroCenteredPSF(theWaveOTF, referencePSF, []);
-        else
-           theWaveOTF = otfWithZeroCenteredPSF(theWaveOTF, referencePSF, translationVector);
-        end
-        otf(:,:,waveIndex) = theWaveOTF;
-     end % waveIndex
+     % Generate multi-band OTF
+     [otf,optics] = computeMultiBandOTF(wvfSubject, wavelengths);
      
      customOTFdata.xSfGridCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
      customOTFdata.ySfGridCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
@@ -112,37 +114,24 @@ function [customOTFdata, Zcoeffs, otfSubjects] = computeMeanSubjectOTF(Zcoeffs, 
     subjectsNum = size(Zcoeffs,2);
     for subjectIndex = 1:subjectsNum
         fprintf('Computing wavefront data for subject %d/%d\n', subjectIndex,subjectsNum);
+        
         % Make WVF for this subject      
         wvfSubject = makeWVF(Zcoeffs(:,subjectIndex), wavelengths, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, sprintf('subject-%d', subjectIndex));
-        optics = oiGet(wvf2oi(wvfSubject),'optics');
         
-        % Get OTF
-        otf = opticsGet(optics, 'otf');
+        % Generate multi-band OTF
+        [otf,optics] = computeMultiBandOTF(wvfSubject, wavelengths);
         
-        % Get PSF at reference wavelength
-        referencePSF = wvfGet(wvfSubject, 'psf', 550);
-
-        % Center PSFs
-        for waveIndex = 1:numel(wavelengths)
-            % Get OTF at  wavelength
-            theWaveOTF = squeeze(otf(:,:,waveIndex));
-            
-            if (waveIndex == 1)
-                [theWaveOTF, translationVector] = otfWithZeroCenteredPSF(theWaveOTF, referencePSF, []);
-            else
-                theWaveOTF = otfWithZeroCenteredPSF(theWaveOTF, referencePSF, translationVector);
-            end
-            otf(:,:,waveIndex) = theWaveOTF;
-            
-            if (subjectIndex == 1) && (waveIndex == 1)
-                otfSubjects = zeros(subjectsNum, size(otf,1), size(otf,2), size(otf,3));
-                customOTFdata.xSfGridCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
-                customOTFdata.ySfGridCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
-                customOTFdata.otf = 0*otf;
-            end
-        end % waveIndex
+        % Populate otfSubjects array
+        if (subjectIndex == 1)
+            otfSubjects = zeros(subjectsNum, size(otf,1), size(otf,2), size(otf,3));
+        end
+        
         otfSubjects(subjectIndex,:,:,:) = otf;
-    end % subjectIndex
+    end
+    
+    customOTFdata.xSfGridCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
+    customOTFdata.ySfGridCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
+    customOTFdata.otf = 0*otf;          
     
     % Compute average OTF across subjects
     otfMean = squeeze(mean(otfSubjects,1));
@@ -169,6 +158,29 @@ function [customOTFdata, Zcoeffs, otfSubjects] = computeMeanSubjectOTF(Zcoeffs, 
         customOTFdata.otf(:,:,waveIndex) = ifftshift(otfMeanMag .* exp(1i*phaseToUse));
     end
 end
+
+function [otf,optics] = computeMultiBandOTF(wvf, wavelengths)
+    % Get the old OTF
+     optics = oiGet(wvf2oi(wvf),'optics'); 
+     otf = opticsGet(optics, 'otf');
+     
+     % Get PSF at reference wavelength
+     referencePSF = wvfGet(wvf, 'psf', 550);
+     
+     % Center PSFs
+     for waveIndex = 1:numel(wavelengths)
+        % Get OTF at  wavelength
+        theWaveOTF = squeeze(otf(:,:,waveIndex));
+            
+        if (waveIndex == 1)
+           [theWaveOTF, translationVector] = otfWithZeroCenteredPSF(theWaveOTF, referencePSF, []);
+        else
+           theWaveOTF = otfWithZeroCenteredPSF(theWaveOTF, referencePSF, translationVector);
+        end
+        otf(:,:,waveIndex) = theWaveOTF;
+     end % waveIndex
+end
+
 
 function [OTF, translationVector] = otfWithZeroCenteredPSF(OTF, PSF, translationVector)
     if (isempty(translationVector))
