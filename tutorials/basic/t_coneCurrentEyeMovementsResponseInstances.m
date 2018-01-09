@@ -217,7 +217,6 @@ end % if (p.Results.delete)
 if ((~p.Results.compute) && ((p.Results.visualizeMosaic) || (p.Results.computeMosaic)))
     if (p.Results.computeMosaic)
         % Create the cone mosaic
-        mosaicParams = rParams.mosaicParams;
         theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams, ...
             'visualizeMosaic', p.Results.visualizeMosaic);
         % Save cone mosaic
@@ -293,8 +292,7 @@ if (p.Results.compute)
     
     % Return the OI (for visualization purposes)
     varargout{3} = theOI;
-    
-    
+
     if (p.Results.computeMosaic)
         % Create the cone mosaic
         theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams, ...
@@ -495,6 +493,7 @@ if (p.Results.compute)
         
         % Parfor over blocks of trials
         parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum) 
+
             % Get the parallel pool worker ID
             t = getCurrentTask();
             
