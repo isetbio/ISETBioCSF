@@ -90,14 +90,14 @@ end
 
 %%  Visualize the oiSequence
 if (p.Results.visualizeOIsequence)
-    [~, hFig] = theOIsequence.visualize('format', 'montage', 'showIlluminanceMap', true);
+    uData = theOIsequence.visualize('montage', 'showIlluminanceMap', true, 'backendRenderer', 'figure');
     % Save figure
     theProgram = mfilename;
     rwObject = IBIOColorDetectReadWriteBasic;
     data = 0;
     fileName = sprintf('OISequence');
     rwObject.write(fileName, data, p.Results.paramsList, theProgram, ...
-           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+           'type', 'NicePlotExportPDF', 'FigureHandle', uData.figHandle, 'FigureType', 'pdf');
        
     % Also visualize the modulated scene luminance and retinal illuminance
     visualizeSceneLuminanceAndIlluminance(modulatedScene, oiModulated, p.Results.paramsList);
