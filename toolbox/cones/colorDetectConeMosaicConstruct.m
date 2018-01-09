@@ -26,11 +26,11 @@ end
 
 if (ischar(mosaicParams.conePacking))
     if (strcmp(mosaicParams.conePacking, 'hex'))
-        
+
         if (~isfield(mosaicParams, 'resamplingFactor'))
             mosaicParams.resamplingFactor = 6;
         end
-
+        
         if (~isfield(mosaicParams, 'name'))
             mosaicParams.name = 'noname';
         end
@@ -71,8 +71,6 @@ if (ischar(mosaicParams.conePacking))
             theMosaic.visualizeGrid(); % 'visualizedConeAperture', 'geometricArea');
         end
     elseif (strcmp(mosaicParams.conePacking, 'hexReg'))
-        resamplingFactor = 6;
-
         if (~isfield(mosaicParams, 'name'))
             mosaicParams.name = 'noname';
         end
@@ -89,7 +87,7 @@ if (ischar(mosaicParams.conePacking))
             mosaicParams.marginF = [];
         end
         
-        theMosaic = coneMosaicHex(resamplingFactor, ...
+        theMosaic = coneMosaicHex(mosaicParams.resamplingFactor, ...
             'fovDegs', mosaicParams.fieldOfViewDegs, ...
             'customLambda', mosaicParams.coneSpacingMicrons, ...
             'customInnerSegmentDiameter', mosaicParams.innerSegmentSizeMicrons, ... 

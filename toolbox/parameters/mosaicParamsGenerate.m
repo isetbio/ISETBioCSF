@@ -49,3 +49,4 @@ mosaicParams.sConeFreeRadiusMicrons =  45;
 mosaicParams.latticeAdjustmentPositionalToleranceF =  0.01;
 mosaicParams.latticeAdjustmentDelaunayToleranceF = 0.001;
 mosaicParams.marginF = [];
+mosaicParams.resamplingFactor = 7;
