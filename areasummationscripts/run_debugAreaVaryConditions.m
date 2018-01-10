@@ -117,10 +117,10 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.imagePixels = 2048;
     
     % Lowest examined stimulus contrast
-    params.lowContrast = 1e-6 * 100;
+    params.lowContrast = 1e-6;
     
     % Highest examined stimulus contrast
-    params.highContrast = 1e-2 * 10;
+    params.highContrast = 1e-2;
     
     % How many contrasts to use for the psychometric curve
     params.nContrastsPerDirection = 10;
