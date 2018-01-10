@@ -24,7 +24,15 @@ for backgroundLumIndex = 1:length(userParams.luminances)
         
         % Update rParams for current stimDiamIndex and backgroundLumIndex
         rParams = updateRunParams(rParams, userParams, backgroundLumIndex, stimDiamIndex);
- 
+        
+        showParams = false
+        if (showParams)
+            rParams
+            rParams.spatialParams
+            rParams.colorModulationParams
+            rParams.backgroundParams
+            pause
+        end
         % Compute response instances
         if ((userParams.computeResponses) || ...
             (userParams.visualizeResponses) || (userParams.visualizeSpatialScheme) ||  (userParams.visualizeMosaic) ...     
@@ -136,6 +144,13 @@ function rParams = updateRunParams(rParams, userParams, backgroundLumIndex,stimD
     % Update the spatial params
     rParams = updateSpatialParams(rParams, userParams, stimDiamIndex); 
 
+     % Update oi params
+    rParams.oiParams = modifyStructParams(rParams.oiParams, ...
+        'blur', userParams.blur, ...
+        'pupilDiamMm', userParams.pupilDiamMm, ...
+        'opticsModel', userParams.opticsModel, ...
+        'fieldOfViewDegs', userParams.opticalImagefieldOfViewDegs);
+
     % Update the background wavelength
     rParams.backgroundParams.backgroundWavelengthsNm = [userParams.wavelength];
 
@@ -145,12 +160,7 @@ function rParams = updateRunParams(rParams, userParams, backgroundLumIndex,stimD
     % Update the temporal params
     rParams = updateTemporalParams(rParams, userParams);
 
-    % Blur
-    rParams.oiParams = modifyStructParams(rParams.oiParams, ...
-        'blur', userParams.blur, ...
-        'pupilDiamMm', userParams.pupilDiamMm, ...
-        'opticsModel', userParams.opticsModel);
-
+   
     % Update mosaic params
     rParams = updateMosaicParams(rParams, userParams);
 end
@@ -344,6 +354,7 @@ function userParams = modifyDefaultsBasedOnUserParams(paramsList)
 
     p.addParameter('blur',true,@islogical);
     p.addParameter('opticsModel','WvfHuman',@ischar);
+    p.addParameter('opticalImagefieldOfViewDegs', 3.0, @isnumeric);
     p.addParameter('innerSegmentSizeMicrons',3.0, @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
     p.addParameter('apertureBlur', false, @islogical);
     p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);

@@ -56,7 +56,7 @@ function [customOTFdata, Zcoeffs, populationOTFdata] = computeCustomOTF(Zcoeffs,
     if ismember(opticsModel, {'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase'})
         [customOTFdata, Zcoeffs,  populationOTFdata] = computeMeanSubjectOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths, opticsModel);
     elseif (strcmp(opticsModel, 'DiffractionLimited'))
-        [customOTFdata, Zcoeffs] = computeDiffractionLimitedOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths);
+        [customOTFdata, Zcoeffs] = computeDiffractionLimitedOTF(Zcoeffs, calcPupilDiameterMM, umPerDegree, wavelengths);
         populationOTFdata = [];
     else
         [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths, opticsModel);
@@ -64,12 +64,12 @@ function [customOTFdata, Zcoeffs, populationOTFdata] = computeCustomOTF(Zcoeffs,
     end
 end
 
-function [customOTFdata, Zcoeffs] = computeDiffractionLimitedOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths)
+function [customOTFdata, Zcoeffs] = computeDiffractionLimitedOTF(Zcoeffs, calcPupilDiameterMM, umPerDegree, wavelengths)
     % Make WVF for this subject
     subjectIndex = 1;
     allZeroZcoeffs = 0 * Zcoeffs(:,subjectIndex);
-    measPupilDiameterMM = calcPupilDiameterMM;
     
+    measPupilDiameterMM = calcPupilDiameterMM;
     wvfDiffractionLimited = makeWVF(allZeroZcoeffs, wavelengths, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, sprintf('subject-%d', subjectIndex));
      
     % Generate multi-band OTF
