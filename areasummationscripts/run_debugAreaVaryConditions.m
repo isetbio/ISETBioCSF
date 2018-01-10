@@ -60,7 +60,7 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     
     %% VISUALIZATION PARAMS
     visualizationScheme = {...
-        %'mosaic' ...
+        'mosaic' ...
         'performance' ...
         %'responses' ...
         %'pooledSignal' ...
@@ -90,10 +90,10 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
-    params.spotDiametersMinutes = [0.3568 0.6181 0.3568*4]; % [0.3568 0.6181 1 2.5 5 10 20];
+    params.spotDiametersMinutes = [0.3568 0.3568*4]; % [0.3568 0.6181 1 2.5 5 10 20];
    
     % Stimulus background in degs
-    params.backgroundSizeDegs = 1.2*max(params.spotDiametersMinutes)/60;
+    params.backgroundSizeDegs = 0.15;
     
     % Stimulus wavelength in nm
     params.wavelength = 550;
@@ -129,12 +129,14 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.contrastScale = 'log';
 
     % Response instances to generate
-    params.nTrainingSamples =256;
+    params.nTrainingSamples = 16; % 256;
     
     %% OPTICS model and pupil size
     params.opticsModel = employedOptics;
-    if (strcmpi(lower(params.opticsModel), 'aooptics'))
-        params.pupilDiamMm = 6;
+    params.opticalImagefieldOfViewDegs = 1.5;
+    
+    if (strcmpi(params.opticsModel, 'aooptics'))
+        params.pupilDiamMm = 7.5;
     else
         params.pupilDiamMm = 3;
     end
