@@ -129,12 +129,10 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.contrastScale = 'log';
 
     % Response instances to generate
-    params.nTrainingSamples = 16; % 256;
+    params.nTrainingSamples = 256;
     
     %% OPTICS model and pupil size
     params.opticsModel = employedOptics;
-    params.opticalImagefieldOfViewDegs = 1.5;
-    
     if (strcmpi(params.opticsModel, 'aooptics'))
         params.pupilDiamMm = 7.5;
     else
