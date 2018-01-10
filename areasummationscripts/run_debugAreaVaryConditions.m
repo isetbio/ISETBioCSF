@@ -90,10 +90,11 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
-    params.spotDiametersMinutes = [0.3568 0.3568*4]; % [0.3568 0.6181 1 2.5 5 10 20];
-   
+    params.spotDiametersMinutes = [0.43 0.58 0.87 1.16 2.31 3.47 4.63 6.94 9.25]; % [0.3568 0.6181 1 2.5 5 10 20];
+    params.spotDiametersMinutes = params.spotDiametersMinutes(1:2:end);
+    
     % Stimulus background in degs
-    params.backgroundSizeDegs = 0.15;
+    params.backgroundSizeDegs = 0.3;
     
     % Stimulus wavelength in nm
     params.wavelength = 550;
@@ -117,13 +118,13 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.imagePixels = 2048;
     
     % Lowest examined stimulus contrast
-    params.lowContrast = 1e-6;
+    params.lowContrast = 1e-7;
     
     % Highest examined stimulus contrast
-    params.highContrast = 1e-2;
+    params.highContrast = 1e-1;
     
     % How many contrasts to use for the psychometric curve
-    params.nContrastsPerDirection = 10;
+    params.nContrastsPerDirection = 20;
     
 	% How to space the constrasts, linearly or logarithmically?
     params.contrastScale = 'log';
@@ -269,7 +270,7 @@ function plotData = generateThresholdPlot(dataOut, params, figurePDFname)
     thresholdContrasts = [dataOut.mlptThresholds(lumIndex,:).thresholdContrasts];
     thresholdEnergies = thresholdContrasts.*maxThresholdEnergies;
     
-    thresholdEnergyRange = [0.01 10];
+    thresholdEnergyRange = [0.001 1];
     thresholdRange = [3*1e-5 1*1e-1];
     
     hFig = figure(100); clf;
