@@ -17,7 +17,7 @@ function run_debugAreaVaryConditions
     employedOptics = 'AOoptics';
 
     spatialSummationData = containers.Map();
-    spatialPoolingSigmaArcMinList = [0.5];
+    spatialPoolingSigmaArcMinList = [ 0.5];
     for k = 1:numel(spatialPoolingSigmaArcMinList)
         spatialPoolingSigmaArcMin = spatialPoolingSigmaArcMinList(k);
         spatialSummationData(sprintf('summation_sigma_ArcMin_%2.2f',spatialPoolingSigmaArcMin)) = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
@@ -91,10 +91,10 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
     params.spotDiametersMinutes = [0.43 0.58 0.87 1.16 2.31 3.47 4.63 6.94 9.25]; % [0.3568 0.6181 1 2.5 5 10 20];
-    params.spotDiametersMinutes = params.spotDiametersMinutes(1:2:end);
-    
+    %params.spotDiametersMinutes = params.spotDiametersMinutes(1:2:end);
+    %params.spotDiametersMinutes = params.spotDiametersMinutes(3);
     % Stimulus background in degs
-    params.backgroundSizeDegs = 0.3;
+    params.backgroundSizeDegs = 0.5;
     
     % Stimulus wavelength in nm
     params.wavelength = 550;
@@ -118,7 +118,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.imagePixels = 2048;
     
     % Lowest examined stimulus contrast
-    params.lowContrast = 1e-7;
+    params.lowContrast = 1e-6;
     
     % Highest examined stimulus contrast
     params.highContrast = 1e-1;
@@ -158,7 +158,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 	params.innerSegmentSizeMicrons = 3.0;
     
     % Apply aperture low-pass
-	params.apertureBlur = ~true;
+	params.apertureBlur = true;
     
     % Spatial density of L, M and S cones (sum: 1.0)
     params.LMSRatio = [0.67 0.33 0];
@@ -270,7 +270,7 @@ function plotData = generateThresholdPlot(dataOut, params, figurePDFname)
     thresholdContrasts = [dataOut.mlptThresholds(lumIndex,:).thresholdContrasts];
     thresholdEnergies = thresholdContrasts.*maxThresholdEnergies;
     
-    thresholdEnergyRange = [0.001 1];
+    thresholdEnergyRange = [0.001 10];
     thresholdRange = [3*1e-5 1*1e-1];
     
     hFig = figure(100); clf;
