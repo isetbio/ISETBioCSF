@@ -1,6 +1,5 @@
-function run_debugAreaVaryConditions
+function run_summationExperiment
 
-    
     %% Optics to employ. Choose from:
     % 'None': delta function PSF
     % 'AOoptics' : diffraction-limited with forced 6mm pupil
