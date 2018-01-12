@@ -2,7 +2,7 @@ function run_debugAreaVaryConditions
 
     %% Inference engine and spatial summation sigma
     thresholdSignal = 'isomerizations';  % choose from {'isomerizations', 'photocurrents'}
-    thresholdMethod = 'svmGaussianRF';  % choose from {'mlpt', 'mlptGaussianRF', 'svmGaussianRF'}
+    thresholdMethod = 'mlptGaussianRF';  % choose from {'mlpt', 'mlptGaussianRF', 'svmGaussianRF'}
     
     
     %% Optics to employ. Choose from:
@@ -17,13 +17,13 @@ function run_debugAreaVaryConditions
     employedOptics = 'AOoptics';
 
     spatialSummationData = containers.Map();
-    spatialPoolingSigmaArcMinList = [0.125 0.25 0.5 1 2 4];
+    spatialPoolingSigmaArcMinList =  [0.125 0.25 0.5 1 2 4];
     for k = 1:numel(spatialPoolingSigmaArcMinList)
         spatialPoolingSigmaArcMin = spatialPoolingSigmaArcMinList(k);
         spatialSummationData(sprintf('summation_sigma_ArcMin_%2.2f',spatialPoolingSigmaArcMin)) = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
     end
     
-    save(sprintf('SummationDataExtendedRange_%s.mat',employedOptics), 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
+    save(sprintf('SummationData_%s_%s.mat',thresholdMethod, employedOptics), 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
 
 
 end
@@ -76,12 +76,10 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     [dataOut, extraData, rParams] = c_DavilaGeislerReplicateEyeMovements(params);
     
     %% Plot thresholds
-    if strcmp(thresholdMethod,'mlpt')
-        figurePDFname = sprintf('isomerizationsNoSpatialSummationRaw_Optics%s.pdf', employedOptics);
-    elseif strcmp(thresholdMethod, 'svmGaussianRF')
-        figurePDFname = sprintf('isomerizationsSVMSpatialSummationSigma%2.2fArcMin_Optics%s.pdf',spatialPoolingSigmaArcMin, employedOptics);
+    if strcmp(thresholdMethod,'mlpt') || strcmp(thresholdMethod,'svm')
+        figurePDFname = sprintf('isomerizations_%s_%s.pdf', thresholdMethod, employedOptics);
     else
-        figurePDFname = sprintf('isomerizationsSpatialSummationSigma%2.2fArcMin_Optics%s.pdf',spatialPoolingSigmaArcMin, employedOptics);
+        figurePDFname = sprintf('isomerizations_%s_Sigma%2.2fArcMin_%s.pdf',  thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
     end
     
     plotData = generateThresholdPlot(dataOut, rParams, figurePDFname);
@@ -93,7 +91,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
-    params.spotDiametersMinutes = [0.43 0.58 0.87 1.16 2.31 3.47 4.63 6.94 9.25];
+    params.spotDiametersMinutes = [0.43 0.58 0.87 1.16  2.31 3.47 4.63 6.94 9.25]; % [0.43 0.58 0.87 1.16 1.73 2.31 3.47 4.63 6.94 9.25];
     
     % Stimulus background in degs
     params.backgroundSizeDegs = 0.2;
