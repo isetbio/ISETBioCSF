@@ -39,8 +39,8 @@ spotPattern = zeros(spatialParams.row, spatialParams.col);
 % Create and put background into canvas
 backgroundImage = backgroundValue*ones(backgroundSizePixels,backgroundSizePixels);
 if isodd(size(backgroundImage,1)) == 0
-    minusHW = size(backgroundImage,1)/2;
-    plusHW = (size(backgroundImage,1)/2)-1;
+    minusHW = size(backgroundImage,1)/2-1;
+    plusHW = (size(backgroundImage,1)/2);
 else 
     minusHW = (size(backgroundImage,1)-1)/2;
     plusHW = minusHW;
