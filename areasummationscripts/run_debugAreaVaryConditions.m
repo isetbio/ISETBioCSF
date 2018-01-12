@@ -2,7 +2,7 @@ function run_debugAreaVaryConditions
 
     %% Inference engine and spatial summation sigma
     thresholdSignal = 'isomerizations';  % choose from {'isomerizations', 'photocurrents'}
-    thresholdMethod = 'mlptGaussianRF';  % choose from {'mlpt', 'mlptGaussianRF'}
+    thresholdMethod = 'svmGaussianRF';  % choose from {'mlpt', 'mlptGaussianRF', 'svmGaussianRF'}
     
     
     %% Optics to employ. Choose from:
@@ -17,7 +17,7 @@ function run_debugAreaVaryConditions
     employedOptics = 'AOoptics';
 
     spatialSummationData = containers.Map();
-    spatialPoolingSigmaArcMinList = [ 0.5];
+    spatialPoolingSigmaArcMinList = [0.125 0.25 0.5 1 2 4];
     for k = 1:numel(spatialPoolingSigmaArcMinList)
         spatialPoolingSigmaArcMin = spatialPoolingSigmaArcMinList(k);
         spatialSummationData(sprintf('summation_sigma_ArcMin_%2.2f',spatialPoolingSigmaArcMin)) = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
@@ -39,16 +39,16 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     
     %% Simulation steps to perform
     % Re-compute the mosaic (true) or load it from the disk (false)
-    params.computeMosaic = true; 
+    params.computeMosaic = ~true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     
     % Compute photocurrents as well?
     params.computePhotocurrentResponseInstances = ~true;
     
     % Find the performance (true) or load performance data from the disk (false)
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     
     % Fit the psychometric function? Set to true to obtain the threshols
     params.fitPsychometric = true;
@@ -77,7 +77,9 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     
     %% Plot thresholds
     if strcmp(thresholdMethod,'mlpt')
-        figurePDFname = sprintf('isomerizationsNoSpatialSummarion_Optics%s.pdf', employedOptics);
+        figurePDFname = sprintf('isomerizationsNoSpatialSummationRaw_Optics%s.pdf', employedOptics);
+    elseif strcmp(thresholdMethod, 'svmGaussianRF')
+        figurePDFname = sprintf('isomerizationsSVMSpatialSummationSigma%2.2fArcMin_Optics%s.pdf',spatialPoolingSigmaArcMin, employedOptics);
     else
         figurePDFname = sprintf('isomerizationsSpatialSummationSigma%2.2fArcMin_Optics%s.pdf',spatialPoolingSigmaArcMin, employedOptics);
     end
@@ -130,7 +132,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.contrastScale = 'log';
 
     % Response instances to generate
-    params.nTrainingSamples = 256;
+    params.nTrainingSamples = 600;
     
     %% OPTICS model and pupil size
     params.opticsModel = employedOptics;
@@ -259,12 +261,11 @@ function plotData = generateThresholdPlot(dataOut, params, figurePDFname)
         end
     end
     
-    summationAreaMin2 = pi * (2*spatialPoolingSigmaMinArc)^2;
+    
     
     spotAreasMin2 = pi*((dataOut.spotDiametersMinutes/2).^2);
     % Should be the min of the spot diams
-    minSpotAreaMin2 = pi*(min(dataOut.spotDiametersMinutes/2)^2);
-    maxThresholdEnergies = params.maxSpotLuminanceCdM2 * params.temporalParams.stimulusDurationInSeconds*spotAreasMin2
+    maxThresholdEnergies = params.maxSpotLuminanceCdM2 * params.temporalParams.stimulusDurationInSeconds*spotAreasMin2;
 
     lumIndex = 1;
     thresholdContrasts = [dataOut.mlptThresholds(lumIndex,:).thresholdContrasts];
@@ -272,6 +273,7 @@ function plotData = generateThresholdPlot(dataOut, params, figurePDFname)
     
     thresholdEnergyRange = [0.001 10];
     thresholdRange = [3*1e-5 1*1e-1];
+    summationAreaMin2 = pi * (2*spatialPoolingSigmaMinArc)^2;
     
     hFig = figure(100); clf;
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1000 450]);
