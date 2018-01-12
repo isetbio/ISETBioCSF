@@ -399,7 +399,6 @@ if (p.Results.compute)
     
     % Parfor over trial blocks
     parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
-        
         % Get the parallel pool worker ID
         t = getCurrentTask();
         if (~isempty(p.Results.workerID))  
@@ -464,7 +463,7 @@ if (p.Results.compute)
     
     tEnd = clock;
     timeLapsed = etime(tEnd,tBegin);
-    fprintf('<strong>Finished in %2.1f minutes. </strong>\n', timeLapsed/60);
+    fprintf('<strong>Finished with the null stimulus response computations in %2.1f minutes. </strong>\n', timeLapsed/60);
     
     %% Generate data for all the examined stimuli
     % Loop over color directions
@@ -493,7 +492,6 @@ if (p.Results.compute)
         
         % Parfor over blocks of trials
         parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum) 
-
             % Get the parallel pool worker ID
             t = getCurrentTask();
             
@@ -779,7 +777,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     % estimate sizes of the various matrices used
     trialBlockSize = floor(nTrials/numberOfWorkers);
     totalRAM = ramSizeGBytesAvailable;
-    allowedRAMcompression = 0.8;
+    allowedRAMcompression = 0.9;
     while (totalRAM > allowedRAMcompression*ramSizeGBytesAvailable)
         totalMemoryPerWorker = 2*(coneMosaicPatternSize*trialBlockSize+coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
         totalRAM = totalMemoryPerWorker * numberOfWorkers;
@@ -795,9 +793,27 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
         totalMemoryPerWorker = 2*(coneMosaicPatternSize*trialBlockSize+coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
     end
     
-    totalMemoryUsed  = numberOfWorkers * totalMemoryPerWorker;
-    nParforTrialsTmp = ones(1, nParforTrialBlocks) * trialBlockSize;
+    totalMemoryUsed = numberOfWorkers * totalMemoryPerWorker
+    ramSizeGBytesAvailable/numberOfWorkers
+    if (totalMemoryUsed < 0.01*ramSizeGBytesAvailable/numberOfWorkers)
+         % Just use one processor - faster most of the times
+         nParforTrials(1) = nTrials;
+         nParforTrialBlocks = 1;
+         trialBlockSize = nTrials;
+    elseif (totalMemoryUsed < ramSizeGBytesAvailable/numberOfWorkers)
+          nParforTrialBlocks = numberOfWorkers;
+          trialBlockSize = floor(nTrials/nParforTrialBlocks);
+          for kk = 1:nParforTrialBlocks-1
+              nParforTrials(kk) = trialBlockSize;
+          end
+          nParforTrials(nParforTrialBlocks) = nTrials - trialBlockSize*nParforTrialBlocks;
+          totalMemoryPerWorker = 2*(coneMosaicPatternSize*trialBlockSize+coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
+          totalMemoryUsed = totalMemoryPerWorker * numberOfWorkers;
+    end
 
+     
+    
+    nParforTrialsTmp = ones(1, nParforTrialBlocks) * trialBlockSize;
     remainingTrials = nTrials - sum(nParforTrialsTmp);
     if (remainingTrials > 0) 
         if remainingTrials > round(trialBlockSize*0.2)
