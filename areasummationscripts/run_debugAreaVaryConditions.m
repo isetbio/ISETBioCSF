@@ -53,7 +53,7 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     % Fit the psychometric function? Set to true to obtain the threshols
     params.fitPsychometric = true;
     
-    params.ramPercentageEmployed = 0.95;
+    params.ramPercentageEmployed = 1;
     
     % Do not use the default plotting routine
     params.plotSpatialSummation = false;  % we will do our own plotting
@@ -61,6 +61,7 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     %% VISUALIZATION PARAMS
     visualizationScheme = {...
         'mosaic' ...
+        'spatialScheme' ...    % graphic generated only during response computation
         'performance' ...
         %'responses' ...
         %'pooledSignal' ...
@@ -90,11 +91,10 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
-    params.spotDiametersMinutes = [0.43 0.58 0.87 1.16 2.31 3.47 4.63 6.94 9.25]; % [0.3568 0.6181 1 2.5 5 10 20];
-    %params.spotDiametersMinutes = params.spotDiametersMinutes(1:2:end);
-    %params.spotDiametersMinutes = params.spotDiametersMinutes(3);
+    params.spotDiametersMinutes = [0.43 0.58 0.87 1.16 2.31 3.47 4.63 6.94 9.25];
+    
     % Stimulus background in degs
-    params.backgroundSizeDegs = 0.5;
+    params.backgroundSizeDegs = 0.2;
     
     % Stimulus wavelength in nm
     params.wavelength = 550;
@@ -105,8 +105,8 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     % Stimulus duration in milliseconds
     params.stimDurationMs = 100;
     
-    % Stimulus refresh rate in Ha
-    params.stimRefreshRateHz = 50;
+    % Stimulus refresh rate in Hz
+    params.stimRefreshRateHz = 20;
     
     % Add simulation time before stimulus onset (to stabilize the photocurrent)
 	params.responseStabilizationMilliseconds = 10;
@@ -115,7 +115,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 	params.responseExtinctionMilliseconds = 20;
 
     % How many pixels to use to same the stimulus
-    params.imagePixels = 2048;
+    params.imagePixels = 1024;
     
     % Lowest examined stimulus contrast
     params.lowContrast = 1e-6;
@@ -124,7 +124,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.highContrast = 1e-1;
     
     % How many contrasts to use for the psychometric curve
-    params.nContrastsPerDirection = 20;
+    params.nContrastsPerDirection = 15;
     
 	% How to space the constrasts, linearly or logarithmically?
     params.contrastScale = 'log';

@@ -25,14 +25,6 @@ for backgroundLumIndex = 1:length(userParams.luminances)
         % Update rParams for current stimDiamIndex and backgroundLumIndex
         rParams = updateRunParams(rParams, userParams, backgroundLumIndex, stimDiamIndex);
         
-        showParams = false
-        if (showParams)
-            rParams
-            rParams.spatialParams
-            rParams.colorModulationParams
-            rParams.backgroundParams
-            pause
-        end
         % Compute response instances
         if ((userParams.computeResponses) || ...
             (userParams.visualizeResponses) || (userParams.visualizeSpatialScheme) ||  (userParams.visualizeMosaic) ...     
@@ -160,7 +152,6 @@ function rParams = updateRunParams(rParams, userParams, backgroundLumIndex,stimD
     % Update the temporal params
     rParams = updateTemporalParams(rParams, userParams);
 
-   
     % Update mosaic params
     rParams = updateMosaicParams(rParams, userParams);
 end
@@ -170,7 +161,7 @@ end
 function rParams = updateMosaicParams(rParams, userParams)
 %
     rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
-        'fieldOfViewDegs', userParams.backgroundSizeDegs*1.1, ... 
+        'fieldOfViewDegs', userParams.backgroundSizeDegs, ... 
         'marginF', userParams.marginF, ...
         'resamplingFactor', userParams.resamplingFactor, ...
         'mosaicRotationDegs',userParams.mosaicRotationDegs,...
@@ -242,7 +233,7 @@ end
 function rParams = updateSpatialParams(rParams, userParams, stimDiamIndex)
     rParams.spatialParams.spotSizeDegs       = userParams.spotDiametersMinutes(stimDiamIndex)/60;
     rParams.spatialParams.backgroundSizeDegs = userParams.backgroundSizeDegs;
-    rParams.spatialParams.fieldOfViewDegs    = 1.1*userParams.backgroundSizeDegs;
+    rParams.spatialParams.fieldOfViewDegs    = userParams.backgroundSizeDegs;
     rParams.spatialParams.row                = userParams.imagePixels;
     rParams.spatialParams.col                = userParams.imagePixels;
     rParams.spatialParams.viewingDistance    = 7.16;  
