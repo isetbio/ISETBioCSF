@@ -17,7 +17,7 @@ function run_debugAreaVaryConditionsFinal
     employedOptics = 'AOoptics';
 
     spatialSummationData = containers.Map();
-    spatialPoolingSigmaArcMinList =  [0.125 0.25 0.5 1 2 4];
+    spatialPoolingSigmaArcMinList =  [0.5]; % [0.125 0.25 0.5 1 2 4];
     for k = 1:numel(spatialPoolingSigmaArcMinList)
         spatialPoolingSigmaArcMin = spatialPoolingSigmaArcMinList(k);
         spatialSummationData(sprintf('summation_sigma_ArcMin_%2.2f',spatialPoolingSigmaArcMin)) = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
@@ -39,10 +39,10 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     
     %% Simulation steps to perform
     % Re-compute the mosaic (true) or load it from the disk (false)
-    params.computeMosaic = ~true; 
+    params.computeMosaic = true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     
     % Compute photocurrents as well?
     params.computePhotocurrentResponseInstances = ~true;
@@ -91,10 +91,10 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 
     %% STIMULUS PARAMS
     % Varied stimulus area (spot diameter in arc min)
-    params.spotDiametersMinutes = [0.43 0.58 0.87 1.16  2.31 3.47 4.63 6.94 9.25]; % [0.43 0.58 0.87 1.16 1.73 2.31 3.47 4.63 6.94 9.25];
+    params.spotDiametersMinutes = [0.43 0.58 0.87 1.16 1.73 2.31]; % [0.43 0.58 0.87 1.16 1.73 2.31 3.47 4.63 6.94 9.25];
     
     % Stimulus background in degs
-    params.backgroundSizeDegs = 0.2;
+    params.backgroundSizeDegs = 0.07;
     
     % Stimulus wavelength in nm
     params.wavelength = 550;
@@ -115,7 +115,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 	params.responseExtinctionMilliseconds = 20;
 
     % How many pixels to use to same the stimulus
-    params.imagePixels = 1024;
+    params.imagePixels = 2048;
     
     % Lowest examined stimulus contrast
     params.lowContrast = 1e-6;
@@ -130,7 +130,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.contrastScale = 'log';
 
     % Response instances to generate
-    params.nTrainingSamples = 600;
+    params.nTrainingSamples = 1000;
     
     %% OPTICS model and pupil size
     params.opticsModel = employedOptics;
