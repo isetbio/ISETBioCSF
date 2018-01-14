@@ -78,6 +78,7 @@ else
     [stimulusTimeAxis, stimulusModulationFunction, ~] = gaussianTemporalWindowCreate(temporalParams);
 end
 
+
 %% Compute the oiSequence
 if (strcmp(spatialParams.spatialType, 'pedestalDisk'))
     theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, stimulusModulationFunction, ...
@@ -86,7 +87,6 @@ else
     theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, stimulusModulationFunction, ...
         'composition', 'blend');
 end
-
 
 %%  Visualize the oiSequence
 if (p.Results.visualizeOIsequence)
@@ -97,7 +97,7 @@ if (p.Results.visualizeOIsequence)
     data = 0;
     fileName = sprintf('OISequence');
     rwObject.write(fileName, data, p.Results.paramsList, theProgram, ...
-           'type', 'NicePlotExportPDF', 'FigureHandle', uData.figHandle, 'FigureType', 'pdf');
+           'type', 'NicePlotExportPNG', 'FigureHandle', uData.figHandle, 'FigureType', 'png');
        
     % Also visualize the modulated scene luminance and retinal illuminance
     visualizeSceneLuminanceAndIlluminance(modulatedScene, oiModulated, p.Results.paramsList);
@@ -148,7 +148,7 @@ end
                     'currentFlag', p.Results.computePhotocurrentResponseInstances, ...
                     'workDescription', sprintf('%d trials of noisy responses', nTrials),...
                     'workerID', p.Results.workerID);
-                
+
 if (isempty(p.Results.osImpulseResponseFunctions))
     % Since we compute the impulse response functions, the 
     % mosaic.interpFilterTimeAxis has already being computed for us
@@ -244,10 +244,9 @@ end
 %% Report time taken
 if (p.Results.displayTrialBlockPartitionDiagnostics)
     if isempty(p.Results.workerID)
-        fprintf('<strong> Response instance array computation (%d instances) took %2.3f minutes. </strong> \n', nTrials, toc/60);
+        fprintf('<strong> Response instance array computation (%d instances) on worker %d took %2.3f minutes. </strong> \n', nTrials, toc/60);
     else
         fprintf('<strong> Response instance array computation (%d instances) in worker %d took %2.3f minutes. </strong> \n', nTrials, p.Results.workerID, toc/60);
     end
 end
-
 end
