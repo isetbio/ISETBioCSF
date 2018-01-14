@@ -118,19 +118,19 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.imagePixels = 2048;
     
     % Lowest examined stimulus contrast
-    params.lowContrast = 1e-6;
+    params.lowContrast = 1e-5;
     
     % Highest examined stimulus contrast
-    params.highContrast = 1e-1;
+    params.highContrast = 1e-2;
     
     % How many contrasts to use for the psychometric curve
-    params.nContrastsPerDirection = 15;
+    params.nContrastsPerDirection = 10;
     
 	% How to space the constrasts, linearly or logarithmically?
     params.contrastScale = 'log';
 
     % Response instances to generate
-    params.nTrainingSamples = 1000;
+    params.nTrainingSamples = 500;
     
     %% OPTICS model and pupil size
     params.opticsModel = employedOptics;
