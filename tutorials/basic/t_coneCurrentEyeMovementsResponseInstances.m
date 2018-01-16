@@ -749,7 +749,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources(employStandardHostComputerResources);
    
     if (numberOfWorkers == 1)
-        nParforTrials = 1;
+        nParforTrials = nTrials;
         return;
     end
     
