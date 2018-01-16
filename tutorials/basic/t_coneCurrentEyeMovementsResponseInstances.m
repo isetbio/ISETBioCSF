@@ -747,7 +747,12 @@ end
 function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, integrationTime, displayTrialBlockPartitionDiagnostics, employStandardHostComputerResources)      
     % Determine system resources
     [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources(employStandardHostComputerResources);
-
+   
+    if (numberOfWorkers == 1)
+        nParforTrials = 1;
+        return;
+    end
+    
     % Ensure ramPercentageEmployed is in [0.05 1]
     ramPercentageEmployed = max([0.05 min([1 ramPercentageEmployed])]);
     
