@@ -747,7 +747,12 @@ end
 function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, integrationTime, displayTrialBlockPartitionDiagnostics, employStandardHostComputerResources)      
     % Determine system resources
     [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources(employStandardHostComputerResources);
-
+   
+    if (numberOfWorkers == 1)
+        nParforTrials = nTrials;
+        return;
+    end
+    
     % Ensure ramPercentageEmployed is in [0.05 1]
     ramPercentageEmployed = max([0.05 min([1 ramPercentageEmployed])]);
     
@@ -793,8 +798,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
         totalMemoryPerWorker = 2*(coneMosaicPatternSize*trialBlockSize+coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
     end
     
-    totalMemoryUsed = numberOfWorkers * totalMemoryPerWorker
-    ramSizeGBytesAvailable/numberOfWorkers
+    totalMemoryUsed = numberOfWorkers * totalMemoryPerWorker;
     if (totalMemoryUsed < 0.01*ramSizeGBytesAvailable/numberOfWorkers)
          % Just use one processor - faster most of the times
          nParforTrials(1) = nTrials;
