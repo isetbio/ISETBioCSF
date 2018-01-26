@@ -1,7 +1,7 @@
 function visualizeSceneLuminanceAndIlluminance(modulatedScene, oiModulated, paramsList)
 
     % visualize the scene and the optical image
-    visualizedPercentage = 0.1;
+    visualizedPercentage = 1.0;
     sceneLuminance = sceneGet(modulatedScene, 'luminance');
     spatialSupport = sceneGet(modulatedScene, 'spatial support');
     xSupport = squeeze(spatialSupport(1,:,1));
@@ -44,20 +44,22 @@ function visualizeSceneLuminanceAndIlluminance(modulatedScene, oiModulated, para
     hFig = figure(99); clf;
     set(hFig, 'Position', [10 10 1290 2560], 'Color', [1 1 1]);
     subplot('Position', subplotPosVectors(1,1).v);
-    pcolor(xSupport, ySupport, sceneLuminance);
+    h = pcolor(xSupport, ySupport, sceneLuminance);
+    set(h, 'EdgeColor', 'none');
     hold on;
     plot(xSupport+(xSupport(2)-xSupport(1))/2, squeeze(sceneLuminance(sceneMidRow,:))*ySupport(end)*visualizedPercentage*0.95, 'y-', 'LineWidth', 1.5);
     plot([0 0], [ySupport(1) ySupport(end)], 'w-');
     plot([xSupport(1) xSupport(end)], [0 0], 'w-');
     hold off
     axis 'image';
-    set(gca, 'XLim', [-max(xSupport) max(xSupport)]*visualizedPercentage, 'XTick', [0], ...
+    set(gca, 'XLim', [-max(xSupport) max(xSupport)]*visualizedPercentage, 'XTick', [-max(xSupport) 0 max(xSupport)], ...
              'YLim', [-max(ySupport) max(ySupport)]*visualizedPercentage, 'YTick', [0], 'CLim', [0 1]);
     set(gca, 'FontSize', 20);
     title('scene lluminance');
     
     subplot('Position', subplotPosVectors(2,1).v);
-    pcolor(oiXSupport, oiYSupport, oiIlluminance);
+    h = pcolor(oiXSupport, oiYSupport, oiIlluminance);
+    set(h, 'EdgeColor', 'none');
     hold on;
     plot(oiXSupport+(oiXSupport(2)-oiXSupport(1))/2, squeeze(oiIlluminance(oiMidRow,:))*oiYSupport(end)*visualizedPercentageOI*0.95, 'y-','LineWidth', 1.5);
     plot([0 0], [ySupport(1) ySupport(end)], 'w-');
@@ -77,6 +79,6 @@ function visualizeSceneLuminanceAndIlluminance(modulatedScene, oiModulated, para
     data = 0;
     fileName = sprintf('SceneLuminanceAndIlluminance');
     rwObject.write(fileName, data, paramsList, theProgram, ...
-           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+           'type', 'NicePlotExportPNG', 'FigureHandle', hFig, 'FigureType', 'png');
 end
 

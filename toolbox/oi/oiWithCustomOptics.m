@@ -1,234 +1,262 @@
-function [theOI, theCustomOI, Zcoeffs, populationOTFdata] = oiWithCustomOptics(opticsModel, calcPupilDiameterMM, umPerDegree)
-    % 
-    theOI = oiCreate('wvf human', calcPupilDiameterMM);
-    theCustomOI = theOI;
+function [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModel, wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree)
 
     % Save rng state. 
     currentState = rng;
     
     % Set rng seed to 1 to ensure we always get the same Zcoeffs
     rng(1);
+
+    switch opticsModel
+        case  'AOoptics75mmPupil'
+            subjectsNum = 1;
+            subjectIndices = 1;
+            calcPupilDiameterMM = 7.5;
+            
+        case {'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase'}
+            subjectsNum = 256;
+            subjectIndices = 1:subjectsNum;
+
+        case 'WvfHumanSubject1'
+             subjectsNum = 100;
+             subjectIndices = 1;
+
+        case 'WvfHumanSubject2'
+             subjectsNum = 100;
+             subjectIndices = 17;
+             
+        case 'WvfHumanSubject3'
+             subjectsNum = 100;
+             subjectIndices = 55;
+             
+        case 'WvfHumanSubject4'
+             subjectsNum = 100;
+             subjectIndices = 69;
+             
+        case 'WvfHumanSubject5'
+             subjectsNum = 100;
+             subjectIndices = 78;     
+    end
     
-    % This controls whether we are backwards compatible prior to fixing up
-    % which data we load and the measured pupil diameter
-    oiWithCustomOpticsBackCompat = false;
-    if (ispref('IBIOColorDetectBackCompat','oiWithCustomOptics'))
-        if (getpref('IBIOColorDetectBackCompat','oiWithCustomOptics'))
-            oiWithCustomOpticsBackCompat = true;
-        end
-    end
-        
-    % Load the Thibos data set.  If we load 7.5 mm, we can compute for
-    % anything possible.  The old code loaded 4.5 mm, which was not ideal.
-    % This problem wasn't caught previuosly because we weren't setting the
-    % measured pupil diameter.  That is also fixed contingent on the same
-    % preference.
-    if (oiWithCustomOpticsBackCompat)
-        measPupilDiameterMM = 4.5;
-    else
-        measPupilDiameterMM = 7.5;
-    end
-    [Zcoeffs_SampleMean, Zcoeffs_S] = wvfLoadThibosVirtualEyes(measPupilDiameterMM);
-
-    % Generate Z-coeffs for subjectsNum
-    subjectsNum  = 100;
-    Zcoeffs = ieMvnrnd(Zcoeffs_SampleMean, Zcoeffs_S, subjectsNum)'; 
-
+    showTranslation = false;
+    centerPSF = true;
+    [theCustomOI, Zcoeffs] = generateMeanAcrossSubjectsOTFcustomOI(opticsModel, wavefrontSpatialSamples, calcPupilDiameterMM, subjectsNum, subjectIndices, umPerDegree, centerPSF, showTranslation);
+    
     % Restore current rng state
     rng(currentState);
-    
-    % Pull out the optics structure
-    optics = oiGet(theCustomOI,'optics');
+end
+
+
+function [theCustomOI, Zcoeffs] = generateMeanAcrossSubjectsOTFcustomOI(opticsModel, wavefrontSpatialSamples, calcPupilDiameterMM, subjectsNum, subjectIndices, umPerDegree, centerPSF, showTranslation)
+
+    theOI = oiCreate('wvf human', calcPupilDiameterMM);
+    optics = oiGet(theOI,'optics');
     wavelengthsListToCompute = opticsGet(optics,'wave');
+   
+    % Alignment wavelength
+    alignmentWavelength = 550;
+    [~,alignmentWIndex] = min(abs(wavelengthsListToCompute-alignmentWavelength));
     
-    % Compute 
-    [customOTFdata, Zcoeffs, populationOTFdata] = computeCustomOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengthsListToCompute, opticsModel);
+    % Load the Thibos data set.  If we load 7.5 mm, we can compute for anything possible.
+    measPupilDiameterMM = 7.5;
+    [Zcoeffs_SampleMean, Zcoeffs_S] = wvfLoadThibosVirtualEyes(measPupilDiameterMM);
     
-    % Update optics with new OTF data
-    optics = opticsSet(optics,'otf data',customOTFdata.otf);
-
-    % Stick optics into oi
-    theCustomOI = oiSet(theCustomOI,'optics',optics);
-end
-
-function [customOTFdata, Zcoeffs, populationOTFdata] = computeCustomOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths, opticsModel)
-
-    if ismember(opticsModel, {'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase'})
-        [customOTFdata, Zcoeffs,  populationOTFdata] = computeMeanSubjectOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths, opticsModel);
-    elseif (strcmp(opticsModel, 'DiffractionLimited'))
-        [customOTFdata, Zcoeffs] = computeDiffractionLimitedOTF(Zcoeffs, calcPupilDiameterMM, umPerDegree, wavelengths);
-        populationOTFdata = [];
-    else
-        [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths, opticsModel);
-        populationOTFdata = [];
+    Zcoeffs = ieMvnrnd(Zcoeffs_SampleMean, Zcoeffs_S, subjectsNum)'; 
+    Zcoeffs = Zcoeffs(:,subjectIndices);
+        
+    if contains(opticsModel, 'AOoptics')
+        Zcoeffs = Zcoeffs * 0;
     end
-end
 
-function [customOTFdata, Zcoeffs] = computeDiffractionLimitedOTF(Zcoeffs, calcPupilDiameterMM, umPerDegree, wavelengths)
-    % Make WVF for this subject
-    subjectIndex = 1;
-    allZeroZcoeffs = 0 * Zcoeffs(:,subjectIndex);
-    
-    measPupilDiameterMM = calcPupilDiameterMM;
-    wvfDiffractionLimited = makeWVF(allZeroZcoeffs, wavelengths, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, sprintf('subject-%d', subjectIndex));
-     
-    % Generate multi-band OTF
-    [otf,optics] = computeMultiBandOTF(wvfDiffractionLimited, wavelengths);
-     
-    customOTFdata.xSfGridCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
-    customOTFdata.ySfGridCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
-    customOTFdata.otf = otf;
-end
-
-function [customOTFdata, Zcoeffs] = computeSingleSubjectOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths, opticsModel)
-     % Make WVF for this subject   
-     switch opticsModel
-         case 'WvfHumanSubject1'
-             subjectIndex = 1;
-         case 'WvfHumanSubject2'
-             subjectIndex = 17;
-         case 'WvfHumanSubject3'
-             subjectIndex = 55;
-         case 'WvfHumanSubject4'
-             subjectIndex = 69;
-         case 'WvfHumanSubject5'
-            subjectIndex = 78;
-         otherwise
-             error('Unknown optics model: ''%s''.', opticsModel);
-     end
-     
-     % Make WVF for this subject  
-     Zcoeffs = Zcoeffs(:,subjectIndex);
-     wvfSubject = makeWVF(Zcoeffs, wavelengths, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, sprintf('subject-%d', subjectIndex));
-     
-     % Generate multi-band OTF
-     [otf,optics] = computeMultiBandOTF(wvfSubject, wavelengths);
-     
-     customOTFdata.xSfGridCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
-     customOTFdata.ySfGridCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
-     customOTFdata.otf = otf;
-end
-
-function [customOTFdata, Zcoeffs, otfSubjects] = computeMeanSubjectOTF(Zcoeffs, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, wavelengths,  opticsModel)
-    
-    subjectsNum = size(Zcoeffs,2);
-    for subjectIndex = 1:subjectsNum
-        fprintf('Computing wavefront data for subject %d/%d\n', subjectIndex,subjectsNum);
+    tic
+    for subjectIndex = 1:numel(subjectIndices)
+        fprintf('Generating wavefront object for subject %d of %d\n', subjectIndex,numel(subjectIndices));
         
-        % Make WVF for this subject      
-        wvfSubject = makeWVF(Zcoeffs(:,subjectIndex), wavelengths, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, sprintf('subject-%d', subjectIndex));
+        % Make a WVF object for this subject      
+        wvfSubject = makeWVF(wavefrontSpatialSamples, Zcoeffs(:,subjectIndex), wavelengthsListToCompute, ...
+            measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, sprintf('subject-%d', subjectIndex));
         
-        % Generate multi-band OTF
-        [otf,optics] = computeMultiBandOTF(wvfSubject, wavelengths);
+        % Compute an optics structure from the wvf object
+        optics = oiGet(wvf2oi(wvfSubject),'optics');
         
-        % Populate otfSubjects array
-        if (subjectIndex == 1)
-            otfSubjects = zeros(subjectsNum, size(otf,1), size(otf,2), size(otf,3));
+        if contains(opticsModel, 'AOoptics')
+            theCustomOI = oiSet(theOI,'optics', optics);
+            continue;
         end
         
-        otfSubjects(subjectIndex,:,:,:) = otf;
+        % Proceed with non AOoptics
+        xSfGridCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
+        ySfGridCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
+        [xSfGridCyclesDegGrid,ySfGridCyclesDegGrid] = meshgrid(xSfGridCyclesDeg,ySfGridCyclesDeg);
+
+        allWavesOTF = opticsGet(optics, 'otf');
+        allWavePSFs = wvfGet(wvfSubject, 'psf');
+
+        if (centerPSF)
+            % Compute translation vector for the PSF at the alignment wavelength
+            translationVector = [];
+            %singleWavelengthOTF = allWavesOTF(:,:,alignmentWIndex); 
+            %singleWavelengthPSF = allWavePSFs{alignmentWindex};
+            alignmentWavelengthOTF = wvfGet(wvfSubject, 'otf', wavelengthsListToCompute(alignmentWIndex)); %opticsGet(optics, 'otf');
+            alignmentWavelengthPSF = wvfGet(wvfSubject, 'psf', wavelengthsListToCompute(alignmentWIndex));
+
+            [~, translationVector, ~, ~, ~] = otfWithZeroCenteredPSF(alignmentWavelengthOTF, alignmentWavelengthPSF, translationVector, xSfGridCyclesDegGrid,ySfGridCyclesDegGrid, showTranslation);
+        else
+            fprintf(2,'Not centering PSF\n');
+            translationVector = [0 0];
+        end
+        
+        for wIndex = 1:numel(wavelengthsListToCompute)
+            
+            %singleWavelengthOTF = allWavesOTF(:,:,wIndex); 
+            %singleWavelengthPSF = allWavePSFs{wIndex};
+            
+            theWaveOTFbeforeCentering = wvfGet(wvfSubject, 'otf', wavelengthsListToCompute(wIndex)); %opticsGet(optics, 'otf');
+            theWavePSFbeforeCentering = wvfGet(wvfSubject, 'psf', wavelengthsListToCompute(wIndex));
+            
+            if (centerPSF)
+                % Center the OTF at this wavelength
+                [theWaveOTF, ~, theWavePSF, xGridMinutes,yGridMinutes] = otfWithZeroCenteredPSF(theWaveOTFbeforeCentering, theWavePSFbeforeCentering, translationVector,  xSfGridCyclesDegGrid, ySfGridCyclesDegGrid, showTranslation);
+            else
+                theWaveOTF = theWaveOTFbeforeCentering;
+                [xGridMinutes,yGridMinutes,theWavePSF] = OtfToPsf(xSfGridCyclesDegGrid,ySfGridCyclesDegGrid,fftshift(theWaveOTF));
+                theWavePSF = fftshift(ifft2(theWaveOTF)); % 
+            end
+            
+            % Make sure OTF(1,1) is equal to 1.0
+            [theWaveOTF(1,1) max(abs(theWaveOTF(:)))]
+            theWaveOTF = theWaveOTF/abs(theWaveOTF(1,1));
+    
+            if (subjectIndex == 1) && (wIndex == 1)
+                centeredOTFs = zeros(numel(subjectIndices), size(theWaveOTF,1), size(theWaveOTF,2), numel(wavelengthsListToCompute));
+            end
+            
+            centeredOTFs(subjectIndex, :,:, wIndex) = theWaveOTF;
+            
+            visualizeDebug = true;
+            if (visualizeDebug)
+                figure(10000);
+                subplot(2,2,1);
+                imagesc(squeeze(xSfGridCyclesDegGrid(1,:)), squeeze(ySfGridCyclesDegGrid(:,1)), fftshift(abs(theWaveOTFbeforeCentering)));
+                axis 'square'
+                title(sprintf('OTF (%2.0f nm) mag before centering', wavelengthsListToCompute(wIndex)));
+                
+                subplot(2,2,2);
+                imagesc(squeeze(xSfGridCyclesDegGrid(1,:)), squeeze(ySfGridCyclesDegGrid(:,1)), fftshift(abs(theWaveOTF)))
+                axis 'square'
+                title(sprintf('OTF (%2.0f nm) mag after centering', wavelengthsListToCompute(wIndex)));
+                
+                subplot(2,2,3);
+                imagesc(xGridMinutes(1,:), yGridMinutes(:,1), theWavePSFbeforeCentering/max(theWavePSFbeforeCentering(:)), [0 1]);
+                axis 'square';
+                title(sprintf('PSF (%2.0f nm) before centering (sum: %1.9f)', wavelengthsListToCompute(wIndex), sum(theWavePSFbeforeCentering(:))));
+
+                subplot(2,2,4);
+                imagesc(xGridMinutes(1,:), yGridMinutes(:,1), theWavePSF/max(theWavePSF(:)), [0 1]);
+                axis 'square';
+                title(sprintf('PSF (%2.0f nm) after centering (sum: %1.9f)', wavelengthsListToCompute(wIndex), sum(theWavePSF(:)))); 
+                drawnow;
+                pause
+            end
+            
+        end % wIndex
+    end % subjectIndex
+    
+    if (contains(opticsModel, 'AOoptics'))
+        fprintf('\nCompute of ''%s'' optics took %2.3f minutes.\n', opticsModel, toc/60);
+        return;
     end
     
-    customOTFdata.xSfGridCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
-    customOTFdata.ySfGridCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
-    customOTFdata.otf = 0*otf;          
+    % Mean across subjects
+    meanOTF = squeeze(mean(centeredOTFs,1));
+
     
-    % Compute average OTF across subjects
-    otfMean = squeeze(mean(otfSubjects,1));
-    
-    % Compute radially-symmetric OTF with desired phase at all wavelengths
-    for waveIndex = 1:numel(wavelengths)
-        theWaveOTF = squeeze(otfMean(:,:,waveIndex));
-        otfMeanMag = fftshift(abs(theWaveOTF));
-        otfMeanPhase = fftshift(angle(theWaveOTF));
-    
-        if strcmp(opticsModel, 'WvfHumanMeanOTFmagMeanOTFphase')
-           phaseToUse = otfMeanPhase;
-        elseif strcmp(opticsModel, 'WvfHumanMeanOTFmagZeroOTFphase')
+    % Reconstruct from mag and phase
+    for waveIndex = 1:numel(wavelengthsListToCompute)
+        theWaveOTF = squeeze(meanOTF(:,:,waveIndex));
+
+        otfMeanMag = abs(theWaveOTF);
+        otfMeanPhase = angle(theWaveOTF);
+
+        phaseToUse = otfMeanPhase;
+        if strcmp(opticsModel, 'WvfHumanMeanOTFmagZeroOTFphase')
            phaseToUse = 0*otfMeanPhase;
         end
-        
-        % Make radially symmetric magnitude
-        centerPosition = floor(size(otfMeanMag,1)/2) + 1;
-        otfSlice = squeeze(otfMeanMag(centerPosition, :));
-        if (waveIndex == 1)
-            radiusMatrix = MakeRadiusMat(length(otfSlice),length(otfSlice),centerPosition);
-        end
-        otfMeanMag = interp1(0:floor(length(otfSlice)/2),otfSlice(centerPosition:end),radiusMatrix,'linear',0);
-        customOTFdata.otf(:,:,waveIndex) = ifftshift(otfMeanMag .* exp(1i*phaseToUse));
+
+        theWaveOTF = otfMeanMag .* exp(1i*phaseToUse);
+        meanOTF(:,:,waveIndex) = theWaveOTF;
     end
+    
+    
+    % Make new optics with new OTF data
+    customOptics = opticsSet(optics,'otf data',meanOTF);
+
+    % Create oi with custom optics 
+    theCustomOI = oiSet(theOI,'optics', customOptics);
+    
+    fprintf('\nCompute of ''%s'' optics took %2.3f minutes.\n', opticsModel, toc/60);
+    
 end
 
-function [otf,optics] = computeMultiBandOTF(wvf, wavelengths)
-    % Get the old OTF
-     optics = oiGet(wvf2oi(wvf),'optics'); 
-     otf = opticsGet(optics, 'otf');
-     
-     % Get PSF at reference wavelength
-     referencePSF = wvfGet(wvf, 'psf', 550);
-     
-     % Center PSFs
-     for waveIndex = 1:numel(wavelengths)
-        % Get OTF at  wavelength
-        theWaveOTF = squeeze(otf(:,:,waveIndex));
-            
-        if (waveIndex == 1)
-           [theWaveOTF, translationVector] = otfWithZeroCenteredPSF(theWaveOTF, referencePSF, []);
-        else
-           theWaveOTF = otfWithZeroCenteredPSF(theWaveOTF, referencePSF, translationVector);
-        end
-        otf(:,:,waveIndex) = theWaveOTF;
-     end % waveIndex
-end
-
-
-function [OTF, translationVector] = otfWithZeroCenteredPSF(OTF, PSF, translationVector)
-    if (isempty(translationVector))
-        % Compute center of mass
-        centerOfMass = computeCenterOfMass(PSF);
-   
-        % Compute translation vector to bring center of mass at 0,0
-        centerPosition = floor(size(PSF,1)/2) + 1 * [1 1];
-        translationVector = (centerPosition-centerOfMass);
-    end
-    OTF = shiftInFTplane(OTF, translationVector);
-end
-
-function centerOfMass = computeCenterOfMass(PSF)
-    [rc,cc] = ndgrid(1:size(PSF,1),1:size(PSF,2));
-    Mt = sum(PSF(:));
-    centerOfMassY = sum(PSF(:) .* rc(:)) / Mt;
-    centerOfMassX = sum(PSF(:) .* cc(:)) / Mt;
-    centerOfMass = [centerOfMassX centerOfMassY];
-end
-
-function theWVF = makeWVF(zcoeffs, wavelengthsToCompute, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, name)
+function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffs, wavelengthsToCompute, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, name)
     theWVF = wvfCreate(...
     			'umPerDegree', umPerDegree, ...
                 'calc wavelengths',wavelengthsToCompute,...
-                'zcoeffs',zcoeffs,...
+                'measuredpupil', measPupilDiameterMM, ...
+                'spatialsamples', wavefrontSpatialSamples, ...
+                'zcoeffs', zcoeffs,...
                 'name', name);
-            
-    % This controls whether we are backwards compatible prior to fixing
-    % this routine to deal correctly with the measured pupil diameter.
-    oiWithCustomOpticsBackCompat = false;
-    if (ispref('IBIOColorDetectBackCompat','oiWithCustomOptics'))
-        if (getpref('IBIOColorDetectBackCompat','oiWithCustomOptics'))
-            oiWithCustomOpticsBackCompat = true;
-        end
-    end
     
+    theWVF = wvfCreate('calc wavelengths', [400:10:700]);
     % Set measured pupil size
-    if (~oiWithCustomOpticsBackCompat)
-        theWVF = wvfSet(theWVF,'measured pupil size', measPupilDiameterMM);
-    end
+    %theWVF = wvfSet(theWVF,'measured pupil size', measPupilDiameterMM);
     
     % And pupil size for calculation
-    theWVF = wvfSet(theWVF,'calc pupil size',calcPupilDiameterMM);
+    %theWVF = wvfSet(theWVF,'calc pupil size',calcPupilDiameterMM);
+    
+    % Set a high number of samples
+    %theWVF = wvfSet(theWVF, 'number spatial samples', wavefrontSpatialSamples);
     
     % Now compute the PSF
     theWVF = wvfComputePSF(theWVF);
 end
+
+function [centeredOTF,  translationVector, centeredPSF, xGridMinutes,yGridMinutes] = otfWithZeroCenteredPSF(OTF, PSF, translationVector,  xSfGridCyclesDegGrid, ySfGridCyclesDegGrid, showTranslation)
+    if (isempty(translationVector))
+        % Compute center of mass
+        centerOfMass = computeCenterOfMass(PSF);
+        centerOfMassNative = computeCenterOfMassNative(PSF);
+        centerPosition = floor(size(PSF,1)/2) + 1 * [1 1];
+        fprintf('Center of mass: method1 (%f %f), method2 (%f,%f)\n', centerOfMass(1), centerOfMass(2), centerOfMassNative(1), centerOfMassNative(2));
+
+        if (showTranslation)
+            figure(200);clf
+            imagesc(1:size(PSF,2), 1:size(PSF,1), PSF);
+            hold on;
+            plot(centerPosition(1)*[1 1], [1 size(PSF,1)], 'k-');
+            plot([1 size(PSF,2)], centerPosition(2)*[1 1], 'k-');
+            plot(centerOfMass(1), centerOfMass(2), 'ro', 'MarkerFaceColor', [1 0.5 0.5]);
+            plot([centerPosition(1) centerOfMass(1)], [centerPosition(2)  centerOfMass(2)], 'r-');
+            hold off;
+            axis 'square'
+            colormap(gray(1024));
+            drawnow;
+        end
+        
+        % Compute translation vector to bring center of mass at 0,0
+        translationVector = (centerPosition-centerOfMass);
+    end
+    centeredOTF = shiftInFTplane(OTF, translationVector);
+
+    
+    [xGridMinutes,yGridMinutes,centeredPSF] = OtfToPsf(xSfGridCyclesDegGrid,ySfGridCyclesDegGrid,fftshift(centeredOTF));
+    
+    if (abs(sum(centeredPSF(:))-1) > 1000*eps(1))
+        fprintf('centeredPSF min = %1.9f, max = %1.9f, sum = %1.9f\n', min(centeredPSF(:)), max(centeredPSF(:)), sum(centeredPSF(:)));
+        error('PSF volume does not equal 1\n');
+    end
+   
+end
+
 
 function otf = shiftInFTplane(otf, translationVector)
     [N, M] = size(otf);
@@ -246,4 +274,18 @@ function otf = shiftInFTplane(otf, translationVector)
         y_shift(M/2+1) = real(y_shift(M/2+1));
     end
     otf = otf .* (x_shift * y_shift);
+end
+
+function centerOfMass = computeCenterOfMass(PSF)
+    property = 'WeightedCentroid';
+    c = regionprops(true(size(PSF)), PSF, property);
+    centerOfMass = c.(property);
+end
+
+function centerOfMass = computeCenterOfMassNative(PSF)
+    [rc,cc] = ndgrid(1:size(PSF,1),1:size(PSF,2));
+    Mt = sum(PSF(:));
+    centerOfMassY = sum(PSF(:) .* rc(:)) / Mt;
+    centerOfMassX = sum(PSF(:) .* cc(:)) / Mt;
+    centerOfMass = [centerOfMassX centerOfMassY];
 end

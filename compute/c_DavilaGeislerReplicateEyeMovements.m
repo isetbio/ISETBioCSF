@@ -241,6 +241,7 @@ end
 
 %% updateBackgroundAndSpotParams
 function rParams = updateBackgroundAndSpotParams(rParams, userParams, backgroundLumIndex)
+ 
     %% Background params
     deltaWl = 10;
     S = [userParams.wavelength deltaWl 2];
@@ -250,7 +251,7 @@ function rParams = updateBackgroundAndSpotParams(rParams, userParams, background
     radiancePerUW = AOMonochromaticCornealPowerToRadiance(wls,rParams.backgroundParams.backgroundWavelengthsNm,1,rParams.oiParams.pupilDiamMm,rParams.spatialParams.backgroundSizeDegs^2);
     xyzPerUW = T_xyz*radiancePerUW*(wls(2)-wls(1));
     desiredLumCdM2 = userParams.luminances(backgroundLumIndex);
-    rParams.backgroundParams.backgroundCornealPowerUW = desiredLumCdM2/xyzPerUW(2);
+    rParams.backgroundParams.backgroundCornealPowerUW = userParams.powerAttenuationFactor * desiredLumCdM2/xyzPerUW(2);
 
     %% Spot params
     % Scale spot parameters into what we think a reasonable range is.
@@ -268,7 +269,7 @@ function rParams = updateBackgroundAndSpotParams(rParams, userParams, background
     rParams.colorModulationParams.endWl = userParams.wavelength+deltaWl;
     rParams.colorModulationParams.deltaWl = deltaWl;
     rParams.colorModulationParams.spotWavelengthNm = userParams.wavelength;
-    rParams.colorModulationParams.spotCornealPowerUW = rParams.maxSpotLuminanceCdM2/xyzPerUW(2);
+    rParams.colorModulationParams.spotCornealPowerUW = userParams.powerAttenuationFactor * rParams.maxSpotLuminanceCdM2/xyzPerUW(2);
     rParams.colorModulationParams.contrast = 1;
 end
 
@@ -336,6 +337,7 @@ function userParams = modifyDefaultsBasedOnUserParams(paramsList)
     p.addParameter('useScratchTopLevelDirName', false, @islogical);
     p.addParameter('nTrainingSamples',1024,@isnumeric);
     p.addParameter('spotDiametersMinutes',[0.5 1 5 10 20],@isnumeric);
+    p.addParameter('powerAttenuationFactor', 1, @isnumeric);
     p.addParameter('backgroundSizeDegs',30/60,@isnumeric);
     p.addParameter('wavelength',550,@isnumeric);
     p.addParameter('luminances',[10],@isnumeric);

@@ -9,6 +9,7 @@ function opticsModels = availableCustomWvfOpticsModels
 
     % Available custom wvf optics models
     opticsModels = {...
+        'AOoptics75mmPupil', ...
         'WvfHumanMeanOTFmagMeanOTFphase', ...       % Mean OTF mag and phase (over 100 subjects)
         'WvfHumanMeanOTFmagZeroOTFphase', ...       % Mean OTF mag, zero OTF phase(over 100 subjects)
         'WvfHumanSubject1', ...                     % OTF from selected subject #1

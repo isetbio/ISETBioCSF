@@ -44,7 +44,9 @@ function visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, paramsList)
     set(hFig, 'Position', [10 10 700 780], 'Color', [1 1 1]);
             
     subplot('Position', subplotPosVectors(1,1).v);
-    imagesc(xaxis, yaxis, illumMap);
+    %imagesc(xaxis, yaxis, illumMap);
+    contourLevels = 0:0.05:1.0;
+    contourf(xaxis, yaxis, illumMap/max(illumMap(:)), contourLevels, 'LineColor', [0.3 0.3 0.3]);
     axis 'xy';
     axis 'image'
     hold on;
@@ -53,6 +55,8 @@ function visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, paramsList)
         yAperture = coneLocsInDegs(coneIndex,2) + apertureOutline.yDegs;
         plot(xAperture, yAperture, 'r-');
     end
+    plot(mosaicFOV(1)/2*[-1 1]*1.1, [0 0], 'k-');
+    plot([0 0], mosaicFOV(1)/2*[-1 1]*1.1, 'k-');
     
     hold off;
     set(gca, 'CLim', [0 1], 'YTickLabel', {}, 'XLim', mosaicFOV(1)/2*[-1 1]*1.1, 'YLim', mosaicFOV(2)/2*[-1 1]*1.1);
@@ -68,7 +72,7 @@ function visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, paramsList)
     data = 0;
     fileName = sprintf('SpatialScheme');
     rwObject.write(fileName, data, paramsList, theProgram, ...
-           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+           'type', 'NicePlotExportPNG', 'FigureHandle', hFig, 'FigureType', 'png');
 
 end
 

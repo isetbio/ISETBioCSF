@@ -2,47 +2,50 @@ function run_summationExperiment
 
     %% Optics to employ. Choose from:
     % 'None': delta function PSF
-    % 'AOoptics' : diffraction-limited with forced 6mm pupil
+    % 'AOoptics75mmPupil' : diffraction-limited with forced 6mm pupil
     % 'WvfHuman' : default human wavefront - based optics with mean (across subjects) Z-coeffs
     % 'WvfHumanMeanOTFmagMeanOTFphase' : human wavefront - based optics with mean (across subjects) OTF
     % 'Geisler' : Geisler optics
     % 'DavilaGeislerLsfAsPsf'
     % 'DavilaGeisler'
     
-    employedOptics = 'AOoptics';
-
+    employedOptics = 'AOoptics75mmPupil'; % 'WvfHumanMeanOTFmagMeanOTFphase';  % 'AOoptics75mmPupil'
+    if (strcmp(employedOptics ,'AOoptics75mmPupil'))
+        powerAttenuationFactor = 1/2.5;
+    else
+        powerAttenuationFactor = 1;
+    end
+    
     %% Inference engine and spatial summation sigma
     thresholdSignal = 'isomerizations';  % choose from {'isomerizations', 'photocurrents'}
-    thresholdMethod = 'svmGaussianRF';  % choose from {'mlpt', 'mlptGaussianRF', 'svmGaussianRF'}
+    thresholdMethod = 'mlpt';  % choose from {'mlpt', 'mlptGaussianRF', 'svmGaussianRF'}
     
     spatialSummationData = containers.Map();
-    if strcmp(thresholdMethod,'mlpt')
+    if strcmp(thresholdMethod,'mlpt') || strcmp(thresholdMethod,'svm')
         spatialPoolingSigmaArcMinList = nan;
     else
-        spatialPoolingSigmaArcMinList = [0.5]; % [0.125 0.25 0.5 1 2 4];
+        spatialPoolingSigmaArcMinList = [0.125 0.25 0.5 1 2 4];
     end
     for k = 1:numel(spatialPoolingSigmaArcMinList)
         spatialPoolingSigmaArcMin = spatialPoolingSigmaArcMinList(k);
         if (isnan(spatialPoolingSigmaArcMin)) 
-            spatialSummationData('none') = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
+            spatialSummationData('none') = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics, powerAttenuationFactor);
         else
             spatialSummationData(sprintf('summation_sigma_ArcMin_%2.2f',spatialPoolingSigmaArcMin)) = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
         end
     end
     
     save(sprintf('SummationData_%s_%s.mat',thresholdMethod, employedOptics), 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
-
-
 end
 
-function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics)
+function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics, powerAttenuationFactor)
     
     fprintf('Running summation sigma: %2.3f arc min\n\n', spatialPoolingSigmaArcMin);
     [theDir,~] = fileparts(which(mfilename()));
     cd(theDir);
     
     %% Assemble all simulation params in a struct
-    params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
+    params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics, powerAttenuationFactor);
     
     %% Simulation steps to perform
     % Re-compute the mosaic (true) or load it from the disk (false)
@@ -72,9 +75,9 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
         'performance' ...
         %'responses' ...
         %'pooledSignal' ...
-        %'spatialScheme' ...    % graphic generated only during response computation
-        %'oiSequence' ...
-        %'mosaic+emPath' ...    % graphic generated  only during response computation
+        'spatialScheme' ...    % graphic generated only during response computation
+        'oiSequence' ...
+        'mosaic+emPath' ...    % graphic generated  only during response computation
         %'oiSequence' ...       % graphic generated  only during response computatio
     };
     params = visualizationParams(params, visualizationScheme);
@@ -94,14 +97,17 @@ end
 
 % ----- HELPER ROUTINES -----
 
-function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics)
+function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics, powerAttenuationFactor)
 
     %% STIMULUS PARAMS
+    % Power attenuation factor
+    params.powerAttenuationFactor = powerAttenuationFactor;
+    
     % Varied stimulus area (spot diameter in arc min)
-    params.spotDiametersMinutes =  [0.43 0.58 0.87 1.16 1.73 2.31 3.47 4.63 6.94 9.25];
+    params.spotDiametersMinutes =  [0.43 0.58 0.87 1.16 1.35 1.73 2.00 2.31 2.70 3.10 3.47 4.63 6.94 9.25];
     
     % Stimulus background in degs
-    params.backgroundSizeDegs = 0.21;
+    params.backgroundSizeDegs = 0.22;
     
     % Stimulus wavelength in nm
     params.wavelength = 550;
@@ -125,19 +131,19 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.imagePixels = 2048;
     
     % Lowest examined stimulus contrast
-    params.lowContrast = 1e-6;
+    params.lowContrast = 1e-5;
     
     % Highest examined stimulus contrast
     params.highContrast = 1e-1;
     
     % How many contrasts to use for the psychometric curve
-    params.nContrastsPerDirection = 20;
+    params.nContrastsPerDirection = 15;
     
 	% How to space the constrasts, linearly or logarithmically?
     params.contrastScale = 'log';
 
     % Response instances to generate
-    params.nTrainingSamples = 2000;
+    params.nTrainingSamples = 256;
     
     %% OPTICS model and pupil size
     params.opticsModel = employedOptics;
@@ -256,7 +262,7 @@ end
 %% Visualize the performace curve
 function plotData = generateThresholdPlot(dataOut, params, figurePDFname)
     % Plot data
-    if strcmp(params.thresholdParams.method, 'mlpt')
+    if strcmp(params.thresholdParams.method, 'mlpt') || strcmp(params.thresholdParams.method, 'svm')
         spatialPoolingSigmaMinArc = nan;
     else
         if (params.thresholdParams.spatialPoolingKernelParams.shrinkageFactor<0)
