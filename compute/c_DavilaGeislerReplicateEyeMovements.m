@@ -140,12 +140,13 @@ function rParams = updateRunParams(rParams, userParams, backgroundLumIndex,stimD
     rParams.oiParams = modifyStructParams(rParams.oiParams, ...
         'blur', userParams.blur, ...
         'pupilDiamMm', userParams.pupilDiamMm, ...
+        'wavefrontSpatialSamples', userParams.wavefrontSpatialSamples, ...
         'opticsModel', userParams.opticsModel, ...
         'fieldOfViewDegs', userParams.opticalImagefieldOfViewDegs);
 
     % Update the background wavelength
     rParams.backgroundParams.backgroundWavelengthsNm = [userParams.wavelength];
-
+    
     % Scale radiance to produce desired background levels
     rParams = updateBackgroundAndSpotParams(rParams, userParams, backgroundLumIndex);
 
@@ -161,7 +162,7 @@ end
 function rParams = updateMosaicParams(rParams, userParams)
 %
     rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
-        'fieldOfViewDegs', userParams.backgroundSizeDegs, ... 
+        'fieldOfViewDegs', userParams.mosaicFOVDegs, ... 
         'marginF', userParams.marginF, ...
         'resamplingFactor', userParams.resamplingFactor, ...
         'mosaicRotationDegs',userParams.mosaicRotationDegs,...
@@ -250,8 +251,8 @@ function rParams = updateBackgroundAndSpotParams(rParams, userParams, background
     T_xyz = SplineCmf(S_xyz1931,683*T_xyz1931,S);
     radiancePerUW = AOMonochromaticCornealPowerToRadiance(wls,rParams.backgroundParams.backgroundWavelengthsNm,1,rParams.oiParams.pupilDiamMm,rParams.spatialParams.backgroundSizeDegs^2);
     xyzPerUW = T_xyz*radiancePerUW*(wls(2)-wls(1));
-    desiredLumCdM2 = userParams.luminances(backgroundLumIndex);
-    rParams.backgroundParams.backgroundCornealPowerUW = userParams.powerAttenuationFactor * desiredLumCdM2/xyzPerUW(2);
+    desiredLumCdM2 = userParams.spotIntensityBoostFactor * userParams.luminances(backgroundLumIndex);
+    rParams.backgroundParams.backgroundCornealPowerUW = desiredLumCdM2/xyzPerUW(2);
 
     %% Spot params
     % Scale spot parameters into what we think a reasonable range is.
@@ -264,12 +265,12 @@ function rParams = updateBackgroundAndSpotParams(rParams, userParams, background
 
     maxThresholdEnergy = 10.0;
     minSpotAreaMin2 = pi*(min(userParams.spotDiametersMinutes)/2)^2;
-    rParams.maxSpotLuminanceCdM2 = maxThresholdEnergy/((userParams.stimDurationMs/1000)*minSpotAreaMin2);
+    rParams.maxSpotLuminanceCdM2 = userParams.spotIntensityBoostFactor * maxThresholdEnergy/((userParams.stimDurationMs/1000)*minSpotAreaMin2);
     rParams.colorModulationParams.startWl = userParams.wavelength;
     rParams.colorModulationParams.endWl = userParams.wavelength+deltaWl;
     rParams.colorModulationParams.deltaWl = deltaWl;
     rParams.colorModulationParams.spotWavelengthNm = userParams.wavelength;
-    rParams.colorModulationParams.spotCornealPowerUW = userParams.powerAttenuationFactor * rParams.maxSpotLuminanceCdM2/xyzPerUW(2);
+    rParams.colorModulationParams.spotCornealPowerUW = rParams.maxSpotLuminanceCdM2/xyzPerUW(2);
     rParams.colorModulationParams.contrast = 1;
 end
 
@@ -337,7 +338,7 @@ function userParams = modifyDefaultsBasedOnUserParams(paramsList)
     p.addParameter('useScratchTopLevelDirName', false, @islogical);
     p.addParameter('nTrainingSamples',1024,@isnumeric);
     p.addParameter('spotDiametersMinutes',[0.5 1 5 10 20],@isnumeric);
-    p.addParameter('powerAttenuationFactor', 1, @isnumeric);
+    p.addParameter('spotIntensityBoostFactor', 1, @isnumeric);
     p.addParameter('backgroundSizeDegs',30/60,@isnumeric);
     p.addParameter('wavelength',550,@isnumeric);
     p.addParameter('luminances',[10],@isnumeric);
@@ -347,10 +348,13 @@ function userParams = modifyDefaultsBasedOnUserParams(paramsList)
 
     p.addParameter('blur',true,@islogical);
     p.addParameter('opticsModel','WvfHuman',@ischar);
+    p.addParameter('wavefrontSpatialSamples', 201, @isnumeric);
     p.addParameter('opticalImagefieldOfViewDegs', 3.0, @isnumeric);
+    
     p.addParameter('innerSegmentSizeMicrons',3.0, @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
     p.addParameter('apertureBlur', false, @islogical);
     p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
+    p.addParameter('mosaicFOVDegs', 1.0, @isnumeric);
     p.addParameter('mosaicRotationDegs', 0, @isnumeric);
     p.addParameter('coneDarkNoiseRate',[0 0 0], @isnumeric);
     p.addParameter('LMSRatio',[0.67 0.33 0],@isnumeric);

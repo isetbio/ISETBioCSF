@@ -31,8 +31,6 @@ else
     aCustomWvfModel = {''};
 end
 
-wavefrontSpatialSamples = 201;
-
 % Take opticsModel into account.
 switch (oiParams.opticsModel)
     case 'WvfHuman'
@@ -42,7 +40,7 @@ switch (oiParams.opticsModel)
         
     case aCustomWvfModel
         fprintf('Computing custom OTF optics\n')
-        [theOI, Zcoeffs] = oiWithCustomOptics(oiParams.opticsModel, wavefrontSpatialSamples, oiParams.pupilDiamMm, oiParams.umPerDegree);
+        [theOI, Zcoeffs] = oiWithCustomOptics(oiParams.opticsModel, oiParams.wavefrontSpatialSamples, oiParams.pupilDiamMm, oiParams.umPerDegree);
         varargout{1} = Zcoeffs;
         
     case {'Geisler', 'GeislerLsfAsPsf', 'DavilaGeisler', 'DavilaGeislerLsfAsPsf', 'Westheimer', 'Williams'}

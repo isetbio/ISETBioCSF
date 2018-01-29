@@ -1,58 +1,66 @@
-function [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModel, wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree)
-
+function [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModel, wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree, varargin)
+    p = inputParser;
+    p.addParameter('includeMirrorSubject', false, @islogical);
+    p.addParameter('showTranslation', true, @islogical);
+    p.addParameter('showMirrorPair', false, @islogical);
+    p.parse(varargin{:});
+    
+    includeMirrorSubject = p.Results.includeMirrorSubject;
+    showTranslation = p.Results.showTranslation;
+    showMirrorPair = p.Results.showMirrorPair;
+    
     % Save rng state. 
     currentState = rng;
     
     % Set rng seed to 1 to ensure we always get the same Zcoeffs
     rng(1);
 
-    switch opticsModel
-        case  'AOoptics75mmPupil'
-            subjectsNum = 1;
-            subjectIndices = 1;
-            fprintf(2, 'Overrring pupil diameter (%2.2f mm) to 7.5 mm\n', calcPupilDiameterMM);
-            calcPupilDiameterMM = 7.5;
-            centerPSF = false;
-            
-        case {'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase'}
-            subjectsNum = 500;
-            subjectIndices = 1:subjectsNum;
-            centerPSF = true;
-            
-        case {'WvfHuman'}
-            subjectsNum = 500;
-            subjectIndices = 1;
-            centerPSF = true;
-            
-        case 'WvfHumanSubject1'
-             subjectsNum = 100;
-             subjectIndices = 1;
-             centerPSF = true;
-             
-        case 'WvfHumanSubject2'
-             subjectsNum = 100;
-             subjectIndices = 2; %17;
-             centerPSF = true;
-             
-        case 'WvfHumanSubject3'
-             subjectsNum = 100;
-             subjectIndices = 3; %55;
-             centerPSF = true;
-             
-        case 'WvfHumanSubject4'
-             subjectsNum = 100;
-             subjectIndices = 4; %69;
-             centerPSF = true;
-             
-        case 'WvfHumanSubject5'
-             subjectsNum = 100;
-             subjectIndices = 5; %78;   
-             centerPSF = true;
+    if (contains(opticsModel, 'AOoptics'))
+        subjectsNum = 1;
+        subjectIndices = 1;
+        centerPSF = false;
+    else     
+        switch opticsModel
+            case {'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase'}
+                subjectsNum = 500;
+                subjectIndices = 1:subjectsNum;
+                centerPSF = true;
+
+            case {'WvfHuman'}
+                subjectsNum = 500;
+                subjectIndices = 1;
+                centerPSF = true;
+
+            case 'WvfHumanSubject1'
+                 subjectsNum = 100;
+                 subjectIndices = 1;
+                 centerPSF = true;
+
+            case 'WvfHumanSubject2'
+                 subjectsNum = 100;
+                 subjectIndices = 2; %17;
+                 centerPSF = true;
+
+            case 'WvfHumanSubject3'
+                 subjectsNum = 100;
+                 subjectIndices = 3; %55;
+                 centerPSF = true;
+
+            case 'WvfHumanSubject4'
+                 subjectsNum = 100;
+                 subjectIndices = 4; %69;
+                 centerPSF = true;
+
+            case 'WvfHumanSubject5'
+                 subjectsNum = 100;
+                 subjectIndices = 5; %78;   
+                 centerPSF = true;
+
+            otherwise
+                error('Unknown optics Model: ''%s''.', opticsModel);
+        end
     end
     
-    includeMirrorSubject = false;
-    showTranslation = false;
-    showMirrorPair = false;
     [theCustomOI, Zcoeffs] = generateMeanAcrossSubjectsOTFcustomOI(opticsModel, wavefrontSpatialSamples, calcPupilDiameterMM, subjectsNum, subjectIndices, umPerDegree, centerPSF, includeMirrorSubject, showTranslation, showMirrorPair);
     
     % Restore current rng state
@@ -75,12 +83,16 @@ function [theCustomOI, Zcoeffs] = generateMeanAcrossSubjectsOTFcustomOI(opticsMo
         
     if contains(opticsModel, 'AOoptics')
         Zcoeffs = Zcoeffs * 0;
+        measPupilDiameterMM = calcPupilDiameterMM;
     end
 
     if strcmp(opticsModel, 'WvfHuman')
-        availableMeasPupilSizes = [3 4.5 6 7.5];
-        idx = find(availableMeasPupilSizes>= calcPupilDiameterMM);
-        measPupilDiameterMM = availableMeasPupilSizes(idx(1));
+        availableThibosMeasPupilSizes = [3 4.5 6 7.5];
+        idx = find(availableThibosMeasPupilSizes>= calcPupilDiameterMM);
+        if (isempty(idx))
+            error('There are no Thibos data for pupil size large enough for %2.2f mm', calcPupilDiameterMM);
+        end
+        measPupilDiameterMM = availableThibosMeasPupilSizes(idx(1));
         [Zcoeffs_SampleMean, Zcoeffs_S] = wvfLoadThibosVirtualEyes(measPupilDiameterMM);
         Zcoeffs = Zcoeffs_SampleMean;
     end

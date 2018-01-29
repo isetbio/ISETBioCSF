@@ -9,11 +9,11 @@ function run_summationExperiment
     % 'DavilaGeislerLsfAsPsf'
     % 'DavilaGeisler'
     
-    employedOptics = 'AOoptics75mmPupil'; % 'WvfHumanMeanOTFmagMeanOTFphase';  % 'AOoptics75mmPupil'
-    if (strcmp(employedOptics ,'AOoptics75mmPupil'))
-        powerAttenuationFactor = 1/2.5;
+    employedOptics = 'AOoptics80mmPupil'; % 'WvfHuman'; 'WvfHumanMeanOTFmagMeanOTFphase'; % 'AOoptics80mmPupil'; % 'WvfHumanMeanOTFmagMeanOTFphase';  % 'AOoptics75mmPupil'
+    if ~(contains(employedOptics ,'AOoptics'))
+        spotIntensityBoostFactor = (8.0/3.0)^2;
     else
-        powerAttenuationFactor = 1;
+        spotIntensityBoostFactor = 1;
     end
     
     %% Inference engine and spatial summation sigma
@@ -29,23 +29,25 @@ function run_summationExperiment
     for k = 1:numel(spatialPoolingSigmaArcMinList)
         spatialPoolingSigmaArcMin = spatialPoolingSigmaArcMinList(k);
         if (isnan(spatialPoolingSigmaArcMin)) 
-            spatialSummationData('none') = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics, powerAttenuationFactor);
+            spatialSummationData('none') = ...
+                runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics, spotIntensityBoostFactor);
         else
-            spatialSummationData(sprintf('summation_sigma_ArcMin_%2.2f',spatialPoolingSigmaArcMin)) = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics);
+            spatialSummationData(sprintf('summation_sigma_ArcMin_%2.2f',spatialPoolingSigmaArcMin)) = ...
+                runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics, spotIntensityBoostFactor);
         end
     end
     
     save(sprintf('SummationData_%s_%s.mat',thresholdMethod, employedOptics), 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
 end
 
-function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics, powerAttenuationFactor)
+function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics, spotIntensityBoostFactor)
     
     fprintf('Running summation sigma: %2.3f arc min\n\n', spatialPoolingSigmaArcMin);
     [theDir,~] = fileparts(which(mfilename()));
     cd(theDir);
     
     %% Assemble all simulation params in a struct
-    params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics, powerAttenuationFactor);
+    params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics, spotIntensityBoostFactor);
     
     %% Simulation steps to perform
     % Re-compute the mosaic (true) or load it from the disk (false)
@@ -70,14 +72,15 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     
     %% VISUALIZATION PARAMS
     visualizationScheme = {...
-        'mosaic' ...
-        'spatialScheme' ...    % graphic generated only during response computation
-        'performance' ...
+        %'mosaic' ...
+        %'spatialScheme' ...    % graphic generated only during response computation
+        %'performance' ...
+        %'oiSequence' ...
+        %'mosaic+emPath'
         %'responses' ...
         %'pooledSignal' ...
-        'spatialScheme' ...    % graphic generated only during response computation
-        'oiSequence' ...
-        'mosaic+emPath' ...    % graphic generated  only during response computation
+        %'spatialScheme' ...    % graphic generated only during response computation
+        %'mosaic+emPath' ...    % graphic generated  only during response computation
         %'oiSequence' ...       % graphic generated  only during response computatio
     };
     params = visualizationParams(params, visualizationScheme);
@@ -97,17 +100,17 @@ end
 
 % ----- HELPER ROUTINES -----
 
-function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics, powerAttenuationFactor)
+function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresholdMethod, spatialPoolingSigmaArcMin, employedOptics, spotIntensityBoostFactor)
 
     %% STIMULUS PARAMS
     % Power attenuation factor
-    params.powerAttenuationFactor = powerAttenuationFactor;
+    params.spotIntensityBoostFactor = spotIntensityBoostFactor;
     
     % Varied stimulus area (spot diameter in arc min)
     params.spotDiametersMinutes =  [0.43 0.58 0.87 1.16 1.35 1.73 2.00 2.31 2.70 3.10 3.47 4.63 6.94 9.25];
     
     % Stimulus background in degs
-    params.backgroundSizeDegs = 0.22;
+    params.backgroundSizeDegs = 0.5;
     
     % Stimulus wavelength in nm
     params.wavelength = 550;
@@ -128,7 +131,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
 	params.responseExtinctionMilliseconds = 20;
 
     % How many pixels to use to same the stimulus
-    params.imagePixels = 2048;
+    params.imagePixels = 1024;
     
     % Lowest examined stimulus contrast
     params.lowContrast = 1e-5;
@@ -143,15 +146,22 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.contrastScale = 'log';
 
     % Response instances to generate
-    params.nTrainingSamples = 256;
+    params.nTrainingSamples = 100;
     
     %% OPTICS model and pupil size
     params.opticsModel = employedOptics;
-    if (strcmpi(params.opticsModel, 'aooptics'))
-        params.pupilDiamMm = 7.5;
-    else
-        params.pupilDiamMm = 3;
+    params.pupilDiamMm = 3;
+    
+    % Special cases
+    switch params.opticsModel
+        case 'AOoptics80mmPupil'
+            params.pupilDiamMm = 8.0;
+        case 'AOoptics75mmPupil'
+            params.pupilDiamMm = 7.5;
     end
+
+    %% Wavefront params
+    params.wavefrontSpatialSamples = 301;
     
     %% MOSAIC PARAMS
     % Use a regularly-packed hegagonal mosaic (available packing options: 'rect', 'hex', 'hexReg')
@@ -163,6 +173,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     
     % Mosaic rotation in degrees
     params.mosaicRotationDegs = 0;
+    params.mosaicFOVDegs = 0.25;
     
     % Cone spacing in microns
     params.coneSpacingMicrons = 3.0;

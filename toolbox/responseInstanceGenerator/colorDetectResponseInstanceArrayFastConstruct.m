@@ -107,7 +107,8 @@ end
 if (p.Results.visualizeSpatialScheme)
     [~, timeBinOfPeakModulation] = max(abs(stimulusModulationFunction));
     thePeakOI = theOIsequence.frameAtIndex(timeBinOfPeakModulation);
-    visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, p.Results.paramsList);
+    maxIllumValueToDisplay = 10;  % set to [] to use the max from the illum map
+    visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, modulatedScene, p.Results.paramsList, 'maxIllumValueToDisplay', maxIllumValueToDisplay);
 end
     
 % Clear oiModulated and oiBackground to save space
