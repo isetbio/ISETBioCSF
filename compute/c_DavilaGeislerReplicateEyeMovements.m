@@ -251,8 +251,8 @@ function rParams = updateBackgroundAndSpotParams(rParams, userParams, background
     T_xyz = SplineCmf(S_xyz1931,683*T_xyz1931,S);
     radiancePerUW = AOMonochromaticCornealPowerToRadiance(wls,rParams.backgroundParams.backgroundWavelengthsNm,1,rParams.oiParams.pupilDiamMm,rParams.spatialParams.backgroundSizeDegs^2);
     xyzPerUW = T_xyz*radiancePerUW*(wls(2)-wls(1));
-    desiredLumCdM2 = userParams.spotIntensityBoostFactor * userParams.luminances(backgroundLumIndex);
-    rParams.backgroundParams.backgroundCornealPowerUW = desiredLumCdM2/xyzPerUW(2);
+    desiredLumCdM2 = userParams.luminances(backgroundLumIndex);
+    rParams.backgroundParams.backgroundCornealPowerUW = userParams.spotIntensityBoostFactor * desiredLumCdM2/xyzPerUW(2);
 
     %% Spot params
     % Scale spot parameters into what we think a reasonable range is.
@@ -265,12 +265,12 @@ function rParams = updateBackgroundAndSpotParams(rParams, userParams, background
 
     maxThresholdEnergy = 10.0;
     minSpotAreaMin2 = pi*(min(userParams.spotDiametersMinutes)/2)^2;
-    rParams.maxSpotLuminanceCdM2 = userParams.spotIntensityBoostFactor * maxThresholdEnergy/((userParams.stimDurationMs/1000)*minSpotAreaMin2);
+    rParams.maxSpotLuminanceCdM2 = maxThresholdEnergy/((userParams.stimDurationMs/1000)*minSpotAreaMin2);
     rParams.colorModulationParams.startWl = userParams.wavelength;
     rParams.colorModulationParams.endWl = userParams.wavelength+deltaWl;
     rParams.colorModulationParams.deltaWl = deltaWl;
     rParams.colorModulationParams.spotWavelengthNm = userParams.wavelength;
-    rParams.colorModulationParams.spotCornealPowerUW = rParams.maxSpotLuminanceCdM2/xyzPerUW(2);
+    rParams.colorModulationParams.spotCornealPowerUW = userParams.spotIntensityBoostFactor * rParams.maxSpotLuminanceCdM2/xyzPerUW(2);
     rParams.colorModulationParams.contrast = 1;
 end
 
