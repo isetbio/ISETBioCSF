@@ -2,7 +2,7 @@ function run_summationExperiment
 
     %% Optics to employ. Choose from:
     % 'None': delta function PSF
-    % 'AOoptics75mmPupil' : diffraction-limited with forced 6mm pupil
+    % 'AOoptics80mmPupil' : diffraction-limited with forced 8.0 mm pupil
     % 'WvfHuman' : default human wavefront - based optics with mean (across subjects) Z-coeffs
     % 'WvfHumanMeanOTFmagMeanOTFphase' : human wavefront - based optics with mean (across subjects) OTF
     % 'Geisler' : Geisler optics
@@ -10,7 +10,7 @@ function run_summationExperiment
     % 'DavilaGeisler'
     
     employedOptics = 'AOoptics80mmPupil'; % 'WvfHuman'; 'WvfHumanMeanOTFmagMeanOTFphase'; % 'AOoptics80mmPupil'; % 'WvfHumanMeanOTFmagMeanOTFphase';  % 'AOoptics75mmPupil'
-    if ~(contains(employedOptics ,'AOoptics'))
+    if ~(strcmp(employedOptics ,'AOoptics80mmPupil'))
         spotIntensityBoostFactor = (8.0/3.0)^2;
     else
         spotIntensityBoostFactor = 1;
@@ -51,7 +51,7 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     
     %% Simulation steps to perform
     % Re-compute the mosaic (true) or load it from the disk (false)
-    params.computeMosaic = true; 
+    params.computeMosaic = ~true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
     params.computeResponses = true;
@@ -134,19 +134,19 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.imagePixels = 1024;
     
     % Lowest examined stimulus contrast
-    params.lowContrast = 1e-5;
+    params.lowContrast = 1e-6;
     
     % Highest examined stimulus contrast
     params.highContrast = 1e-1;
     
     % How many contrasts to use for the psychometric curve
-    params.nContrastsPerDirection = 15;
+    params.nContrastsPerDirection = 25;
     
 	% How to space the constrasts, linearly or logarithmically?
     params.contrastScale = 'log';
 
     % Response instances to generate
-    params.nTrainingSamples = 100;
+    params.nTrainingSamples = 200;
     
     %% OPTICS model and pupil size
     params.opticsModel = employedOptics;
