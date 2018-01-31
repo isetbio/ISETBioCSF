@@ -8,14 +8,14 @@ function loadSummationData()
         
         classifierType = classifiersList{classifierIndex};
         
-        employedOptics1 = 'AOoptics';
-        employedOptics1legend = 'AOoptics';
+        employedOptics1 = 'AOoptics80mmPupil';
+        employedOptics1legend = 'AOoptics (8 mm)';
         datafile = sprintf('SummationData_%s_%s.mat', classifierType, employedOptics1);
         load(datafile, 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
         spatialSummationData1 = spatialSummationData;
         spatialPoolingSigmaArcMinList1 = spatialPoolingSigmaArcMinList;
         
-        employedOptics2 = 'WvfHumanMeanOTFmagMeanOTFphase';
+        employedOptics2 = 'WvfHuman'; % MeanOTFmagMeanOTFphase';
         employedOptics2legend = 'wvfHuman';
         datafile = sprintf('SummationData_%s_%s.mat',  classifierType, employedOptics2);
         load(datafile, 'spatialSummationData', 'spatialPoolingSigmaArcMinList');

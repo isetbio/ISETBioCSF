@@ -9,7 +9,7 @@ function run_summationExperiment
     % 'DavilaGeislerLsfAsPsf'
     % 'DavilaGeisler'
     
-    employedOptics = 'AOoptics80mmPupil'; % 'WvfHuman'; 'WvfHumanMeanOTFmagMeanOTFphase'; % 'AOoptics80mmPupil'; % 'WvfHumanMeanOTFmagMeanOTFphase';  % 'AOoptics75mmPupil'
+    employedOptics = 'WvfHuman'; % 'AOoptics80mmPupil'; % 'WvfHuman'; 'WvfHumanMeanOTFmagMeanOTFphase'; % 'AOoptics80mmPupil'; % 'WvfHumanMeanOTFmagMeanOTFphase';  % 'AOoptics75mmPupil'
     if ~(strcmp(employedOptics ,'AOoptics80mmPupil'))
         spotIntensityBoostFactor = (8.0/3.0)^2;
     else
