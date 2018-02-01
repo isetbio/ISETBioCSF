@@ -9,7 +9,7 @@ function run_summationExperiment
     % 'DavilaGeislerLsfAsPsf'
     % 'DavilaGeisler'
     
-    employedOptics = 'WvfHuman'; % 'AOoptics80mmPupil'; % 'WvfHuman'; 'WvfHumanMeanOTFmagMeanOTFphase'; % 'AOoptics80mmPupil'; % 'WvfHumanMeanOTFmagMeanOTFphase';  % 'AOoptics75mmPupil'
+    employedOptics = 'AOoptics80mmPupil'; % 'WvfHuman'; 'WvfHumanMeanOTFmagMeanOTFphase'; % 'AOoptics80mmPupil'; % 'WvfHumanMeanOTFmagMeanOTFphase';  % 'AOoptics75mmPupil'
     if ~(strcmp(employedOptics ,'AOoptics80mmPupil'))
         spotIntensityBoostFactor = (8.0/3.0)^2;
     else
@@ -116,7 +116,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.wavelength = 550;
     
     % Stimulus luminance in cd/m2
-    params.luminances = [10];
+    params.luminances = [8.0];
     
     % Stimulus duration in milliseconds
     params.stimDurationMs = 100;
@@ -146,7 +146,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     params.contrastScale = 'log';
 
     % Response instances to generate
-    params.nTrainingSamples = 200;
+    params.nTrainingSamples = 2000;
     
     %% OPTICS model and pupil size
     params.opticsModel = employedOptics;
@@ -173,7 +173,7 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
     
     % Mosaic rotation in degrees
     params.mosaicRotationDegs = 0;
-    params.mosaicFOVDegs = 0.25;
+    params.mosaicFOVDegs = 0.26;
     
     % Cone spacing in microns
     params.coneSpacingMicrons = 3.0;
@@ -230,13 +230,6 @@ function params = getParamsForStimulusAresVaryConditions(thresholdSignal, thresh
         'activationFunction', 'linear', ...
         'temporalPCAcoeffs', Inf, ...   ;  % Inf, results in no PCA, just the raw time series
         'adjustForConeDensity', false);
-    
-    
-    % Fastrun  params
-    %params.spotDiametersMinutes = [0.3568];
-    %params.backgroundSizeDegs = 10/60;
-    %params.nContrastsPerDirection = 2; 
-    %params.nTrainingSamples = 2;
 end
 
 function params = visualizationParams(params, visualizationScheme)
