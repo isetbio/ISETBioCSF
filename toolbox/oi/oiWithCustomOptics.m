@@ -1,7 +1,7 @@
 function [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModel, wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree, varargin)
     p = inputParser;
     p.addParameter('includeMirrorSubject', false, @islogical);
-    p.addParameter('showTranslation', true, @islogical);
+    p.addParameter('showTranslation', false, @islogical);
     p.addParameter('showMirrorPair', false, @islogical);
     p.parse(varargin{:});
     
