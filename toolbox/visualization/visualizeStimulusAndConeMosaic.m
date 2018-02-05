@@ -1,4 +1,4 @@
-function visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, modulatedScene, paramsList, varargin)
+function hFig = visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, modulatedScene, paramsList, varargin)
     p = inputParser;
     p.addParameter('maxIllumValueToDisplay', [], @isnumeric);
     p.parse(varargin{:});
@@ -120,14 +120,16 @@ function visualizeStimulusAndConeMosaic(theMosaic, thePeakOI, modulatedScene, pa
     colormap(cMap);
     drawnow;
     
-    % Save figure
-    theProgram = mfilename;
-    rwObject = IBIOColorDetectReadWriteBasic;
-    data = 0;
-    fileName = sprintf('SpatialScheme');
-    rwObject.write(fileName, data, paramsList, theProgram, ...
-           'type', 'NicePlotExportPNG', 'FigureHandle', hFig, 'FigureType', 'png');
-
+    if (~isempty(paramsList))
+        % Save figure
+        theProgram = mfilename;
+        rwObject = IBIOColorDetectReadWriteBasic;
+        data = 0;
+        fileName = sprintf('SpatialScheme');
+        rwObject.write(fileName, data, paramsList, theProgram, ...
+               'type', 'NicePlotExportPNG', 'FigureHandle', hFig, 'FigureType', 'png');
+    end
+    
 end
 
 
