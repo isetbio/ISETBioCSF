@@ -2,17 +2,13 @@ function settingsImageToConeIsomerizations
 
     [localDir,~] = fileparts(which(fullfile(mfilename)));
     
-    % Stuff we need to generate the scenes
-    tbUse({'BrainardLabBase', 'isetbio'})
-    cd(localDir);
-    
-    desiredHorizontalFOV = 12;
+    desiredHorizontalFOV = 2;
     maxGridAdjustmentIterations = 100;
     
-    regenerateScenes = true;
-    regenerateConeMosaic = true;
-    generateOI = true;
-    
+    regenerateScenes = ~true;
+    regenerateConeMosaic = ~true;
+    generateOI = ~true;
+    generateResponses = ~true;
     
     visualizeScenes = ~true;
     visualizeMosaic = ~true;
@@ -31,10 +27,14 @@ function settingsImageToConeIsomerizations
     % Mat filename containing the computed responses
     responsesMatFileName = sprintf('responses_%2.2fdegFOV.mat', desiredHorizontalFOV);
     
-    %% Load scenes
+    %% Generate scenes
     if (~regenerateScenes)
         load(scenesMatFileName, 'scenesList', 'noBorderSceneRows', 'noBorderSceneCols');   
     else
+        % Stuff we need to generate the scenes
+        tbUse({'BrainardLabBase', 'isetbio'})
+        cd(localDir);
+        
         %% Generate display object corresponding to calFile used in ColorMaterial experiments
         [display,cal] = generateISETbioDisplayForColorMaterialExperiment('EyeTrackerLCD');
         cal = [];
@@ -94,105 +94,115 @@ function settingsImageToConeIsomerizations
         theConeMosaic.visualizeGrid(); % 'visualizedConeAperture', 'geometricArea');
     end
     
-    allSceneData = containers.Map();
-    
-    %% Loop through images
-    for sceneIndex = 1:numel(scenesList)
-        % Grab the scene from the list of scenes
-        theScene = scenesList{sceneIndex};
-        theSceneName = sceneGet(theScene, 'name');
-        
-        % Compute the OIimage for this scene
-        fprintf('Computing optical image for scene %d\n', sceneIndex);
-        theOI = oiCompute(theOI, theScene);
-        
-        % Visualize scene and optical image
-        if (visualizeSceneOIandMosaic)
-            visualizeStimulusAndConeMosaic(theConeMosaic, theOI, theScene, [])
-        end
-        
-        % Compute the isomerization rate for this optical image
-        fprintf('Computing mosaic response for scene %d\n', sceneIndex);
-        theIsomerizations = theConeMosaic.compute(theOI, 'currentFlag',false) / theConeMosaic.integrationTime;
-        
-        % Extract the full-pattern isomerizations
-        theIsomerizations = reshape(theIsomerizations, [prod(size(theIsomerizations)) 1]);
-        
-        % Demosaic response
-        demosaicingSampleSpacingMicrons = 1;
-        demosaicRangeMicrons = max(theConeMosaic.fov)*theConeMosaic.micronsPerDegree;
-        
-        coneTypeNames = {'L-cones', 'M-cones', 'S-cones', 'All-cones'};
-        maxIsomerizationRate = 0;
-        theConeIsomerizations = containers.Map();
-        theDemosaicedIsomerizationsMaps = containers.Map();
-        xConeLocsDegs = containers.Map();
-        yConeLocsDegs = containers.Map();
-        
-        for coneType = 1:numel(coneTypeNames)
-            % Compute demosaiced-map
-            coneName = coneTypeNames{coneType};
-            [theDemosaicedIsomerizationsMap, support, theConeIsomerizations(coneName), xConeLocsDegs(coneName), yConeLocsDegs(coneName)] = ...
-                demosaicResponseFromFullPatternResponse(coneName, ...
-                     theConeMosaic, theIsomerizations, demosaicingSampleSpacingMicrons, demosaicRangeMicrons);
-            % Isomerization rate
-            theDemosaicedIsomerizationsMap = theDemosaicedIsomerizationsMap / theConeMosaic.integrationTime;
-            theConeIsomerizations(coneName) = theConeIsomerizations(coneName) / theConeMosaic.integrationTime;
-            
-            m = max(theDemosaicedIsomerizationsMap(:));
-            if (m > maxIsomerizationRate)
-                maxIsomerizationRate = m;
+    if (generateResponses)
+        % Container to hold all sceneData
+        allSceneData = containers.Map();
+
+        %% Loop through images
+        for sceneIndex = 1:numel(scenesList)
+            % Grab the scene from the list of scenes
+            theScene = scenesList{sceneIndex};
+            theSceneName = sceneGet(theScene, 'name');
+
+            % Compute the OIimage for this scene
+            fprintf('Computing optical image for scene %d\n', sceneIndex);
+            theOI = oiCompute(theOI, theScene);
+
+            % Visualize scene and optical image
+            if (visualizeSceneOIandMosaic)
+                visualizeStimulusAndConeMosaic(theConeMosaic, theOI, theScene, [])
             end
-            theDemosaicedIsomerizationsMaps(coneName) = theDemosaicedIsomerizationsMap;
-        end
-        
-        allSceneData(theSceneName) = struct(...
-            'theScene', theScene, ...
-            'theOI', theOI, ...
-            'coneTypeNames', coneTypeNames, ...
-            'theConeIsomerizations', theConeIsomerizations, ...                 % for 4 cone types
-            'xConeLocsDegs', xConeLocsDegs, ...                                 % for 4 cone types
-            'yConeLocsDegs', yConeLocsDegs, ...                                 % for 4 cone types
-            'theDemosaicedIsomerizationsMaps', theDemosaicedIsomerizationsMaps, ...  % for 4 cone types
-            'theDemosaicedIsomerizationsMapSupport', 'support' ...
-            );
-        
-        if (visualizeResponses)
-            hFig = figure(25); clf;
-            set(hFig, 'Position', [10 10 1450 780]);
-            subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-               'rowsNum', 2, ...
-               'colsNum', numel(coneTypeNames), ...
-               'heightMargin',   0.04, ...
-               'widthMargin',    0.02, ...
-               'leftMargin',     0.01, ...
-               'rightMargin',    0.006, ...
-               'bottomMargin',   0.02, ...
-               'topMargin',      0.02);
+
+            % Compute the isomerization rate for this optical image
+            fprintf('Computing mosaic response for scene %d\n', sceneIndex);
+            theIsomerizations = theConeMosaic.compute(theOI, 'currentFlag',false) / theConeMosaic.integrationTime;
+
+            % Extract the full-pattern isomerizations
+            theIsomerizations = reshape(theIsomerizations, [prod(size(theIsomerizations)) 1]);
+
+            % Demosaic response
+            demosaicingSampleSpacingMicrons = 1;
+            demosaicRangeMicrons = max(theConeMosaic.fov)*theConeMosaic.micronsPerDegree;
+
+            coneTypeNames = {'L-cones', 'M-cones', 'S-cones', 'All-cones'};
+            maxIsomerizationRate = 0;
+            
+            % Containers to hold various response components
+            theConeIsomerizations = containers.Map();
+            theDemosaicedIsomerizationsMaps = containers.Map();
+            xConeLocsDegs = containers.Map();
+            yConeLocsDegs = containers.Map();
 
             for coneType = 1:numel(coneTypeNames)
+                % Compute demosaiced-map
                 coneName = coneTypeNames{coneType};
-                theDemosaicedIsomerizationsMap = theDemosaicedIsomerizationsMaps(coneName);
-                
-                subplot('Position', subplotPosVectors(1,coneType).v);
-                imagesc(support,support,theDemosaicedIsomerizationsMap/maxIsomerizationRate);
-                set(gca, 'CLim', [0 1], 'XLim', [support(1) support(end)], 'YLim', [support(1) support(end)]);
-                axis 'image'; axis 'xy';
-                title(sprintf('%s (max: %2.0f R*/sec', coneTypeNames{coneType}, max(theDemosaicedIsomerizationsMap(:))));
+                [theDemosaicedIsomerizationsMap, support, theConeIsomerizations(coneName), xConeLocsDegs(coneName), yConeLocsDegs(coneName)] = ...
+                    demosaicResponseFromFullPatternResponse(coneName, ...
+                         theConeMosaic, theIsomerizations, demosaicingSampleSpacingMicrons, demosaicRangeMicrons);
+                % Isomerization rate
+                theDemosaicedIsomerizationsMap = theDemosaicedIsomerizationsMap / theConeMosaic.integrationTime;
+                theConeIsomerizations(coneName) = theConeIsomerizations(coneName) / theConeMosaic.integrationTime;
 
-                subplot('Position', subplotPosVectors(2,coneType).v);
-                imagesc(support,support,theDemosaicedIsomerizationsMap/max(theDemosaicedIsomerizationsMap(:)));
-                set(gca, 'CLim', [0 1], 'XLim', [support(1) support(end)], 'YLim', [support(1) support(end)]);
-                axis 'image'; axis 'xy';
-                title(sprintf('%s (max: %2.0f R*/sec', coneTypeNames{coneType}, max(theDemosaicedIsomerizationsMap(:))));
+                m = max(theDemosaicedIsomerizationsMap(:));
+                if (m > maxIsomerizationRate)
+                    maxIsomerizationRate = m;
+                end
+                theDemosaicedIsomerizationsMaps(coneName) = theDemosaicedIsomerizationsMap;
             end
-            colormap(bone(1024));
-        end
-        
-    end % sceneIndex
+
+            allSceneData(theSceneName) = struct(...
+                'theScene', theScene, ...
+                'theOI', theOI, ...
+                'coneTypeNames', coneTypeNames, ...
+                'theConeIsomerizations', theConeIsomerizations, ...                 % for 4 cone types
+                'xConeLocsDegs', xConeLocsDegs, ...                                 % for 4 cone types
+                'yConeLocsDegs', yConeLocsDegs, ...                                 % for 4 cone types
+                'theDemosaicedIsomerizationsMaps', theDemosaicedIsomerizationsMaps, ...  % for 4 cone types
+                'theDemosaicedIsomerizationsMapSupport', 'support' ...
+                );
+
+            if (visualizeResponses)
+                hFig = figure(25); clf;
+                set(hFig, 'Position', [10 10 1450 780]);
+                subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+                   'rowsNum', 2, ...
+                   'colsNum', numel(coneTypeNames), ...
+                   'heightMargin',   0.04, ...
+                   'widthMargin',    0.02, ...
+                   'leftMargin',     0.01, ...
+                   'rightMargin',    0.006, ...
+                   'bottomMargin',   0.02, ...
+                   'topMargin',      0.02);
+
+                for coneType = 1:numel(coneTypeNames)
+                    coneName = coneTypeNames{coneType};
+                    theDemosaicedIsomerizationsMap = theDemosaicedIsomerizationsMaps(coneName);
+
+                    subplot('Position', subplotPosVectors(1,coneType).v);
+                    imagesc(support,support,theDemosaicedIsomerizationsMap/maxIsomerizationRate);
+                    set(gca, 'CLim', [0 1], 'XLim', [support(1) support(end)], 'YLim', [support(1) support(end)]);
+                    axis 'image'; axis 'xy';
+                    title(sprintf('%s (max: %2.0f R*/sec', coneTypeNames{coneType}, max(theDemosaicedIsomerizationsMap(:))));
+
+                    subplot('Position', subplotPosVectors(2,coneType).v);
+                    imagesc(support,support,theDemosaicedIsomerizationsMap/max(theDemosaicedIsomerizationsMap(:)));
+                    set(gca, 'CLim', [0 1], 'XLim', [support(1) support(end)], 'YLim', [support(1) support(end)]);
+                    axis 'image'; axis 'xy';
+                    title(sprintf('%s (max: %2.0f R*/sec', coneTypeNames{coneType}, max(theDemosaicedIsomerizationsMap(:))));
+                end
+                colormap(bone(1024));
+            end
+
+        end % sceneIndex
     
-   save(responsesMatFileName, 'allSceneData', '-v7.3');
-   fprintf('Finished with everything. Responses saved in %s.\n', responsesMatFileName);
+        fprintf('Finished with everything. Exportint responses to %s....', responsesMatFileName);
+        save(responsesMatFileName, 'allSceneData', '-v7.3');
+        fprintf('Finished exporting responses.\n');
+    else
+        fprintf('Loading responses from %s ...', responsesMatFileName);
+        load(responsesMatFileName, 'allSceneData');
+        fprintf('Finished importing responses.\n');
+    end
     
 end
 
