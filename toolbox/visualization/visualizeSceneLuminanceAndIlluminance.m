@@ -73,12 +73,15 @@ function visualizeSceneLuminanceAndIlluminance(modulatedScene, oiModulated, para
     colormap(jet(1024));
     drawnow;
     
-    % Export to PDF
-    theProgram = mfilename;
-    rwObject = IBIOColorDetectReadWriteBasic;
-    data = 0;
-    fileName = sprintf('SceneLuminanceAndIlluminance');
-    rwObject.write(fileName, data, paramsList, theProgram, ...
-           'type', 'NicePlotExportPNG', 'FigureHandle', hFig, 'FigureType', 'png');
+    if (~isempty(paramsList))
+        % Export to PDF
+        theProgram = mfilename;
+        rwObject = IBIOColorDetectReadWriteBasic;
+        data = 0;
+        fileName = sprintf('SceneLuminanceAndIlluminance');
+        rwObject.write(fileName, data, paramsList, theProgram, ...
+               'type', 'NicePlotExportPNG', 'FigureHandle', hFig, 'FigureType', 'png');
+    end
+    
 end
 
