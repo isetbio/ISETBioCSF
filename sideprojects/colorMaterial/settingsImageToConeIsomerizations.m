@@ -6,11 +6,11 @@ function settingsImageToConeIsomerizations
     tbUse({'BrainardLabBase', 'isetbio'})
     cd(localDir);
     
-    desiredHorizontalFOV = 2;
+    desiredHorizontalFOV = 12;
     maxGridAdjustmentIterations = 100;
     
-    regenerateScenes = ~true;
-    regenerateConeMosaic = ~true;
+    regenerateScenes = true;
+    regenerateConeMosaic = true;
     generateOI = true;
     
     
