@@ -1,13 +1,19 @@
 function importColorMaterialISETbioData
+% Loads the isomerization responses to the set of the 13 images employed
+% in the the color-material paper and displays them.
+%
+% History
+% 2/8/18 NPC Wrote it.
+%
 
     close all;
     
     % Choose whether to render images of the data or not
-    renderIsomerizationMaps = true;
+    renderIsomerizationMaps = ~true;
     renderDemosaiceIsomerizationMaps = true;
              
     % Load the data
-    horizontalFOV = 2;
+    horizontalFOV = 15;
     allScenesData = loadAllSceneData(horizontalFOV);
     
     % Retrieve the scene names
@@ -64,7 +70,7 @@ function importColorMaterialISETbioData
                  hFig1 = plotMosaicActivationMaps(isomerizationRatesForThisConeType, ...
                      xConeLocsDegsForThisConeType, yConeLocsDegsForThisConeType, maxIsomerizationRate, ...
                      coneTypeName, coneTypeIndex, coneApertureOutline, hFig1, theSceneName);
-                 NicePlot.exportFigToPNG(sprintf('%s_Isomerizations.png',theSceneName), hFig1, 300);
+                 NicePlot.exportFigToPNG(sprintf('../%s_Isomerizations.png',theSceneName), hFig1, 300);
                  %close(hFig1);
              end
              
@@ -73,7 +79,7 @@ function importColorMaterialISETbioData
                  hFig2 = plotDemosaicedActivationMaps(demosaicedIsomerizationsMapForThisConeType, ...
                      demosaicedIsomerizationsMapSupportForThisConeType, maxIsomerizationRate, ...
                      coneTypeName, coneTypeIndex, hFig2, theSceneName);
-                 NicePlot.exportFigToPNG(sprintf('%s_DemosaicedIsomerizations.png',theSceneName), hFig2, 300);
+                 NicePlot.exportFigToPNG(sprintf('../%s_DemosaicedIsomerizations.png',theSceneName), hFig2, 300);
                  %close(hFig2);
              end
          end % coneTypeIndex
@@ -193,14 +199,14 @@ end
 
 % Method to load all the data
 function allScenesData = loadAllSceneData(horizontalFOV)
-    responsesMatFileName = sprintf('responses_%2.2fdegFOV.mat', horizontalFOV);
+    responsesMatFileName = sprintf('../responses_%2.2fdegFOV.mat', horizontalFOV);
     fprintf('\n\nLoading responses from %s ...', responsesMatFileName);
     load(responsesMatFileName, 'allScenesData');
     fprintf('Finished importing responses.\n');
 end
 
 function apertureOutline = generateConeApertureOutline(horizontalFOV)
-    coneMosaicMatFileName = sprintf('coneMosaic_%2.2fdegFOV.mat', horizontalFOV);
+    coneMosaicMatFileName = sprintf('../coneMosaic_%2.2fdegFOV.mat', horizontalFOV);
     load(coneMosaicMatFileName, 'theConeMosaic');
     coneApertureDiameterMicrons = diameterForCircularApertureFromWidthForSquareAperture(theConeMosaic.pigment.pdWidth*1e6);
     

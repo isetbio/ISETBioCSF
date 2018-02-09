@@ -1,11 +1,21 @@
 function colorMaterialSettingsImageToConeIsomerizations
-
+% Loads a set of images in RGB settings (the 13 images used in the 
+% color-material paper) and the employed display calibration file and generates 
+% ISETbio scenes for that display. Then passes the scenes via a 
+% typical ISETbio processing pipeline to compute isomerizations for a
+% hexagonal cone mosaic with eccentricity-varying cone spacing.
+% Exports the isomerization maps for all cone types as well as de-mosaiced
+% isomerizations maps for each cone type.
+%
+% History
+% 2/4/18 NPC Wrote it.
+%
+%
     close all
     
     [localDir,~] = fileparts(which(fullfile(mfilename)));
     
     horizontalFOV = 15;
-    maxGridAdjustmentIterations = 50;
     
     regenerateScenes = ~true;
     regenerateConeMosaic = ~true;
@@ -18,17 +28,16 @@ function colorMaterialSettingsImageToConeIsomerizations
 
     
     % Mat filename containing previously computed scenes
-    scenesMatFileName = sprintf('scenes.mat');
+    scenesMatFileName = sprintf('../scenes.mat');
     
     % Mat filename containing previously computed cone mosaic
-    coneMosaicMatFileName = sprintf('coneMosaic_%2.2fdegFOV.mat', horizontalFOV);
+    coneMosaicMatFileName = sprintf('../coneMosaic_%2.2fdegFOV.mat', horizontalFOV);
 
     % Mat filename containing previously computed oi
-    oiMatFileName = sprintf('oi_%2.2fdegFOV.mat', horizontalFOV);
+    oiMatFileName = sprintf('../oi_%2.2fdegFOV.mat', horizontalFOV);
     
     % Mat filename containing previously computed responses
-    responsesMatFileName = sprintf('responses_%2.2fdegFOV.mat', horizontalFOV);
-    
+    responsesMatFileName = sprintf('../responses_%2.2fdegFOV.mat', horizontalFOV);
     
     if (generateResponses)
         % Generate scenes
@@ -58,7 +67,7 @@ function colorMaterialSettingsImageToConeIsomerizations
     % Generate the cone mosaic
     if (regenerateConeMosaic)
         integrationTime = 100/1000;
-        theConeMosaic = coneMosaicGenerate(horizontalFOV,integrationTime, maxGridAdjustmentIterations);
+        theConeMosaic = coneMosaicGenerate(horizontalFOV,integrationTime);
         theConeMosaic.visualizeGrid(...
             'apertureShape', 'disks', ...
             'visualizedConeAperture', 'lightCollectingArea', ...
@@ -159,13 +168,14 @@ function colorMaterialSettingsImageToConeIsomerizations
     end
 end
  
-function cm = coneMosaicGenerate(fovDegs, integrationTime, maxGridAdjustmentIterations)
+function cm = coneMosaicGenerate(fovDegs, integrationTime)
 
     quality.resamplingFactor = 2;
     quality.tolerance1 = 1.0;           % larger than default tolerances to speed-up computation. For production work, either do not set, or set to equal or lower than 0.01 
     quality.tolerance2 = 0.5;           % larger than default tolerances to speed-up computation, For production work, either do not set, or set to equal or lower than 0.001 
     quality.marginF = [];    
         
+    maxGridAdjustmentIterations = 50;
     % Instantiate a hex mosaic
     cm = coneMosaicHex(quality.resamplingFactor, ...
         'fovDegs', fovDegs, ...
