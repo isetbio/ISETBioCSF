@@ -9,7 +9,7 @@ function run_summationExperiment
     % 'DavilaGeislerLsfAsPsf'
     % 'DavilaGeisler'
     
-    employedOptics = 'AOoptics80mmPupil'; % 'WvfHuman'; 'WvfHumanMeanOTFmagMeanOTFphase'; % 'AOoptics80mmPupil'; % 'WvfHumanMeanOTFmagMeanOTFphase';  % 'AOoptics75mmPupil'
+    employedOptics = 'WvfHuman'; % 'WvfHuman'; 'WvfHumanMeanOTFmagMeanOTFphase'; % 'AOoptics80mmPupil'; % 'WvfHumanMeanOTFmagMeanOTFphase';  % 'AOoptics75mmPupil'
     if ~(strcmp(employedOptics ,'AOoptics80mmPupil'))
         spotIntensityBoostFactor = (8.0/3.0)^2;
     else
@@ -54,13 +54,13 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     params.computeMosaic = ~true; 
     
     % Re-compute the responses (true) or load them from the disk (false)
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     
     % Compute photocurrents as well?
     params.computePhotocurrentResponseInstances = ~true;
     
     % Find the performance (true) or load performance data from the disk (false)
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     
     % Fit the psychometric function? Set to true to obtain the threshols
     params.fitPsychometric = true;
@@ -74,7 +74,7 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     visualizationScheme = {...
         %'mosaic' ...
         %'spatialScheme' ...    % graphic generated only during response computation
-        %'performance' ...
+        'performance' ...
         %'oiSequence' ...
         %'mosaic+emPath'
         %'responses' ...
