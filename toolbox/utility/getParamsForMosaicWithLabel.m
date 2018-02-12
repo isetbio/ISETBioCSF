@@ -5,6 +5,7 @@ function params = getParamsForMosaicWithLabel(mosaicName)
     params.latticeAdjustmentPositionalToleranceF = [];      
     params.latticeAdjustmentDelaunayToleranceF = [];
     params.marginF = [];
+    params.resamplingFactor = 11;
     
     switch mosaicName
         case 'originalBanks'

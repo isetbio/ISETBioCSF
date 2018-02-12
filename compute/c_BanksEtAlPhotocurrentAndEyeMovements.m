@@ -10,53 +10,24 @@ p.addParameter('nTrainingSamples',500,@isnumeric);
 p.addParameter('cyclesPerDegree',[2.5 5 10 20 40 60],@isnumeric); 
 p.addParameter('spatialPhaseDegs',0,@isnumeric);
 p.addParameter('luminances',[3.4 34 340],@isnumeric);
+
+% Optics params
 p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('opticsModel','WvfHuman',@ischar);
+p.addParameter('wavefrontSpatialSamples', 201, @isnumeric);      %% * * * NEW * * * 
+p.addParameter('opticalImagefieldOfViewDegs', 3.0, @isnumeric);  %% * * * NEW * * * 
+
+% Mosaic params
+p.addParameter('integrationTime', 5.0/1000, @isnumeric);
 p.addParameter('innerSegmentSizeMicrons',3.0, @isnumeric);   % 3 microns = 0.6 min arc for 300 microns/deg in human retina
 p.addParameter('apertureBlur',true, @islogical);
 p.addParameter('coneSpacingMicrons', 3.0, @isnumeric);
 p.addParameter('mosaicRotationDegs', 0, @isnumeric);
 p.addParameter('coneDarkNoiseRate',[0 0 0], @isnumeric);
 p.addParameter('LMSRatio',[0.67 0.33 0],@isnumeric);
-p.addParameter('conePacking', 'hexReg',@ischar);                 
-p.addParameter('imagePixels',400,@isnumeric);
-p.addParameter('wavelengths',[380 4 780],@isnumeric);
-p.addParameter('nContrastsPerDirection',20,@isnumeric);
-p.addParameter('lowContrast',0.0001,@isnumeric);
-p.addParameter('highContrast',0.1,@isnumeric);
-p.addParameter('contrastScale','log',@ischar);
-p.addParameter('computeResponses',true,@islogical);
-p.addParameter('computePhotocurrentResponseInstances', true, @islogical);
-p.addParameter('findPerformance',true,@islogical);
-p.addParameter('thresholdMethod','mlpt',@ischar);
-p.addParameter('thresholdPCA',60,@isnumeric);
-p.addParameter('fitPsychometric',true,@islogical);
-p.addParameter('thresholdCriterionFraction',0.7071,@isnumeric);
-p.addParameter('generatePlots',true,@islogical);
-p.addParameter('visualizeOIsequence', false, @islogical);
-p.addParameter('visualizeMosaicWithFirstEMpath', true, @islogical);
-p.addParameter('visualizeResponses',false,@islogical);
-p.addParameter('visualizedConditionIndices', [], @isnumeric);
-p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
-p.addParameter('plotPsychometric',true,@islogical);
-p.addParameter('plotCSF',true,@islogical);
+p.addParameter('conePacking', 'hexReg',@ischar);
 p.addParameter('freezeNoise',true,@islogical);
-
-% --- additional params -----
-% RESPONSE COMPUTATION OPTIONS
-p.addParameter('emPathType','frozen0',@(x)ismember(x, {'none', 'frozen', 'frozen0', 'random'}));
-p.addParameter('centeredEMPaths',false, @islogical); 
-p.addParameter('responseStabilizationMilliseconds', 80, @isnumeric);
-p.addParameter('responseExtinctionMilliseconds', 200, @isnumeric);
-p.addParameter('computeOptics',true,@islogical);
-p.addParameter('computeMosaic',false,@islogical);
-p.addParameter('ramPercentageEmployed', 1.0, @isnumeric);
-p.addParameter('parforWorkersNum', 20, @isnumeric);
-p.addParameter('parforWorkersNumForClassification', 6, @isnumeric);
-
-% MOSAIC OPTIONS
-p.addParameter('integrationTime', 5.0/1000, @isnumeric);
 
 % HEX MOSAIC OPTIONS
 p.addParameter('sConeMinDistanceFactor', 3.0, @isnumeric); % min distance between neighboring S-cones = f * local cone separation - to make the S-cone lattice semi-regular
@@ -64,18 +35,22 @@ p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
 p.addParameter('latticeAdjustmentPositionalToleranceF', 0.01, @isnumeric);
 p.addParameter('latticeAdjustmentDelaunayToleranceF', 0.001, @isnumeric);
 p.addParameter('marginF', [], @isnumeric);     
-            
-% DIAGNOSTIC OPTIONS
-p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
-p.addParameter('displayResponseComputationProgress', false, @islogical);
+p.addParameter('resamplingFactor', 11, @isnumeric);             % * * * NEW * * * 
 
-% RESPONSE MAP VISUALIZATION OPTIONS
-p.addParameter('visualizeOptics',false, @islogical); 
-p.addParameter('visualizeMosaic',true, @islogical); 
-p.addParameter('visualizeSpatialScheme', false, @islogical);
-p.addParameter('visualizeKernelTransformedSignals',false, @islogical);
-p.addParameter('visualizationFormat', 'montage', @ischar);
-p.addParameter('visualizePerformance', false, @islogical);
+% Stimulus params
+p.addParameter('imagePixels',400,@isnumeric);
+p.addParameter('wavelengths',[380 4 780],@isnumeric);
+p.addParameter('stimulusDurationInSeconds', 100, @isnumeric);   % * * * NEW * * * 
+p.addParameter('nContrastsPerDirection',20,@isnumeric);
+p.addParameter('lowContrast',0.0001,@isnumeric);
+p.addParameter('highContrast',0.1,@isnumeric);
+p.addParameter('contrastScale','log',@ischar);
+
+% Response dynamics
+p.addParameter('emPathType','frozen0',@(x)ismember(x, {'none', 'frozen', 'frozen0', 'random'}));
+p.addParameter('centeredEMPaths',false, @islogical); 
+p.addParameter('responseStabilizationMilliseconds', 80, @isnumeric);
+p.addParameter('responseExtinctionMilliseconds', 200, @isnumeric);
 
 % PERFORMANCE COMPUTATION OPTIONS
 p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
@@ -83,13 +58,48 @@ p.addParameter('useRBFSVMKernel', false, @islogical);
 p.addParameter('performanceClassifier', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'svmV1FilterBank', 'mlpt', 'mlpe', 'mlgtGaussianRF'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
 p.addParameter('performanceTrialsUsed', [], @isnumeric);
+p.addParameter('thresholdCriterionFraction',0.7071,@isnumeric);
+
+% RESPONSE COMPUTATION OPTIONS
+p.addParameter('ramPercentageEmployed', 1.0, @isnumeric); 
+p.addParameter('parforWorkersNum', 20, @isnumeric);
+p.addParameter('parforWorkersNumForClassification', 6, @isnumeric);
+
+% What to compute
+p.addParameter('computeOptics',true,@islogical);
+p.addParameter('computeMosaic',false,@islogical);
+p.addParameter('computeResponses',true,@islogical);
+p.addParameter('computePhotocurrentResponseInstances', true, @islogical);
+p.addParameter('findPerformance',true,@islogical);
+p.addParameter('thresholdMethod','mlpt',@ischar);
+p.addParameter('thresholdPCA',60,@isnumeric);
+p.addParameter('fitPsychometric',true,@islogical);
+
+
+% What to visualize
+p.addParameter('generatePlots',true,@islogical);
+p.addParameter('visualizeOIsequence', false, @islogical);
+p.addParameter('visualizeOptics',false, @islogical);
+p.addParameter('visualizeSpatialScheme', false, @islogical);
+p.addParameter('visualizeMosaic',true, @islogical); 
+p.addParameter('visualizeMosaicWithFirstEMpath', true, @islogical);
+p.addParameter('visualizeResponses',false,@islogical);
+p.addParameter('visualizeKernelTransformedSignals',false, @islogical);
+p.addParameter('visualizationFormat', 'montage', @ischar);
+p.addParameter('visualizePerformance', false, @islogical);
+p.addParameter('visualizedConditionIndices', [], @isnumeric);
+p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
+p.addParameter('plotPsychometric',true,@islogical);
+p.addParameter('plotCSF',true,@islogical);
+
+% DIAGNOSTIC OPTIONS
+p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
+p.addParameter('displayResponseComputationProgress', false, @islogical);
 
 % DELETE RESPONSE INSTANCES
 p.addParameter('deleteResponseInstances', false, @islogical);
 
 p.parse(varargin{:});
-
-
 
 %% Set the default output
 varargout = {};
@@ -118,150 +128,37 @@ if (~p.Results.useScratchTopLevelDirName)
     rParams.topLevelDirParams.name = mfilename;
 end
 
-%% Loop over spatial frequency
+% Set wavelength sampling stimulus params
+rParams = updateSpectralParams(rParams, p.Results);
+
+% Update temporal stimulus params
+rParams = updateTemporalParams(rParams, p.Results);
+
+% Update eye movement params
+rParams = updateEyeMovementParams(rParams, p.Results);
+
+% Set the optical image params
+rParams = updateOpticalImageParams(rParams, p.Results);
+
+% Generate test direction params;
+testDirectionParams = generateTestDirectionParams(p.Results);
+
+% Generate threshold params
+thresholdParams = generateThresholdParams(p.Results);
+
+%% Loop over luminance and spatial frequency
 for ll = 1:length(p.Results.luminances)
     for cc = 1:length(p.Results.cyclesPerDegree)
         
-        % Modify spatial params
-        cyclesPerDegree = p.Results.cyclesPerDegree(cc);
-        gaussianFWHMDegs = 3.75*(1/cyclesPerDegree);
-        fieldOfViewDegs = 2.1*gaussianFWHMDegs;
-        rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...
-            'windowType', 'halfcos', ...
-            'cyclesPerDegree', cyclesPerDegree, ...
-            'ph', (pi/180)*p.Results.spatialPhaseDegs, ...
-            'gaussianFWHMDegs', gaussianFWHMDegs, ...
-            'fieldOfViewDegs', fieldOfViewDegs, ...
-            'row', p.Results.imagePixels, ...
-            'col', p.Results.imagePixels);
+        % Modify spatial stimulus params
+        rParams = updateSpatialParams(rParams, p.Results, p.Results.cyclesPerDegree(cc));
+          
+        % Modify background stimulus params
+        rParams = updateBackgroundParams(rParams, p.Results, p.Results.luminances(ll));
         
-        % Set wavelength sampling
-        rParams.colorModulationParams.startWl = p.Results.wavelengths(1);
-        rParams.colorModulationParams.deltaWl = p.Results.wavelengths(2);
-        rParams.colorModulationParams.endWl = p.Results.wavelengths(3);
-        
-        % Blur
-        %
-        % Banks et al. used a 2mm artificial pupil
-        rParams.oiParams = modifyStructParams(rParams.oiParams, ...
-        	'blur', p.Results.blur, ...
-            'pupilDiamMm', p.Results.pupilDiamMm, ...
-            'opticsModel', p.Results.opticsModel);
-        
-        % Modify background params
-        baseLum = 50;
-        theLum = p.Results.luminances(ll);
-        rParams.backgroundParams = modifyStructParams(rParams.backgroundParams, ...
-        	'backgroundxyY', [0.33 0.33 baseLum]',...
-        	'monitorFile', 'CRT-MODEL', ...
-        	'leakageLum', 1.0, ...
-        	'lumFactor', theLum/baseLum);
-        
-        % Temporal params
-        % Their stimulus intervals were 100 msec each.
-        stimulusDurationInSeconds = 100/1000;
-        
-        % In the absence of info from the Banks et al paper, assume 50 Hz refresh rate
-        frameRate = 50;
-        windowTauInSeconds = nan; % square-wave
-        stimulusSamplingIntervalInSeconds = 1/frameRate;
-    
-        % Allow around 80 milliseconds for response to stabilize
-        responseStabilizationSeconds = ceil(p.Results.responseStabilizationMilliseconds/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
-        % Allow around 200 milliseconds for response to return to 0
-        responseExtinctionSeconds = ceil(p.Results.responseExtinctionMilliseconds/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
-        secondsToInclude = responseStabilizationSeconds+stimulusDurationInSeconds+responseExtinctionSeconds;   
-        
-        rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
-            'frameRate', frameRate, ...
-            'windowTauInSeconds', windowTauInSeconds, ...
-            'stimulusSamplingIntervalInSeconds', stimulusSamplingIntervalInSeconds, ...
-            'stimulusDurationInSeconds', stimulusDurationInSeconds, ...
-            'secondsToInclude', secondsToInclude, ...
-            'secondsForResponseStabilization', responseStabilizationSeconds, ...
-            'secondsForResponseExtinction', responseExtinctionSeconds, ...
-            'secondsToIncludeOffset', 0/1000, ...
-            'emPathType', p.Results.emPathType ...
-        );
-
-        % Modify mosaic parameters
-        if (isfield(rParams.mosaicParams, 'realisticSconeSubmosaic'))
-            error('The realisticSconeSubmosaic has been removed. Pass directly sConeMinDistanceFactor and sConeFreeRadiusMicrons\n');
-        end
-        
-        rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
-            'conePacking', p.Results.conePacking, ...                       
-            'fieldOfViewDegs', rParams.spatialParams.fieldOfViewDegs, ... 
-            'innerSegmentSizeMicrons',p.Results.innerSegmentSizeMicrons, ...
-            'coneSpacingMicrons', p.Results.coneSpacingMicrons, ...
-            'apertureBlur',p.Results.apertureBlur, ...
-            'mosaicRotationDegs',p.Results.mosaicRotationDegs,...
-            'coneDarkNoiseRate',p.Results.coneDarkNoiseRate,...
-            'LMSRatio',p.Results.LMSRatio,...
-            'integrationTimeInSeconds', p.Results.integrationTime, ...
-            'isomerizationNoise', 'random',...                  % select from {'random', 'frozen', 'none'}
-            'osNoise', 'random', ...                            % select from {'random', 'frozen', 'none'}
-            'osModel', 'Linear');
-
-        if strcmp(p.Results.conePacking, 'hex')
-            rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
-                'sConeMinDistanceFactor', p.Results.sConeMinDistanceFactor, ...
-                'sConeFreeRadiusMicrons', p.Results.sConeFreeRadiusMicrons, ...
-                'latticeAdjustmentPositionalToleranceF', p.Results.latticeAdjustmentPositionalToleranceF, ...
-                'latticeAdjustmentDelaunayToleranceF', p.Results.latticeAdjustmentDelaunayToleranceF, ...
-                'marginF', p.Results.marginF);
-        end
-
-        % Make sure mosaic noise parameters match the frozen noise flag passed in
-        if (p.Results.freezeNoise)
-            if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
-                rParams.mosaicParams.isomerizationNoise = 'frozen';
-            end
-            if (strcmp(rParams.mosaicParams.osNoise, 'random'))
-                rParams.mosaicParams.osNoise = 'frozen';
-            end
-        end
-        
-        % Parameters that define the LM instances we'll generate here
-        %
-        % Use default LMPlane.
-        testDirectionParams = instanceParamsGenerate;
-        testDirectionParams = modifyStructParams(testDirectionParams, ...
-            'trialsNum', p.Results.nTrainingSamples, ...
-        	'startAngle', 45, ...
-        	'deltaAngle', 90, ...
-        	'nAngles', 1, ...
-            'nContrastsPerDirection', p.Results.nContrastsPerDirection, ...
-            'lowContrast', p.Results.lowContrast, ...
-        	'highContrast', p.Results.highContrast, ...
-        	'contrastScale', p.Results.contrastScale ...                       % choose between 'linear' and 'log'
-            );
-        
-        % Parameters related to how we find thresholds from responses
-        thresholdParams = thresholdParamsGenerate;
-        thresholdParams = modifyStructParams(thresholdParams, ...
-        	'criterionFraction', p.Results.thresholdCriterionFraction, ...
-        	'method', p.Results.performanceClassifier, ...
-            'STANDARDIZE', false, ...                   % Standardize data for PCA
-            'standardizeSVMpredictors', false, ...       % Standardize data for SVM
-            'useRBFKernel', p.Results.useRBFSVMKernel, ...
-        	'PCAComponents', p.Results.thresholdPCA, ...
-            'signalSource', p.Results.performanceSignal ...
-            );
-        if (strcmp(thresholdParams.method, 'svm')) || ...
-            (strcmp(thresholdParams.method, 'svmV1FilterBank')) || ...
-            (strcmp(thresholdParams.method, 'svmGaussianRF'))
-            thresholdParams = modifyStructParams(thresholdParams, ...
-                'spatialPoolingKernelParams', p.Results.spatialPoolingKernelParams ...
-                );  
-        end
-
-        if (isempty(p.Results.performanceTrialsUsed))
-            thresholdParams.trialsUsed = p.Results.nTrainingSamples;
-        else
-            thresholdParams.trialsUsed = p.Results.performanceTrialsUsed;
-        end
-
+        % Modify mosaic params
+        rParams = updateMosaicParams(rParams, p.Results, rParams.spatialParams.fieldOfViewDegs);
+          
         %% Compute response instances
         if (p.Results.computeResponses) || (p.Results.visualizeMosaic) || (p.Results.visualizeOptics)
            [validationData, extraData, ~,~, theOI, theMosaic] = t_coneCurrentEyeMovementsResponseInstances(...
@@ -452,7 +349,170 @@ if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.vis
         rwObject.write('banksEtAlReplicatePhotocurrentAndEyeMovements',hFig,paramsList,writeProgram,'Type','figure')
     end
 end
-
-
 end
+
+% Method to update the spatial stimulus params
+function rParams = updateSpatialParams(rParams, userParams, cyclesPerDegree)
+
+    gaussianFWHMDegs = 3.75*(1/cyclesPerDegree);
+    fieldOfViewDegs = 2.1*gaussianFWHMDegs;
+    rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...
+            'windowType', 'halfcos', ...
+            'cyclesPerDegree', cyclesPerDegree, ...
+            'ph', (pi/180)*userParams.spatialPhaseDegs, ...
+            'gaussianFWHMDegs', gaussianFWHMDegs, ...
+            'fieldOfViewDegs', fieldOfViewDegs, ...
+            'row', userParams.imagePixels, ...
+            'col', userParams.imagePixels);
+end
+
+% Method to update the spectral stimulus params
+function rParams = updateSpectralParams(rParams, userParams)
+    rParams.colorModulationParams.startWl = userParams.wavelengths(1);
+    rParams.colorModulationParams.deltaWl = userParams.wavelengths(2);
+    rParams.colorModulationParams.endWl = userParams.wavelengths(3);
+end
+
+% Method to update the background stimulus params
+function rParams = updateBackgroundParams(rParams, userParams, luminance)
+    baseLum = 50;
+    rParams.backgroundParams = modifyStructParams(rParams.backgroundParams, ...
+        	'backgroundxyY', [0.33 0.33 baseLum]',...
+        	'monitorFile', 'CRT-MODEL', ...
+        	'leakageLum', 1.0, ...
+        	'lumFactor', luminance/baseLum);
+        
+end
+
+function rParams = updateTemporalParams(rParams, userParams)
+    % In the absence of info from the Banks et al paper, assume 50 Hz refresh rate
+    frameRate = 50;
+    windowTauInSeconds = nan; % square-wave
+    stimulusSamplingIntervalInSeconds = 1/frameRate;
+    
+    % Allow some milliseconds for response to stabilize
+    responseStabilizationSeconds = ceil(userParams.responseStabilizationMilliseconds/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
+    % Allow some milliseconds for response to return to 0
+    responseExtinctionSeconds = ceil(userParams.responseExtinctionMilliseconds/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
+    secondsToInclude = responseStabilizationSeconds+userParams.stimulusDurationInSeconds+responseExtinctionSeconds;   
+        
+    rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
+            'frameRate', frameRate, ...
+            'windowTauInSeconds', windowTauInSeconds, ...
+            'stimulusSamplingIntervalInSeconds', stimulusSamplingIntervalInSeconds, ...
+            'stimulusDurationInSeconds', userParams.stimulusDurationInSeconds, ...
+            'secondsToInclude', secondsToInclude, ...
+            'secondsForResponseStabilization', responseStabilizationSeconds, ...
+            'secondsForResponseExtinction', responseExtinctionSeconds, ...
+            'secondsToIncludeOffset', 0/1000 ...
+     )
+end
+
+function rParams = updateEyeMovementParams(rParams, userParams)
+      rParams.temporalParams  = modifyStructParams(rParams.temporalParams, ...
+          'emPathType', userParams.emPathType ...
+      );
+end
+
+
+% Method to update the optical image params
+function rParams = updateOpticalImageParams(rParams, userParams)
+    rParams.oiParams = modifyStructParams(rParams.oiParams, ...
+        	'blur', userParams.blur, ...
+            'pupilDiamMm', userParams.pupilDiamMm, ...
+            'wavefrontSpatialSamples', userParams.wavefrontSpatialSamples, ...
+            'opticsModel', userParams.opticsModel,...
+            'fieldOfViewDegs', userParams.opticalImagefieldOfViewDegs ...
+        );
+end
+
+% Method to update the mosaic params
+function rParams = updateMosaicParams(rParams, userParams, mosaicFOVdegs)
+    if (isfield(rParams.mosaicParams, 'realisticSconeSubmosaic'))
+        error('The realisticSconeSubmosaic has been removed. Pass directly sConeMinDistanceFactor and sConeFreeRadiusMicrons\n');
+    end
+        
+    rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
+            'conePacking', userParams.conePacking, ...                       
+            'fieldOfViewDegs', mosaicFOVdegs, ... 
+            'innerSegmentSizeMicrons',userParams.innerSegmentSizeMicrons, ...
+            'coneSpacingMicrons', userParams.coneSpacingMicrons, ...
+            'apertureBlur',userParams.apertureBlur, ...
+            'mosaicRotationDegs',userParams.mosaicRotationDegs,...
+            'coneDarkNoiseRate',userParams.coneDarkNoiseRate,...
+            'LMSRatio',userParams.LMSRatio,...
+            'integrationTimeInSeconds', userParams.integrationTime, ...
+            'isomerizationNoise', 'random',...                  % select from {'random', 'frozen', 'none'}
+            'osNoise', 'random', ...                            % select from {'random', 'frozen', 'none'}
+            'osModel', 'Linear');
+        
+    if strcmp(userParams.conePacking, 'hex')
+        rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
+            'sConeMinDistanceFactor', userParams.sConeMinDistanceFactor, ...
+            'sConeFreeRadiusMicrons', userParams.sConeFreeRadiusMicrons, ...
+            'latticeAdjustmentPositionalToleranceF', userParams.latticeAdjustmentPositionalToleranceF, ...
+            'latticeAdjustmentDelaunayToleranceF', userParams.latticeAdjustmentDelaunayToleranceF, ...
+            'resamplingFactor', userParams.resamplingFactor, ...
+            'marginF', userParams.marginF);
+    end
+
+    % Make sure mosaic noise parameters match the frozen noise flag passed in
+    if (userParams.freezeNoise)
+        if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
+            rParams.mosaicParams.isomerizationNoise = 'frozen';
+        end
+        if (strcmp(rParams.mosaicParams.osNoise, 'random'))
+            rParams.mosaicParams.osNoise = 'frozen';
+        end
+    end
+        
+end
+
+% Method to generate test direction params
+function testDirectionParams = generateTestDirectionParams(userParams)
+    % Parameters that define the LM instances we'll generate here
+    %
+    % Use default LMPlane.
+    testDirectionParams = instanceParamsGenerate;
+    testDirectionParams = modifyStructParams(testDirectionParams, ...
+        'trialsNum', userParams.nTrainingSamples, ...
+        'startAngle', 45, ...
+        'deltaAngle', 90, ...
+        'nAngles', 1, ...
+        'nContrastsPerDirection', userParams.nContrastsPerDirection, ...
+        'lowContrast', userParams.lowContrast, ...
+        'highContrast', userParams.highContrast, ...
+        'contrastScale', userParams.contrastScale ...                       % choose between 'linear' and 'log'
+        ); 
+end
+
+function thresholdParams = generateThresholdParams(userParams)
+    % Parameters related to how we find thresholds from responses
+    thresholdParams = thresholdParamsGenerate;
+    thresholdParams = modifyStructParams(thresholdParams, ...
+        'criterionFraction', userParams.thresholdCriterionFraction, ...
+        'method', userParams.performanceClassifier, ...
+        'STANDARDIZE', false, ...                   % Standardize data for PCA
+        'standardizeSVMpredictors', false, ...       % Standardize data for SVM
+        'useRBFKernel', userParams.useRBFSVMKernel, ...
+        'PCAComponents', userParams.thresholdPCA, ...
+        'signalSource', userParams.performanceSignal ...
+        );
+    
+    if (strcmp(thresholdParams.method, 'svm')) || ...
+        (strcmp(thresholdParams.method, 'svmV1FilterBank')) || ...
+        (strcmp(thresholdParams.method, 'svmGaussianRF'))
+        thresholdParams = modifyStructParams(thresholdParams, ...
+            'spatialPoolingKernelParams', userParams.spatialPoolingKernelParams ...
+            );  
+    end
+
+    if (isempty(userParams.performanceTrialsUsed))
+        thresholdParams.trialsUsed = userParams.nTrainingSamples;
+    else
+        thresholdParams.trialsUsed = userParams.performanceTrialsUsed;
+    end 
+end
+
+
 

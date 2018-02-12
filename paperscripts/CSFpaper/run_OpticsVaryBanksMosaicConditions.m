@@ -1,6 +1,5 @@
 function run_OpticsVaryBanksMosaicConditions
 % This is the script used to assess the impact of different optics models on the CSF
-% The optics used here is the 3mm pupil, meanOTF model
 % 
     examinedOpticsModels = {...
         'Geisler' ...
@@ -14,17 +13,18 @@ function run_OpticsVaryBanksMosaicConditions
     };
     
     % Optics to run
-    params.opticsModel = examinedOpticsModels{5};
-    params.pupilDiamMm = 3.0;   % Default is 2 (as in Banks et al 87), but 3 is more appropriate for 100 cd/m2 monitor
+    params.opticsModel = examinedOpticsModels{1};
+    params.pupilDiamMm = 2.0;   % Default is 2 (as in Banks et al 87), but 3 is more appropriate for 100 cd/m2 monitor
     
     % Simulation steps to perform
-    params.computeMosaic = ~true; 
+    params.computeMosaic = true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
-    params.visualizeResponses = ~true;
-    params.visualizeSpatialScheme = ~true;
+    params.visualizeResponses = true;
+    params.visualizeSpatialScheme = true;
+    params.visualizeOIsequence = true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = true;
@@ -32,7 +32,7 @@ function run_OpticsVaryBanksMosaicConditions
     params.deleteResponseInstances = ~true;
     
     % How to split the computation
-    computationInstance = 1;
+    computationInstance = 0;
     params = getFixedParamsForOpticsImpactExperiment(params,computationInstance);
     
     % Go
@@ -41,16 +41,18 @@ end
 
 function params = getFixedParamsForOpticsImpactExperiment(params, computationInstance)
     params.blur = true;
-    params.apertureBlur = false;
+    params.apertureBlur = true;
     
     params.imagePixels = 1024;
+    params.opticalImagefieldOfViewDegs = 6.0;
+    params.wavefrontSpatialSamples = 601;
     
     % 'random'; 'frozen0';
     params.emPathType = 'frozen0'; %random'; %'random';     
     params.centeredEMPaths = false;
    
     % Use a subset of the trials. Specify [] to use all available trials
-    params.nTrainingSamples = 1024;
+    params.nTrainingSamples = 128;
   
     % Mosaic params
     mosaicParams = getParamsForMosaicWithLabel('originalBanks'); 
@@ -62,12 +64,12 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     
     % response params
     params.responseStabilizationMilliseconds = 10;
-    params.responseExtinctionMilliseconds = 50;
+    params.responseExtinctionMilliseconds = 20;
     
     % Conditions 
     params.lowContrast = 0.0001;
     params.highContrast = 0.3; % 0.8;
-    params.nContrastsPerDirection =  18; %20;
+    params.nContrastsPerDirection =  12; % 18 %20;
     params.luminancesExamined =  [34];
     
     % 'isomerizations', 'photocurrents'
@@ -95,7 +97,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     if (computationInstance == 0)
         % All conditions in 1 MATLAB session
         params.ramPercentageEmployed = 1.0;  % use all the RAM
-        params.cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
+        params.cyclesPerDegreeExamined =  [10 20 40 60];
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 0.5;  % use 90% of the RAM
@@ -103,7 +105,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     elseif (computationInstance  == 2)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 0.5;  % use 1/2 the RAM
-        params.cyclesPerDegreeExamined =  [5 10 20 40 50];
+        params.cyclesPerDegreeExamined =  [5 10 20 40 60];
     else
         error('computational instance must be 0, 1 or 2');
     end
