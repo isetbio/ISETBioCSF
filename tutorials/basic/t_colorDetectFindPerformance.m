@@ -59,6 +59,7 @@ p.addParameter('plotSvmBoundary',false,@islogical);
 p.addParameter('plotPCAAxis1',1,@isnumeric)
 p.addParameter('plotPCAAxis2',2,@isnumeric)
 p.addParameter('delete',false',@islogical);
+p.addParameter('IBIOColorDetectSnapshot', [], @isstruct);
 
 p.parse(varargin{:});
 rParams = p.Results.rParams;
@@ -287,6 +288,7 @@ if (p.Results.compute)
     end
     
     %% Tuck away other information that we want to store
+    performanceData.IBIOColorDetectSnapshot = p.Results.IBIOColorDetectSnapshot;
     performanceData.testConeContrasts = testConeContrasts;
     performanceData.testContrasts = testContrasts;
     performanceData.rParams = rParams;

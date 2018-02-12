@@ -3,6 +3,7 @@ function varargout = c_BanksEtAlPhotocurrentAndEyeMovements(varargin)
     
 %% Parse input
 p = inputParser;
+
 % ----- cBanksEtAl params -----
 p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('useScratchTopLevelDirName', false, @islogical);
@@ -101,6 +102,13 @@ p.addParameter('deleteResponseInstances', false, @islogical);
 
 p.parse(varargin{:});
 
+% Take a snapshot of the current IBIOColorDetect deployment
+IBIOColorDetectConfig = tbUseProject('IBIOColorDetect');
+IBIOColorDetectSnapshot = tbDeploymentSnapshot(IBIOColorDetectConfig);
+
+% Following does not work, so we will write the stuct out ourselves
+%tbWriteConfig(IBIOColorDetectShapshot, 'configPath', 'IBIOColorDetect_snapshot.json');
+
 %% Set the default output
 varargout = {};
 varargout{1} = [];  % banksEtAlReplicate
@@ -181,7 +189,8 @@ for ll = 1:length(p.Results.luminances)
                'parforWorkersNum', p.Results.parforWorkersNum, ...  % no more than these many workers
                'displayTrialBlockPartitionDiagnostics', p.Results.displayTrialBlockPartitionDiagnostics, ...
                'employStandardHostComputerResources', p.Results.employStandardHostComputerResources, ...
-               'workerID', find(p.Results.displayResponseComputationProgress) ...
+               'workerID', find(p.Results.displayResponseComputationProgress), ...
+               'IBIOColorDetectSnapshot', IBIOColorDetectSnapshot ...
             );
         
             if (cc == 1)
@@ -222,7 +231,8 @@ for ll = 1:length(p.Results.luminances)
                 'visualizeKernelTransformedSignals', p.Results.visualizeKernelTransformedSignals, ...
                 'plotSvmBoundary',false,...
                 'plotPsychometric',false,...
-                'freezeNoise',p.Results.freezeNoise ...
+                'freezeNoise',p.Results.freezeNoise, ...
+                'IBIOColorDetectSnapshot', IBIOColorDetectSnapshot ...
             );
         
         
