@@ -14,11 +14,14 @@ function run_OpticsVaryBanksMosaicConditions
     
     % Optics to run
     params.opticsModel = examinedOpticsModels{1};
+    params.opticalImagefieldOfViewDegs = 10;
+    
     params.pupilDiamMm = 2.0;   % Default is 2 (as in Banks et al 87), but 3 is more appropriate for 100 cd/m2 monitor
     
     % Simulation steps to perform
     params.computeMosaic = true; 
     params.visualizeMosaic = ~true;
+    params.resamplingFactor = 13;
     
     params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
