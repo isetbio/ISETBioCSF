@@ -14,14 +14,13 @@ function run_OpticsVaryBanksMosaicConditions
     
     % Optics to run
     params.opticsModel = examinedOpticsModels{1};
-    params.opticalImagefieldOfViewDegs = 10;
-    
+
     params.pupilDiamMm = 2.0;   % Default is 2 (as in Banks et al 87), but 3 is more appropriate for 100 cd/m2 monitor
     
     % Simulation steps to perform
     params.computeMosaic = true; 
     params.visualizeMosaic = ~true;
-    params.resamplingFactor = 13;
+    
     
     params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
@@ -40,6 +39,7 @@ function run_OpticsVaryBanksMosaicConditions
     
     % Go
     run_BanksPhotocurrentEyeMovementConditions(params);
+
 end
 
 function params = getFixedParamsForOpticsImpactExperiment(params, computationInstance)
@@ -47,15 +47,16 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     params.apertureBlur = true;
     
     params.imagePixels = 1024;
-    params.opticalImagefieldOfViewDegs = 6.0;
     params.wavefrontSpatialSamples = 601;
+    params.minimumOpticalImagefieldOfViewDegs = 1.0;
+    
     
     % 'random'; 'frozen0';
     params.emPathType = 'frozen0'; %random'; %'random';     
     params.centeredEMPaths = false;
    
     % Use a subset of the trials. Specify [] to use all available trials
-    params.nTrainingSamples = 128;
+    params.nTrainingSamples = 256;
   
     % Mosaic params
     mosaicParams = getParamsForMosaicWithLabel('originalBanks'); 
@@ -100,7 +101,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     if (computationInstance == 0)
         % All conditions in 1 MATLAB session
         params.ramPercentageEmployed = 1.0;  % use all the RAM
-        params.cyclesPerDegreeExamined =  [10 20 40 60];
+        params.cyclesPerDegreeExamined =  [40 60];
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 0.5;  % use 90% of the RAM
