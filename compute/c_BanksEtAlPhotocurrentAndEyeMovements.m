@@ -17,7 +17,7 @@ p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('opticsModel','WvfHuman',@ischar);
 p.addParameter('wavefrontSpatialSamples', 201, @isnumeric);      %% * * * NEW * * * 
-p.addParameter('opticalImagefieldOfViewDegs', 3.0, @isnumeric);  %% * * * NEW * * * 
+p.addParameter('minimumOpticalImagefieldOfViewDegs', 1.0, @isnumeric);  %% * * * NEW * * * 
 
 % Mosaic params
 p.addParameter('integrationTime', 5.0/1000, @isnumeric);
@@ -41,7 +41,7 @@ p.addParameter('resamplingFactor', 11, @isnumeric);             % * * * NEW * * 
 % Stimulus params
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('wavelengths',[380 4 780],@isnumeric);
-p.addParameter('stimulusDurationInSeconds', 100, @isnumeric);   % * * * NEW * * * 
+p.addParameter('stimulusDurationInSeconds', 100/1000, @isnumeric);   % * * * NEW * * * 
 p.addParameter('nContrastsPerDirection',20,@isnumeric);
 p.addParameter('lowContrast',0.0001,@isnumeric);
 p.addParameter('highContrast',0.1,@isnumeric);
@@ -145,9 +145,6 @@ rParams = updateTemporalParams(rParams, p.Results);
 % Update eye movement params
 rParams = updateEyeMovementParams(rParams, p.Results);
 
-% Set the optical image params
-rParams = updateOpticalImageParams(rParams, p.Results);
-
 % Generate test direction params;
 testDirectionParams = generateTestDirectionParams(p.Results);
 
@@ -166,7 +163,10 @@ for ll = 1:length(p.Results.luminances)
         
         % Modify mosaic params
         rParams = updateMosaicParams(rParams, p.Results, rParams.spatialParams.fieldOfViewDegs);
-          
+        
+        % Modify the optical image params
+        rParams = updateOpticalImageParams(rParams, p.Results, rParams.spatialParams.fieldOfViewDegs);
+
         %% Compute response instances
         if (p.Results.computeResponses) || (p.Results.visualizeMosaic) || (p.Results.visualizeOptics)
            [validationData, extraData, ~,~, theOI, theMosaic] = t_coneCurrentEyeMovementsResponseInstances(...
@@ -395,8 +395,9 @@ function rParams = updateBackgroundParams(rParams, userParams, luminance)
 end
 
 function rParams = updateTemporalParams(rParams, userParams)
-    % In the absence of info from the Banks et al paper, assume 50 Hz refresh rate
-    frameRate = 50;
+    % In the absence of info from the Banks et al paper, assume 20 Hz
+    % refresh rate (to accelerate computations)
+    frameRate = 20;
     windowTauInSeconds = nan; % square-wave
     stimulusSamplingIntervalInSeconds = 1/frameRate;
     
@@ -415,7 +416,7 @@ function rParams = updateTemporalParams(rParams, userParams)
             'secondsForResponseStabilization', responseStabilizationSeconds, ...
             'secondsForResponseExtinction', responseExtinctionSeconds, ...
             'secondsToIncludeOffset', 0/1000 ...
-     )
+     );
 end
 
 function rParams = updateEyeMovementParams(rParams, userParams)
@@ -426,13 +427,13 @@ end
 
 
 % Method to update the optical image params
-function rParams = updateOpticalImageParams(rParams, userParams)
+function rParams = updateOpticalImageParams(rParams, userParams, fieldOfVieDegs)
     rParams.oiParams = modifyStructParams(rParams.oiParams, ...
         	'blur', userParams.blur, ...
             'pupilDiamMm', userParams.pupilDiamMm, ...
             'wavefrontSpatialSamples', userParams.wavefrontSpatialSamples, ...
             'opticsModel', userParams.opticsModel,...
-            'fieldOfViewDegs', userParams.opticalImagefieldOfViewDegs ...
+            'fieldOfViewDegs', max([userParams.minimumOpticalImagefieldOfViewDegs fieldOfVieDegs]) ...
         );
 end
 
@@ -443,7 +444,8 @@ function rParams = updateMosaicParams(rParams, userParams, mosaicFOVdegs)
     end
         
     rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
-            'conePacking', userParams.conePacking, ...                       
+            'conePacking', userParams.conePacking, ... 
+            'resamplingFactor', userParams.resamplingFactor, ...
             'fieldOfViewDegs', mosaicFOVdegs, ... 
             'innerSegmentSizeMicrons',userParams.innerSegmentSizeMicrons, ...
             'coneSpacingMicrons', userParams.coneSpacingMicrons, ...
@@ -462,7 +464,6 @@ function rParams = updateMosaicParams(rParams, userParams, mosaicFOVdegs)
             'sConeFreeRadiusMicrons', userParams.sConeFreeRadiusMicrons, ...
             'latticeAdjustmentPositionalToleranceF', userParams.latticeAdjustmentPositionalToleranceF, ...
             'latticeAdjustmentDelaunayToleranceF', userParams.latticeAdjustmentDelaunayToleranceF, ...
-            'resamplingFactor', userParams.resamplingFactor, ...
             'marginF', userParams.marginF);
     end
 
