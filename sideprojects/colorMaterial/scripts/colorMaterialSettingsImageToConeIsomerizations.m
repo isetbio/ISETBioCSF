@@ -19,11 +19,13 @@ function colorMaterialSettingsImageToConeIsomerizations
     
     regenerateScenes = ~true;
     regenerateConeMosaic = ~true;
-    generateOI = ~true;
+    generateOI = true;
     generateResponses = true;
     
     visualizeScenes = ~true;
     visualizeMosaic = ~true;
+    visualizeOI = true;
+    visualizePSF = true;
     visualizeSceneOIandMosaic = ~true;
 
     
@@ -53,12 +55,18 @@ function colorMaterialSettingsImageToConeIsomerizations
             [scenesList, noBorderSceneRows, noBorderSceneCols] = generateISETbioScenes(display);
             save(scenesMatFileName, 'scenesList', 'noBorderSceneRows', 'noBorderSceneCols', '-v7.3');
         end
-
-        % Display the scenes
-        if (visualizeScenes)
-            displayScenes(scenesList, noBorderSceneRows, noBorderSceneCols);
-        end
     end
+    
+    % Display the scenes
+    if (visualizeScenes)
+        if (~regenerateScenes)
+            load(scenesMatFileName, 'scenesList', 'noBorderSceneRows', 'noBorderSceneCols');   
+        end
+        whichScene = 'C4M4';
+        sceneFOV = [];
+        displayScenes(scenesList, noBorderSceneRows, noBorderSceneCols, whichScene, sceneFOV);
+    end
+    
     
     % Now we need some stuff from IBIOColorDetect
     %tbUseProject('IBIOColorDetect')
@@ -79,7 +87,18 @@ function colorMaterialSettingsImageToConeIsomerizations
     end
     
     if (visualizeMosaic)
-        theConeMosaic.visualizeGrid(); % 'visualizedConeAperture', 'geometricArea');
+        hFig = theConeMosaic.visualizeGrid('backgroundColor', [.75 .75 .75], ...
+            'foregroundColor', [0 0 0], ...
+            'visualizedConeAperture', 'geometricArea', ...
+            'labelConeTypes', false,...
+            'overlay cone density contour','theoretical_and_measured', ...
+            'conedensitycontourlevels', [10 15 30 50 75 100 125 150 200] * 1000, ... % [75 100 125 150 200]* 1000, ... % [10 15 30 60 120 240]*1000, ...
+            'apertureshape', 'hexagons');
+        set(hFig, 'Position', [1 1 1340 1300]);
+        grid on; box on;
+        set(hFig, 'Color', [1 1 1])
+        NicePlot.exportFigToPNG(sprintf('mosaic_%2.0fdeg.png', horizontalFOV), hFig, 300);
+        pause
     end
       
     if (generateResponses)
@@ -106,6 +125,13 @@ function colorMaterialSettingsImageToConeIsomerizations
             load(oiMatFileName, 'theOI');
         end
     
+        if (visualizePSF)
+            micronsPerDegree = 300;
+            visualizePSFfromOI(theOI, micronsPerDegree);
+        end
+        
+        
+        
         % Container to hold all sceneData
         allScenesData = containers.Map();
 
@@ -119,6 +145,10 @@ function colorMaterialSettingsImageToConeIsomerizations
             fprintf('Computing optical image for scene %d\n', sceneIndex);
             theOI = oiCompute(theOI, theScene);
 
+            if (visualizeOI)
+                visualizeOIRGBimage(theOI, horizontalFOV);
+            end
+        
             % Visualize scene and optical image
             if (visualizeSceneOIandMosaic)
                 visualizeStimulusAndConeMosaic(theConeMosaic, theOI, theScene, [])
@@ -170,12 +200,12 @@ end
  
 function cm = coneMosaicGenerate(fovDegs, integrationTime)
 
-    quality.resamplingFactor = 2;
-    quality.tolerance1 = 1.0;           % larger than default tolerances to speed-up computation. For production work, either do not set, or set to equal or lower than 0.01 
-    quality.tolerance2 = 0.5;           % larger than default tolerances to speed-up computation, For production work, either do not set, or set to equal or lower than 0.001 
+    quality.resamplingFactor = 13;
+    quality.tolerance1 = 0.01;           % larger than default tolerances to speed-up computation. For production work, either do not set, or set to equal or lower than 0.01 
+    quality.tolerance2 = 0.001;           % larger than default tolerances to speed-up computation, For production work, either do not set, or set to equal or lower than 0.001 
     quality.marginF = [];    
         
-    maxGridAdjustmentIterations = 50;
+    maxGridAdjustmentIterations = 3000;
     % Instantiate a hex mosaic
     cm = coneMosaicHex(quality.resamplingFactor, ...
         'fovDegs', fovDegs, ...
@@ -191,21 +221,115 @@ function cm = coneMosaicGenerate(fovDegs, integrationTime)
     cm.noiseFlag = 'none';
 end
 
-function displayScenes(scenesList, noBorderSceneRows, noBorderSceneCols)
+
+function visualizeOIRGBimage(theOI,  sceneFOV)
+    rgbImage = oiGet(theOI, 'rgb image');
+    sampleSizeDegs = oiGet(theOI, 'wangular resolution');
+    xSupport = 1:size(rgbImage,2);
+    xSupport = xSupport * sampleSizeDegs;
+    xSupport = xSupport - mean(xSupport);
+    ySupport = 1:size(rgbImage,2);
+    ySupport = ySupport * sampleSizeDegs;
+    ySupport = ySupport - mean(ySupport);
     
-    rows = 3; cols = 5;
+    xx = find(abs(xSupport) <= sceneFOV/2);
+    yy = find(abs(ySupport) <= sceneFOV/2);
+    xSupport = xSupport(xx);
+    ySupport = ySupport(yy);
+    rgbImage = rgbImage(yy,xx,:);
+            
+    hFig = figure(19);
+    set(hFig, 'Position', [10 10 960 540], 'Color', [1 1 1]);
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', rows, ...
-           'colsNum', cols, ...
-           'heightMargin',   0.04, ...
-           'widthMargin',    0.02, ...
-           'leftMargin',     0.03, ...
-           'rightMargin',    0.00, ...
-           'bottomMargin',   0.04, ...
-           'topMargin',      0.03);
-       
+               'rowsNum', 1, ...
+               'colsNum', 2, ...
+               'heightMargin',   0.04, ...
+               'widthMargin',    0.02, ...
+               'leftMargin',     0.03, ...
+               'rightMargin',    0.00, ...
+               'bottomMargin',   0.05, ...
+               'topMargin',      0.01);
+           
+    subplot('Position', subplotPosVectors(1,1).v);
+    image(xSupport , ySupport, rgbImage);
+    axis 'xy'; axis 'image';
+    tickInterval = 1;
+    set(gca, 'XLim', [xSupport(1) xSupport(end)]*1.05, 'YLim', [ySupport(1) ySupport(end)]*1.05, ...
+         'XTick', -15:tickInterval:15, 'YTick', -15:tickInterval:15, 'YTickLabels', {});
+    grid on; box on;
+    set(gca, 'FontSize', 12);
+    xlabel('space (degs)');
+    ylabel('space (degs)');
+    
+    
+    xCenter = -3;
+    yCenter = 1;
+    zoomedInFOV = 1;
+    xx = find(abs(xSupport-xCenter) <= zoomedInFOV);
+    
+    yy = find(abs(xSupport-yCenter) <= zoomedInFOV);
+    xSupport = xSupport(xx);
+    ySupport = ySupport(yy);
+    rgbImage = rgbImage(yy,xx,:);
+    
+    subplot('Position', subplotPosVectors(1,2).v);
+    image(xSupport , ySupport, rgbImage);
+    axis 'xy'; axis 'image';
+    tickInterval = 0.2;
+    set(gca, 'XLim', xCenter+[-zoomedInFOV zoomedInFOV]*1.05, 'YLim', yCenter+[-zoomedInFOV zoomedInFOV]*1.05, ...
+         'XTick', -15:tickInterval:15, 'YTick', -15:tickInterval:15, 'YTickLabels', {});
+    set(gca, 'FontSize', 14);
+     
+    grid on; box on;
+    set(gca, 'FontSize', 12);
+    xlabel('space (degs)');
+    NicePlot.exportFigToPNG('C4M4_oi.png', hFig, 300)
+    
+    pause
+    
+end
+
+
+function displayScenes(scenesList, noBorderSceneRows, noBorderSceneCols, whichScene, sceneFOV)
+    
+    if (isempty(whichScene))
+        rows = 3; cols = 5;
+        subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+               'rowsNum', rows, ...
+               'colsNum', cols, ...
+               'heightMargin',   0.04, ...
+               'widthMargin',    0.02, ...
+               'leftMargin',     0.03, ...
+               'rightMargin',    0.00, ...
+               'bottomMargin',   0.04, ...
+               'topMargin',      0.03);
+        figPosition = [10 10 1500 940];
+    else
+        rows = 1; cols = 1;
+        subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+               'rowsNum', rows, ...
+               'colsNum', cols, ...
+               'heightMargin',   0.00, ...
+               'widthMargin',    0.00, ...
+               'leftMargin',     0.08, ...
+               'rightMargin',    0.00, ...
+               'bottomMargin',   0.06, ...
+               'topMargin',      0.03);
+       figPosition = [10 10 350 400];
+    end
+    
+    if (~isempty(whichScene))
+        whichSceneIndex = [];
+        for k = 1:numel(scenesList)
+            if (strfind(whichScene,scenesList{k}.name))
+                whichSceneIndex = k;
+            end
+        end
+        scenesList = {scenesList{whichSceneIndex}};
+    end
+    
     hFig = figure(1); clf;
-    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1500 940]);
+    set(hFig, 'Color', [1 1 1], 'Position', figPosition);
     for k = 1:numel(scenesList)
         sceneName = sceneGet(scenesList{k}, 'name');
         sceneLuminance = sceneGet(scenesList{k}, 'luminance');
@@ -220,14 +344,29 @@ function displayScenes(scenesList, noBorderSceneRows, noBorderSceneCols)
         yspace = (1:size(sceneRGB,2))*angRes(2);
         yspace = yspace - mean(yspace);
         
+        if (~isempty(sceneFOV))
+            xx = find(abs(xspace) <= sceneFOV/2);
+            yy = find(abs(yspace) <= sceneFOV/2);
+            xspace = xspace(xx);
+            yspace = yspace(yy);
+            sceneRGB = sceneRGB(yy,xx,:);
+            tickInterval = 0.25;
+        else
+            tickInterval = 1.0;
+        end
+        
         row = floor((k-1)/cols)+1;
         col = mod(k-1, cols)+1;
         subplot('Position', subplotPosVectors(row,col).v);
         image(xspace, yspace, sceneRGB);
-        title(sprintf('%s\nmean lum=%2.1f cd/m2, FOV=%2.1f x %2.1f deg', sceneName, sceneMeanLuminance, sceneHorizontalFOV, sceneVerticalFOV));
+        title(sprintf('%s\nmean lum=%2.1f cd/m2, FOV=%2.1f x %2.1f deg', ...
+            sceneName, sceneMeanLuminance, xspace(end)*2, yspace(end)*2));
         axis 'xy'
         axis 'image';
- 
+        
+        set(gca, 'XLim', [xspace(1) xspace(end)]*1.05, 'YLim', [yspace(1) yspace(end)]*1.05, ...
+            'XTick', -15:tickInterval:15, 'YTick', -15:tickInterval:15, 'YTickLabels', {});
+        grid on; box on;
         set(gca, 'FontSize', 12);
         if (row == rows) && (col == 1)
             xlabel('space (degs)');

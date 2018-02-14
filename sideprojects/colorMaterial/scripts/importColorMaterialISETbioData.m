@@ -19,12 +19,30 @@ function importColorMaterialISETbioData
     % Retrieve the scene names
     scenesList = keys(allScenesData);
     
+    whichScene = 'C4M4';
+    %whichScene = [];
+    
+    if ~isempty(whichScene)
+        for k = 1:numel(scenesList)
+           if (strfind(whichScene,scenesList{k}))
+                whichSceneIndex = k
+           end
+        end
+
+        scenesList = {scenesList{whichSceneIndex}}
+
+        tmp = containers.Map();
+        tmp(whichScene) = allScenesData(whichScene);
+        allScenesData = tmp;
+    end
+    
+    
     % Loop through all scenes
     for sceneIndex = 1:numel(scenesList)
          theSceneName = scenesList{sceneIndex};
          
          % Retrieve the data for this scene
-         theSceneData = allScenesData(theSceneName);
+         theSceneData = allScenesData(theSceneName)
          
          % Retrieve the cone isomerization rates and cone locations
          isomerizationRates = theSceneData.theConeIsomerizations;
@@ -100,7 +118,7 @@ function hFig = plotMosaicActivationMaps(isomerizationRates, xConeLocsDegs, yCon
     
     if isempty(hFig)
         hFig = figure(); clf;
-        set(hFig, 'Position', [10 10 1670 920], 'Name', theSceneName);
+        set(hFig, 'Position', [10 10 1670 920], 'Color', [1 1 1], 'Name', theSceneName);
         colormap(bone(1024));
     end
                
@@ -123,7 +141,7 @@ function hFig = plotMosaicActivationMaps(isomerizationRates, xConeLocsDegs, yCon
         set(gca, 'CLim', [0 1], 'XTick', ticks, 'YTick', ticks, ...
                  'XLim', range, 'YLim', range, 'FontSize', 12);
         box on; grid on;
-        xlabel('space (degs');
+        xlabel('space (degs)');
         title(sprintf('%s (max: %2.0f R*/sec)', coneTypeName, max(isomerizationRates(:))));
         if (coneTypeIndex>1)
             set(gca, 'YTickLabel',{});
@@ -167,7 +185,7 @@ function hFig = plotDemosaicedActivationMaps(demosaicedMap, demosaicedMapSupport
     
     if isempty(hFig)
         hFig = figure(); clf;
-        set(hFig, 'Position', [10 10 1670 920], 'Name', theSceneName);
+        set(hFig, 'Position', [10 10 1670 920], 'Color', [1 1 1], 'Name', theSceneName);
         colormap(bone(1024));
     end
          
@@ -189,7 +207,7 @@ function hFig = plotDemosaicedActivationMaps(demosaicedMap, demosaicedMapSupport
         set(gca, 'CLim', [0 1], 'XTick', ticks, 'YTick', ticks, ...
                  'XLim', range, 'YLim', range, 'FontSize', 12);
         box on; grid on;
-        xlabel('space (degs');
+        xlabel('space (degs)');
         title(sprintf('%s (max: %2.0f R*/sec)', coneTypeName, max(demosaicedMap(:))));
         if (coneTypeIndex>1)
             set(gca, 'YTickLabel',{});
