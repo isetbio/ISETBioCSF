@@ -24,9 +24,9 @@ function run_OpticsVaryBanksMosaicConditions
     
     params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
-    params.visualizeResponses = true;
-    params.visualizeSpatialScheme = true;
-    params.visualizeOIsequence = true;
+    params.visualizeResponses = ~true;
+    params.visualizeSpatialScheme = ~true;
+    params.visualizeOIsequence = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = true;
@@ -59,21 +59,28 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     params.nTrainingSamples = 256;
   
     % Mosaic params
-    mosaicParams = getParamsForMosaicWithLabel('originalBanks'); 
+    mosaicParams = getParamsForMosaicWithLabel('originalBanks');
+    
     fNames = fieldnames(mosaicParams);
     for k = 1:numel(fNames)
         params.(fNames{k}) = mosaicParams.(fNames{k});
     end
+    
     params.integrationTimeMilliseconds =  5.0;
+    params.resamplingFactor = [];   % Empty indicates that c_BanksEtAlPhotocurrentAndEyeMovements
+                                    % will choose a resamplingFactor based
+                                    % on the mosaic size, smaller mosaics
+                                    % will get higher resamplingFactor
+    
     
     % response params
-    params.responseStabilizationMilliseconds = 10;
-    params.responseExtinctionMilliseconds = 20;
+    params.responseStabilizationMilliseconds = 40;
+    params.responseExtinctionMilliseconds = 40;
     
     % Conditions 
     params.lowContrast = 0.0001;
-    params.highContrast = 0.3; % 0.8;
-    params.nContrastsPerDirection =  12; % 18 %20;
+    params.highContrast =  0.8;
+    params.nContrastsPerDirection =  3; % 18 %20;
     params.luminancesExamined =  [34];
     
     % 'isomerizations', 'photocurrents'
@@ -101,7 +108,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     if (computationInstance == 0)
         % All conditions in 1 MATLAB session
         params.ramPercentageEmployed = 1.0;  % use all the RAM
-        params.cyclesPerDegreeExamined =  [40 60];
+        params.cyclesPerDegreeExamined =  [3 5 10 20 30 60];
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 0.5;  % use 90% of the RAM

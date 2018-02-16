@@ -36,7 +36,7 @@ p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
 p.addParameter('latticeAdjustmentPositionalToleranceF', 0.01, @isnumeric);
 p.addParameter('latticeAdjustmentDelaunayToleranceF', 0.001, @isnumeric);
 p.addParameter('marginF', [], @isnumeric);     
-p.addParameter('resamplingFactor', 11, @isnumeric);             % * * * NEW * * * 
+p.addParameter('resamplingFactor', 9, @isnumeric);             % * * * NEW * * * 
 
 % Stimulus params
 p.addParameter('imagePixels',400,@isnumeric);
@@ -443,9 +443,25 @@ function rParams = updateMosaicParams(rParams, userParams, mosaicFOVdegs)
         error('The realisticSconeSubmosaic has been removed. Pass directly sConeMinDistanceFactor and sConeFreeRadiusMicrons\n');
     end
         
+    if (isempty(userParams.resamplingFactor))
+        if (mosaicFOVdegs < 0.5)
+            resamplingFactor = 13;
+        elseif (mosaicFOVdegs < 1.0)
+            resamplingFactor = 11;
+         elseif (mosaicFOVdegs < 2.0)
+            resamplingFactor = 9;
+        else
+            resamplingFactor = 7;
+        end
+    else
+        resamplingFactor = userParams.resamplingFactor;
+    end
+     
+    fprintf('\n* * * Chosen resamplingFactor for mosaic with FOV:%2.2f degs: %2.0f\n', mosaicFOVdegs, resamplingFactor);
+    
     rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
             'conePacking', userParams.conePacking, ... 
-            'resamplingFactor', userParams.resamplingFactor, ...
+            'resamplingFactor', resamplingFactor, ...
             'fieldOfViewDegs', mosaicFOVdegs, ... 
             'innerSegmentSizeMicrons',userParams.innerSegmentSizeMicrons, ...
             'coneSpacingMicrons', userParams.coneSpacingMicrons, ...
