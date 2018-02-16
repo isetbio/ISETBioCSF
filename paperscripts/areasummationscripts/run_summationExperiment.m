@@ -9,7 +9,7 @@ function run_summationExperiment
     % 'DavilaGeislerLsfAsPsf'
     % 'DavilaGeisler'
     
-    employedOptics = 'WvfHuman'; % 'WvfHuman'; 'WvfHumanMeanOTFmagMeanOTFphase'; % 'AOoptics80mmPupil'; % 'WvfHumanMeanOTFmagMeanOTFphase';  % 'AOoptics75mmPupil'
+    employedOptics = 'DavilaGeisler'; % 'WvfHuman'; 'WvfHumanMeanOTFmagMeanOTFphase'; % 'AOoptics80mmPupil'; % 'WvfHumanMeanOTFmagMeanOTFphase';  % 'AOoptics75mmPupil'
     if ~(strcmp(employedOptics ,'AOoptics80mmPupil'))
         spotIntensityBoostFactor = (8.0/3.0)^2;
     else
@@ -18,13 +18,13 @@ function run_summationExperiment
     
     %% Inference engine and spatial summation sigma
     thresholdSignal = 'isomerizations';  % choose from {'isomerizations', 'photocurrents'}
-    thresholdMethod = 'mlpt';  % choose from {'mlpt', 'mlptGaussianRF', 'svmGaussianRF'}
+    thresholdMethod = 'svmGaussianRF';  % choose from {'mlpt', 'mlptGaussianRF', 'svmGaussianRF'}
     
     spatialSummationData = containers.Map();
     if strcmp(thresholdMethod,'mlpt') || strcmp(thresholdMethod,'svm')
         spatialPoolingSigmaArcMinList = nan;
     else
-        spatialPoolingSigmaArcMinList = [0.125 0.25 0.5 1 2 4];
+        spatialPoolingSigmaArcMinList = [0.125 0.25 0.5 1 1.5 2 4];
     end
     for k = 1:numel(spatialPoolingSigmaArcMinList)
         spatialPoolingSigmaArcMin = spatialPoolingSigmaArcMinList(k);
@@ -60,7 +60,7 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     params.computePhotocurrentResponseInstances = ~true;
     
     % Find the performance (true) or load performance data from the disk (false)
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     
     % Fit the psychometric function? Set to true to obtain the threshols
     params.fitPsychometric = true;
