@@ -15,17 +15,17 @@ function colorMaterialSettingsImageToConeIsomerizations
     
     [localDir,~] = fileparts(which(fullfile(mfilename)));
     
-    horizontalFOV = 15;
+    horizontalFOV = 1.0;
     
     regenerateScenes = ~true;
-    regenerateConeMosaic = ~true;
+    regenerateConeMosaic = true;
     generateOI = true;
     generateResponses = true;
     
     visualizeScenes = ~true;
-    visualizeMosaic = ~true;
-    visualizeOI = true;
-    visualizePSF = true;
+    visualizeMosaic = true;
+    visualizeOI = ~true;
+    visualizePSF = ~true;
     visualizeSceneOIandMosaic = ~true;
 
     
