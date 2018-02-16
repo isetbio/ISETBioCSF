@@ -15,8 +15,8 @@ function loadSummationData()
         spatialSummationData1 = spatialSummationData;
         spatialPoolingSigmaArcMinList1 = spatialPoolingSigmaArcMinList;
         
-        employedOptics2 = 'WvfHuman'; % MeanOTFmagMeanOTFphase';
-        employedOptics2legend = 'wvfHuman';
+        employedOptics2 = 'DavilaGeisler'; % 'WvfHuman'';
+        employedOptics2legend = 'Davila-Geisler PSF';
         datafile = sprintf('SummationData_%s_%s.mat',  classifierType, employedOptics2);
         load(datafile, 'spatialSummationData', 'spatialPoolingSigmaArcMinList');
         spatialSummationData2 = spatialSummationData;

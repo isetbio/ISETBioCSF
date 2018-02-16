@@ -9,7 +9,7 @@ function run_summationExperiment
     % 'DavilaGeislerLsfAsPsf'
     % 'DavilaGeisler'
     
-    employedOptics = 'DavilaGeisler'; % 'WvfHuman'; 'WvfHumanMeanOTFmagMeanOTFphase'; % 'AOoptics80mmPupil'; % 'WvfHumanMeanOTFmagMeanOTFphase';  % 'AOoptics75mmPupil'
+    employedOptics = 'AOoptics80mmPupil'; % 'WvfHuman'; 'WvfHumanMeanOTFmagMeanOTFphase'; % 'AOoptics80mmPupil'; % 'WvfHumanMeanOTFmagMeanOTFphase';  % 'AOoptics75mmPupil'
     if ~(strcmp(employedOptics ,'AOoptics80mmPupil'))
         spotIntensityBoostFactor = (8.0/3.0)^2;
     else
@@ -60,7 +60,7 @@ function plotData = runSingleCondition(thresholdSignal, thresholdMethod, spatial
     params.computePhotocurrentResponseInstances = ~true;
     
     % Find the performance (true) or load performance data from the disk (false)
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     
     % Fit the psychometric function? Set to true to obtain the threshols
     params.fitPsychometric = true;
