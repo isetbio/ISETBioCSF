@@ -23,14 +23,14 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData,
     end
 
     timeAxis = 1000*noStimData.responseInstanceArray.timeAxis;
+    
     if (numel(timeAxis) == 1)
         stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations(:);
         noStimData.noiseFreeIsomerizations = noStimData.noiseFreeIsomerizations(:);
         stimData.noiseFreePhotocurrents = stimData.noiseFreePhotocurrents(:);
         noStimData.noiseFreePhotocurrents = noStimData.noiseFreePhotocurrents(:);
     end
-    
-    
+   
     [hFigs, peakConeIndex] = visualizeNoiseFreeResponses(theMosaic, timeAxis, stimData, noStimData);
     hFigsInfo{numel(hFigsInfo)+1} = struct(...
             'filename', 'noiseFreeXTResponses',...

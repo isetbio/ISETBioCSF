@@ -82,8 +82,8 @@ p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeOIsequence', false, @islogical);
 p.addParameter('visualizeOptics',false, @islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
-p.addParameter('visualizeMosaic',true, @islogical); 
-p.addParameter('visualizeMosaicWithFirstEMpath', true, @islogical);
+p.addParameter('visualizeMosaic',false, @islogical); 
+p.addParameter('visualizeMosaicWithFirstEMpath', false, @islogical);
 p.addParameter('visualizeResponses',false,@islogical);
 p.addParameter('visualizeKernelTransformedSignals',false, @islogical);
 p.addParameter('visualizationFormat', 'montage', @ischar);
@@ -395,9 +395,9 @@ function rParams = updateBackgroundParams(rParams, userParams, luminance)
 end
 
 function rParams = updateTemporalParams(rParams, userParams)
-    % In the absence of info from the Banks et al paper, assume 20 Hz
+    % In the absence of info from the Banks et al paper, assume 10 Hz
     % refresh rate (to accelerate computations)
-    frameRate = 20;
+    frameRate = 10;
     windowTauInSeconds = nan; % square-wave
     stimulusSamplingIntervalInSeconds = 1/frameRate;
     
