@@ -21,10 +21,9 @@ function run_OpticsVaryBanksMosaicConditions
     params.computeMosaic = true; 
     params.visualizeMosaic = ~true;
     
-    
     params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
-    params.visualizeResponses = ~true;
+    params.visualizeResponses = true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     
@@ -56,7 +55,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     params.centeredEMPaths = false;
    
     % Use a subset of the trials. Specify [] to use all available trials
-    params.nTrainingSamples = 256;
+    params.nTrainingSamples = 1024;
   
     % Mosaic params
     mosaicParams = getParamsForMosaicWithLabel('originalBanks');
@@ -79,8 +78,8 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     
     % Conditions 
     params.lowContrast = 0.0001;
-    params.highContrast =  0.8;
-    params.nContrastsPerDirection =  3; % 18 %20;
+    params.highContrast =  0.5;
+    params.nContrastsPerDirection =  18; % 18 %20;
     params.luminancesExamined =  [34];
     
     % 'isomerizations', 'photocurrents'
