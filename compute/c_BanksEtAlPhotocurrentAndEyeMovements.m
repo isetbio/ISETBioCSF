@@ -444,14 +444,16 @@ function rParams = updateMosaicParams(rParams, userParams, mosaicFOVdegs)
     end
         
     if (isempty(userParams.resamplingFactor))
-        if (mosaicFOVdegs < 0.5)
+        if (mosaicFOVdegs < 0.3)
             resamplingFactor = 13;
-        elseif (mosaicFOVdegs < 1.0)
+        elseif (mosaicFOVdegs < 0.5)
             resamplingFactor = 11;
-         elseif (mosaicFOVdegs < 2.0)
+        elseif (mosaicFOVdegs < 1.0)
             resamplingFactor = 9;
-        else
+         elseif (mosaicFOVdegs < 2.0)
             resamplingFactor = 7;
+        else
+            resamplingFactor = 5;
         end
     else
         resamplingFactor = userParams.resamplingFactor;

@@ -24,23 +24,26 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     end
     
     eyeMovementsNumPerOpticalImage = temporalParams.stimulusSamplingIntervalInSeconds/integrationTime;
-    emPathLength = round(eyeMovementsNumPerOpticalImage*numel(stimulusTimeAxis));
+    emPathLength = ceil(eyeMovementsNumPerOpticalImage*numel(stimulusTimeAxis));
     
     wavelengths = floor((colorModulationParams.endWl-colorModulationParams.startWl)/colorModulationParams.deltaWl);
     opticalImageSize = 1.25*spatialParams.row*spatialParams.col*wavelengths;
     
     % estimate sizes of the various matrices used
     trialBlockSize = floor(nTrials/numberOfWorkers);
-    totalRAM = ramSizeGBytesAvailable;
+    totalMemoryUsed = ramSizeGBytesAvailable;
     allowedRAMcompression = 1.0;
-    while (totalRAM >= allowedRAMcompression*ramSizeGBytesAvailable)
-        totalMemoryPerWorker = computeTotalMemoryPerWorker();
-        totalRAM = totalMemoryPerWorker * numberOfWorkers;
+    
+    while (totalMemoryUsed >= allowedRAMcompression*ramSizeGBytesAvailable)
         trialBlockSize = trialBlockSize-1;
+        totalMemoryPerWorker = computeTotalMemoryPerWorker();
+        totalMemoryUsed = totalMemoryPerWorker * numberOfWorkers;
+        fprintf('in loop trialBlockSize: %d, total memory used: %f\n', trialBlockSize, totalMemoryUsed);
     end
     
     trialBlockSize = min([nTrials max([1 trialBlockSize])]);
     nParforTrialBlocks = ceil(nTrials / trialBlockSize);
+    totalMemoryPerWorker = computeTotalMemoryPerWorker();
     
     if (nParforTrialBlocks < numberOfWorkers)
         nParforTrialBlocks = numberOfWorkers;
@@ -49,6 +52,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     end
     
     totalMemoryUsed = numberOfWorkers * totalMemoryPerWorker;
+    
     if (totalMemoryUsed < 0.01*ramSizeGBytesAvailable/numberOfWorkers)
          % Just use one processor - faster most of the times
          nParforTrials(1) = nTrials;
@@ -66,7 +70,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     end
 
      
-    
+    % Last block of trials
     nParforTrialsTmp = ones(1, nParforTrialBlocks) * trialBlockSize;
     remainingTrials = nTrials - sum(nParforTrialsTmp);
     if (remainingTrials > 0) 
@@ -77,6 +81,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
         end
     end
     
+    % Check that # of trials is correct
     accumTrials = 0;
     k = 1; keepGoing = true;
     while (k <= numel(nParforTrialsTmp)) && (keepGoing)
@@ -106,7 +111,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     
     % Nested function 
     function totalMemoryPerWorker = computeTotalMemoryPerWorker()
-        totalMemoryPerWorker = (2*opticalImageSize + coneMosaicPatternSize*trialBlockSize + coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
+        totalMemoryPerWorker = 5*(2*opticalImageSize + 2*coneMosaicPatternSize*trialBlockSize + coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
     end
 
 end
