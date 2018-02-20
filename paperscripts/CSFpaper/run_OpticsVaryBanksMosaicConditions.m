@@ -18,7 +18,7 @@ function run_OpticsVaryBanksMosaicConditions
     params.pupilDiamMm = 2.0;   % Default is 2 (as in Banks et al 87), but 3 is more appropriate for 100 cd/m2 monitor
     
     % Simulation steps to perform
-    params.computeMosaic = true; 
+    params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
     params.computeResponses = true;
@@ -35,7 +35,7 @@ function run_OpticsVaryBanksMosaicConditions
     % How to split the computation
     computationInstance = 0;
     params = getFixedParamsForOpticsImpactExperiment(params,computationInstance);
-    
+
     % Go
     run_BanksPhotocurrentEyeMovementConditions(params);
 
@@ -45,7 +45,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     params.blur = true;
     params.apertureBlur = true;
     
-    params.imagePixels = 1024;
+    params.imagePixels = 512;
     params.wavefrontSpatialSamples = 601;
     params.minimumOpticalImagefieldOfViewDegs = 1.0;
     
@@ -106,8 +106,8 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     % Split computations and specify RAM memory
     if (computationInstance == 0)
         % All conditions in 1 MATLAB session
-        params.ramPercentageEmployed = 1.0;  % use all the RAM
-        params.cyclesPerDegreeExamined =  [3 5 10 20 30 60];
+        params.ramPercentageEmployed = 1.2;  % use all the RAM
+        params.cyclesPerDegreeExamined =  [3]; % [3 5 10 20 30 60];
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 0.5;  % use 90% of the RAM

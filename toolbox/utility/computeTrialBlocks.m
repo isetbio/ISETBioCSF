@@ -8,8 +8,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     end
     
     % Ensure ramPercentageEmployed is in [0.05 1]
-    ramPercentageEmployed = max([0.05 min([1 ramPercentageEmployed])]);
-    
+    ramPercentageEmployed = max([0.05 ramPercentageEmployed]);
     ramSizeGBytes = ramPercentageEmployed * ramSizeGBytes;
     
     % Subtract RAM used by the OS
@@ -23,18 +22,19 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
         [stimulusTimeAxis, ~, ~] = gaussianTemporalWindowCreate(temporalParams);
     end
     
-    eyeMovementsNumPerOpticalImage = temporalParams.stimulusSamplingIntervalInSeconds/integrationTime;
-    emPathLength = ceil(eyeMovementsNumPerOpticalImage*numel(stimulusTimeAxis));
+    eyeMovementsNumPerOpticalImage = max([1 ceil(temporalParams.stimulusSamplingIntervalInSeconds/integrationTime)]);
+    emPathLength = eyeMovementsNumPerOpticalImage*numel(stimulusTimeAxis);
     
     wavelengths = floor((colorModulationParams.endWl-colorModulationParams.startWl)/colorModulationParams.deltaWl);
     opticalImageSize = 1.25*spatialParams.row*spatialParams.col*wavelengths;
     
     % estimate sizes of the various matrices used
     trialBlockSize = floor(nTrials/numberOfWorkers);
-    totalMemoryUsed = ramSizeGBytesAvailable;
-    allowedRAMcompression = 1.0;
+    totalMemoryPerWorker = computeTotalMemoryPerWorker();
+    totalMemoryUsed = totalMemoryPerWorker * numberOfWorkers;
     
-    while (totalMemoryUsed >= allowedRAMcompression*ramSizeGBytesAvailable)
+    allowedRAMcompression = 1.0;
+    while (totalMemoryUsed > allowedRAMcompression*ramSizeGBytesAvailable)
         trialBlockSize = trialBlockSize-1;
         totalMemoryPerWorker = computeTotalMemoryPerWorker();
         totalMemoryUsed = totalMemoryPerWorker * numberOfWorkers;
@@ -111,7 +111,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     
     % Nested function 
     function totalMemoryPerWorker = computeTotalMemoryPerWorker()
-        totalMemoryPerWorker = 5*(2*opticalImageSize + 2*coneMosaicPatternSize*trialBlockSize + coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
+        totalMemoryPerWorker = (opticalImageSize + 2*coneMosaicPatternSize*trialBlockSize*eyeMovementsNumPerOpticalImage + coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
     end
 
 end
