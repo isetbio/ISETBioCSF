@@ -40,7 +40,7 @@ p.addParameter('resamplingFactor', 9, @isnumeric);             % * * * NEW * * *
 
 % Stimulus params
 p.addParameter('imagePixels',400,@isnumeric);
-p.addParameter('wavelengths',[380 4 780],@isnumeric);
+p.addParameter('wavelengths',[380 5 780],@isnumeric);
 p.addParameter('stimulusDurationInSeconds', 100/1000, @isnumeric);   % * * * NEW * * * 
 p.addParameter('nContrastsPerDirection',20,@isnumeric);
 p.addParameter('lowContrast',0.0001,@isnumeric);

@@ -381,7 +381,10 @@ if (p.Results.compute)
         fprintf('<strong> ONLY using %d of the %d available workers, each doing 1 trial</strong> \n', testDirectionParams.trialsNum, parforWorkersNum);
         parforWorkersNum = testDirectionParams.trialsNum;
     else
-        nParforTrials = computeTrialBlocks(p.Results.ramPercentageEmployed, testDirectionParams.trialsNum, numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), rParams.temporalParams, theMosaic.integrationTime, p.Results.displayTrialBlockPartitionDiagnostics, p.Results.employStandardHostComputerResources);
+        nParforTrials = computeTrialBlocks(p.Results.ramPercentageEmployed, testDirectionParams.trialsNum, ....
+            numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), ...
+            rParams.temporalParams, rParams.spatialParams, rParams.colorModulationParams, theMosaic.integrationTime, ...
+            p.Results.displayTrialBlockPartitionDiagnostics, p.Results.employStandardHostComputerResources);
     end
     
     nParforTrialBlocks = numel(nParforTrials);

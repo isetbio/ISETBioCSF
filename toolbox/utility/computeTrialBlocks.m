@@ -1,4 +1,4 @@
-function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, integrationTime, displayTrialBlockPartitionDiagnostics, employStandardHostComputerResources)      
+function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, spatialParams, colorModulationParams, integrationTime, displayTrialBlockPartitionDiagnostics, employStandardHostComputerResources)      
     % Determine system resources
     [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources(employStandardHostComputerResources);
    
@@ -26,12 +26,15 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     eyeMovementsNumPerOpticalImage = temporalParams.stimulusSamplingIntervalInSeconds/integrationTime;
     emPathLength = round(eyeMovementsNumPerOpticalImage*numel(stimulusTimeAxis));
     
+    wavelengths = floor((colorModulationParams.endWl-colorModulationParams.startWl)/colorModulationParams.deltaWl);
+    opticalImageSize = 1.25*spatialParams.row*spatialParams.col*wavelengths;
+    
     % estimate sizes of the various matrices used
     trialBlockSize = floor(nTrials/numberOfWorkers);
     totalRAM = ramSizeGBytesAvailable;
     allowedRAMcompression = 1.0;
     while (totalRAM >= allowedRAMcompression*ramSizeGBytesAvailable)
-        totalMemoryPerWorker = 2*(coneMosaicPatternSize*trialBlockSize+coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
+        totalMemoryPerWorker = (2*opticalImageSize + coneMosaicPatternSize*trialBlockSize+coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
         totalRAM = totalMemoryPerWorker * numberOfWorkers;
         trialBlockSize = trialBlockSize-1;
     end
@@ -42,7 +45,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     if (nParforTrialBlocks < numberOfWorkers)
         nParforTrialBlocks = numberOfWorkers;
         trialBlockSize = max([1 floor(nTrials/nParforTrialBlocks)]);
-        totalMemoryPerWorker = 2*(coneMosaicPatternSize*trialBlockSize+coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
+        totalMemoryPerWorker = (2*opticalImageSize + coneMosaicPatternSize*trialBlockSize+coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
     end
     
     totalMemoryUsed = numberOfWorkers * totalMemoryPerWorker;
