@@ -34,7 +34,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     totalRAM = ramSizeGBytesAvailable;
     allowedRAMcompression = 1.0;
     while (totalRAM >= allowedRAMcompression*ramSizeGBytesAvailable)
-        totalMemoryPerWorker = (2*opticalImageSize + coneMosaicPatternSize*trialBlockSize+coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
+        totalMemoryPerWorker = computeTotalMemoryPerWorker();
         totalRAM = totalMemoryPerWorker * numberOfWorkers;
         trialBlockSize = trialBlockSize-1;
     end
@@ -45,7 +45,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     if (nParforTrialBlocks < numberOfWorkers)
         nParforTrialBlocks = numberOfWorkers;
         trialBlockSize = max([1 floor(nTrials/nParforTrialBlocks)]);
-        totalMemoryPerWorker = (2*opticalImageSize + coneMosaicPatternSize*trialBlockSize+coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
+        totalMemoryPerWorker = computeTotalMemoryPerWorker();
     end
     
     totalMemoryUsed = numberOfWorkers * totalMemoryPerWorker;
@@ -61,7 +61,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
               nParforTrials(kk) = trialBlockSize;
           end
           nParforTrials(nParforTrialBlocks) = nTrials - trialBlockSize*nParforTrialBlocks;
-          totalMemoryPerWorker = 2*(coneMosaicPatternSize*trialBlockSize+coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
+          totalMemoryPerWorker = computeTotalMemoryPerWorker();
           totalMemoryUsed = totalMemoryPerWorker * numberOfWorkers;
     end
 
@@ -104,5 +104,10 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     fprintf('<strong> %d trials partitioned in %d blocks, each with %d trials (last has %d trials) </strong>\n', nTrials, numel(nParforTrials), nParforTrials(1), nParforTrials(end));
     fprintf('<strong> RAM used : %2.1f GBytes (per worker), total: %2.1f GBytes </strong> \n\n', totalMemoryPerWorker, totalMemoryUsed);
     
+    % Nested function 
+    function totalMemoryPerWorker = computeTotalMemoryPerWorker()
+        totalMemoryPerWorker = (2*opticalImageSize + coneMosaicPatternSize*trialBlockSize + coneMosaicActivePatternSize*emPathLength*trialBlockSize)*sizeOfDoubleInBytes/(1024^3);
+    end
+
 end
 
