@@ -22,15 +22,8 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     else
         [stimulusTimeAxis, ~, ~] = gaussianTemporalWindowCreate(temporalParams);
     end
-
     
-    if (numel(stimulusTimeAxis) == 1)
-        stimulusSamplingInterval  = integrationTime;
-    else
-        stimulusSamplingInterval = stimulusTimeAxis(2)-stimulusTimeAxis(1);
-    end
-    
-    eyeMovementsNumPerOpticalImage = stimulusSamplingInterval/integrationTime;
+    eyeMovementsNumPerOpticalImage = temporalParams.stimulusSamplingIntervalInSeconds/integrationTime;
     emPathLength = round(eyeMovementsNumPerOpticalImage*numel(stimulusTimeAxis));
     
     % estimate sizes of the various matrices used
