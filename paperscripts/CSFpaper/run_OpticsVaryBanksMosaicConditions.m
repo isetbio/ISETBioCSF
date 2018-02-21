@@ -21,15 +21,15 @@ function run_OpticsVaryBanksMosaicConditions
     params.computeMosaic = true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
-    params.visualizePerformance = ~true;
+    params.findPerformance = true;
+    params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
     % How to split the computation
@@ -111,7 +111,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     if (computationInstance == 0)
         % All conditions in 1 MATLAB session
         params.ramPercentageEmployed = 1.2;  % use all the RAM
-        params.cyclesPerDegreeExamined =  [3]; % [3 5 10 20 30 60];
+        params.cyclesPerDegreeExamined =  [5 10 20 30 60]; % [3 5 10 20 30 60];
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 0.5;  % use 90% of the RAM
