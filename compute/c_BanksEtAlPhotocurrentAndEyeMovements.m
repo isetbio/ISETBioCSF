@@ -35,6 +35,7 @@ p.addParameter('sConeMinDistanceFactor', 3.0, @isnumeric); % min distance betwee
 p.addParameter('sConeFreeRadiusMicrons', 45, @isnumeric);
 p.addParameter('latticeAdjustmentPositionalToleranceF', 0.01, @isnumeric);
 p.addParameter('latticeAdjustmentDelaunayToleranceF', 0.001, @isnumeric);
+p.addParameter('maxGridAdjustmentIterations', Inf, @isnumeric);  % * * * NEW * * * 
 p.addParameter('marginF', [], @isnumeric);     
 p.addParameter('resamplingFactor', 9, @isnumeric);             % * * * NEW * * * 
 
@@ -166,9 +167,9 @@ for ll = 1:length(p.Results.luminances)
         
         % Modify the optical image params
         rParams = updateOpticalImageParams(rParams, p.Results, rParams.spatialParams.fieldOfViewDegs);
-
+    
         %% Compute response instances
-        if (p.Results.computeResponses) || (p.Results.visualizeMosaic) || (p.Results.visualizeOptics)
+        if (p.Results.computeResponses) || (p.Results.visualizeMosaic) || (p.Results.visualizeOptics) || (p.Results.computeMosaic)
            [validationData, extraData, ~,~, theOI, theMosaic] = t_coneCurrentEyeMovementsResponseInstances(...
                'rParams',rParams,...
                'testDirectionParams',testDirectionParams,...
@@ -458,8 +459,22 @@ function rParams = updateMosaicParams(rParams, userParams, mosaicFOVdegs)
     else
         resamplingFactor = userParams.resamplingFactor;
     end
-     
-    fprintf('\n* * * Chosen resamplingFactor for mosaic with FOV:%2.2f degs: %2.0f\n', mosaicFOVdegs, resamplingFactor);
+    
+    if (isempty(userParams.resamplingFactor))
+        if (mosaicFOVdegs < 0.3)
+            maxGridAdjustmentIterations = 4000;
+        elseif (mosaicFOVdegs < 0.5)
+            maxGridAdjustmentIterations = 3000;
+        elseif (mosaicFOVdegs < 1.0)
+            maxGridAdjustmentIterations = 2000;
+         elseif (mosaicFOVdegs < 2.0)
+            maxGridAdjustmentIterations = 1500;
+        else
+            maxGridAdjustmentIterations = 1000;
+        end
+    else
+        maxGridAdjustmentIterations = userParams.maxGridAdjustmentIterations;
+    end
     
     rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
             'conePacking', userParams.conePacking, ... 
@@ -482,6 +497,7 @@ function rParams = updateMosaicParams(rParams, userParams, mosaicFOVdegs)
             'sConeFreeRadiusMicrons', userParams.sConeFreeRadiusMicrons, ...
             'latticeAdjustmentPositionalToleranceF', userParams.latticeAdjustmentPositionalToleranceF, ...
             'latticeAdjustmentDelaunayToleranceF', userParams.latticeAdjustmentDelaunayToleranceF, ...
+            'maxGridAdjustmentIterations', maxGridAdjustmentIterations, ...
             'marginF', userParams.marginF);
     end
 

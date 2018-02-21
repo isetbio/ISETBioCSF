@@ -18,18 +18,18 @@ function run_OpticsVaryBanksMosaicConditions
     params.pupilDiamMm = 2.0;   % Default is 2 (as in Banks et al 87), but 3 is more appropriate for 100 cd/m2 monitor
     
     % Simulation steps to perform
-    params.computeMosaic = ~true; 
+    params.computeMosaic = true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
-    params.visualizePerformance = true;
+    params.findPerformance = ~true;
+    params.visualizePerformance = ~true;
     params.deleteResponseInstances = ~true;
     
     % How to split the computation
@@ -71,7 +71,11 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
                                     % on the mosaic size, smaller mosaics
                                     % will get higher resamplingFactor
     
-    
+    params.maxGridAdjustmentIterations = []; % Empty indicates that c_BanksEtAlPhotocurrentAndEyeMovements
+                                    % will choose maxGridAdjustmentIterations based
+                                    % on the mosaic size, smaller mosaics
+                                    % will get higher rmaxGridAdjustmentIterations
+        
     % response params
     params.responseStabilizationMilliseconds = 40;
     params.responseExtinctionMilliseconds = 40;

@@ -13,13 +13,14 @@ function run_MosaicVary3mmMeanOTFOpticsConditions
     params = getParamsForMosaicWithLabel(examinedMosaicModels{4});
     
     % Simulation steps to perform
-    params.computeMosaic = ~true; 
+    params.computeMosaic = true; 
     params.visualizeMosaic = ~true;
     
     params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
+    params.visualizeOIsequence = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = ~true;
@@ -39,10 +40,13 @@ function params = getFixedParamsForMosaicImpactExperiment(params, computationIns
     % Optics for all subsequent computations
     params.opticsModel  = 'WvfHumanMeanOTFmagMeanOTFphase';
     params.pupilDiamMm  = 3.0;          % 3mm pupil is more appropriate for 100 cd/m2 monitor
+    
     params.blur         = true;
     params.apertureBlur = true;
     
-    params.imagePixels = 1024;
+    params.imagePixels = 512;
+    params.wavefrontSpatialSamples = 601;
+    params.minimumOpticalImagefieldOfViewDegs = 1.0;
     
     % 'random'; 'frozen0';
     params.emPathType = 'frozen0'; %random'; %'random';     
@@ -53,14 +57,18 @@ function params = getFixedParamsForMosaicImpactExperiment(params, computationIns
    
     % Mosaic params
     params.integrationTimeMilliseconds =  5.0;
-    
+    params.resamplingFactor = [];   % Empty indicates that c_BanksEtAlPhotocurrentAndEyeMovements
+                                    % will choose a resamplingFactor based
+                                    % on the mosaic size, smaller mosaics
+                                    % will get higher resamplingFactor
+                                    
     % response params
-    params.responseStabilizationMilliseconds = 10;
-    params.responseExtinctionMilliseconds = 50;
+    params.responseStabilizationMilliseconds = 40;
+    params.responseExtinctionMilliseconds = 40;
     
     % Conditions 
     params.lowContrast = 0.0001;
-    params.highContrast = 0.3; % 0.8;
+    params.highContrast = 0.5; % 0.8;
     params.nContrastsPerDirection =  18; %20;
     params.luminancesExamined =  [34];
     
@@ -89,7 +97,7 @@ function params = getFixedParamsForMosaicImpactExperiment(params, computationIns
     if (computationInstance == 0)
         % All conditions in 1 MATLAB session
         params.ramPercentageEmployed = 1.0;  % use all the RAM
-        params.cyclesPerDegreeExamined =  [2.5 5 10 20 40 50];
+        params.cyclesPerDegreeExamined =  [3 5 10 20 30 60];
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 0.9;  % use 90% of the RAM
