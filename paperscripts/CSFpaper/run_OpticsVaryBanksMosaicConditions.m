@@ -81,9 +81,9 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     params.responseExtinctionMilliseconds = 40;
     
     % Conditions 
-    params.lowContrast = 0.0001;
+    params.lowContrast = 0.00001;
     params.highContrast =  0.5;
-    params.nContrastsPerDirection =  18; % 18 %20;
+    params.nContrastsPerDirection =  20;
     params.luminancesExamined =  [34];
     
     % 'isomerizations', 'photocurrents'
