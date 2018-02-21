@@ -462,12 +462,20 @@ function rParams = updateMosaicParams(rParams, userParams, mosaicFOVdegs)
     
     if (isempty(userParams.resamplingFactor))
         if (mosaicFOVdegs < 0.3)
-            maxGridAdjustmentIterations = 4000;
+            maxGridAdjustmentIterations = 8000;
         elseif (mosaicFOVdegs < 0.5)
-            maxGridAdjustmentIterations = 3000;
+            maxGridAdjustmentIterations = 7000;
         elseif (mosaicFOVdegs < 1.0)
+            maxGridAdjustmentIterations = 6000;
+        elseif (mosaicFOVdegs < 2.0)
+            maxGridAdjustmentIterations = 5000;
+        elseif (mosaicFOVdegs < 3.0)
+            maxGridAdjustmentIterations = 4000;
+        elseif (mosaicFOVdegs < 5.0)
+            maxGridAdjustmentIterations = 3000;
+        elseif (mosaicFOVdegs < 7.0)
             maxGridAdjustmentIterations = 2000;
-         elseif (mosaicFOVdegs < 2.0)
+        elseif (mosaicFOVdegs < 10.0)
             maxGridAdjustmentIterations = 1500;
         else
             maxGridAdjustmentIterations = 1000;
