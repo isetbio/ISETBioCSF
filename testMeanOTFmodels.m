@@ -220,7 +220,8 @@ function psfScores = computePSFmatchScore(PCAprojections, meanZcoeffProjection, 
     spectralWeighting = bias + (1-exp(-0.5*((wavelengths-targetWavelength)/otfWaveWeightingSigma).^2));
     spectralWeighting = spectralWeighting / max(spectralWeighting);
     
-    figure(3); clf
+    hFig = figure(3); clf
+    set(hFig, 'Position', [10 10 700 340], 'Color', [1 1 1]);
     subplot(1,2,1);
     stem(wavelengths, spectralWeighting, 'filled');
     set(gca, 'YLim', [-0.05 1.05], 'FontSize', 14);
