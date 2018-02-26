@@ -15,6 +15,10 @@ function testMeanOTFmodels
         d = loadOTFs();
     end
     
+    subjectMTF = abs(d.subjectOTF);
+    targetMTF = abs(d.meanSubjectOTF);
+    nSubjects = size(subjectMTF,1);
+    
     % Extract 1D OTF slices
     [xSfCyclesDeg, meanZcoeffMTFSlicesX, meanSubjectMTFSlicesX, subjectMTFSlicesX, ...
         meanZcoeffMTFSlicesY, meanSubjectMTFSlicesY, subjectMTFSlicesY] = ...
@@ -27,19 +31,68 @@ function testMeanOTFmodels
     pcaProjectionSpaceDim = size(d.subjectPSF,1);
     [PCAprojections, meanZcoeffProjection] = computePCAprojections(d.subjectPSF, d.meanZcoeffPSF, pcaProjectionSpaceDim);
 
+    plotWeights = ~true;
+    
     psfWaveWeightingSigma = 50*100;
-    psfScores = computePSFmatchScore(PCAprojections, meanZcoeffProjection, wavelengthsListToCompute, targetWavelength, psfWaveWeightingSigma);
-
+    psfScores = computePSFmatchScore(PCAprojections, meanZcoeffProjection, wavelengthsListToCompute, targetWavelength, psfWaveWeightingSigma, plotWeights);
+    
+    hFig = figure(10);
+    clf;
+    set(hFig, 'Position', [10 10 2560 900]);
+    
+    mtfBiases = [0 0.05 0.1 0.2];
+    mtfWaveWeightingSigmas = [1 10 30 60 100 1000];
+    subjectIndices = 1:nSubjects;
+    for mtfBiasIndex = 1:numel(mtfBiases)
+        for mtfSigmaIndex = 1:numel(mtfWaveWeightingSigmas)
+            mtfScores = computeMTFmatchScore(subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength, ...
+                mtfWaveWeightingSigmas(mtfSigmaIndex), mtfBiases(mtfBiasIndex), plotWeights);
+            ax = subplot('Position', [0.02 0.04 0.15 0.45]);
+            cla(ax);
+            for k = 1:numel(mtfScores)
+                text(mtfScores(k), psfScores(k), sprintf('%d', k), 'Color', 'k', 'FontSize', 12);
+            end
+            set(gca, 'XLim', [0 1], 'YLim', [0 1], 'XTick', 0:0.1:1.0, 'YTick', 0:0.1:1.0, 'FontSize', 12);
+            grid on; box on;
+            axis 'square';
+            xlabel('otf score'); ylabel('psf score');
+            
+            ax = subplot('Position', [0.2 0.04 0.79 0.45]);
+            cla(ax);
+            totalScores = sqrt(psfScores.^2+mtfScores.^2);
+            totalScores = totalScores / max(totalScores);
+            plot(subjectIndices, totalScores, 'ko', 'MarkerSize', 8, 'MarkerFaceColor', [1 0 0]);
+            title(sprintf('bias:%2.2f, sigma:%2.0f nm', mtfBiases(mtfBiasIndex), mtfWaveWeightingSigmas(mtfSigmaIndex)));
+            set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', 1:20:200, 'FontSize', 12);
+            xlabel('subject id');
+            ylabel('total score');
+            grid on; box on;
+            
+            subplot('Position', [0.02 0.55 0.97 0.45]);
+            hold on;
+            plot(subjectIndices, totalScores, 'ko', 'MarkerSize', 6, 'MarkerFaceColor', [1 0 0]);
+            set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', 1:2:200, 'FontSize', 12);
+            xlabel('subject id');
+            ylabel('total score');
+            grid on; box on;
+            
+            drawnow;
+        end
+    end
+    pause
+    
     bestSubjects = [132 96]
     
     %[98 132 55 99 172 198 186 66];
     
     % compute OTF matching scores
-    otfWaveWeightingSigma = 10; % input('Enter spectral sigma for the OTF weigting:');
-    diagonalSigma = 0.015;        % input('Enter diagonal sigma :');
-    diagonalSlopes = 5:10:85;     % [25:10:65];
-    otfScores = computeOTFmatchScore(d.subjectOTF, d.meanSubjectOTF, wavelengthsListToCompute, targetWavelength, otfWaveWeightingSigma);
-    plotScoresNew(otfScores, psfScores, otfWaveWeightingSigma, diagonalSigma, diagonalSlopes);
+    mtfWaveWeightingSigma = 30; % input('Enter spectral sigma for the OTF weigting:');
+    mtfBias = 0.0;
+    mtfScores = computeMTFmatchScore(subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength, mtfWaveWeightingSigma, mtfBias, plotWeights);
+    
+    diagonalSigma = 0.015;    
+    diagonalSlopes = 5:10:85;   
+    plotScoresNew(mtfScores, psfScores, mtfWaveWeightingSigma, mtfBias, diagonalSigma, diagonalSlopes);
      
     while (1)   
         whichSubject = input('Subject id to display:');
@@ -52,18 +105,14 @@ function testMeanOTFmodels
     %plot2DPSFAndOTF(wavelengthsListToCompute, d.xMinutes, d.yMinutes,  d.xSfCyclesDeg, d.ySfCyclesDeg, d.meanZcoeffPSF, d.meanZcoeffOTF, d.meanSubjectOTF);
 end
 
-function [rankedSubjectScores, rankedSubjects, highlightedSubjectsNum] = computeComboScore(xScore,yScore,diagonalSigma, alphaDegs)
+function comboScore = computeComboScore(xScore,yScore,diagonalSigma, alphaDegs)
     alpha = tand(alphaDegs);
     comboScore = exp(-0.5*(alpha*xScore-yScore).^2/diagonalSigma) .* (alpha*xScore.*yScore);
-    comboScore = comboScore/max(comboScore(:));
-    [rankedSubjectScores, rankedSubjects] = sort(comboScore, 'descend');
-    highlightedSubjectsNum = numel(find(rankedSubjectScores/max(rankedSubjectScores) > 0.5));
-    
 end
 
-function [rankedSubjects, rankedSubjectScores] = plotScoresNew(otfScores, psfScores, otfWaveWeightingSigma, diagonalSigma, diagonalSlopes)
+function plotScoresNew(otfScores, psfScores, otfWaveWeightingSigma, otfBias, diagonalSigma, diagonalSlopes)
 
-    slopeColors = brewermap(numel(diagonalSlopes), 'Set1');
+    slopeColors = brewermap(numel(diagonalSlopes), 'Dark2');
 
     hFig = figure(32); clf;
     set(hFig, 'Position', [10 10 820 820], 'Color', [1 1 1]);
@@ -71,115 +120,38 @@ function [rankedSubjects, rankedSubjectScores] = plotScoresNew(otfScores, psfSco
     hold on;
     for slopeIndex = 1:numel(diagonalSlopes)
         slope = diagonalSlopes(slopeIndex);
+        minX = 0.05*cosd(slope);
+        minY = 0.05*sind(slope);
         if (slope < 45)
-            plot([0.03 1], [0.03 1]*tand(slope), '-', 'Color', squeeze(slopeColors(slopeIndex,:)), 'LineWidth', 1.5);
+            plot([minX 1], [minX 1]*tand(slope), '-', 'Color', squeeze(slopeColors(slopeIndex,:)), 'LineWidth', 1.5);
         else
-            plot([0.03 1]/tand(slope), [0.03 1], '-', 'Color', squeeze(slopeColors(slopeIndex,:)), 'LineWidth', 1.5);
+            plot([minY 1]/tand(slope), [minY 1], '-', 'Color', squeeze(slopeColors(slopeIndex,:)), 'LineWidth', 1.5);
         end
     end
     
+    comboScores = zeros(numel(diagonalSlopes), numel(otfScores));
     for slopeIndex = 1:numel(diagonalSlopes)
-        [rankedSubjectScores, rankedSubjects, highlightedSubjectsNum] = computeComboScore(otfScores,psfScores,diagonalSigma, diagonalSlopes(slopeIndex));
-        
-        if (slopeIndex == 1)
-            for kk = 1:numel(rankedSubjects)
-                k = rankedSubjects(kk);
-                text(otfScores(k), psfScores(k), sprintf('%d', k), 'Color', 'k', 'FontSize', 12);
-            end
-        end
-        
-        for kk = 1:highlightedSubjectsNum
-            k = rankedSubjects(kk);
-            text(otfScores(k), psfScores(k), sprintf('%d', k), 'Color', squeeze(slopeColors(slopeIndex,:)), 'FontSize', 12);
-        end
-    
+        comboScores(slopeIndex,:) = computeComboScore(otfScores,psfScores,diagonalSigma, diagonalSlopes(slopeIndex));
     end
+
+    % Find closest slope index
+    [~, closestSlopeIndices] = max(comboScores, [], 1);
+    [m, ~] = max(comboScores, [], 2);
+
+    for k = 1:numel(otfScores)
+        color = squeeze(slopeColors(closestSlopeIndices(k),:));
+        if (comboScores(closestSlopeIndices(k),k) > 0.5*m(closestSlopeIndices(k)))
+            text(otfScores(k), psfScores(k), sprintf('%d', k), 'Color', color, 'FontSize', 12);
+        else
+            text(otfScores(k), psfScores(k), sprintf('%d', k), 'Color', 'k', 'FontSize', 12);
+        end
+    end
+    
     xlabel('otf score');
     ylabel('psf score');
     set(gca, 'XTick', 0:0.1:1, 'YTick', 0:0.1:1, 'XLim', [-0.05 1.05], 'YLim', [-0.05 1.05],'FontSize', 16);
     axis 'square'; axis 'xy'; grid 'on'; box 'on'
-    NicePlot.exportFigToPDF(sprintf('scores_otfSigma_%2_2f.pdf', otfWaveWeightingSigma), hFig, 300);
-end
-
-function [rankedSubjects, rankedSubjectScores] = plotScores(otfScores, psfScores, diagonalSigma, diagonalSlopeDegs)
-    
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', 2, ...
-           'colsNum', 1, ...
-           'heightMargin',   0.08, ...
-           'widthMargin',    0.03, ...
-           'leftMargin',     0.03, ...
-           'rightMargin',    0.006, ...
-           'bottomMargin',   0.1, ...
-           'topMargin',      0.03);
-      
-    comboScore = computeComboScore(otfScores,psfScores,diagonalSigma, diagonalSlopeDegs);
-    
-    [rankedSubjectScores, rankedSubjects] = sort(comboScore, 'descend');
-    rankedSubjects(1:10)
-    rankedSubjects(numel(rankedSubjects):-1:(numel(rankedSubjects)-10))
-    
-    highlightedSubjectsNum = 50;
-    
-    hFig = figure(33); clf;
-    set(hFig, 'Position', [10 10 1670 820], 'Color', [1 1 1]);
-
-    pos1 = subplotPosVectors(1,1).v;
-    subplot('Position', pos1);
-    x = 0:0.01:1; y = x;
-    [X,Y] = meshgrid(x,y);
-    Z = computeComboScore(X,Y,diagonalSigma,diagonalSlopeDegs);
-    imagesc(x,y,Z);
-    hold on
-    for k = highlightedSubjectsNum+1:numel(otfScores)
-        text(otfScores(k), psfScores(k), sprintf('%d', k), 'Color', 'b');
-    end
-    for kk = 1:highlightedSubjectsNum
-        k = rankedSubjects(kk);
-        text(otfScores(k), psfScores(k), sprintf('%d', k), 'Color', 'r');
-    end
-    
-    xlabel('otf score');
-    ylabel('psf score');
-    set(gca, 'XTick', 0:0.1:1, 'YTick', 0:0.1:1, 'XLim', [-0.05 1.05], 'YLim', [-0.05 1.05], 'CLim',[0 max(Z(:))],'FontSize', 16);
-    axis 'square'; axis 'xy'; grid 'on'; box 'on'
-    cmap = brewermap(1024, 'Greys');
-    colormap((1-cmap).^0.5);
-    
-    
-    pos = subplotPosVectors(2,1).v;
-    subplot('Position', pos);
-    plot((1:numel(rankedSubjectScores))/numel(rankedSubjectScores), rankedSubjectScores(:)/max(rankedSubjectScores), 'ko', 'MarkerSize', 8, 'MarkerFaceColor', [0.8 0.8 0.8]);
-    
-    hold on;
-    for k = 1:numel(rankedSubjectScores)
-        switch (mod(k-1,4))
-            case 0 
-                yoffset = 0.1;
-            case 1
-                yoffset = -0.1;
-            case 2
-                yoffset = 0.05;
-            case 3
-                yoffset = -0.05;
-        end
-
-        if (k <=highlightedSubjectsNum)
-            color = 'r';
-        else
-            color = 'b';
-        end
-        plot(k/numel(rankedSubjectScores)*[1 1], rankedSubjectScores(k)/max(rankedSubjectScores)+[0 yoffset], 'k-');
-        text(k/numel(rankedSubjectScores), rankedSubjectScores(k)/max(rankedSubjectScores)+yoffset, sprintf('%d', rankedSubjects(k)), 'Color', color);
-    end
-    xTicks = 0:0.05:1;
-    yTicks = (0:0.1:1.0);
-    set(gca, 'XTick', xTicks, 'XTickLabel', sprintf('%2.0f\n', xTicks*numel(rankedSubjectScores)), ...
-        'YTick', yTicks, 'XTickLabel', {}, 'XLim', [0 1+1/200], 'YLim', [-0.1 1.1], ...
-        'YTickLabel', sprintf('%1.1f\n',yTicks*max(rankedSubjectScores)),'FontSize', 16);
-    grid 'on'; box 'on'
-    ylabel('combo score');
-    
+    NicePlot.exportFigToPDF(sprintf('scores_otfSigma_%2.2f_otfBias_%2.2f.pdf', otfWaveWeightingSigma, otfBias), hFig, 300);
 end
 
 function [subjectPCAprojections, meanZcoeffPCAProjection] = computePCAprojections(subjectPSFs, meanZcoeffPSF, projectionSpaceDim)
@@ -214,22 +186,24 @@ function [subjectPCAprojections, meanZcoeffPCAProjection] = computePCAprojection
     end
 end
 
-function psfScores = computePSFmatchScore(PCAprojections, meanZcoeffProjection, wavelengths, targetWavelength, otfWaveWeightingSigma)
+function psfScores = computePSFmatchScore(PCAprojections, meanZcoeffProjection, wavelengths, targetWavelength, otfWaveWeightingSigma, plotWeights)
 
     bias = 1;
     spectralWeighting = bias + (1-exp(-0.5*((wavelengths-targetWavelength)/otfWaveWeightingSigma).^2));
     spectralWeighting = spectralWeighting / max(spectralWeighting);
     
-    hFig = figure(3); clf
-    set(hFig, 'Position', [10 10 700 340], 'Color', [1 1 1]);
-    subplot(1,2,1);
-    stem(wavelengths, spectralWeighting, 'filled');
-    set(gca, 'YLim', [-0.05 1.05], 'FontSize', 14);
-    set(gca, 'XLim', [390 710]);
-    axis 'square'; box on; grid on;
-    xlabel('wavelength (nm)');
-    ylabel('PSF weighting');
-    drawnow
+    if (plotWeights)
+        hFig = figure(3); clf
+        set(hFig, 'Position', [10 10 700 340], 'Color', [1 1 1]);
+        subplot(1,2,1);
+        stem(wavelengths, spectralWeighting, 'filled');
+        set(gca, 'YLim', [-0.05 1.05], 'FontSize', 14);
+        set(gca, 'XLim', [390 710]);
+        axis 'square'; box on; grid on;
+        xlabel('wavelength (nm)');
+        ylabel('PSF weighting');
+        drawnow
+    end
     
     nWaves = size(meanZcoeffProjection,1);
     for iW = 1:nWaves 
@@ -265,32 +239,30 @@ function radialMap = radiallyAveragedXYZMap(map)
     end
 end
 
-function otfScores = computeOTFmatchScore(subjectOTFs, targetOTF, wavelengths, targetWavelength, otfWaveWeightingSigma)
+function otfScores = computeMTFmatchScore(subjectMTFs, targetMTF, wavelengths, targetWavelength, otfWaveWeightingSigma, otfBias, plotWeights)
 
-    bias = 0.2;
-    spectralWeighting = bias + (1-bias)*exp(-0.5*((wavelengths-targetWavelength)/otfWaveWeightingSigma).^2);
-    hFig = figure(3); 
-    subplot(1,2,2)
-    stem(wavelengths, spectralWeighting, 'filled');
-    set(gca, 'YLim', [-0.05 1.05], 'FontSize', 14);
-    set(gca, 'XLim', [390 710]);
-    axis 'square'; box on; grid on;
-    xlabel('wavelength (nm)');
-    ylabel('OTF weighting');
-    NicePlot.exportFigToPSF(sprintf('weights_%2_2f.pdf',otfWaveWeightingSigma), hFig, 300);
-    drawnow;
+    spectralWeighting = otfBias + (1-otfBias)*exp(-0.5*((wavelengths-targetWavelength)/otfWaveWeightingSigma).^2);
+    if (plotWeights)
+        hFig = figure(3); 
+        subplot(1,2,2)
+        stem(wavelengths, spectralWeighting, 'filled');
+        set(gca, 'YLim', [-0.05 1.05], 'FontSize', 14);
+        set(gca, 'XLim', [390 710]);
+        axis 'square'; box on; grid on;
+        xlabel('wavelength (nm)');
+        ylabel('OTF weighting');
+        drawnow;
+        NicePlot.exportFigToPDF(sprintf('weights_otfSigma_%2.2f_otfBias_%2.2f.pdf',otfWaveWeightingSigma, otfBias), hFig, 300);
+    end
     
-    nSubjects = size(subjectOTFs,1);
+    nSubjects = size(subjectMTFs,1);
     otfRMS = zeros(1, nSubjects);
 
     for iSubject = 1:nSubjects
-        thisSubjectOTF = squeeze(subjectOTFs(iSubject,:,:,:));
-        residual = (abs(thisSubjectOTF)-abs(targetOTF)).^2;
-        weightedSummedResidual = 0;
-        for iW = 1:numel(spectralWeighting)
-            weightedSummedResidual = weightedSummedResidual + spectralWeighting(iW) * sum(sum(squeeze(residual(:,:,iW))));
-        end
-        otfRMS(iSubject) = sqrt(weightedSummedResidual/sum(spectralWeighting));
+        thisSubjectMTF = squeeze(subjectMTFs(iSubject,:,:,:));
+        residual = (thisSubjectMTF-targetMTF).^2;
+        weightedResidual = bsxfun(@times, residual, reshape(spectralWeighting, [1 1 numel(spectralWeighting)]));
+        otfRMS(iSubject) = sqrt(sum(weightedResidual(:)));
     end
 
     otfRMS = (otfRMS-min(otfRMS))/(max(otfRMS)-min(otfRMS));
