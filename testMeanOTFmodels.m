@@ -17,7 +17,7 @@ function testMeanOTFmodels
     
     subjectMTF = abs(d.subjectOTF);
     targetMTF = abs(d.meanSubjectOTF);
-    nSubjects = size(subjectMTF,1);
+    
     
     % Extract 1D OTF slices
     [xSfCyclesDeg, meanZcoeffMTFSlicesX, meanSubjectMTFSlicesX, subjectMTFSlicesX, ...
@@ -36,49 +36,61 @@ function testMeanOTFmodels
     psfWaveWeightingSigma = 50*100;
     psfScores = computePSFmatchScore(PCAprojections, meanZcoeffProjection, wavelengthsListToCompute, targetWavelength, psfWaveWeightingSigma, plotWeights);
     
-    hFig = figure(10);
-    clf;
-    set(hFig, 'Position', [10 10 2560 900]);
-    
     mtfBiases = [0 0.05 0.1 0.2];
     mtfWaveWeightingSigmas = [1 10 30 60 100 1000];
+    
+    totalScoresAcrossMethods = computeTotalScoresAcrossMTFMethods(psfScores, mtfBiases, mtfWaveWeightingSigmas, subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength);
+    nSubjects = size(totalScoresAcrossMethods,2);
     subjectIndices = 1:nSubjects;
-    for mtfBiasIndex = 1:numel(mtfBiases)
-        for mtfSigmaIndex = 1:numel(mtfWaveWeightingSigmas)
-            mtfScores = computeMTFmatchScore(subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength, ...
-                mtfWaveWeightingSigmas(mtfSigmaIndex), mtfBiases(mtfBiasIndex), plotWeights);
-            ax = subplot('Position', [0.02 0.04 0.15 0.45]);
-            cla(ax);
-            for k = 1:numel(mtfScores)
-                text(mtfScores(k), psfScores(k), sprintf('%d', k), 'Color', 'k', 'FontSize', 12);
-            end
-            set(gca, 'XLim', [0 1], 'YLim', [0 1], 'XTick', 0:0.1:1.0, 'YTick', 0:0.1:1.0, 'FontSize', 12);
-            grid on; box on;
-            axis 'square';
-            xlabel('otf score'); ylabel('psf score');
-            
-            ax = subplot('Position', [0.2 0.04 0.79 0.45]);
-            cla(ax);
-            totalScores = sqrt(psfScores.^2+mtfScores.^2);
-            totalScores = totalScores / max(totalScores);
-            plot(subjectIndices, totalScores, 'ko', 'MarkerSize', 8, 'MarkerFaceColor', [1 0 0]);
-            title(sprintf('bias:%2.2f, sigma:%2.0f nm', mtfBiases(mtfBiasIndex), mtfWaveWeightingSigmas(mtfSigmaIndex)));
-            set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', 1:20:200, 'FontSize', 12);
-            xlabel('subject id');
-            ylabel('total score');
-            grid on; box on;
-            
-            subplot('Position', [0.02 0.55 0.97 0.45]);
-            hold on;
-            plot(subjectIndices, totalScores, 'ko', 'MarkerSize', 6, 'MarkerFaceColor', [1 0 0]);
-            set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', 1:2:200, 'FontSize', 12);
-            xlabel('subject id');
-            ylabel('total score');
-            grid on; box on;
-            
-            drawnow;
-        end
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', 3, ...
+           'colsNum', 1, ...
+           'heightMargin',   0.08, ...
+           'widthMargin',    0.001, ...
+           'leftMargin',     0.02, ...
+           'rightMargin',    0.001, ...
+           'bottomMargin',   0.05, ...
+           'topMargin',      0.03);
+       
+    hFig = figure(11); clf;
+    set(hFig, 'Position', [1 1 1920 760], 'Color', [1 1 1]);
+    subplot('Position', subplotPosVectors(1,1).v);
+    plot(subjectIndices, totalScoresAcrossMethods, 'ko', 'MarkerSize', 6, 'MarkerFaceColor', [1 0 0]);
+    set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', 1:1:200, 'FontSize', 10);
+    xtickangle(40)
+    xlabel('subject id');
+    ylabel('total score');
+    grid on; box on;
+    
+    subplot('Position', subplotPosVectors(2,1).v);
+    medians = median(totalScoresAcrossMethods,1);
+    mads = mad(totalScoresAcrossMethods,0,1);
+    hold on
+    for k = 1:nSubjects
+        plot([k k], mads(k)*[-1 1]+medians(k),'r-', 'LineWidth', 1.5);
     end
+    plot(subjectIndices, medians,'ro-', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5 0.5]);
+    
+    set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', 1:1:200, 'FontSize', 10);
+    xtickangle(40)
+    xlabel('subject id');
+    ylabel('total score');
+    grid on; box on;
+    
+    [~,idx] = sort(medians, 'descend');
+    
+    subplot('Position', subplotPosVectors(3,1).v);
+    hold on
+    for k = 1:nSubjects
+        plot([k k], mads(idx(k))*[-1 1]+medians(idx(k)),'r-', 'LineWidth', 1.5);
+    end
+    
+    plot(subjectIndices, medians(idx),'ro-', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5 0.5]);
+    ticks = subjectIndices;
+    set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', ticks, 'XTickLabel', sprintf('%d\n',subjectIndices(idx)), 'FontSize', 10);
+    xtickangle(40)
+    grid on; box on;
     pause
     
     bestSubjects = [132 96]
@@ -103,6 +115,61 @@ function testMeanOTFmodels
     end
     
     %plot2DPSFAndOTF(wavelengthsListToCompute, d.xMinutes, d.yMinutes,  d.xSfCyclesDeg, d.ySfCyclesDeg, d.meanZcoeffPSF, d.meanZcoeffOTF, d.meanSubjectOTF);
+end
+
+function totalScoresAcrossMethods = computeTotalScoresAcrossMTFMethods(psfScores, mtfBiases, mtfWaveWeightingSigmas, subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength)
+%     hFig = figure(10);
+%     clf;
+%     set(hFig, 'Position', [10 10 2560 900]);
+    
+    nSubjects = size(subjectMTF,1);
+    subjectIndices = 1:nSubjects;
+    methodIndex = 0;
+    totalScoresAcrossMethods = zeros(numel(mtfBiases)*numel(mtfWaveWeightingSigmas), nSubjects);
+    for mtfBiasIndex = 1:numel(mtfBiases)
+        for mtfSigmaIndex = 1:numel(mtfWaveWeightingSigmas)
+            mtfScores = computeMTFmatchScore(subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength, ...
+                mtfWaveWeightingSigmas(mtfSigmaIndex), mtfBiases(mtfBiasIndex), false);
+            
+            totalScores = sqrt(psfScores.^2+mtfScores.^2);
+            totalScores = totalScores / max(totalScores);
+            methodIndex = methodIndex+1;
+            totalScoresAcrossMethods(methodIndex,:) = totalScores;
+            
+            if (1==2)
+                ax = subplot('Position', [0.02 0.04 0.15 0.45]);
+                cla(ax);
+                for k = 1:numel(mtfScores)
+                    text(mtfScores(k), psfScores(k), sprintf('%d', k), 'Color', 'k', 'FontSize', 12);
+                end
+                set(gca, 'XLim', [0 1], 'YLim', [0 1], 'XTick', 0:0.1:1.0, 'YTick', 0:0.1:1.0, 'FontSize', 12);
+                grid on; box on;
+                axis 'square';
+                xlabel('otf score'); ylabel('psf score');
+
+                ax = subplot('Position', [0.2 0.04 0.79 0.45]);
+                cla(ax);
+
+                plot(subjectIndices, totalScores, 'ko', 'MarkerSize', 8, 'MarkerFaceColor', [1 0 0]);
+                title(sprintf('bias:%2.2f, sigma:%2.0f nm', mtfBiases(mtfBiasIndex), mtfWaveWeightingSigmas(mtfSigmaIndex)));
+                set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', 1:20:200, 'FontSize', 12);
+                xlabel('subject id');
+                ylabel('total score');
+                grid on; box on;
+
+                subplot('Position', [0.02 0.55 0.97 0.45]);
+                hold on;
+                plot(subjectIndices, totalScores, 'ko', 'MarkerSize', 6, 'MarkerFaceColor', [1 0 0]);
+                set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', 1:2:200, 'FontSize', 12);
+                xlabel('subject id');
+                ylabel('total score');
+                grid on; box on;
+                drawnow;
+            end
+            
+        end
+    end
+    
 end
 
 function comboScore = computeComboScore(xScore,yScore,diagonalSigma, alphaDegs)
