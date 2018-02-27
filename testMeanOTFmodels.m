@@ -18,7 +18,6 @@ function testMeanOTFmodels
     subjectMTF = abs(d.subjectOTF);
     targetMTF = abs(d.meanSubjectOTF);
     
-    
     % Extract 1D OTF slices
     [xSfCyclesDeg, meanZcoeffMTFSlicesX, meanSubjectMTFSlicesX, subjectMTFSlicesX, ...
         meanZcoeffMTFSlicesY, meanSubjectMTFSlicesY, subjectMTFSlicesY] = ...
@@ -31,7 +30,7 @@ function testMeanOTFmodels
     pcaProjectionSpaceDim = size(d.subjectPSF,1);
     [PCAprojections, meanZcoeffProjection] = computePCAprojections(d.subjectPSF, d.meanZcoeffPSF, pcaProjectionSpaceDim);
 
-    plotWeights = ~true;
+    plotWeights = true;
     
     psfWaveWeightingSigma = 50*100;
     psfScores = computePSFmatchScore(PCAprojections, meanZcoeffProjection, wavelengthsListToCompute, targetWavelength, psfWaveWeightingSigma, plotWeights);
@@ -39,58 +38,9 @@ function testMeanOTFmodels
     mtfBiases = [0 0.05 0.1 0.2];
     mtfWaveWeightingSigmas = [1 10 30 60 100 1000];
     
-    totalScoresAcrossMethods = computeTotalScoresAcrossMTFMethods(psfScores, mtfBiases, mtfWaveWeightingSigmas, subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength);
-    nSubjects = size(totalScoresAcrossMethods,2);
-    subjectIndices = 1:nSubjects;
+    [totalScoresAcrossMethods, mtfScoresAcrossMethods, methodNames] = computeTotalScoresAcrossMTFMethods(psfScores, mtfBiases, mtfWaveWeightingSigmas, subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength);
+    plotTotalScoresAcrossMTFMethods(totalScoresAcrossMethods, mtfScoresAcrossMethods, psfScores, methodNames);
     
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', 3, ...
-           'colsNum', 1, ...
-           'heightMargin',   0.08, ...
-           'widthMargin',    0.001, ...
-           'leftMargin',     0.02, ...
-           'rightMargin',    0.001, ...
-           'bottomMargin',   0.05, ...
-           'topMargin',      0.03);
-       
-    hFig = figure(11); clf;
-    set(hFig, 'Position', [1 1 1920 760], 'Color', [1 1 1]);
-    subplot('Position', subplotPosVectors(1,1).v);
-    plot(subjectIndices, totalScoresAcrossMethods, 'ko', 'MarkerSize', 6, 'MarkerFaceColor', [1 0 0]);
-    set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', 1:1:200, 'FontSize', 10);
-    xtickangle(40)
-    xlabel('subject id');
-    ylabel('total score');
-    grid on; box on;
-    
-    subplot('Position', subplotPosVectors(2,1).v);
-    medians = median(totalScoresAcrossMethods,1);
-    mads = mad(totalScoresAcrossMethods,0,1);
-    hold on
-    for k = 1:nSubjects
-        plot([k k], mads(k)*[-1 1]+medians(k),'r-', 'LineWidth', 1.5);
-    end
-    plot(subjectIndices, medians,'ro-', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5 0.5]);
-    
-    set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', 1:1:200, 'FontSize', 10);
-    xtickangle(40)
-    xlabel('subject id');
-    ylabel('total score');
-    grid on; box on;
-    
-    [~,idx] = sort(medians, 'descend');
-    
-    subplot('Position', subplotPosVectors(3,1).v);
-    hold on
-    for k = 1:nSubjects
-        plot([k k], mads(idx(k))*[-1 1]+medians(idx(k)),'r-', 'LineWidth', 1.5);
-    end
-    
-    plot(subjectIndices, medians(idx),'ro-', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5 0.5]);
-    ticks = subjectIndices;
-    set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', ticks, 'XTickLabel', sprintf('%d\n',subjectIndices(idx)), 'FontSize', 10);
-    xtickangle(40)
-    grid on; box on;
     pause
     
     bestSubjects = [132 96]
@@ -98,7 +48,7 @@ function testMeanOTFmodels
     %[98 132 55 99 172 198 186 66];
     
     % compute OTF matching scores
-    mtfWaveWeightingSigma = 30; % input('Enter spectral sigma for the OTF weigting:');
+    mtfWaveWeightingSigma = 1; % input('Enter spectral sigma for the OTF weigting:');
     mtfBias = 0.0;
     mtfScores = computeMTFmatchScore(subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength, mtfWaveWeightingSigma, mtfBias, plotWeights);
     
@@ -117,59 +67,86 @@ function testMeanOTFmodels
     %plot2DPSFAndOTF(wavelengthsListToCompute, d.xMinutes, d.yMinutes,  d.xSfCyclesDeg, d.ySfCyclesDeg, d.meanZcoeffPSF, d.meanZcoeffOTF, d.meanSubjectOTF);
 end
 
-function totalScoresAcrossMethods = computeTotalScoresAcrossMTFMethods(psfScores, mtfBiases, mtfWaveWeightingSigmas, subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength)
-%     hFig = figure(10);
-%     clf;
-%     set(hFig, 'Position', [10 10 2560 900]);
+function plotTotalScoresAcrossMTFMethods(totalScoresAcrossMethods, mtfScoresAcrossMethods,psfScores, methodNames)
+    mediansMTF = median(mtfScoresAcrossMethods,1);
+    medians = median(totalScoresAcrossMethods,1);
+    mads = mad(totalScoresAcrossMethods,0,1);
     
-    nSubjects = size(subjectMTF,1);
+    [~,idx] = sort(psfScores, 'descend');
+    %[~,idx] = sort(medians, 'descend');
+    
+    
+    methodsNum = size(totalScoresAcrossMethods,1);
+    nSubjects = size(totalScoresAcrossMethods,2);
+    methodsColors = brewermap(methodsNum, 'Spectral');
     subjectIndices = 1:nSubjects;
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', 2, ...
+           'colsNum', 1, ...
+           'heightMargin',   0.06, ...
+           'widthMargin',    0.001, ...
+           'leftMargin',     0.02, ...
+           'rightMargin',    0.001, ...
+           'bottomMargin',   0.08, ...
+           'topMargin',      0.001);
+       
+    hFig = figure(11); clf;
+    set(hFig, 'Position', [1 1 2560 560], 'Color', [1 1 1]);
+    subplot('Position', subplotPosVectors(1,1).v);
+    hold on;
+    for methodIndex = 1:methodsNum
+        plot(subjectIndices, squeeze(totalScoresAcrossMethods(methodIndex,:)), 'ko', 'MarkerSize', 6, 'MarkerFaceColor', squeeze(methodsColors(methodIndex,:)));
+    end
+    set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', 1:1:200, 'FontSize', 10);
+    set(gca,'TickLength',[0.002, 0.002])
+    hL = legend(methodNames, 'Orientation', 'horizontal', 'Location', 'northoutside');
+    set(hL, 'FontSize', 12);
+    xtickangle(60)
+    ylabel('total score', 'FontSize', 14);
+    grid on; box on;
+    
+
+    subplot('Position', subplotPosVectors(2,1).v);
+    hold on
+    plot(subjectIndices, medians(idx),'ko', 'LineWidth', 1.5, 'MarkerFaceColor', [0.5 0.5 0.5], 'MarkerSize', 10);
+    plot(subjectIndices, psfScores(idx), 'bo-', 'LineWidth', 1.5, 'MarkerFaceColor', [0.5 0.8 1], 'MarkerSize', 6);
+    plot(subjectIndices, mediansMTF(idx), 'ro-', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerSize', 6);
+
+    for k = 1:nSubjects
+        plot([k k], mads(idx(k))*[-1 1]+medians(idx(k)),'k-', 'LineWidth', 1.5);
+    end
+    hL = legend({'total score', 'psf score', 'otf score'}, 'Location', 'northeast');
+    set(hL, 'FontSize', 14);
+    ticks = subjectIndices;
+    set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', ticks, 'XTickLabel', sprintf('%d\n',subjectIndices(idx)), 'FontSize', 10);
+    set(gca,'TickLength',[0.002, 0.002])
+    xtickangle(60)
+    xlabel('subject id', 'FontSize', 14);
+    ylabel('scores', 'FontSize', 14);
+    grid on; box on;
+    NicePlot.exportFigToPDF(sprintf('scoresAllMethods.pdf'), hFig, 300);
+end
+
+function [totalScoresAcrossMethods, mtfScoresAcrossMethods, methodNames] = computeTotalScoresAcrossMTFMethods(psfScores, mtfBiases, mtfWaveWeightingSigmas, subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength)
+
+    nSubjects = size(subjectMTF,1);
     methodIndex = 0;
     totalScoresAcrossMethods = zeros(numel(mtfBiases)*numel(mtfWaveWeightingSigmas), nSubjects);
+    mtfScoresAcrossMethods = totalScoresAcrossMethods;
+    
     for mtfBiasIndex = 1:numel(mtfBiases)
         for mtfSigmaIndex = 1:numel(mtfWaveWeightingSigmas)
             mtfScores = computeMTFmatchScore(subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength, ...
                 mtfWaveWeightingSigmas(mtfSigmaIndex), mtfBiases(mtfBiasIndex), false);
             
-            totalScores = sqrt(psfScores.^2+mtfScores.^2);
-            totalScores = totalScores / max(totalScores);
+            totalScores = sqrt(psfScores.^2+mtfScores.^2)/sqrt(2.0);
             methodIndex = methodIndex+1;
             totalScoresAcrossMethods(methodIndex,:) = totalScores;
-            
-            if (1==2)
-                ax = subplot('Position', [0.02 0.04 0.15 0.45]);
-                cla(ax);
-                for k = 1:numel(mtfScores)
-                    text(mtfScores(k), psfScores(k), sprintf('%d', k), 'Color', 'k', 'FontSize', 12);
-                end
-                set(gca, 'XLim', [0 1], 'YLim', [0 1], 'XTick', 0:0.1:1.0, 'YTick', 0:0.1:1.0, 'FontSize', 12);
-                grid on; box on;
-                axis 'square';
-                xlabel('otf score'); ylabel('psf score');
-
-                ax = subplot('Position', [0.2 0.04 0.79 0.45]);
-                cla(ax);
-
-                plot(subjectIndices, totalScores, 'ko', 'MarkerSize', 8, 'MarkerFaceColor', [1 0 0]);
-                title(sprintf('bias:%2.2f, sigma:%2.0f nm', mtfBiases(mtfBiasIndex), mtfWaveWeightingSigmas(mtfSigmaIndex)));
-                set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', 1:20:200, 'FontSize', 12);
-                xlabel('subject id');
-                ylabel('total score');
-                grid on; box on;
-
-                subplot('Position', [0.02 0.55 0.97 0.45]);
-                hold on;
-                plot(subjectIndices, totalScores, 'ko', 'MarkerSize', 6, 'MarkerFaceColor', [1 0 0]);
-                set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', 1:2:200, 'FontSize', 12);
-                xlabel('subject id');
-                ylabel('total score');
-                grid on; box on;
-                drawnow;
-            end
-            
+            mtfScoresAcrossMethods(methodIndex,:) = mtfScores; 
+            methodNames{methodIndex} = sprintf('b:%0.2f,s:%2.0f', mtfBiases(mtfBiasIndex),  mtfWaveWeightingSigmas(mtfSigmaIndex));
         end
     end
-    
 end
 
 function comboScore = computeComboScore(xScore,yScore,diagonalSigma, alphaDegs)
