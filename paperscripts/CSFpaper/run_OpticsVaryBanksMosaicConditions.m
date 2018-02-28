@@ -14,7 +14,7 @@ function run_OpticsVaryBanksMosaicConditions
     params.opticsModel = examinedOpticsModels{1};
 
     params.pupilDiamMm = 2.0;   % What was used in Banks et al 87
-    params.pupilDiamMm = 3.0;   % 3 is more appropriate for a 100 cd/m2 mean scene luminance
+   % params.pupilDiamMm = 3.0;   % 3 is more appropriate for a 100 cd/m2 mean scene luminance
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
