@@ -13,11 +13,14 @@ p.addRequired('name',@ischar);
 p.addRequired('paramsList',@iscell);
 p.addRequired('theProgram',@ischar);
 p.addParameter('Type','mat',@ischar);
+p.addParameter('beVerbose',false,@islogical);
 p.parse(name,paramsList,theProgram,varargin{:});
 
 %% Get fileid
 fileid = obj.getid(p.Results.name,p.Results.paramsList,p.Results.theProgram,varargin{:},'MakeDirectories',false);
-fprintf('Importing %s ...\n', fileid);
+if (p.Results.beVerbose)
+    fprintf('Importing %s ...\n', fileid);
+end
 
 %% Read the data
 switch (p.Results.Type)
