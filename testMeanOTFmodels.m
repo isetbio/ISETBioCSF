@@ -1,22 +1,22 @@
 function testMeanOTFmodels
 
-    wavelengthsListToCompute = [400:10:700];
+    wavelengthsListToCompute = 400:30:700;
 
     recomputeOTFdata = ~true;
     if (recomputeOTFdata)
         centeringWavelength = 550;
         targetPupilDiamMM = 3.0;
-        wavefrontSpatialSamples = 201;
+        wavefrontSpatialSamples = 261*2+1;
         psfRange = 6*[-1 1];
         otfRange = [0 100];
-        d = computeAllOTFs(wavelengthsListToCompute,centeringWavelength,targetPupilDiamMM, wavefrontSpatialSamples, psfRange, otfRange);
+        showTranslation = false;
+        d = computeAllOTFs(wavelengthsListToCompute,centeringWavelength,targetPupilDiamMM, wavefrontSpatialSamples, psfRange, otfRange, showTranslation);
     else
         fprintf('Loading data\n');
         d = loadOTFs();
     end
     
-    subjectMTF = abs(d.subjectOTF);
-    targetMTF = abs(d.meanSubjectOTF);
+    
     
     % Extract 1D OTF slices
     [xSfCyclesDeg, meanZcoeffMTFSlicesX, meanSubjectMTFSlicesX, subjectMTFSlicesX, ...
@@ -31,7 +31,6 @@ function testMeanOTFmodels
     [PCAprojections, meanZcoeffProjection] = computePCAprojections(d.subjectPSF, d.meanZcoeffPSF, pcaProjectionSpaceDim);
 
     plotWeights = true;
-    
     psfWaveWeightingSigma = 50*100;
     psfScores = computePSFmatchScore(PCAprojections, meanZcoeffProjection, wavelengthsListToCompute, targetWavelength, psfWaveWeightingSigma, plotWeights);
     
@@ -39,22 +38,19 @@ function testMeanOTFmodels
     mtfWaveWeightingSigmas = [1 10 30 60 100 1000];
     
     [totalScoresAcrossMethods, mtfScoresAcrossMethods, methodNames] = computeTotalScoresAcrossMTFMethods(psfScores, mtfBiases, mtfWaveWeightingSigmas, subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength);
+    
     plotTotalScoresAcrossMTFMethods(totalScoresAcrossMethods, mtfScoresAcrossMethods, psfScores, methodNames);
     
     pause
     
-    bestSubjects = [132 96]
-    
     %[98 132 55 99 172 198 186 66];
     
     % compute OTF matching scores
-    mtfWaveWeightingSigma = 1; % input('Enter spectral sigma for the OTF weigting:');
-    mtfBias = 0.0;
+    mtfWaveWeightingSigma = input('Enter spectral weighting sigma (OTF):');
+    mtfBias = input('Enter spectral weighting bias (OTF):');
     mtfScores = computeMTFmatchScore(subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength, mtfWaveWeightingSigma, mtfBias, plotWeights);
-    
-    diagonalSigma = 0.015;    
-    diagonalSlopes = 5:10:85;   
-    plotScoresNew(mtfScores, psfScores, mtfWaveWeightingSigma, mtfBias, diagonalSigma, diagonalSlopes);
+     
+    plotScores(mtfScores, psfScores, mtfWaveWeightingSigma, mtfBias);
      
     while (1)   
         whichSubject = input('Subject id to display:');
@@ -149,48 +145,13 @@ function [totalScoresAcrossMethods, mtfScoresAcrossMethods, methodNames] = compu
     end
 end
 
-function comboScore = computeComboScore(xScore,yScore,diagonalSigma, alphaDegs)
-    alpha = tand(alphaDegs);
-    comboScore = exp(-0.5*(alpha*xScore-yScore).^2/diagonalSigma) .* (alpha*xScore.*yScore);
-end
-
-function plotScoresNew(otfScores, psfScores, otfWaveWeightingSigma, otfBias, diagonalSigma, diagonalSlopes)
-
-    slopeColors = brewermap(numel(diagonalSlopes), 'Dark2');
-
+function plotScores(otfScores, psfScores, otfWaveWeightingSigma, otfBias)
     hFig = figure(32); clf;
     set(hFig, 'Position', [10 10 820 820], 'Color', [1 1 1]);
     
-    hold on;
-    for slopeIndex = 1:numel(diagonalSlopes)
-        slope = diagonalSlopes(slopeIndex);
-        minX = 0.05*cosd(slope);
-        minY = 0.05*sind(slope);
-        if (slope < 45)
-            plot([minX 1], [minX 1]*tand(slope), '-', 'Color', squeeze(slopeColors(slopeIndex,:)), 'LineWidth', 1.5);
-        else
-            plot([minY 1]/tand(slope), [minY 1], '-', 'Color', squeeze(slopeColors(slopeIndex,:)), 'LineWidth', 1.5);
-        end
-    end
-    
-    comboScores = zeros(numel(diagonalSlopes), numel(otfScores));
-    for slopeIndex = 1:numel(diagonalSlopes)
-        comboScores(slopeIndex,:) = computeComboScore(otfScores,psfScores,diagonalSigma, diagonalSlopes(slopeIndex));
-    end
-
-    % Find closest slope index
-    [~, closestSlopeIndices] = max(comboScores, [], 1);
-    [m, ~] = max(comboScores, [], 2);
-
     for k = 1:numel(otfScores)
-        color = squeeze(slopeColors(closestSlopeIndices(k),:));
-        if (comboScores(closestSlopeIndices(k),k) > 0.5*m(closestSlopeIndices(k)))
-            text(otfScores(k), psfScores(k), sprintf('%d', k), 'Color', color, 'FontSize', 12);
-        else
-            text(otfScores(k), psfScores(k), sprintf('%d', k), 'Color', 'k', 'FontSize', 12);
-        end
+        text(otfScores(k), psfScores(k), sprintf('%d', k), 'Color', 'k', 'FontSize', 12);
     end
-    
     xlabel('otf score');
     ylabel('psf score');
     set(gca, 'XTick', 0:0.1:1, 'YTick', 0:0.1:1, 'XLim', [-0.05 1.05], 'YLim', [-0.05 1.05],'FontSize', 16);
@@ -259,28 +220,6 @@ function psfScores = computePSFmatchScore(PCAprojections, meanZcoeffProjection, 
     
     psfRMS = (weightedMeanDistances-min(weightedMeanDistances))/(max(weightedMeanDistances)-min(weightedMeanDistances));
     psfScores = 1-psfRMS;
-end
-
-function radialMap = radiallyAveragedXYZMap(map)
-    mid = floor(size(map,1)/2);
-    [x,y] = meshgrid(-mid:mid, -mid:mid);
-    r = sqrt(x.^2 + y.^2);
-    mask = squeeze(map(:,:,1))*0;
-    mask(r<=mid) = 1;
-    
-    deltaAngle = 5;
-    angles = 0:deltaAngle:360;
-    radialMap = map*0;
-    
-    parfor iW = 1:size(map,3)
-        waveMap = squeeze(map(:,:,iW));
-        waveMap = waveMap .* mask;
-        radialWaveMap = waveMap * 0;
-        for iAngle = 1:numel(angles)
-            radialWaveMap = radialWaveMap + imrotate(waveMap,angles(iAngle), 'bilinear', 'crop');
-        end
-        radialMap(:,:,iW) = radialWaveMap / (numel(angles));
-    end
 end
 
 function otfScores = computeMTFmatchScore(subjectMTFs, targetMTF, wavelengths, targetWavelength, otfWaveWeightingSigma, otfBias, plotWeights)
@@ -486,7 +425,7 @@ function d = loadOTFs()
 
 end
 
-function d = computeAllOTFs(wavelengthsListToCompute,centeringWavelength,targetPupilDiamMM, wavefrontSpatialSamples, psfRange, otfRange)
+function d = computeAllOTFs(wavelengthsListToCompute,centeringWavelength,targetPupilDiamMM, wavefrontSpatialSamples, psfRange, otfRange, showTranslation)
     % Load the ZernikeCoeffs for the target pupil size
     [Zcoeffs_SampleMean, Zcoeffs_S, subject_coeffs] = wvfLoadThibosVirtualEyes(targetPupilDiamMM);
     ZcoeffSubjects = subject_coeffs.bothEyes;
@@ -495,7 +434,7 @@ function d = computeAllOTFs(wavelengthsListToCompute,centeringWavelength,targetP
     % Compute the meanZcoeff PSF and OTF
     fprintf('computing mean Zcoeff PSF/OTF\n');
     [meanZcoeffPSF, meanZcoeffOTF, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes] = ...
-        computePSFandOTF(Zcoeffs_SampleMean, wavelengthsListToCompute, wavefrontSpatialSamples, targetPupilDiamMM, centeringWavelength);
+        computePSFandOTF(Zcoeffs_SampleMean, wavelengthsListToCompute, wavefrontSpatialSamples, targetPupilDiamMM, centeringWavelength, showTranslation);
     
     % Only keep PSF data within the psfRange
     psfColsToKeep = find(abs(xMinutes) < max(psfRange));
@@ -520,7 +459,7 @@ function d = computeAllOTFs(wavelengthsListToCompute,centeringWavelength,targetP
         fprintf('computing PSF/OTF for subject %d\n', subjectIndex);
         z = squeeze(ZcoeffSubjects(:,subjectIndex));    
         [psf, otf, ~, ~, ~, ~] = ...
-            computePSFandOTF(z, wavelengthsListToCompute, wavefrontSpatialSamples, targetPupilDiamMM, centeringWavelength);
+            computePSFandOTF(z, wavelengthsListToCompute, wavefrontSpatialSamples, targetPupilDiamMM, centeringWavelength, showTranslation);
         subjectPSF(subjectIndex,:,:,:) = psf(psfRowsToKeep, psfColsToKeep,:);
         subjectOTF(subjectIndex,:,:,:) = otf(otfRowsToKeep, otfColsToKeep,:);
     end
@@ -545,131 +484,4 @@ function d = computeAllOTFs(wavelengthsListToCompute,centeringWavelength,targetP
     d.meanSubjectOTF = meanSubjectOTF;
     d.subjectPSF = subjectPSF;
     d.subjectOTF = subjectOTF;
-end
-
-
-function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes] = computePSFandOTF(Zcoeffs, wavelengthsListToCompute, wavefrontSpatialSamples, targetPupilDiamMM, centeringWavelength)
-    %% Compute WVF
-    umPerDegree = 300;
-    theWVF = makeWVF(wavefrontSpatialSamples, Zcoeffs, wavelengthsListToCompute, ...
-            targetPupilDiamMM, targetPupilDiamMM, umPerDegree, '');
-    
-    xSfCyclesPerRetinalMicron = wvfGet(theWVF, 'otf support', 'um', wavelengthsListToCompute(1));
-    xSfCyclesDeg = xSfCyclesPerRetinalMicron * wvfGet(theWVF,'um per degree');
-    ySfCyclesDeg = xSfCyclesDeg;
-    [xSfGridCyclesDegGrid,ySfGridCyclesDegGrid] = meshgrid(xSfCyclesDeg, ySfCyclesDeg);
-    
-    if (~isempty(centeringWavelength))
-        % Retrieve OTF at the centeringWavelength
-        theCenteringOTF = wvfGet(theWVF, 'otf', centeringWavelength);
-        theCenteringPSF = wvfGet(theWVF, 'psf', centeringWavelength);
-        translationVector = []; showTranslation = false;
-        [~, translationVector, ~, ~, ~] = otfWithZeroCenteredPSF(...
-                    theCenteringOTF, theCenteringPSF, ...
-                    translationVector, xSfGridCyclesDegGrid,ySfGridCyclesDegGrid, ...
-                    showTranslation);
-    else
-        translationVector = [0 0];
-    end
-    
-    for wIndex = 1:numel(wavelengthsListToCompute)
-        theWaveOTF = wvfGet(theWVF, 'otf', wavelengthsListToCompute(wIndex));
-        theWavePSF = wvfGet(theWVF, 'psf', wavelengthsListToCompute(wIndex));
-        showTranslation = false;
-        [theWaveOTF, ~, ~, ~,~] = ...
-            otfWithZeroCenteredPSF(theWaveOTF, theWavePSF, translationVector,  xSfGridCyclesDegGrid, ySfGridCyclesDegGrid, showTranslation);
-        
-        [xGridMinutes,yGridMinutes, theWavePSF] = ...
-            OtfToPsf(xSfGridCyclesDegGrid,ySfGridCyclesDegGrid,fftshift(theWaveOTF));
-        if (wIndex == 1)
-            OTFs = zeros(size(theWaveOTF,1), size(theWaveOTF,2), numel(wavelengthsListToCompute));
-            PSFs = zeros(size(theWavePSF,1), size(theWavePSF,2), numel(wavelengthsListToCompute));
-        end
-        
-        OTFs(:,:,wIndex) = fftshift(theWaveOTF);
-        PSFs(:,:,wIndex) = theWavePSF;
-    end
-    
-    xMinutes = xGridMinutes(1,:);
-    yMinutes = yGridMinutes(:,1);
-end
-
-function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffs, wavelengthsToCompute, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, name)
-    theWVF = wvfCreate(...
-    			'umPerDegree', umPerDegree, ...
-                'calc wavelengths',wavelengthsToCompute,...
-                'measuredpupil', measPupilDiameterMM, ...
-                'calc pupil size',calcPupilDiameterMM, ...
-                'spatialsamples', wavefrontSpatialSamples, ...
-                'zcoeffs', zcoeffs,...
-                'name', name);
-    
-    % Now compute the PSF
-    theWVF = wvfComputePSF(theWVF);
-end
-
-function [centeredOTF,  translationVector, centeredPSF, xGridMinutes,yGridMinutes] = otfWithZeroCenteredPSF(OTF, PSF, translationVector,  xSfGridCyclesDegGrid, ySfGridCyclesDegGrid, showTranslation)
-    if (isempty(translationVector))
-        % Compute center of mass
-        %centerOfMass = computeCenterOfMass(PSF);
-        centerOfMass = computeCenterOfMassNative(PSF);
-        centerPosition = floor(size(PSF,1)/2) + 1 * [1 1];
-        
-        if (showTranslation)
-            figure(200);clf
-            imagesc(1:size(PSF,2), 1:size(PSF,1), PSF);
-            hold on;
-            plot(centerPosition(1)*[1 1], [1 size(PSF,1)], 'k-');
-            plot([1 size(PSF,2)], centerPosition(2)*[1 1], 'k-');
-            plot(centerOfMass(1), centerOfMass(2), 'ro', 'MarkerFaceColor', [1 0.5 0.5]);
-            plot([centerPosition(1) centerOfMass(1)], [centerPosition(2)  centerOfMass(2)], 'r-');
-            hold off;
-            axis 'square'
-            colormap(gray(1024));
-            drawnow;
-        end
-        
-        % Compute translation vector to bring center of mass at 0,0
-        translationVector = (centerPosition-centerOfMass);
-    end
-    centeredOTF = shiftInFTplane(OTF, translationVector);
-
-    [xGridMinutes,yGridMinutes,centeredPSF] = OtfToPsf(xSfGridCyclesDegGrid,ySfGridCyclesDegGrid,fftshift(centeredOTF));
-    
-    if (abs(sum(centeredPSF(:))-1) > 1000*eps(1))
-        fprintf('centeredPSF min = %1.9f, max = %1.9f, sum = %1.9f\n', min(centeredPSF(:)), max(centeredPSF(:)), sum(centeredPSF(:)));
-        error('PSF volume does not equal 1\n');
-    end
-   
-end
-
-function centerOfMass = computeCenterOfMassNative(PSF)
-    [rc,cc] = ndgrid(1:size(PSF,1),1:size(PSF,2));
-    Mt = sum(PSF(:));
-    centerOfMassY = sum(PSF(:) .* rc(:)) / Mt;
-    centerOfMassX = sum(PSF(:) .* cc(:)) / Mt;
-    centerOfMass1 = [centerOfMassX centerOfMassY];
-    [~,idx] = max(PSF(:));
-    [i,j] = ind2sub(size(PSF), idx);
-    centerOfMass = [j i];
-end
-
-function otf = shiftInFTplane(otf, translationVector)
-    [N, M] = size(otf);
-    x = [0:floor(N/2) floor(-N/2)+1:-1];
-    y = [0:floor(M/2) floor(-M/2)+1:-1];
-    x_shift = exp(-1i * 2 * pi * translationVector(2) * x' / N);
-    y_shift = exp(-1i * 2 * pi * translationVector(1) * y / M);
-
-    % Force conjugate symmetry. Otherwise this frequency component has no
-    % corresponding negative frequency to cancel out its imaginary part.
-    if mod(N, 2) == 0
-        x_shift(N/2+1) = real(x_shift(N/2+1));
-    end 
-    if mod(M, 2) == 0
-        y_shift(M/2+1) = real(y_shift(M/2+1));
-    end
-    maxOTF = max(otf(:));
-    otf = otf .* (x_shift * y_shift);
-    otf = otf / max(abs(otf(:))) * maxOTF;
 end
