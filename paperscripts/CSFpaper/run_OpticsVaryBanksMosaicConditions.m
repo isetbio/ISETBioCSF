@@ -19,13 +19,13 @@ function run_OpticsVaryBanksMosaicConditions
     
     % Simulation steps to perform
     params.computeMosaic = true; 
-    params.visualizeMosaic = ~true;
+    params.visualizeMosaic = true;
     
     params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = true;
-    params.visualizeSpatialScheme = ~true;
-    params.visualizeOIsequence = ~true;
+    params.visualizeSpatialScheme = true;
+    params.visualizeOIsequence = true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = true;
@@ -33,7 +33,9 @@ function run_OpticsVaryBanksMosaicConditions
     params.deleteResponseInstances = ~true;
     
     % How to split the computation
-    computationInstance = 0;
+    %computationInstance = 0;        % ALL mosaics
+    computationInstance = 1;        % LARGEST mosaic
+    %computationInstance = 2;        % ALL except the LARGEST mosaic
     params = getFixedParamsForOpticsImpactExperiment(params,computationInstance);
 
     % Go
@@ -46,7 +48,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     params.apertureBlur = true;
     
     params.imagePixels = 512;
-    params.wavefrontSpatialSamples = 601;
+    params.wavefrontSpatialSamples = 261*2+1;     % This gives us an OTF sampling of 1.003 c/deg
     params.minimumOpticalImagefieldOfViewDegs = 1.0;
     
     
@@ -81,8 +83,8 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     params.responseExtinctionMilliseconds = 40;
     
     % Conditions 
-    params.lowContrast = 0.00001;
-    params.highContrast =  0.5;
+    params.lowContrast = 0.00001*3;
+    params.highContrast =  1.0;
     params.nContrastsPerDirection =  20;
     params.luminancesExamined =  [34];
     
@@ -111,15 +113,15 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     if (computationInstance == 0)
         % All conditions in 1 MATLAB session
         params.ramPercentageEmployed = 1.2;  % use all the RAM
-        params.cyclesPerDegreeExamined =  [5 10 20 30 60]; % [3 5 10 20 30 60];
+        params.cyclesPerDegreeExamined =  [2 4 8 16 32 60]; % [3 5 10 20 30 60];
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
-        params.ramPercentageEmployed = 0.5;  % use 90% of the RAM
-        params.cyclesPerDegreeExamined =  [2.5];
+        params.ramPercentageEmployed = 1;  % use 90% of the RAM
+        params.cyclesPerDegreeExamined =  [2];
     elseif (computationInstance  == 2)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
-        params.ramPercentageEmployed = 0.5;  % use 1/2 the RAM
-        params.cyclesPerDegreeExamined =  [5 10 20 40 60];
+        params.ramPercentageEmployed = 1;  % use 1/2 the RAM
+        params.cyclesPerDegreeExamined =  [4 8 16 32 60];
     else
         error('computational instance must be 0, 1 or 2');
     end
