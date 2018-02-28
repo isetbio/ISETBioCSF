@@ -1,6 +1,6 @@
 function testMeanOTFmodels
 
-    wavelengthsListToCompute = 400:30:700;
+    wavelengthsListToCompute = [400:10:700];
 
     recomputeOTFdata = ~true;
     if (recomputeOTFdata)
@@ -16,7 +16,8 @@ function testMeanOTFmodels
         d = loadOTFs();
     end
     
-    
+    subjectMTF = abs(d.subjectOTF);
+    targetMTF = abs(d.meanSubjectOTF);
     
     % Extract 1D OTF slices
     [xSfCyclesDeg, meanZcoeffMTFSlicesX, meanSubjectMTFSlicesX, subjectMTFSlicesX, ...
@@ -31,6 +32,7 @@ function testMeanOTFmodels
     [PCAprojections, meanZcoeffProjection] = computePCAprojections(d.subjectPSF, d.meanZcoeffPSF, pcaProjectionSpaceDim);
 
     plotWeights = true;
+    
     psfWaveWeightingSigma = 50*100;
     psfScores = computePSFmatchScore(PCAprojections, meanZcoeffProjection, wavelengthsListToCompute, targetWavelength, psfWaveWeightingSigma, plotWeights);
     
@@ -38,7 +40,6 @@ function testMeanOTFmodels
     mtfWaveWeightingSigmas = [1 10 30 60 100 1000];
     
     [totalScoresAcrossMethods, mtfScoresAcrossMethods, methodNames] = computeTotalScoresAcrossMTFMethods(psfScores, mtfBiases, mtfWaveWeightingSigmas, subjectMTF, targetMTF, wavelengthsListToCompute, targetWavelength);
-    
     plotTotalScoresAcrossMTFMethods(totalScoresAcrossMethods, mtfScoresAcrossMethods, psfScores, methodNames);
     
     pause
