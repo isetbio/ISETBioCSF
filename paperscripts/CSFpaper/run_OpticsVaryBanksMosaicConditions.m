@@ -114,7 +114,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     if (computationInstance == 0)
         % All conditions in 1 MATLAB session
         params.ramPercentageEmployed = 1.2; 
-        params.cyclesPerDegreeExamined =  [2 4 8 16 32 60]; 
+        params.cyclesPerDegreeExamined =  [2 4 8 16 32 50]; 
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 1; 
@@ -122,7 +122,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     elseif (computationInstance  == 2)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 1;  
-        params.cyclesPerDegreeExamined =  [4 8 16 32 60];
+        params.cyclesPerDegreeExamined =  [4 8 16 32 50];
     else
         error('computational instance must be 0, 1 or 2');
     end
