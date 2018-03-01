@@ -45,7 +45,7 @@ function params = getFixedParamsForMosaicImpactExperiment(params, computationIns
     params.apertureBlur = true;
     
     params.imagePixels = 512;
-    params.wavefrontSpatialSamples = 601;
+    params.wavefrontSpatialSamples = 261*2+1;     % This gives us an OTF sampling of 1.003 c/deg
     params.minimumOpticalImagefieldOfViewDegs = 1.0;
     
     % 'random'; 'frozen0';
@@ -67,9 +67,9 @@ function params = getFixedParamsForMosaicImpactExperiment(params, computationIns
     params.responseExtinctionMilliseconds = 40;
     
     % Conditions 
-    params.lowContrast = 0.0001;
-    params.highContrast = 0.5; % 0.8;
-    params.nContrastsPerDirection =  18; %20;
+    params.lowContrast = 0.00001*3;
+    params.highContrast = 1.0; 
+    params.nContrastsPerDirection =  20;
     params.luminancesExamined =  [34];
     
     % 'isomerizations', 'photocurrents'
@@ -96,20 +96,16 @@ function params = getFixedParamsForMosaicImpactExperiment(params, computationIns
     % Split computations and specify RAM memory
     if (computationInstance == 0)
         % All conditions in 1 MATLAB session
-        params.ramPercentageEmployed = 1.0;  % use all the RAM
-        params.cyclesPerDegreeExamined =  [3 5 10 20 30 60];
+        params.ramPercentageEmployed = 1.2; 
+        params.cyclesPerDegreeExamined =  [2 4 8 16 32 60]; 
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
-        params.ramPercentageEmployed = 0.9;  % use 90% of the RAM
-        params.cyclesPerDegreeExamined =  [5 10 20 40 50];
+        params.ramPercentageEmployed = 1; 
+        params.cyclesPerDegreeExamined =  [2];
     elseif (computationInstance  == 2)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
-        params.ramPercentageEmployed = 0.5;  % use 1/2 the RAM
-        params.cyclesPerDegreeExamined =  [5];
-    elseif (computationInstance  == 3)
-        % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
-        params.ramPercentageEmployed = 0.5;  % use 1/2 the RAM
-        params.cyclesPerDegreeExamined =  [20];
+        params.ramPercentageEmployed = 1;  
+        params.cyclesPerDegreeExamined =  [4 8 16 32 60];
     else
         error('computational instance must be 0, 1 or 2');
     end
