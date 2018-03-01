@@ -16,8 +16,22 @@ function rankThibosSubjects()
     % Use the magnitudes for the OTF score (MTF)
     [mtfScoresMedianAcrossMethods, mtfScoresDifferentMethods] = computeMTFmatchScores(abs(d.subjectOTF), abs(d.meanSubjectOTF), mtfSpetralWeights);
     
-    % Plot the subjects scores ranked based on the psfScore
-    plotRankedSubjects(psfScores, mtfScoresMedianAcrossMethods, mtfScoresDifferentMethods, weightingMethodNames, 'psf score', 'mtf score (mean)');
+    rankedScore = 'PSFscore';
+    rankedScore = 'medianMTFscore';
+    rankedScore = 'totalScore';
+    
+    switch (rankedScore)
+        case 'PSFscore'
+            % Plot the subjects scores ranked based on the psfScore
+            plotRankedSubjects(psfScores, mtfScoresMedianAcrossMethods, mtfScoresDifferentMethods, weightingMethodNames, 'psf score', 'mtf score (mean)', 'b', 'r');
+    	case 'medianMTFscore'
+            % Plot the subjects scores ranked based on the median across MTF
+            plotRankedSubjects(mtfScoresMedianAcrossMethods, psfScores, mtfScoresDifferentMethods, weightingMethodNames, 'mtf score (mean)', 'psf score', 'r', 'b');
+        case 'totalScore'
+            totalScore = sqrt(mtfScoresMedianAcrossMethods.^2 + psfScores.^2)/sqrt(2.0);
+            % Plot the subjects scores ranked based on the median across MTF
+            plotRankedSubjects(totalScore, psfScores, mtfScoresDifferentMethods, weightingMethodNames, 'total score', 'psf score', 'k', 'b');
+    end
     
     % Plot individual subjects
     [xSfCyclesDeg, meanZcoeffMTFSlicesX, meanSubjectMTFSlicesX, subjectMTFSlicesX, ...
@@ -279,7 +293,7 @@ end
 
 % Plotting methods
 % Method to plot the ranked scores
-function plotRankedSubjects(rankingScores, otherScores, mtfScoresDiffMethods, weightingMethodNames, rankingScoreLabel, otherScoreLabel)
+function plotRankedSubjects(rankingScores, otherScores, mtfScoresDiffMethods, weightingMethodNames, rankingScoreLabel, otherScoreLabel, rankingScoreColor, otherScoreColor)
     fprintf('\nPlotting ranked subjects ...');
     [~,idx] = sort(rankingScores, 'descend');
     methodsNum = size(mtfScoresDiffMethods,1);
@@ -313,16 +327,45 @@ function plotRankedSubjects(rankingScores, otherScores, mtfScoresDiffMethods, we
     xtickangle(60)
     ylabel('total score', 'FontSize', 14);
     grid on; box on;
+     
     
-    % The psf, mtf and combo scores
-    comboScores = sqrt(rankingScores.^2+otherScores.^2)/sqrt(2.0);
+    if (~strcmp(rankingScoreLabel, 'total score')) && (~strcmp(otherScoreLabel, 'total score'))
+        % Compute the total score
+        totalScores = sqrt(rankingScores.^2+otherScores.^2)/sqrt(2.0);
+    else
+        totalScores = [];
+    end
+    
     subplot('Position', subplotPosVectors(2,1).v);
     hold on
-    plot(subjectIndices, rankingScores(idx),'bo', 'LineWidth', 1.5, 'MarkerFaceColor', [0.5 0.8 1], 'MarkerSize', 10);
-    plot(subjectIndices, otherScores(idx),  'ro', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5, 0.5], 'MarkerSize', 10);
-    plot(subjectIndices, comboScores(idx),  'ko', 'LineWidth', 1.5, 'MarkerFaceColor', [0.5 0.5 0.5], 'MarkerSize', 8);
+    switch (rankingScoreColor)
+        case 'b'
+            plot(subjectIndices, rankingScores(idx),'bo-', 'LineWidth', 1.5, 'MarkerFaceColor', [0.5 0.8 1], 'MarkerSize', 10);
+        case 'r'
+            plot(subjectIndices, rankingScores(idx),'ro-', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5, 0.5], 'MarkerSize', 10);
+        case 'k'
+            plot(subjectIndices, rankingScores(idx),'ko-', 'LineWidth', 1.5, 'MarkerFaceColor', [0.5 0.5, 0.5], 'MarkerSize', 10);
+        otherwise
+            error('Unknown color for rankingScore')
+    end
     
-    hL = legend({rankingScoreLabel, otherScoreLabel, 'total score'}, 'Location', 'northeast');
+    switch (otherScoreColor)
+        case 'r'
+            plot(subjectIndices, otherScores(idx),  'ro-', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5, 0.5], 'MarkerSize', 10);
+        case 'b'
+            plot(subjectIndices, otherScores(idx),  'bo-', 'LineWidth', 1.5, 'MarkerFaceColor', [0.5 0.8 1], 'MarkerSize', 10);
+        case 'k'
+            plot(subjectIndices, otherScores(idx),  'ko-', 'LineWidth', 1.5, 'MarkerFaceColor', [0.5 0.5, 0.5], 'MarkerSize', 10);
+    end
+            
+    if (~isempty(totalScores))
+        plot(subjectIndices, totalScores(idx),  'ko', 'LineWidth', 1.5, 'MarkerFaceColor', [0.5 0.5 0.5], 'MarkerSize', 8);
+        hL = legend({rankingScoreLabel, otherScoreLabel, 'total score'}, 'Location', 'northeast');
+    else
+        hL = legend({rankingScoreLabel, otherScoreLabel}, 'Location', 'northeast');
+    end
+    
+    
     set(hL, 'FontSize', 14);
     ticks = subjectIndices;
     set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', ticks, 'XTickLabel', sprintf('%d\n',subjectIndices(idx)), 'FontSize', 10);
