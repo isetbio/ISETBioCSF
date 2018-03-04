@@ -13,17 +13,17 @@ function run_MosaicVary3mmMeanOTFOpticsConditions
     params = getParamsForMosaicWithLabel(examinedMosaicModels{4});
     
     % Simulation steps to perform
-    params.computeMosaic = true; 
+    params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
-    params.visualizeSpatialScheme = ~true;
+    params.visualizeSpatialScheme = true;
     params.visualizeOIsequence = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
