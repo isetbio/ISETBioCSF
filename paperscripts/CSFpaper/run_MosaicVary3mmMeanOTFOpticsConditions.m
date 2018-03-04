@@ -28,7 +28,7 @@ function run_MosaicVary3mmMeanOTFOpticsConditions
     params.deleteResponseInstances = ~true;
     
     % How to split the computation
-    computationInstance = 0;
+    computationInstance = 2;
     params = getFixedParamsForMosaicImpactExperiment(params,computationInstance);
     
     % Go
@@ -38,7 +38,7 @@ end
 
 function params = getFixedParamsForMosaicImpactExperiment(params, computationInstance)
     % Optics for all subsequent computations
-    params.opticsModel  = 'WvfHumanMeanOTFmagMeanOTFphase';
+    params.opticsModel  = 'ThibosDefaultSubject3MMPupil';
     params.pupilDiamMm  = 3.0;          % 3mm pupil is more appropriate for 100 cd/m2 monitor
     
     params.blur         = true;
@@ -100,11 +100,11 @@ function params = getFixedParamsForMosaicImpactExperiment(params, computationIns
         params.cyclesPerDegreeExamined =  [2 4 8 16 32 60]; 
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
-        params.ramPercentageEmployed = 1; 
+        params.ramPercentageEmployed = 1.2; 
         params.cyclesPerDegreeExamined =  [2];
     elseif (computationInstance  == 2)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
-        params.ramPercentageEmployed = 1;  
+        params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined =  [4 8 16 32 60];
     else
         error('computational instance must be 0, 1 or 2');
