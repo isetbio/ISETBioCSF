@@ -12,7 +12,7 @@ function [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModel, wavefrontSpati
     rng(1);
 
     % Generate default OI
-    theOI = oiCreate('wvf human', calcPupilDiameterMM);
+    theOI = oiCreate('wvf human', calcPupilDiameterMM,[],[], umPerDegree);
     optics = oiGet(theOI,'optics');
     
     wavelengthsListToCompute = opticsGet(optics,'wave');
