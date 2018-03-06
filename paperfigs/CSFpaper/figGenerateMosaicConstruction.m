@@ -10,11 +10,13 @@ cd(localDir)
 % Set random seed to obtain replicable results
 rng(1235);
 
+params.fovDegs = [0.75 0.4]; % FOV in degrees ([width height], default: 0.25x0.25
+
 makeNew = true;
+
 if (makeNew)
     % Set coneMosaicHex - specific params
-    params.resamplingFactor = 9;                            % 9 is good;how fine to sample the hex mosaic positions with an underlying rect mosaic
-    params.fovDegs = [0.75 0.4];                            % FOV in degrees ([width height], default: 0.25x0.25
+    params.resamplingFactor = 15;                            % 9 is good;how fine to sample the hex mosaic positions with an underlying rect mosaic                         
     params.eccBasedConeDensity = true;                      % if true, generate a mosaic where cone spacing varies with eccentricity (Curcio model)
     params.customLambda = [];                               % cone spacing in microns (only used with regular hex mosaics)
     params.rotationDegs = 0;                                % rotation of the mosaic, in degrees 0 = , 30 = (makes sense with regular hex mosaics)
@@ -24,8 +26,9 @@ if (makeNew)
     params.sConeFreeRadiusMicrons = 45;                     % radius of S-cone free retina, in microns
     params.latticeAdjustmentPositionalToleranceF = [];      % determines cone delta movement tolerance for terminating iterative adjustment - by default this is 0.01 (here setting it lower for faster, but less acurate mosaic generation)
     params.latticeAdjustmentDelaunayToleranceF = [];        % determines position tolerance for triggering another Delaunay triangularization - by default this is 0.001 (here setting it lower for faster, but less acurate mosaic generation)
+    params.maxGridAdjustmentIterations = 3000;
     params.marginF = [];
-    saveLatticeAdjustmentProgression = true;                % set to true, only if interested to see how the mosaic lattice is iteratively adjusted when eccBasedConeDensity is true               
+    saveLatticeAdjustmentProgression = ~true;                % set to true, only if interested to see how the mosaic lattice is iteratively adjusted when eccBasedConeDensity is true               
 
     % Generate the mosaic
     theHexMosaic = coneMosaicHex(params.resamplingFactor, ...
@@ -37,17 +40,18 @@ if (makeNew)
         'sConeFreeRadiusMicrons', params.sConeFreeRadiusMicrons, ...    
         'customLambda', params.customLambda, ...
         'customInnerSegmentDiameter', params.customInnerSegmentDiameter, ...
-        'latticeAdjustmentPositionalToleranceF', params.latticeAdjustmentPositionalToleranceF, ...              
+        'latticeAdjustmentPositionalToleranctbUeF', params.latticeAdjustmentPositionalToleranceF, ...              
         'latticeAdjustmentDelaunayToleranceF', params.latticeAdjustmentDelaunayToleranceF, ...     
         'marginF', params.marginF, ...
+        'maxGridIterations', 5000, ...
         'saveLatticeAdjustmentProgression', saveLatticeAdjustmentProgression ...  
     );
     % Save the mosaic
-    save('theHexMosaic.mat', 'theHexMosaic', '-v7.3');
+    save(sprintf('theHexMosaic%2.2fdegs.mat',max(params.fovDegs)), 'theHexMosaic', '-v7.3');
 else
     fprintf('\nLoading mosaic ... ');
     % Load the mosaic
-    load('theHexMosaic.mat');
+    load(intf('theHexMosaic%2.2fdegs.mat',max(params.fovDegs)));
     fprintf('Done\n');
 end
 
@@ -69,6 +73,9 @@ NicePlot.exportFigToPDF('HexMosaicConstruction.pdf', hFig, 300);
     
 % Show the final LMS mosaic
 visualizedAperture = 'both'; % choose between 'both', 'lightCollectingArea', 'geometricArea'
-theHexMosaic.visualizeGrid('visualizedConeAperture', visualizedAperture, 'generateNewFigure', true);
+theHexMosaic.visualizeGrid('visualizedConeAperture', 'geometricArea', ...
+    'apertureShape', 'disks', ...
+    'labelConeTypes', false, ...
+    'generateNewFigure', true);
 end
 
