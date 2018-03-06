@@ -13,11 +13,11 @@ function run_OpticsVaryBanksMosaicConditions
     % Optics to run
     params.opticsModel = examinedOpticsModels{1};
 
-    params.pupilDiamMm = 2.0;   % What was used in Banks et al 87
-    % params.pupilDiamMm = 3.0;   % 3 is more appropriate for a 100 cd/m2 mean scene luminance
+    %params.pupilDiamMm = 2.0;   % What was used in Banks et al 87
+    params.pupilDiamMm = 3.0;   % 3 is more appropriate for a 100 cd/m2 mean scene luminance
     
     params.luminancesExamined = [34];
-    params.luminancesExamined = [340];
+    %params.luminancesExamined = [340];
        
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -25,9 +25,9 @@ function run_OpticsVaryBanksMosaicConditions
     
     params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
-    params.visualizeResponses = true;
-    params.visualizeSpatialScheme = true;
-    params.visualizeOIsequence = true;
+    params.visualizeResponses = ~true;
+    params.visualizeSpatialScheme = ~true;
+    params.visualizeOIsequence = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = true;
@@ -36,8 +36,8 @@ function run_OpticsVaryBanksMosaicConditions
     
     % How to split the computation
     %computationInstance = 0;        % ALL mosaics
-    computationInstance = 1;         % LARGEST mosaic
-    %computationInstance = 2;        % ALL except the LARGEST mosaic
+    %computationInstance = 1;         % LARGEST mosaic
+    computationInstance = 2;        % ALL except the LARGEST mosaic
     params = getFixedParamsForOpticsImpactExperiment(params,computationInstance);
 
     % Go
@@ -62,7 +62,9 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     params.nTrainingSamples = 1024;
   
     % Mosaic params
-    mosaicParams = getParamsForMosaicWithLabel('originalBanks');
+    mosaicType = 'originalBanks';
+    mosaicType = 'ISETbioHexEccBasedLMSrealistic';
+    mosaicParams = getParamsForMosaicWithLabel(mosaicType);
     
     fNames = fieldnames(mosaicParams);
     for k = 1:numel(fNames)
@@ -114,14 +116,14 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     if (computationInstance == 0)
         % All conditions in 1 MATLAB session
         params.ramPercentageEmployed = 1.2; 
-        params.cyclesPerDegreeExamined =  [2 4 8 16 32 50]; 
+        params.cyclesPerDegreeExamined =  [2 4 8 16 32 60]; 
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
-        params.ramPercentageEmployed = 1; 
+        params.ramPercentageEmployed = 1.2; 
         params.cyclesPerDegreeExamined =  [2];
     elseif (computationInstance  == 2)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
-        params.ramPercentageEmployed = 1;  
+        params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined =  [4 8 16 32 50];
     else
         error('computational instance must be 0, 1 or 2');
