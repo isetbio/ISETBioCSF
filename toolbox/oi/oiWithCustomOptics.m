@@ -17,7 +17,7 @@ function [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModel, wavefrontSpati
     
     wavelengthsListToCompute = opticsGet(optics,'wave');
     
-    if (contains(opticsModel, 'AOoptics'))
+    if (strfind(opticsModel, 'AOoptics'))
         fprintf('Generating wavefront object for ''%s'' optics \n', opticsModel);
         [Zcoeffs_SampleMean, ~, ~] = wvfLoadThibosVirtualEyes(7.5);
         Zcoeffs = Zcoeffs_SampleMean * 0;
