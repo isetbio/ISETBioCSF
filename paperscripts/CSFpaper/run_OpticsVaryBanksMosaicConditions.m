@@ -10,6 +10,10 @@ function run_OpticsVaryBanksMosaicConditions
         'ThibosVeryDefocusedSubject3MMPupil' ...
     };
     
+    % Mosaic type to employ
+    %mosaicType = 'originalBanks';
+    mosaicType = 'ISETbioHexEccBasedLMSrealistic';
+    
     % Optics to run
     params.opticsModel = examinedOpticsModels{1};
 
@@ -36,16 +40,17 @@ function run_OpticsVaryBanksMosaicConditions
     
     % How to split the computation
     %computationInstance = 0;        % ALL mosaics
-    %computationInstance = 1;         % LARGEST mosaic
-    computationInstance = 2;        % ALL except the LARGEST mosaic
-    params = getFixedParamsForOpticsImpactExperiment(params,computationInstance);
+    %computationInstance = 1;        % LARGEST mosaic
+    %computationInstance = 2;        % second LARGEST mosaic
+    computationInstance = 3;        % ALL except the two LARGEST mosaic
+    params = getFixedParamsForOpticsImpactExperiment(params,computationInstance, mosaicType);
 
     % Go
     run_BanksPhotocurrentEyeMovementConditions(params);
 
 end
 
-function params = getFixedParamsForOpticsImpactExperiment(params, computationInstance)
+function params = getFixedParamsForOpticsImpactExperiment(params, computationInstance, mosaicType)
     params.blur = true;
     params.apertureBlur = true;
     
@@ -62,8 +67,6 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     params.nTrainingSamples = 1024;
   
     % Mosaic params
-    mosaicType = 'originalBanks';
-    mosaicType = 'ISETbioHexEccBasedLMSrealistic';
     mosaicParams = getParamsForMosaicWithLabel(mosaicType);
     
     fNames = fieldnames(mosaicParams);
@@ -124,7 +127,11 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     elseif (computationInstance  == 2)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 1.2;  
-        params.cyclesPerDegreeExamined =  [4 8 16 32 50];
+        params.cyclesPerDegreeExamined =  [4];
+    elseif (computationInstance  == 3)
+        % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
+        params.ramPercentageEmployed = 1.2;  
+        params.cyclesPerDegreeExamined =  [8 16 32 60];
     else
         error('computational instance must be 0, 1 or 2');
     end
