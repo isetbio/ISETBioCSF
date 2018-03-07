@@ -12,7 +12,7 @@ rng(1235);
 
 params.fovDegs = [0.75 0.4]; % FOV in degrees ([width height], default: 0.25x0.25
 
-makeNew = true;
+makeNew = ~true;
 
 if (makeNew)
     % Set coneMosaicHex - specific params
@@ -28,7 +28,7 @@ if (makeNew)
     params.latticeAdjustmentDelaunayToleranceF = [];        % determines position tolerance for triggering another Delaunay triangularization - by default this is 0.001 (here setting it lower for faster, but less acurate mosaic generation)
     params.maxGridAdjustmentIterations = 3000;
     params.marginF = [];
-    saveLatticeAdjustmentProgression = ~true;                % set to true, only if interested to see how the mosaic lattice is iteratively adjusted when eccBasedConeDensity is true               
+    saveLatticeAdjustmentProgression = true;                % set to true, only if interested to see how the mosaic lattice is iteratively adjusted when eccBasedConeDensity is true               
 
     % Generate the mosaic
     theHexMosaic = coneMosaicHex(params.resamplingFactor, ...
@@ -51,7 +51,7 @@ if (makeNew)
 else
     fprintf('\nLoading mosaic ... ');
     % Load the mosaic
-    load(intf('theHexMosaic%2.2fdegs.mat',max(params.fovDegs)));
+    load(sprintf('theHexMosaic%2.2fdegs.mat',max(params.fovDegs)));
     fprintf('Done\n');
 end
 

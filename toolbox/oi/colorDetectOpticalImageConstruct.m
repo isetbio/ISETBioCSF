@@ -16,6 +16,7 @@ function [theOI, varargout] = colorDetectOpticalImageConstruct(oiParams)
 % 6/2/17  npc  Added availableCustomWvfOpticsModels()
 
 varargout{1} = [];
+varargout{2} = [];
 
 % Basic create.
 theOI = oiCreate('wvf human', oiParams.pupilDiamMm,[],[], oiParams.umPerDegree);
@@ -39,9 +40,9 @@ switch (oiParams.opticsModel)
         
     case {'wvfHuman', aCustomWvfModel}
         fprintf('Computing custom OTF optics\n')
-        [theOI, Zcoeffs] = oiWithCustomOptics(oiParams.opticsModel, oiParams.wavefrontSpatialSamples, oiParams.pupilDiamMm, oiParams.umPerDegree);
+        [theOI, Zcoeffs, pupilFunctionData] = oiWithCustomOptics(oiParams.opticsModel, oiParams.wavefrontSpatialSamples, oiParams.pupilDiamMm, oiParams.umPerDegree);
         varargout{1} = Zcoeffs;
-        
+        varargout{2} = pupilFunctionData;
     case {'Geisler', 'GeislerLsfAsPsf', 'DavilaGeisler', 'DavilaGeislerLsfAsPsf', 'Westheimer', 'Williams'}
         theOI = ptb.oiSetPtbOptics(theOI,'opticsModel',oiParams.opticsModel);
         

@@ -103,6 +103,7 @@ p.addParameter('deleteResponseInstances', false, @islogical);
 
 p.parse(varargin{:});
 
+
 % Take a snapshot of the current IBIOColorDetect deployment
 IBIOColorDetectConfig = tbUseProject('IBIOColorDetect');
 IBIOColorDetectSnapshot = tbDeploymentSnapshot(IBIOColorDetectConfig);
@@ -170,7 +171,7 @@ for ll = 1:length(p.Results.luminances)
     
         %% Compute response instances
         if (p.Results.computeResponses) || (p.Results.visualizeMosaic) || (p.Results.visualizeOptics) || (p.Results.computeMosaic)
-           [validationData, extraData, ~,~, theOI, theMosaic] = t_coneCurrentEyeMovementsResponseInstances(...
+           [validationData, extraData, ~,~, theOI, theMosaic, thePupilFunction] = t_coneCurrentEyeMovementsResponseInstances(...
                'rParams',rParams,...
                'testDirectionParams',testDirectionParams,...
                'centeredEMPaths',p.Results.centeredEMPaths, ...

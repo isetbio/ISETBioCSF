@@ -1,4 +1,4 @@
-function [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModel, wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree, varargin)
+function [theCustomOI, Zcoeffs, pupilFunctionData] = oiWithCustomOptics(opticsModel, wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree, varargin)
     p = inputParser;
     p.addParameter('showTranslation', false, @islogical);
     p.parse(varargin{:});
@@ -17,13 +17,13 @@ function [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModel, wavefrontSpati
     
     wavelengthsListToCompute = opticsGet(optics,'wave');
     
-    if (contains(opticsModel, 'AOoptics'))
+    if (strfind(opticsModel, 'AOoptics'))
         fprintf('Generating wavefront object for ''%s'' optics \n', opticsModel);
         [Zcoeffs_SampleMean, ~, ~] = wvfLoadThibosVirtualEyes(7.5);
         Zcoeffs = Zcoeffs_SampleMean * 0;
         measPupilDiameterMM = calcPupilDiameterMM;
         % Generate the WVF    
-        wvfSubject = makeWVF(wavefrontSpatialSamples, Zcoeffs, wavelengthsListToCompute, ...
+        [wvfSubject, pupilFunctionData] = makeWVF(wavefrontSpatialSamples, Zcoeffs, wavelengthsListToCompute, ...
             measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, opticsModel);
         % Compute an optics structure from the WVF
         optics = oiGet(wvf2oi(wvfSubject),'optics');
@@ -80,7 +80,7 @@ function [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModel, wavefrontSpati
             fprintf('Generating wavefront object for ''%s'' optics \n', opticsModel);
         end
         
-        [thePSF, theOTF, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes] = computePSFandOTF(...
+        [thePSF, theOTF, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, pupilFunctionData] = computePSFandOTF(...
             squeeze(Zcoeffs(:,subjectIndex)), ...
             wavelengthsListToCompute, wavefrontSpatialSamples, calcPupilDiameterMM, ...
             centeringWavelength, showTranslation);

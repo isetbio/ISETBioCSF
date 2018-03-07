@@ -1,4 +1,4 @@
-function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffs, wavelengthsToCompute, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, name)
+function [theWVF,pupilFunctionData] = makeWVF(wavefrontSpatialSamples, zcoeffs, wavelengthsToCompute, measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, name)
     theWVF = wvfCreate(...
     			'umPerDegree', umPerDegree, ...
                 'calc wavelengths',wavelengthsToCompute,...
@@ -9,5 +9,5 @@ function theWVF = makeWVF(wavefrontSpatialSamples, zcoeffs, wavelengthsToCompute
                 'name', name);
     
     % Now compute the PSF
-    theWVF = wvfComputePSF(theWVF);
+    [theWVF, pupilFunctionData] = wvfComputePSF(theWVF);
 end
