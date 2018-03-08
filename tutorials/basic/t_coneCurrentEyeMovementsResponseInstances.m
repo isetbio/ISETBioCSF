@@ -124,7 +124,7 @@ varargout{1} = [];   % Impulse responses if (visualizeOuterSegmentFilters is tru
 varargout{2} = [];   % noise-free responses
 varargout{3} = [];   % the optical image optics
 varargout{4} = [];   % the cone mosaic
-varargout{5} = [];   % the pupil function
+varargout{5} = [];   % the wavefront data
 
 %% Clear
 if (nargin == 0)
@@ -312,8 +312,8 @@ if (p.Results.compute)
     % Return the OI (for visualization purposes)
     varargout{3} = theOI;
 
-    % Return the pupil function data (for visualization purposes)
-    varargout{5} = thePupilFunctionData;
+    % Return the wavefront data (for visualization purposes)
+    varargout{5} = theWVF;
     
     if (p.Results.computeMosaic)
         % Create the cone mosaic
