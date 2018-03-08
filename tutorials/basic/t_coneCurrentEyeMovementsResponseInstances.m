@@ -287,7 +287,7 @@ if (p.Results.compute)
 
         % Save the pupil function data
         oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
-        rwObject.write('pupilFunction', thePupilFunctionData, oiParamsList, theProgram, 'type', 'mat');
+        rwObject.write('wavefront', theWVF, oiParamsList, theProgram, 'type', 'mat');
         
         % Save a copy of the optical image with the current date
         % This can be useful if the optical image is overwritten 
@@ -306,7 +306,7 @@ if (p.Results.compute)
         
          % Load previously generated pupil function data
         oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
-        thePupilFunctionData = rwObject.read('pupilFunction', oiParamsList, theProgram, 'type', 'mat');
+        theWVF = rwObject.read('wavefront', oiParamsList, theProgram, 'type', 'mat');
     end
     
     % Return the OI (for visualization purposes)
