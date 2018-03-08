@@ -11,8 +11,9 @@ function visualizeAllCustomWVFOpticsModels()
 
     for oiIndex = 1:numel(opticsModels)
         
-        [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModels{oiIndex}, ...
+        [theCustomOI, Zcoeffs, pupilFunctionData] = oiWithCustomOptics(opticsModels{oiIndex}, ...
             wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree, ...
+            'centeringWavelength', 550, ...  %  center PSF at 550
             'showTranslation',showTranslation);
         
         optics = oiGet(theCustomOI, 'optics');
