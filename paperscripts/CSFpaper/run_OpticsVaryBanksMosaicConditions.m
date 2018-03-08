@@ -15,7 +15,7 @@ function run_OpticsVaryBanksMosaicConditions
     mosaicType = 'ISETbioHexEccBasedLMSrealistic';
     
     % Optics to run
-    params.opticsModel = examinedOpticsModels{1};
+    params.opticsModel = examinedOpticsModels{2};
 
     %params.pupilDiamMm = 2.0;   % What was used in Banks et al 87
     params.pupilDiamMm = 3.0;   % 3 is more appropriate for a 100 cd/m2 mean scene luminance
@@ -42,8 +42,9 @@ function run_OpticsVaryBanksMosaicConditions
     % How to split the computation
     %computationInstance = 0;        % ALL mosaics
     %computationInstance = 1;        % LARGEST mosaic
-    %computationInstance = 2;        % second LARGEST mosaic
-    computationInstance = 3;        % ALL except the two LARGEST mosaic
+    computationInstance = 2;        % second LARGEST mosaic
+    %computationInstance = 3;        % ALL except the two LARGEST mosaic
+    %computationalInstance = 4;
     params = getFixedParamsForOpticsImpactExperiment(params,computationInstance, mosaicType);
 
     % Go
@@ -120,7 +121,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     if (computationInstance == 0)
         % All conditions in 1 MATLAB session
         params.ramPercentageEmployed = 1.2; 
-        params.cyclesPerDegreeExamined =  [2 4 8 16 32 60]; 
+        params.cyclesPerDegreeExamined =  [2 4 8 16 32 50 60]; 
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 1.2; 
@@ -132,7 +133,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     elseif (computationInstance  == 3)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 1.2;  
-        params.cyclesPerDegreeExamined =  [8 16 32 60];
+        params.cyclesPerDegreeExamined =  [8 16 32 50 60];
     else
         error('computational instance must be 0, 1 or 2');
     end
