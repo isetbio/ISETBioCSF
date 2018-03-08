@@ -308,6 +308,8 @@ if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.vis
     %
     % The way the plot is coded counts on the test contrasts never changing
     % across the conditions, which we could explicitly check for here.
+    exportFigData = true;
+    
     if (p.Results.generatePlots && p.Results.plotCSF)  
         hFig = figure; clf; hold on
         fontBump = 4;
@@ -323,7 +325,8 @@ if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.vis
                 [theColors(theColorIndex) 'o'],'MarkerSize',rParams.plotParams.markerSize+markerBump,'MarkerFaceColor',theColors(theColorIndex),'LineWidth',rParams.plotParams.lineWidth);  
             legendStr{ll} = sprintf('%0.1f cd/m2',p.Results.luminances(ll));
         end
-
+        figData.banksEtAlReplicate = banksEtAlReplicate;
+        
         % Add Banks et al. data to the figure
         % Slide by eye to match our current calculations, and add as
         % appropriate so as not to clutter the figure.  A bit klugy as we add
@@ -335,27 +338,36 @@ if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.vis
         if (~rParams.oiParams.blur && ~rParams.mosaicParams.apertureBlur)
             plot(A(:,1),A(:,2),'k:','LineWidth',0.5);
             plot(A(:,1),A(:,2)*banksFactor,'r-','LineWidth',rParams.plotParams.lineWidth+lineBump);
+            figData.A = A;
         elseif (~rParams.oiParams.blur)
             plot(B(:,1),B(:,2),'k:','LineWidth',0.5);
             plot(B(:,1),B(:,2)*banksFactor,'r','LineWidth',rParams.plotParams.lineWidth+lineBump);
+            figData.B = B;
         else
             plot(C(:,1),C(:,2),'k:','LineWidth',0.5);
             plot(C(:,1),C(:,2)*banksFactor,'r-','LineWidth',rParams.plotParams.lineWidth+lineBump);
             plot(D(:,1),D(:,2)*banksFactor,'b-','LineWidth',rParams.plotParams.lineWidth+lineBump);
             plot(E(:,1),E(:,2)*banksFactor,'g-','LineWidth',rParams.plotParams.lineWidth+lineBump);
+            figData.C = C;
+            figData.D = D;
+            figData.E = E;
         end
 
         set(gca,'XScale','log');
         set(gca,'YScale','log');
         xlabel('Log10 Spatial Frequency (cpd)', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
         ylabel('Log10 Contrast Sensitivity', 'FontSize' ,rParams.plotParams.labelFontSize+fontBump, 'FontWeight', 'bold');
-        xlim([1 100]); ylim([1 10000]);
+        xlim([1 100]); ylim([1 12000]);
         legend(legendStr,'Location','NorthEast','FontSize',rParams.plotParams.labelFontSize+fontBump);
         box off; grid on
         titleStr1 = 'Computational Observer CSF';
         titleStr2 = sprintf('Blur: %d, Aperture Blur: %d',p.Results.blur, p.Results.apertureBlur);
         title({titleStr1 ; titleStr2});
 
+        if (exportFigData)
+            save('figData.mat', 'figData');
+        end
+        
         % Write out the figure
         rwObject.write('banksEtAlReplicatePhotocurrentAndEyeMovements',hFig,paramsList,writeProgram,'Type','figure')
     end
