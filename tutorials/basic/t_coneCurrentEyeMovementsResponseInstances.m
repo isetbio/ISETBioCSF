@@ -269,12 +269,12 @@ if (p.Results.compute)
     if (p.Results.computeOptics)
         % Create the optics
         if (ismember(rParams.oiParams.opticsModel, availableCustomWvfOpticsModels))
-            [theOI, Zcoeffs, thePupilFunctionData] = colorDetectOpticalImageConstruct(rParams.oiParams);
+            [theOI, Zcoeffs, theWVF] = colorDetectOpticalImageConstruct(rParams.oiParams);
             
             if (p.Results.visualizeOptics)
                 % Visualize pupil function
                 oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
-                visualizePupilFunction(thePupilFunctionData, oiParamsList);
+                visualizePupilFunction(theWVF, oiParamsList);
             end
             
         else

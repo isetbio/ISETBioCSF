@@ -40,9 +40,9 @@ switch (oiParams.opticsModel)
         
     case {'wvfHuman', aCustomWvfModel}
         fprintf('Computing custom OTF optics\n')
-        [theOI, Zcoeffs, pupilFunctionData] = oiWithCustomOptics(oiParams.opticsModel, oiParams.wavefrontSpatialSamples, oiParams.pupilDiamMm, oiParams.umPerDegree);
+        [theOI, Zcoeffs, theWVF] = oiWithCustomOptics(oiParams.opticsModel, oiParams.wavefrontSpatialSamples, oiParams.pupilDiamMm, oiParams.umPerDegree);
         varargout{1} = Zcoeffs;
-        varargout{2} = pupilFunctionData;
+        varargout{2} = theWVF;
     case {'Geisler', 'GeislerLsfAsPsf', 'DavilaGeisler', 'DavilaGeislerLsfAsPsf', 'Westheimer', 'Williams'}
         theOI = ptb.oiSetPtbOptics(theOI,'opticsModel',oiParams.opticsModel);
         

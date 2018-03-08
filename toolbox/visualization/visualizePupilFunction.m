@@ -1,17 +1,21 @@
-function visualizePupilFunction(pupilFunctionData, paramsList)
+function visualizePupilFunction(visualizePupilFunction, paramsList)
 
-    nWaves = numel(pupilFunctionData);
+    pupilFunction = wvfGet(theWVF, 'pupil function', targetWavelength);
+    wavelengths = wvfGet(theWVF, 'calcwavelengths');
+    nWaves = numel(wavelengths);
     
        
     for iWave = 1:1:nWaves
-        p = pupilFunctionData{iWave};
-        thisWave = p.wavelength;
+        targetWavelength = wavelengths(iWave);
+        pupilFunction = wvfGet(theWVF, 'pupil function', targetWavelength);
+        pupilSupport = wvfGet(theWVF, 'pupil spatial samples', 'mm', targetWavelength);
+
         
         hFig = figure(iWave); clf;
         set(hFig, 'Position', [10 10 1000 350], 'Color', [1 1 1]);
         
         ax1 = subplot(1,2,1);
-        imagesc(p.pupilPos, p.pupilPos, wrapToPi(angle(p.pupilfunc)));
+        imagesc(pupilSupport, pupilSupport, angle(pupilFunction));
         numel(p.pupilPos)
         colormap(ax1, hsv(1024));
         axis 'image'; axis 'xy';
@@ -23,13 +27,6 @@ function visualizePupilFunction(pupilFunctionData, paramsList)
         box on; grid on;
         title(sprintf('%2.0fnm', thisWave));
         
-        ax2 = subplot(1,2,2);
-        imagesc(p.pupilPos, p.pupilPos, abs(p.pupilfunc));
-        axis 'image'; axis 'xy';
-        set(gca, 'XLim', 1.5*[-1 1], 'YLim', 1.5*[-1 1], 'FontSize', 14);
-        xlabel('pupil plane (mm)', 'FontWeight', 'bold');
-        box on; grid on;
-        colormap(ax2, gray(1024));
         colorbar
         drawnow;
     end
