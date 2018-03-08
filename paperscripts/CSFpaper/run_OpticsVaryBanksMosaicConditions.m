@@ -32,7 +32,7 @@ function run_OpticsVaryBanksMosaicConditions
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
-    params.visualizeOptics = true;
+    params.visualizeOptics = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = true;
