@@ -1,6 +1,8 @@
-function [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModel, wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree, varargin)
+function [theCustomOI, Zcoeffs, theWVF] = oiWithCustomOptics(opticsModel, wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree, varargin)
     p = inputParser;
     p.addParameter('showTranslation', false, @islogical);
+    p.addParameter('centeringWavelength', 550, @isnumeric);
+    p.addParameter('wavelengths', [], @isnumeric);
     p.parse(varargin{:});
     
     showTranslation = p.Results.showTranslation;
@@ -15,7 +17,12 @@ function [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModel, wavefrontSpati
     theOI = oiCreate('wvf human', calcPupilDiameterMM,[],[], umPerDegree);
     optics = oiGet(theOI,'optics');
     
-    wavelengthsListToCompute = opticsGet(optics,'wave');
+    if (isempty(p.Results.wavelengths))
+        wavelengthsListToCompute = opticsGet(optics,'wave');
+    else
+        wavelengthsListToCompute = p.Results.wavelengths;
+        optics = opticsSet(optics, 'otfwave', wavelengthsListToCompute);
+    end
     
     if (strfind(opticsModel, 'AOoptics'))
         fprintf('Generating wavefront object for ''%s'' optics \n', opticsModel);
@@ -23,10 +30,10 @@ function [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModel, wavefrontSpati
         Zcoeffs = Zcoeffs_SampleMean * 0;
         measPupilDiameterMM = calcPupilDiameterMM;
         % Generate the WVF    
-        wvfSubject = makeWVF(wavefrontSpatialSamples, Zcoeffs, wavelengthsListToCompute, ...
+        theWVF = makeWVF(wavefrontSpatialSamples, Zcoeffs, wavelengthsListToCompute, ...
             measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, opticsModel);
         % Compute an optics structure from the WVF
-        optics = oiGet(wvf2oi(wvfSubject),'optics');
+        optics = oiGet(wvf2oi(theWVF),'optics');
         theCustomOI = oiSet(theOI,'optics', optics);   
         return;
     end
@@ -67,10 +74,6 @@ function [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModel, wavefrontSpati
         otherwise
             error('Unknown optics Model: ''%s''.', opticsModel);
     end
-
-    
-    % Re-align the PSF at 550
-    centeringWavelength = 550;
     
     subjectsNum = size(Zcoeffs,2);
     for subjectIndex = 1:subjectsNum
@@ -80,10 +83,10 @@ function [theCustomOI, Zcoeffs] = oiWithCustomOptics(opticsModel, wavefrontSpati
             fprintf('Generating wavefront object for ''%s'' optics \n', opticsModel);
         end
         
-        [thePSF, theOTF, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes] = computePSFandOTF(...
+        [thePSF, theOTF, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = computePSFandOTF(...
             squeeze(Zcoeffs(:,subjectIndex)), ...
             wavelengthsListToCompute, wavefrontSpatialSamples, calcPupilDiameterMM, ...
-            centeringWavelength, showTranslation);
+            p.Results.centeringWavelength, showTranslation);
         
         if (subjectIndex == 1)
             theMeanOTF = theOTF;

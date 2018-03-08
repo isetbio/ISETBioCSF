@@ -229,8 +229,8 @@ if (p.Results.compute)
     useStdErr = zeros(size(testConeContrasts,2),1);
     rState = rng;
     
-    %parfor (kk = 1:nParforConditions, parforWorkersNum)
-    for kk = nParforConditions:-1:1
+    parfor (kk = 1:nParforConditions, parforWorkersNum)
+    %for kk = nParforConditions:-1:1
         rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         paramsList = thisConditionStruct.paramsList;

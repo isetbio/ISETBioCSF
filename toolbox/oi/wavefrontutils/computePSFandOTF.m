@@ -1,4 +1,4 @@
-function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes] = computePSFandOTF(Zcoeffs, wavelengthsListToCompute, wavefrontSpatialSamples, targetPupilDiamMM, centeringWavelength, showTranslation)
+function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = computePSFandOTF(Zcoeffs, wavelengthsListToCompute, wavefrontSpatialSamples, targetPupilDiamMM, centeringWavelength, showTranslation)
     %% Compute WVF
     umPerDegree = 300;
     theWVF = makeWVF(wavefrontSpatialSamples, Zcoeffs, wavelengthsListToCompute, ...

@@ -81,7 +81,7 @@ p.addParameter('computePhotocurrentResponseInstances', true, @islogical);
 p.addParameter('computeMosaic', true, @islogical);
 p.addParameter('visualizeMosaic',true, @islogical);
 p.addParameter('computeOptics', true, @islogical);
-p.addParameter('visualizeOptics',true, @islogical);
+p.addParameter('visualizeOptics',false, @islogical);
 p.addParameter('ramPercentageEmployed', 1.0, @isnumeric);
 p.addParameter('parforWorkersNum', 20, @isnumeric);
 p.addParameter('employStandardHostComputerResources', false, @islogical);
@@ -91,6 +91,7 @@ p.addParameter('visualizeResponses',true,@islogical);
 p.addParameter('visualizedConditionIndices', [], @isnumeric);
 p.addParameter('visualizeOuterSegmentFilters',false, @islogical);
 p.addParameter('visualizeSpatialScheme',false,@islogical);
+
 p.addParameter('visualizeOIsequence', false, @islogical);
 p.addParameter('visualizeMosaicWithFirstEMpath', false, @islogical);
 p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
@@ -123,6 +124,7 @@ varargout{1} = [];   % Impulse responses if (visualizeOuterSegmentFilters is tru
 varargout{2} = [];   % noise-free responses
 varargout{3} = [];   % the optical image optics
 varargout{4} = [];   % the cone mosaic
+varargout{5} = [];   % the wavefront data
 
 %% Clear
 if (nargin == 0)
@@ -267,7 +269,14 @@ if (p.Results.compute)
     if (p.Results.computeOptics)
         % Create the optics
         if (ismember(rParams.oiParams.opticsModel, availableCustomWvfOpticsModels))
-            [theOI, Zcoeffs] = colorDetectOpticalImageConstruct(rParams.oiParams);
+            [theOI, Zcoeffs, theWVF] = colorDetectOpticalImageConstruct(rParams.oiParams);
+            
+            if (p.Results.visualizeOptics)
+                % Visualize pupil function
+                oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
+                visualizePupilFunction(theWVF, oiParamsList);
+            end
+            
         else
             theOI = colorDetectOpticalImageConstruct(rParams.oiParams);
         end
@@ -276,6 +285,10 @@ if (p.Results.compute)
         oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
         rwObject.write('opticalImage', theOI, oiParamsList, theProgram, 'type', 'mat');
 
+        % Save the pupil function data
+        oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
+        rwObject.write('wavefront', theWVF, oiParamsList, theProgram, 'type', 'mat');
+        
         % Save a copy of the optical image with the current date
         % This can be useful if the optical image is overwritten 
         rwObject.write(sprintf('opticalImage_%s', currentDate), theOI, oiParamsList, theProgram, 'type', 'mat');
@@ -289,12 +302,19 @@ if (p.Results.compute)
         % Load previously-generated optics
         fprintf('Loading previously generated optics\n');
         oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
-        theOI = rwObject.read('opticalImage', oiParamsList, theProgram, 'type', 'mat');    
+        theOI = rwObject.read('opticalImage', oiParamsList, theProgram, 'type', 'mat');   
+        
+         % Load previously generated pupil function data
+        oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
+        theWVF = rwObject.read('wavefront', oiParamsList, theProgram, 'type', 'mat');
     end
     
     % Return the OI (for visualization purposes)
     varargout{3} = theOI;
 
+    % Return the wavefront data (for visualization purposes)
+    varargout{5} = theWVF;
+    
     if (p.Results.computeMosaic)
         % Create the cone mosaic
         theMosaic = colorDetectConeMosaicConstruct(rParams.mosaicParams, ...
@@ -372,7 +392,6 @@ if (p.Results.compute)
     end
     
     
-
     parforConditionStructs = responseGenerationParforConditionStructsGenerate(testConeContrasts,testContrasts);
     nParforConditions = length(parforConditionStructs);
     
