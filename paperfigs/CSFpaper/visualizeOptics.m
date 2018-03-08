@@ -25,7 +25,6 @@ function visualizeOptics
     wavelengths = opticsGet(optics, 'otf wave');
     
     
-    
     for iw = 1:numel(targetWavelengths)
         targetWavelength = targetWavelengths(iw);
         
