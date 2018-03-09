@@ -1,23 +1,37 @@
-function run_EMVaryEccLMSMosaicConditions
-% This is the script used to assess the impact of different EM types on the CSF
-% 
-    % 'random'; 'randomNoSaccades'; 'frozen0';
-    params.emPathType = 'random'; % 'randomNoSaccades'; 'frozen0';    
-    params.centeredEMPaths = false;
+function run_ClassificationMethodVary
+% This is the script used to assess the impact of different optics models on the CSF
+%
+
+    %'mlpt'% 'svmV1FilterBank';
+    params.performanceClassifier = 'svmV1FilterBank';
     
+    
+    % Mosaic type to employ
+    %mosaicType = 'originalBanks';
+    mosaicType = 'ISETbioHexEccBasedLMSrealistic';
+    
+    % Optics to run
+    params.opticsModel = 'ThibosDefaultSubject3MMPupil';
+
+    %params.pupilDiamMm = 2.0;   % What was used in Banks et al 87
+    params.pupilDiamMm = 3.0;   % 3 is more appropriate for a 100 cd/m2 mean scene luminance
+    
+    params.luminancesExamined = [34];
+    %params.luminancesExamined = [340];
+       
     % Simulation steps to perform
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
-    params.visualizeMosaicWithFirstEMpath = true;
-    params.visualizeResponses = true;
+    params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
+    params.visualizeMosaicWithFirstEMpath = ~true;
     
-    params.visualizeKernelTransformedSignals = ~true;
+    params.visualizeKernelTransformedSignals = true;
     params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
@@ -26,38 +40,32 @@ function run_EMVaryEccLMSMosaicConditions
     %computationInstance = 0;        % ALL mosaics
     %computationInstance = 1;        % LARGEST mosaic
     %computationInstance = 2;        % second LARGEST mosaic
-    computationInstance = 3;        % ALL except the two LARGEST mosaic
-    %computationInstance = 4;         % Just for testing
-     
-    params = getFixedParamsForOpticsImpactExperiment(params,computationInstance);
+    %computationInstance = 3;        % ALL except the two LARGEST mosaic
+    computationInstance = 4;
+    params = getFixedParamsForOpticsImpactExperiment(params,computationInstance, mosaicType);
 
     % Go
     run_BanksPhotocurrentEyeMovementConditions(params);
 
 end
 
-function params = getFixedParamsForOpticsImpactExperiment(params, computationInstance)
+function params = getFixedParamsForOpticsImpactExperiment(params, computationInstance, mosaicType)
     params.blur = true;
     params.apertureBlur = true;
     
     params.imagePixels = 512;
     params.wavefrontSpatialSamples = 261*2+1;     % This gives us an OTF sampling of 1.003 c/deg
     params.minimumOpticalImagefieldOfViewDegs = 1.0;
+    
+    
+    % 'random'; 'frozen0';
+    params.emPathType = 'frozen0'; %random'; %'random';     
+    params.centeredEMPaths = false;
    
     % Use a subset of the trials. Specify [] to use all available trials
     params.nTrainingSamples = 1024;
   
-    % Optics model
-    params.opticsModel = 'AOoptics80mmPupil'; % 'ThibosDefaultSubject3MMPupil';
-
-    % Pupil size
-    params.pupilDiamMm = 3.0;   % 3 is more appropriate for a 100 cd/m2 mean scene luminance
-    
-    % Luminance examined
-    params.luminancesExamined = [34];
-    
     % Mosaic params
-    mosaicType = 'ISETbioHexEccBasedLMSrealistic';
     mosaicParams = getParamsForMosaicWithLabel(mosaicType);
     
     fNames = fieldnames(mosaicParams);
@@ -88,9 +96,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     % 'isomerizations', 'photocurrents'
     params.performanceSignal = 'isomerizations';
     
-    %'mlpt'% 'svmV1FilterBank';
-    params.performanceClassifier = 'mlpt';
-    
+
     params.performanceTrialsUsed = params.nTrainingSamples;
     
     % SVM-related
@@ -126,7 +132,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     elseif (computationInstance  == 4)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 1.2;  
-        params.cyclesPerDegreeExamined =  [16];
+        params.cyclesPerDegreeExamined =  [60];
     else
         error('computational instance must be 0, 1 or 2');
     end
