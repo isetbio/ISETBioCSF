@@ -231,15 +231,13 @@ if (p.Results.compute)
     useStdErr = zeros(size(testConeContrasts,2),1);
     rState = rng;
     
-    parfor (kk = 1:nParforConditions, parforWorkersNum)
-    %for kk = nParforConditions:-1:1
-        t = getCurrentTask();
-        workerID = t.ID
+    %parfor (kk = 1:nParforConditions, parforWorkersNum)
+    for kk = nParforConditions:-1:1
         
         rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         paramsList = thisConditionStruct.paramsList;
-        fprintf('Worker-%d: classifying data for condition %d of %d... \n', workerID,kk,nParforConditions);
+        fprintf('Classifying data for condition %d of %d... \n', kk,nParforConditions);
         stimData = rwObject.read('responseInstances',paramsList,readProgram);
         
         if (strcmp(thresholdParams.signalSource,'isomerizations'))
