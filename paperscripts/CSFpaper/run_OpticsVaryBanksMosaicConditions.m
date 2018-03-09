@@ -15,7 +15,7 @@ function run_OpticsVaryBanksMosaicConditions
     mosaicType = 'ISETbioHexEccBasedLMSrealistic';
     
     % Optics to run
-    params.opticsModel = examinedOpticsModels{2};
+    params.opticsModel = examinedOpticsModels{5};
 
     %params.pupilDiamMm = 2.0;   % What was used in Banks et al 87
     params.pupilDiamMm = 3.0;   % 3 is more appropriate for a 100 cd/m2 mean scene luminance
