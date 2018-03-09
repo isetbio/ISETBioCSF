@@ -49,7 +49,7 @@ p.addParameter('thresholdParams',[],@isemptyorstruct);
 p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
 p.addParameter('freezeNoise',false,@islogical);
 p.addParameter('compute',true,@islogical);
-p.addParameter('parforWorkersNum', 6, @isnumeric);
+p.addParameter('parforWorkersNum', 10, @isnumeric);
 p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
@@ -72,6 +72,8 @@ parforWorkersNum = p.Results.parforWorkersNum;
 if (numberOfWorkers < parforWorkersNum)
     parforWorkersNum = numberOfWorkers;
 end
+
+fprintf('Classifying using %d workers\n', parforWorkersNum);
 
 %% Clear
 if (nargin == 0)
@@ -231,10 +233,13 @@ if (p.Results.compute)
     
     parfor (kk = 1:nParforConditions, parforWorkersNum)
     %for kk = nParforConditions:-1:1
+        t = getCurrentTask();
+        workerID = t.ID
+        
         rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
         paramsList = thisConditionStruct.paramsList;
-        fprintf('Reading stimulus data for condition %d of %d... \n', kk,nParforConditions);
+        fprintf('Worker-%d: classifying data for condition %d of %d... \n', workerID,kk,nParforConditions);
         stimData = rwObject.read('responseInstances',paramsList,readProgram);
         
         if (strcmp(thresholdParams.signalSource,'isomerizations'))
