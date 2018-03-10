@@ -49,7 +49,7 @@ p.addParameter('highContrast',0.1,@isnumeric);
 p.addParameter('contrastScale','log',@ischar);
 
 % Response dynamics
-p.addParameter('emPathType','frozen0',@(x)ismember(x, {'none', 'frozen', 'frozen0', 'random'}));
+p.addParameter('emPathType','frozen0',@(x)ismember(x, {'none', 'frozen', 'frozen0', 'random', 'randomNoSaccades'}));
 p.addParameter('centeredEMPaths',false, @islogical); 
 p.addParameter('responseStabilizationMilliseconds', 80, @isnumeric);
 p.addParameter('responseExtinctionMilliseconds', 200, @isnumeric);
