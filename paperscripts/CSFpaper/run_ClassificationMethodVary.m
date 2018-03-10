@@ -2,22 +2,18 @@ function run_ClassificationMethodVary
 % This is the script used to assess the impact of different optics models on the CSF
 %
 
-    %'mlpt'% 'svmV1FilterBank';
-    params.performanceClassifier = 'svmV1FilterBank';
-    
-    
+    %'mlpt'% 'svm'; 'svmV1FilterBank';
+    params.performanceClassifier = 'svm'; % 'svmV1FilterBank';
+     
     % Mosaic type to employ
-    %mosaicType = 'originalBanks';
     mosaicType = 'ISETbioHexEccBasedLMSrealistic';
     
     % Optics to run
-    params.opticsModel = 'ThibosDefaultSubject3MMPupil';
+    params.opticsModel = 'ThibosBestPSFSubject3MMPupil';
 
-    %params.pupilDiamMm = 2.0;   % What was used in Banks et al 87
     params.pupilDiamMm = 3.0;   % 3 is more appropriate for a 100 cd/m2 mean scene luminance
     
     params.luminancesExamined = [34];
-    %params.luminancesExamined = [340];
        
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -37,11 +33,11 @@ function run_ClassificationMethodVary
     params.deleteResponseInstances = ~true;
     
     % How to split the computation
-    %computationInstance = 0;        % ALL mosaics
+    computationInstance = 0;        % ALL mosaics
     %computationInstance = 1;        % LARGEST mosaic
     %computationInstance = 2;        % second LARGEST mosaic
     %computationInstance = 3;        % ALL except the two LARGEST mosaic
-    computationInstance = 4;
+    %computationInstance = 4;
     params = getFixedParamsForOpticsImpactExperiment(params,computationInstance, mosaicType);
 
     % Go
@@ -132,7 +128,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     elseif (computationInstance  == 4)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 1.2;  
-        params.cyclesPerDegreeExamined =  [60];
+        params.cyclesPerDegreeExamined =  [50];
     else
         error('computational instance must be 0, 1 or 2');
     end
