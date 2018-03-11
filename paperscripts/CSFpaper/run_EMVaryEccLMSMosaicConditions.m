@@ -7,13 +7,13 @@ function run_EMVaryEccLMSMosaicConditions
     
     %'mlpt'% 'svmV1FilterBank';
     params.performanceClassifier = 'mlpt';
-    %params.performanceClassifier = 'svmV1FilterBank';
+    params.performanceClassifier = 'svmV1FilterBank';
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
     params.visualizeResponses = ~true;
@@ -30,8 +30,8 @@ function run_EMVaryEccLMSMosaicConditions
     % How to split the computation
     %computationInstance = 0;        % ALL mosaics
     %computationInstance = 1;        % LARGEST mosaic
-    computationInstance = 2;        % second LARGEST mosaic
-    %computationInstance = 3;        % ALL except the two LARGEST mosaic
+    %computationInstance = 2;        % second LARGEST mosaic
+    computationInstance = 3;        % ALL except the two LARGEST mosaic
     %computationInstance = 4;         % Just for testing
      
     params = getFixedParamsForOpticsImpactExperiment(params,computationInstance);
