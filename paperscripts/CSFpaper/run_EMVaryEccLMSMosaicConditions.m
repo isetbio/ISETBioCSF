@@ -7,7 +7,7 @@ function run_EMVaryEccLMSMosaicConditions
     
     %'mlpt'% 'svmV1FilterBank';
     params.performanceClassifier = 'mlpt';
-    params.performanceClassifier = 'svmV1FilterBank';
+    params.performanceClassifier = 'svm'; % 'svmV1FilterBank';
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -31,8 +31,8 @@ function run_EMVaryEccLMSMosaicConditions
     %computationInstance = 0;        % ALL mosaics
     %computationInstance = 1;        % LARGEST mosaic
     %computationInstance = 2;        % second LARGEST mosaic
-    computationInstance = 3;        % ALL except the two LARGEST mosaic
-    %computationInstance = 4;         % Just for testing
+    %computationInstance = 3;        % ALL except the two LARGEST mosaic
+    computationInstance = 4;         % Just for testing
      
     params = getFixedParamsForOpticsImpactExperiment(params,computationInstance);
 
@@ -112,7 +112,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     if (computationInstance == 0)
         % All conditions in 1 MATLAB session
         params.ramPercentageEmployed = 1.2; 
-        params.cyclesPerDegreeExamined =  [2 4 8 16 32 50 60]; 
+        params.cyclesPerDegreeExamined =  [32 50 60]; 
     elseif (computationInstance  == 1)
         % Largest mosaic in session 1 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 1.2; 
@@ -124,11 +124,11 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     elseif (computationInstance  == 3)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 1.2;  
-        params.cyclesPerDegreeExamined =  [8 16 32 50 60];
+        params.cyclesPerDegreeExamined =  [8 16 32 50];
     elseif (computationInstance  == 4)
         % Remainin mosaics in session 2 of 2 parallel MATLAB sessions
         params.ramPercentageEmployed = 1.2;  
-        params.cyclesPerDegreeExamined =  [16];
+        params.cyclesPerDegreeExamined =  [60];
     else
         error('computational instance must be 0, 1 or 2');
     end
