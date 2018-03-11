@@ -5,17 +5,22 @@ function run_EMVaryEccLMSMosaicConditions
     params.emPathType = 'random'; % 'randomNoSaccades'; 'frozen0';    
     params.centeredEMPaths = false;
     
+    %'mlpt'% 'svmV1FilterBank';
+    params.performanceClassifier = 'mlpt';
+    %params.performanceClassifier = 'svmV1FilterBank';
+    
     % Simulation steps to perform
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
     params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
-    params.visualizeMosaicWithFirstEMpath = true;
-    params.visualizeResponses = true;
+    params.visualizeMosaicWithFirstEMpath = ~true;
+    params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
+    params.visualizeMosaicWithFirstEMpath = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = true;
@@ -25,8 +30,8 @@ function run_EMVaryEccLMSMosaicConditions
     % How to split the computation
     %computationInstance = 0;        % ALL mosaics
     %computationInstance = 1;        % LARGEST mosaic
-    %computationInstance = 2;        % second LARGEST mosaic
-    computationInstance = 3;        % ALL except the two LARGEST mosaic
+    computationInstance = 2;        % second LARGEST mosaic
+    %computationInstance = 3;        % ALL except the two LARGEST mosaic
     %computationInstance = 4;         % Just for testing
      
     params = getFixedParamsForOpticsImpactExperiment(params,computationInstance);
@@ -48,7 +53,7 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     params.nTrainingSamples = 1024;
   
     % Optics model
-    params.opticsModel = 'AOoptics80mmPupil'; % 'ThibosDefaultSubject3MMPupil';
+    params.opticsModel = 'ThibosBestPSFSubject3MMPupil';
 
     % Pupil size
     params.pupilDiamMm = 3.0;   % 3 is more appropriate for a 100 cd/m2 mean scene luminance
@@ -87,9 +92,6 @@ function params = getFixedParamsForOpticsImpactExperiment(params, computationIns
     
     % 'isomerizations', 'photocurrents'
     params.performanceSignal = 'isomerizations';
-    
-    %'mlpt'% 'svmV1FilterBank';
-    params.performanceClassifier = 'mlpt';
     
     params.performanceTrialsUsed = params.nTrainingSamples;
     
