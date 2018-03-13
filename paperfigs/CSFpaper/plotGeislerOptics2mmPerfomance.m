@@ -1,5 +1,5 @@
 function plotGeislerOptics2mmPerfomance
-    load('/Users/nicolas/Desktop/figData2mmPupil.mat', 'figData')
+    load('/Users/nicolas/Desktop/figData3mmPupil.mat', 'figData')
     
     hFig = figure(1); clf;
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 400 560]);

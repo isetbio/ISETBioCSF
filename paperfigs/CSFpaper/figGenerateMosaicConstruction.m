@@ -12,7 +12,7 @@ rng(1235);
 
 params.fovDegs = [0.75 0.4]; % FOV in degrees ([width height], default: 0.25x0.25
 
-makeNew = ~true;
+makeNew = true;
 
 if (makeNew)
     % Set coneMosaicHex - specific params
@@ -77,5 +77,25 @@ theHexMosaic.visualizeGrid('visualizedConeAperture', 'geometricArea', ...
     'apertureShape', 'disks', ...
     'labelConeTypes', false, ...
     'generateNewFigure', true);
+
+hFig = figure(1);
+ax = subplot(hFg, 'Position', [0.1 0.1 0.9 0.9]);
+
+for iteration = 1:10
+    plotMosaic(obj, ax, iteration);
 end
 
+end
+
+function plotMosaic(obj, ax)
+    % Get cone locs at desired iteration
+    if (iteration == 0)
+        obj.coneLocsHexGrid = obj.initialLattice;
+    else
+        obj.coneLocsHexGrid = squeeze(obj.latticeAdjustmentSteps(iteration,:,:));
+    end
+    
+    
+    obj.visualizeGrid('axesHandle', ax);
+    
+end

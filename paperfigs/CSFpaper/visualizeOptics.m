@@ -4,7 +4,7 @@ function visualizeOptics
     visualizedOpticsModelIndex = 7;
     visualizedOpticsModel = opticsModels{visualizedOpticsModelIndex};
     
-    targetWavelengths = [450 500 525 550 575 600 650];
+    targetWavelengths = [450 550 650];
     
     showPupilRayMap = true;
     calcPupilDiameterMM = 3;
