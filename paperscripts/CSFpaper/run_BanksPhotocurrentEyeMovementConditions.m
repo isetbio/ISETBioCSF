@@ -1,5 +1,10 @@
-function theMosaic = run_BanksPhotocurrentEyeMovementConditions(params)
+function varargout = run_BanksPhotocurrentEyeMovementConditions(params)
  
+varargout = {};
+varargout{1} = [];
+varargout{2} = [];
+varargout{3} = [];
+
     % Assign parfor workers num based on computer name
     [~, computerNetworkName] = system('uname -n');
     if (contains(computerNetworkName, 'ionean'))
@@ -10,9 +15,6 @@ function theMosaic = run_BanksPhotocurrentEyeMovementConditions(params)
         params.parforWorkersNum = 4;
     end
     fprintf('\nWill use %d workers\n', params.parforWorkersNum);
-    
-    % Choose maxGridAdjustmentIterations based on mosaic size
-    params.maxGridAdjustmentIterations = [];
 
     if (params.deleteResponseInstances)
         c_BanksEtAlPhotocurrentAndEyeMovements(...
@@ -60,8 +62,8 @@ function theMosaic = run_BanksPhotocurrentEyeMovementConditions(params)
         return;
     end
     
-    theMosaic = [];
     if (params.computeResponses) || (params.visualizeMosaicWithFirstEMpath) || (params.visualizeResponses) || (params.visualizeMosaic) || (params.computeMosaic)
+
         [~, ~,~,~, theMosaic] = c_BanksEtAlPhotocurrentAndEyeMovements(...
             'opticsModel', params.opticsModel, ...
             'wavefrontSpatialSamples', params.wavefrontSpatialSamples, ...              % * * * NEW
@@ -111,10 +113,11 @@ function theMosaic = run_BanksPhotocurrentEyeMovementConditions(params)
             'performanceClassifier', params.performanceClassifier, ...
             'spatialPoolingKernelParams', params.spatialPoolingKernelParams ...
         );
+        varargout{1} = theMosaic;
     end
     
     if (params.findPerformance) || (params.visualizePerformance)
-            perfData = c_BanksEtAlPhotocurrentAndEyeMovements(...
+            [perfData, ~, ~, ~, ~, thePsychometricFunctions, theFigData] = c_BanksEtAlPhotocurrentAndEyeMovements(...
                 'opticsModel', params.opticsModel, ...
                 'wavefrontSpatialSamples', params.wavefrontSpatialSamples, ...              % * * * NEW
                 'minimumOpticalImagefieldOfViewDegs', params.minimumOpticalImagefieldOfViewDegs, ...      % * * *  NEW
@@ -160,7 +163,8 @@ function theMosaic = run_BanksPhotocurrentEyeMovementConditions(params)
                 'performanceTrialsUsed', params.nTrainingSamples, ...
                 'spatialPoolingKernelParams', params.spatialPoolingKernelParams ...
                 );
-            thresholds = perfData.mlptThresholds.thresholdContrasts
+           varargout{2} = thePsychometricFunctions;
+           varargout{3} = theFigData;
     end
 end
 

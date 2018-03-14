@@ -118,6 +118,7 @@ varargout{3} = [];  % noise-free responses
 varargout{4} = [];  % the optical image optics
 varargout{5} = [];  % the cone mosaic
 varargout{6} = {};  % the psychometric functions
+varargout{7} = {};  % the figure data (CSF curves)
 
 %% Make sure we really want to delete the response files
 if (p.Results.deleteResponseInstances)
@@ -309,7 +310,6 @@ if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.vis
     %
     % The way the plot is coded counts on the test contrasts never changing
     % across the conditions, which we could explicitly check for here.
-    exportFigData = true;
     
     if (p.Results.generatePlots && p.Results.plotCSF)  
         hFig = figure; clf; hold on
@@ -364,11 +364,9 @@ if (p.Results.fitPsychometric) && ((p.Results.findPerformance) || (p.Results.vis
         titleStr1 = 'Computational Observer CSF';
         titleStr2 = sprintf('Blur: %d, Aperture Blur: %d',p.Results.blur, p.Results.apertureBlur);
         title({titleStr1 ; titleStr2});
-
-        if (exportFigData)
-            save('figData.mat', 'figData');
-        end
         
+        % Return the figure data
+        varargout{7} = figData;
         % Write out the figure
         rwObject.write('banksEtAlReplicatePhotocurrentAndEyeMovements',hFig,paramsList,writeProgram,'Type','figure')
     end

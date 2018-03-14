@@ -5,8 +5,17 @@ function params = getParamsForMosaicWithLabel(mosaicName)
     params.latticeAdjustmentPositionalToleranceF = [];      
     params.latticeAdjustmentDelaunayToleranceF = [];
     params.marginF = [];
-    params.resamplingFactor = 11;
     
+    params.resamplingFactor = [];   % Empty indicates that c_BanksEtAlPhotocurrentAndEyeMovements
+                                    % will choose a resamplingFactor based
+                                    % on the mosaic size, smaller mosaics
+                                    % will get higher resamplingFactor
+    
+    params.maxGridAdjustmentIterations = []; % Empty indicates that c_BanksEtAlPhotocurrentAndEyeMovements
+                                    % will choose maxGridAdjustmentIterations based
+                                    % on the mosaic size, smaller mosaics
+                                    % will get higher rmaxGridAdjustmentIterations
+                                    
     switch mosaicName
         case 'originalBanks'
             params.coneSpacingMicrons = 3.0;
@@ -68,4 +77,6 @@ function params = getParamsForMosaicWithLabel(mosaicName)
         otherwise
             error('Unknown mosaic: ''%s''.', mosaicName);
     end
+    
+   
 end
