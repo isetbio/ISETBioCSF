@@ -2,12 +2,14 @@ function formatFigureForPaper(hFig, varargin)
     p = inputParser;
     p.addParameter('theAxes', []);
     p.addParameter('theLegend', []);
+    p.addParameter('theText', []);
     p.addParameter('figureType', 'CSF', @ischar);
     p.parse(varargin{:});
     
     figureType = p.Results.figureType;
     theAxes =  p.Results.theAxes;
     theLegend = p.Results.theLegend;
+    theText = p.Results.theText;
     
     switch (figureType)
         case 'CSF'
@@ -34,6 +36,15 @@ function formatFigureForPaper(hFig, varargin)
             if (~isempty(theLegend))
                 set(theLegend, 'FontName', 'Monaco', 'FontSize', 14);
             end
+            
+            if (~isempty(theText))
+                set(theText, 'FontSize', 30, ...
+                    'FontWeight', 'Bold', ...
+                    'BackgroundColor', [1 1 1], ...
+                    'EdgeColor', [ 0 0 0], ...
+                    'LineWidth', 1.0);
+            end
+            
     end % switch
     
 end

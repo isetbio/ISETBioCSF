@@ -1,4 +1,4 @@
-function run_PupilSizeVaryConditions
+function run_LuminanceVaryConditions
 % This is the script used to assess the impact of different pupil sizes on the CSF
 %  
     % How to split the computation
@@ -18,13 +18,15 @@ function run_PupilSizeVaryConditions
     
     % Adjust any params we want to change from their default values
     % Optics models we tested
-    examinedPupilSizes = {...
-        2 ...
-        3 ...
+    examinedLuminances = {...
+        34 ...
+        340 ...
+        3.4 ...
     };
     examinedPupilSizeLegends = {...
-        '2 mm pupil (34 cd/m^2)' ...
-        '3 mm pupil (34 cd/m^2)' ...
+        '34  cd/m^2 (2mm pupil)' ...
+        '340 cd/m^2 (2mm pupil)' ...
+        '3.4 cd/m^2 (2mm pupil)' ...
     };
 
 
@@ -45,23 +47,30 @@ function run_PupilSizeVaryConditions
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 
-    if (strcmp(mosaicName, 'originalBanks')) && (strcmp(opticsName,'Geisler'))
-        params.cyclesPerDegreeExamined = params.cyclesPerDegreeExamined(1:end-1);
-    end
-        
+   
+    params.opticsModel = opticsName;
+    params.pupilDiamMm = 2.0;
+    defaultCyclesPerDegreeExamined = [2 4 8 16 32 50];
+    
     % Go
-    for pupilSizeIndex = 1:numel(examinedPupilSizes)
-        params.pupilDiamMm = examinedPupilSizes{pupilSizeIndex};
-        params.opticsModel = opticsName;
-        
-        [~,~, theFigData{pupilSizeIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
+    for lumIndex = 1:numel(examinedLuminances)
+        params.luminancesExamined = examinedLuminances{lumIndex};
+
+        if (lumIndex == 2)
+            params.cyclesPerDegreeExamined = defaultCyclesPerDegreeExamined(1:end-1);
+        else
+            params.cyclesPerDegreeExamined = defaultCyclesPerDegreeExamined;
+        end
+    
+        [~,~, theFigData{lumIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end
     
     if (makeSummaryFigure)
-        variedParamName = 'PupilSize';
+        variedParamName = 'Luminance';
         generateFigureForPaper(theFigData, examinedPupilSizeLegends, variedParamName, sprintf('%s_%s',mosaicName, opticsName), ...
             'figureType', 'CSF', ...
-            'inGraphText', ' B ' ...
-            );
+            'inGraphText', ' A ', ...
+            'plotFirstConditionInGray', true, ...
+            'showBanksPaperIOAcurves', true);
     end
 end

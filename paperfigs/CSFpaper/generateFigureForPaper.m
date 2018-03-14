@@ -4,12 +4,16 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
     p.addParameter('figureType', 'CSF', @ischar);
     p.addParameter('showBanksPaperIOAcurves', false, @islogical);
     p.addParameter('plotFirstConditionInGray', true, @islogical);
+    p.addParameter('inGraphText', '', @ischar);
+    p.addParameter('inGraphTextPos', [], @isnumeric);
     
     p.parse(varargin{:});
     
     figureType = p.Results.figureType;
     showBanksPaperIOAcurves = p.Results.showBanksPaperIOAcurves;
     plotFirstConditionInGray = p.Results.plotFirstConditionInGray;
+    inGraphText = p.Results.inGraphText;
+    inGraphTextPos = p.Results.inGraphTextPos;
     
     for condIndex = 1:numel(theFigData)
         figData = theFigData{condIndex};
@@ -41,9 +45,9 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
 
     if (showBanksPaperIOAcurves)
         banksFactor = 1;
-        plot(figData.C(:,1),figData.C(:,2)*banksFactor,'-','Color', squeeze(colors(3,:)), 'LineWidth',2);
-        plot(figData.D(:,1),figData.D(:,2)*banksFactor,'-','Color', squeeze(colors(2,:)), 'LineWidth',2);
-        plot(figData.E(:,1),figData.E(:,2)*banksFactor,'-','Color', squeeze(colors(1,:)), 'LineWidth',2);
+        plot(figData.D(:,1),figData.D(:,2)*banksFactor,'-','Color', squeeze(colors(1,:)), 'LineWidth',2);
+        plot(figData.C(:,1),figData.C(:,2)*banksFactor,'-','Color', squeeze(colors(2,:)), 'LineWidth',2);
+        plot(figData.E(:,1),figData.E(:,2)*banksFactor,'-','Color', squeeze(colors(3,:)), 'LineWidth',2);
         for condIndex = 1:numel(theFigData)
             plot(cpd{condIndex}, contrastSensitivity{condIndex}, 'o', 'Color', squeeze(colors(condIndex,:)), ...
             'MarkerEdgeColor', squeeze(colors(condIndex,:)), ...
@@ -62,8 +66,18 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
     % Add legend
     hL = legend(variedParamLegends);
     
+    % Add text
+    if (~isempty(inGraphText))
+        if (isempty(inGraphTextPos))
+            inGraphTextPos(1) = 1.1;
+            inGraphTextPos(2) = 9000;
+        end
+        t = text(inGraphTextPos(1), inGraphTextPos(2), inGraphText);
+    end
+
+    
     % Format figure
-    formatFigureForPaper(hFig, 'theAxes', gca, 'theLegend', hL, 'figureType', 'CSF');
+    formatFigureForPaper(hFig, 'theAxes', gca, 'theLegend', hL, 'theText', t, 'figureType', 'CSF');
     
     exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', 'projects/IBIOColorDetect/paperfigs/CSFpaper/exports');
     figureName = fullfile(exportsDir, sprintf('%sVary%s.pdf', variedParamName, fixedParamName));
