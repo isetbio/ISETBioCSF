@@ -285,9 +285,11 @@ if (p.Results.compute)
         oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
         rwObject.write('opticalImage', theOI, oiParamsList, theProgram, 'type', 'mat');
 
-        % Save the pupil function data
-        oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
-        rwObject.write('wavefront', theWVF, oiParamsList, theProgram, 'type', 'mat');
+        % Save the wavefront data
+        if (ismember(rParams.oiParams.opticsModel, availableCustomWvfOpticsModels))
+            oiParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams};
+            rwObject.write('wavefront', theWVF, oiParamsList, theProgram, 'type', 'mat');
+        end
         
         % Save a copy of the optical image with the current date
         % This can be useful if the optical image is overwritten 
@@ -312,8 +314,10 @@ if (p.Results.compute)
     % Return the OI (for visualization purposes)
     varargout{3} = theOI;
 
-    % Return the wavefront data (for visualization purposes)
-    varargout{5} = theWVF;
+    if (ismember(rParams.oiParams.opticsModel, availableCustomWvfOpticsModels))
+        % Return the wavefront data (for visualization purposes)
+        varargout{5} = theWVF;
+    end
     
     if (p.Results.computeMosaic)
         % Create the cone mosaic
