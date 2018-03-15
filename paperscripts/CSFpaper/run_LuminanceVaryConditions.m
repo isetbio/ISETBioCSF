@@ -56,7 +56,7 @@ function run_LuminanceVaryConditions
     for lumIndex = 1:numel(examinedLuminances)
         params.luminancesExamined = examinedLuminances{lumIndex};
 
-        if (lumIndex == 2)
+        if (params.luminancesExamined == 3.4)
             params.cyclesPerDegreeExamined = defaultCyclesPerDegreeExamined(1:end-1);
         else
             params.cyclesPerDegreeExamined = defaultCyclesPerDegreeExamined;
@@ -67,10 +67,16 @@ function run_LuminanceVaryConditions
     
     if (makeSummaryFigure)
         variedParamName = 'Luminance';
+        theRatioLims = [0.1 10];
+        theRatioTicks = logspace(log10(0.1), log10(10), 5);
+        
         generateFigureForPaper(theFigData, examinedPupilSizeLegends, variedParamName, sprintf('%s_%s',mosaicName, opticsName), ...
             'figureType', 'CSF', ...
             'inGraphText', ' A ', ...
             'plotFirstConditionInGray', true, ...
+            'plotRatiosOfOtherConditionsToFirst', true, ...
+            'theRatioLims', theRatioLims, ...
+            'theRatioTicks', theRatioTicks, ...
             'showBanksPaperIOAcurves', true);
     end
 end

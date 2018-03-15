@@ -6,20 +6,19 @@ function run_MosaicsVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     % Mosaic to use
     examinedMosaicModels = {...
         'originalBanks' ...
-        'ISETbioHexEccBasedLMSrealistic' ...
         'ISETbioHexEccBasedNoScones' ...
+        'ISETbioHexEccBasedLMSrealistic' ...
         };
-    examinedMosaicModels = {examinedMosaicModels{3}};
-    
+ 
     examinedMosaicLegends = {...
-        'Banks LM' ...
-        'ecc-based LMS' ...
-        'ecc-based LM' ...
+        'constant LM density (Banks ''87)' ...
+        'eccentricity-based LM density' ...
+        'eccentricity-based LMS density' ...
     };
 
     % Tun the mosaic-vary condition using the Geisler optics
@@ -28,21 +27,21 @@ function run_MosaicsVaryConditions
     % Go !
     for modelIndex = 1:numel(examinedMosaicModels)
         mosaicName = examinedMosaicModels{modelIndex};
+        params = getCSFpaperDefaultParams(mosaicName, computationInstance);
         
         % Special case: the Geisler optics/original Banks mosaic was run up
         % to 50 c/deg
         if (strcmp(mosaicName, 'originalBanks')) && (strcmp(opticsName,'Geisler'))
             params.cyclesPerDegreeExamined = params.cyclesPerDegreeExamined(1:end-1);
         end
-    
-        params = getCSFpaperDefaultParams(mosaicName, computationInstance);
+        
         params.opticsModel = opticsName;
        
         % Simulation steps to perform
         params.computeMosaic = ~true; 
         params.visualizeMosaic = ~true;
     
-        params.computeResponses = true;
+        params.computeResponses = ~true;
         params.computePhotocurrentResponseInstances = ~true;
         params.visualizeResponses = ~true;
         params.visualizeSpatialScheme = ~true;
@@ -51,7 +50,7 @@ function run_MosaicsVaryConditions
         params.visualizeMosaicWithFirstEMpath = ~true;
     
         params.visualizeKernelTransformedSignals = ~true;
-        params.findPerformance = true;
+        params.findPerformance = ~true;
         params.visualizePerformance = true;
         params.deleteResponseInstances = ~true;
 
@@ -60,7 +59,18 @@ function run_MosaicsVaryConditions
     
     if (makeSummaryFigure)
         variedParamName = 'Mosaic';
-        generateFigureForPaper(theFigData, examinedMosaicLegends, variedParamName, opticsName, 'figureType', 'CSF');
+        theRatioLims = [0.3 1];
+        theRatioTicks = [0.3 0.5 0.7 1.0];
+        generateFigureForPaper(theFigData, examinedMosaicLegends, variedParamName, opticsName, ...
+            'figureType', 'CSF', ...
+            'inGraphText', ' Geisler optics ', ...
+            'inGraphTextPos', [1.1 3], ...
+            'inGraphTextFontSize', 18, ...
+            'plotFirstConditionInGray', true, ...
+            'plotRatiosOfOtherConditionsToFirst', true, ...
+            'theRatioLims', theRatioLims, ...
+            'theRatioTicks', theRatioTicks ...
+            );
     end
 end
 
