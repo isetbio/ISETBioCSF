@@ -87,7 +87,7 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
     p.addParameter('visualizedFOV', 0.4, @isnumeric);
     p.parse(varargin{:});
     
-    inGraphTexts = p.Results.inGraphText;
+    inGraphTexts = p.Results.inGraphTexts;
     visualizedFOV = p.Results.visualizedFOV;
     
     % Initialize figure
