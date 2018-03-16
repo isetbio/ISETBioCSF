@@ -47,6 +47,7 @@ p.addParameter('nContrastsPerDirection',20,@isnumeric);
 p.addParameter('lowContrast',0.0001,@isnumeric);
 p.addParameter('highContrast',0.1,@isnumeric);
 p.addParameter('contrastScale','log',@ischar);
+p.addParameter('frameRate',10,@isnumeric);
 
 % Response dynamics
 p.addParameter('emPathType','frozen0',@(x)ismember(x, {'none', 'frozen', 'frozen0', 'random', 'randomNoSaccades'}));
@@ -409,7 +410,7 @@ end
 function rParams = updateTemporalParams(rParams, userParams)
     % In the absence of info from the Banks et al paper, assume 10 Hz
     % refresh rate (to accelerate computations)
-    frameRate = 10;
+    frameRate = userParams.frameRate;
     windowTauInSeconds = nan; % square-wave
     stimulusSamplingIntervalInSeconds = 1/frameRate;
     

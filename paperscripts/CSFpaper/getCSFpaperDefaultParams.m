@@ -59,7 +59,8 @@ function params = getCSFpaperDefaultParams(mosaicName,  computationInstance)
     params.spatialPoolingKernelParams.temporalPCAcoeffs = Inf;  % Inf, results in no PCA, just the raw time series
     params.spatialPoolingKernelParams.shrinkageFactor = 1.0;  % > 1, results in expansion, < 1 results in shrinking 
     
-    % response duration params
+    % Response duration params
+    params.frameRate = 10; %(1 frame)
     params.responseStabilizationMilliseconds = 40;
     params.responseExtinctionMilliseconds = 40;
     
@@ -80,6 +81,10 @@ function params = getCSFpaperDefaultParams(mosaicName,  computationInstance)
         % All other sizes
         params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined =  [8 16 32 50 60];
+    elseif (computationInstance  == 4)
+        % All other sizes
+        params.ramPercentageEmployed = 1.2;  
+        params.cyclesPerDegreeExamined =  [50];
     else
         error('computational instance must be 0, 1, 2, or 3');
     end
