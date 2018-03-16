@@ -19,25 +19,25 @@ function run_EyeMovementVaryConditions
     % Adjust any params we want to change from their default values
     params.opticsModel = opticsName;
     
+   % examinedCond(1).emPathType = 'frozen0';
+   % examinedCond(1).classifier = 'mlpt';
+   % examinedCond(1).legend = 'no eye movements, MLPT';
+    
+   % examinedCond(1).emPathType = 'frozen0';
+   % examinedCond(1).classifier = 'svm';
+   % examinedCond(1).legend = 'no eye movements, SVM';
+    
     examinedCond(1).emPathType = 'frozen0';
-    examinedCond(1).classifier = 'mlpt';
-    examinedCond(1).legend = 'eyes fixed, MLPT';
+    examinedCond(1).classifier = 'svmV1FilterBank';
+    examinedCond(1).legend = 'no eye movements, SVM (QPhE)';
     
-    examinedCond(2).emPathType = 'frozen0';
+    examinedCond(2).emPathType = 'random';
     examinedCond(2).classifier = 'svm';
-    examinedCond(2).legend = 'eyes fixed, SVM';
+    examinedCond(2).legend = 'drifts+\mu-saccades (origin), SVM';
     
-    examinedCond(3).emPathType = 'frozen0';
+    examinedCond(3).emPathType = 'random';
     examinedCond(3).classifier = 'svmV1FilterBank';
-    examinedCond(3).legend = 'eyes fixed, SVM (QPhE)';
-    
-    examinedCond(4).emPathType = 'random';
-    examinedCond(4).classifier = 'svm';
-    examinedCond(4).legend = 'drifts+microsaccades, SVM';
-    
-    examinedCond(5).emPathType = 'random';
-    examinedCond(5).classifier = 'svmV1FilterBank';
-    examinedCond(5).legend = 'drifts+microsaccades, SVM (QPhE)';
+    examinedCond(3).legend = 'drifts+\mu-saccades (origin), SVM (QPhE)';
 
 
     % Simulation steps to perform
@@ -69,6 +69,15 @@ function run_EyeMovementVaryConditions
     
     if (makeSummaryFigure)
         variedParamName = 'EyeMovement';
-        generateFigureForPaper(theFigData, examinedEyeMovementTypeLegends, variedParamName, sprintf('%s_%s',mosaicName, opticsName), 'figureType', 'CSF');
+        theRatioLims = [0.1 2];
+        theRatioTicks = [0.1 0.2 0.5 1 2];
+        generateFigureForPaper(theFigData, examinedEyeMovementTypeLegends, variedParamName, sprintf('%s_%s',mosaicName, opticsName), ...
+            'figureType', 'CSF', ...
+            'inGraphText', ' B ', ...
+            'plotFirstConditionInGray', true, ...
+            'plotRatiosOfOtherConditionsToFirst', true, ...
+            'theRatioLims', theRatioLims, ...
+            'theRatioTicks', theRatioTicks ...
+            );
     end
 end

@@ -9,6 +9,8 @@ function varargout = formatFigureForPaper(hFig, varargin)
     p.addParameter('theLegend', []);
     p.addParameter('theText', []);
     p.addParameter('theTextFontSize', [], @isnumeric);
+    p.addParameter('theFigureTitle', '', @ischar);
+    
     p.parse(varargin{:});
     
     varargout = {};
@@ -25,8 +27,18 @@ function varargout = formatFigureForPaper(hFig, varargin)
     theLegend = p.Results.theLegend;
     theText = p.Results.theText;
     theTextFontSize = p.Results.theTextFontSize;
+    theFigureTitle = p.Results.theFigureTitle;
     
     switch (figureType)
+        case 'MOSAICS'
+            if (isempty(theAxes))
+                set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
+            else
+                axis(theAxes, 'square');
+                set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                box(theAxes, 'on');
+            end
+
         case 'CSF'
             csTicks = [2 5 10 20 50 100 200 500 1000 2000 5000 10000];
             csLims = [2 12000];
@@ -60,7 +72,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
             
             if (~isempty(theText))
                 if (isempty(theTextFontSize))
-                    textFontSize = 30;
+                    theTextFontSize = 30;
                 end
                 set(theText, 'FontSize', theTextFontSize, ...
                     'FontWeight', 'Bold', ...
@@ -88,5 +100,10 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 end
             end
     end % switch
+    
+    if (~isempty(theFigureTitle))
+        title(theAxes, theFigureTitle);
+    end
+                
 end
 

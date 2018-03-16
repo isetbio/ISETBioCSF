@@ -6,7 +6,8 @@ function run_MosaicsVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
+    makeSummaryFigure = ~true;
+    makeMosaicsFigure = true;
     
     % Mosaic to use
     examinedMosaicModels = {...
@@ -25,8 +26,8 @@ function run_MosaicsVaryConditions
     opticsName = 'Geisler';
       
     % Go !
-    for modelIndex = 1:numel(examinedMosaicModels)
-        mosaicName = examinedMosaicModels{modelIndex};
+    for mosaicIndex = 1:numel(examinedMosaicModels)
+        mosaicName = examinedMosaicModels{mosaicIndex};
         params = getCSFpaperDefaultParams(mosaicName, computationInstance);
         
         % Special case: the Geisler optics/original Banks mosaic was run up
@@ -43,6 +44,7 @@ function run_MosaicsVaryConditions
     
         params.computeResponses = ~true;
         params.computePhotocurrentResponseInstances = ~true;
+        params.visualizeMosaic = makeMosaicsFigure;
         params.visualizeResponses = ~true;
         params.visualizeSpatialScheme = ~true;
         params.visualizeOIsequence = ~true;
@@ -51,26 +53,95 @@ function run_MosaicsVaryConditions
     
         params.visualizeKernelTransformedSignals = ~true;
         params.findPerformance = ~true;
-        params.visualizePerformance = true;
+        params.visualizePerformance = makeSummaryFigure;
         params.deleteResponseInstances = ~true;
 
-        [~,~, theFigData{modelIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
+        [theMosaics{mosaicIndex},thePsychometricFunctions{mosaicIndex}, theFigData{mosaicIndex}] = ...
+            run_BanksPhotocurrentEyeMovementConditions(params);
     end
     
     if (makeSummaryFigure)
         variedParamName = 'Mosaic';
-        theRatioLims = [0.3 1];
-        theRatioTicks = [0.3 0.5 0.7 1.0];
+        theRatioLims = [0.3 1.2];
+        theRatioTicks = [0.3 0.5 0.7 1.0 2.0];
         generateFigureForPaper(theFigData, examinedMosaicLegends, variedParamName, opticsName, ...
             'figureType', 'CSF', ...
-            'inGraphText', ' Geisler optics ', ...
-            'inGraphTextPos', [1.1 3], ...
-            'inGraphTextFontSize', 18, ...
+            'inGraphText', ' A ', ...
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks ...
             );
     end
+    
+    if (makeMosaicsFigure)
+        generateMosaicsFigure(theMosaics, examinedMosaicLegends,  ...
+            'inGraphText', {'B', 'C', 'D'}, ...
+            'visualizedFOV', 0.3);
+    end
+end
+
+function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
+    p = inputParser;
+    p.addParameter('inGraphText', '', @ischar);
+    p.addParameter('visualizedFOV', 0.4, @isnumeric);
+    p.parse(varargin{:});
+    
+    inGraphText = p.Results.inGraphText;
+    visualizedFOV = p.Results.visualizedFOV;
+    
+    % Initialize figure
+    hFig = figure(1); clf;
+    formatFigureForPaper(hFig, 'figureType', 'MOSAICS');
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+       'rowsNum', numel(theMosaics), ...
+       'colsNum', 1, ...
+       'heightMargin',  0.05, ...
+       'widthMargin',    0.001, ...
+       'leftMargin',     0.01, ...
+       'rightMargin',    0.001, ...
+       'bottomMargin',   0.05, ...
+       'topMargin',      0.01);
+    
+    for mosaicIndex = 1:numel(theMosaics)
+        cm = theMosaics{mosaicIndex};
+        
+        posRangeY = 0.5*visualizedFOV*cm.micronsPerDegree * 1e-6 * [-1 1];
+        posRangeX = 2*posRangeY;
+        mosaicName = examinedMosaicLegends{mosaicIndex};
+        ax = subplot('Position', subplotPosVectors(mosaicIndex,1).v);
+        cm.visualizeGrid(...
+            'axes handle', ax, ...
+            'aperture shape', 'disks', ...
+            'visualizedConeAperture', 'geometricArea', ...
+            'label cone types', true, ...
+            'overlayHexMesh', false, ...
+            'backgroundcolor', [1 1 1]);
+        
+        formatFigureForPaper(hFig, ...
+            'figureType', 'MOSAICS', ...
+            'inGraphText', inGraphText{mosaicIndex}, ...
+            'theAxes', ax, ...
+            'theFigureTitle', mosaicName);
+        
+        set(ax, 'XLim', posRangeX, 'YLim', posRangeY);
+        tickDegs = -0.5:0.1:0.5
+        ticks = tickDegs*cm.micronsPerDegree * 1e-6
+        tickLabels = sprintf('%2.2f\n', ticks)
+        set(ax, 'XTick', ticks, 'XTickLabel', tickLabels, 'YTick', ticks, 'YTickLabel', tickLabels);
+        if (mosaicIndex == numel(theMosaics))
+            xlabel(ax, 'deg');
+        else
+            set(ax, 'XTickLabel', {});
+        end
+        ylabel(ax, 'deg');
+        
+        title(ax,mosaicName);
+    end
+    
+    exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', 'projects/IBIOColorDetect/paperfigs/CSFpaper/exports');
+    figureName = fullfile(exportsDir, sprintf('MosaicsEmployed.pdf'));
+    NicePlot.exportFigToPDF(figureName, hFig, 300);
 end
 
