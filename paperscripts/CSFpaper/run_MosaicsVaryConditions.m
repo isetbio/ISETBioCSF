@@ -76,18 +76,18 @@ function run_MosaicsVaryConditions
     
     if (makeMosaicsFigure)
         generateMosaicsFigure(theMosaics, examinedMosaicLegends,  ...
-            'inGraphText', {'B', 'C', 'D'}, ...
+            'inGraphTexts', {'B', 'C', 'D'}, ...
             'visualizedFOV', 0.3);
     end
 end
 
 function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
     p = inputParser;
-    p.addParameter('inGraphText', '', @ischar);
+    p.addParameter('inGraphTexts', '', @iscell);
     p.addParameter('visualizedFOV', 0.4, @isnumeric);
     p.parse(varargin{:});
     
-    inGraphText = p.Results.inGraphText;
+    inGraphTexts = p.Results.inGraphText;
     visualizedFOV = p.Results.visualizedFOV;
     
     % Initialize figure
@@ -121,7 +121,7 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
         
         formatFigureForPaper(hFig, ...
             'figureType', 'MOSAICS', ...
-            'inGraphText', inGraphText{mosaicIndex}, ...
+            'inGraphText', inGraphTexts{mosaicIndex}, ...
             'theAxes', ax, ...
             'theFigureTitle', mosaicName);
         
