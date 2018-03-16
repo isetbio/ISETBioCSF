@@ -76,8 +76,8 @@ function run_MosaicsVaryConditions
     
     if (makeMosaicsFigure)
         generateMosaicsFigure(theMosaics, examinedMosaicLegends,  ...
-            'inGraphTexts', {'B', 'C', 'D'}, ...
-            'visualizedFOV', 0.3);
+            'inGraphTexts', {' B. ', ' C. ', ' D. '}, ...
+            'visualizedFOV', 0.25);
     end
 end
 
@@ -101,8 +101,8 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
        'widthMargin',    0.001, ...
        'leftMargin',     0.01, ...
        'rightMargin',    0.001, ...
-       'bottomMargin',   0.05, ...
-       'topMargin',      0.01);
+       'bottomMargin',   0.07, ...
+       'topMargin',      0.02);
     
     for mosaicIndex = 1:numel(theMosaics)
         cm = theMosaics{mosaicIndex};
@@ -119,16 +119,18 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
             'overlayHexMesh', false, ...
             'backgroundcolor', [1 1 1]);
         
+        
+        
+        set(ax, 'XLim', posRangeX, 'YLim', posRangeY);
+        
         formatFigureForPaper(hFig, ...
             'figureType', 'MOSAICS', ...
-            'inGraphText', inGraphTexts{mosaicIndex}, ...
             'theAxes', ax, ...
             'theFigureTitle', mosaicName);
         
-        set(ax, 'XLim', posRangeX, 'YLim', posRangeY);
-        tickDegs = -0.5:0.1:0.5
-        ticks = tickDegs*cm.micronsPerDegree * 1e-6
-        tickLabels = sprintf('%2.2f\n', ticks)
+        tickDegs = -0.5:0.1:0.5;
+        ticks = tickDegs*cm.micronsPerDegree * 1e-6;
+        tickLabels = sprintf('%2.2f\n', tickDegs);
         set(ax, 'XTick', ticks, 'XTickLabel', tickLabels, 'YTick', ticks, 'YTickLabel', tickLabels);
         if (mosaicIndex == numel(theMosaics))
             xlabel(ax, 'deg');
@@ -137,7 +139,7 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
         end
         ylabel(ax, 'deg');
         
-        title(ax,mosaicName);
+        title(ax, sprintf('%s %s', inGraphTexts{mosaicIndex}, mosaicName));
     end
     
     exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', 'projects/IBIOColorDetect/paperfigs/CSFpaper/exports');

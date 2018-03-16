@@ -34,7 +34,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
             if (isempty(theAxes))
                 set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
             else
-                axis(theAxes, 'square');
+                axis(theAxes, 'equal');
                 set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theAxes, 'on');
             end
