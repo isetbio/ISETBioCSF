@@ -30,7 +30,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
     theFigureTitle = p.Results.theFigureTitle;
     
     switch (figureType)
-        case 'MOSAICS'
+        case {'MOSAICS', 'PSFS'}
             if (isempty(theAxes))
                 set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
             else
