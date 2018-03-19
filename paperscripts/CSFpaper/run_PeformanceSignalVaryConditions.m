@@ -3,10 +3,10 @@ function run_PeformanceSignalVaryConditions
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 1;
+    computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
@@ -35,7 +35,6 @@ function run_PeformanceSignalVaryConditions
         'isomerizations' ...
         'photocurrents' ...
     };
-    examinedSignals = {examinedSignals{1}};
     
     examinedSignalLabels = {...
         'isomerizations' ...
@@ -46,16 +45,16 @@ function run_PeformanceSignalVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
-    params.computePhotocurrentResponseInstances = true;
-    params.visualizeResponses = true;
+    params.computeResponses = ~true;
+    params.computePhotocurrentResponseInstances = ~true;
+    params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
-    params.visualizeMosaicWithFirstEMpath = true;
+    params.visualizeMosaicWithFirstEMpath = ~true;
     
-    params.visualizeKernelTransformedSignals = true;
-    params.findPerformance = true;
+    params.visualizeKernelTransformedSignals = ~true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
@@ -64,4 +63,19 @@ function run_PeformanceSignalVaryConditions
         params.performanceSignal = examinedSignals{signalIndex};
         [~,~, theFigData{signalIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end
+    
+    if (makeSummaryFigure)
+        variedParamName = 'PerformanceSignal';
+        theRatioLims = [0.2 1];
+        theRatioTicks = [0.2 0.3 0.4 0.5 0.7 1];
+        generateFigureForPaper(theFigData, examinedSignalLabels, variedParamName, sprintf('%s_%s',mosaicName, opticsName), ...
+            'figureType', 'CSF', ...
+            'inGraphText', ' A ', ...
+            'plotFirstConditionInGray', true, ...
+            'plotRatiosOfOtherConditionsToFirst', true, ...
+            'theRatioLims', theRatioLims, ...
+            'theRatioTicks', theRatioTicks ...
+            );
+    end
+    
 end

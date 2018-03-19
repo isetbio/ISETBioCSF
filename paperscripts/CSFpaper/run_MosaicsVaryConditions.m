@@ -133,7 +133,7 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
         tickLabels = sprintf('%2.2f\n', tickDegs);
         set(ax, 'XTick', ticks, 'XTickLabel', tickLabels, 'YTick', ticks, 'YTickLabel', tickLabels);
         if (mosaicIndex == numel(theMosaics))
-            xlabel(ax, 'deg');
+            xlabel(ax, 'retinal position (deg)', 'FontWeight', 'bold');
         else
             set(ax, 'XTickLabel', {});
         end
