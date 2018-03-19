@@ -13,7 +13,7 @@ function params = getCSFpaperDefaultParams(mosaicName,  computationInstance)
     
     % fixational eye movements type: 'random'; 'randomNoSaccades' 'frozen0';
     params.emPathType = 'frozen0';  
-    params.centeredEMPaths = false;
+    params.centeredEMPaths = true;
     
     % Stimulus luminance
     params.luminancesExamined =  [34];
