@@ -34,11 +34,27 @@ function varargout = formatFigureForPaper(hFig, varargin)
             if (isempty(theAxes))
                 set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
             else
-                axis(theAxes, 'equal');
+                if (strcmp(figureType, 'MOSAICS'))
+                    axis(theAxes, 'equal');
+                else
+                    axis(theAxes, 'square');
+                end
                 set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theAxes, 'on');
+                grid(theAxes, 'on');
             end
 
+            if (~isempty(theText))
+                if (isempty(theTextFontSize))
+                    theTextFontSize = 30;
+                end
+                set(theText, 'FontSize', theTextFontSize, ...
+                    'FontWeight', 'Bold', ...
+                    'BackgroundColor', [1 1 1], ...
+                    'EdgeColor', [ 0 0 0], ...
+                    'LineWidth', 1.0);
+            end
+            
         case 'CSF'
             csTicks = [2 5 10 20 50 100 200 500 1000 2000 5000 10000];
             csLims = [2 12000];

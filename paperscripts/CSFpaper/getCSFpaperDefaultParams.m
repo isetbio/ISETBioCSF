@@ -80,11 +80,17 @@ function params = getCSFpaperDefaultParams(mosaicName,  computationInstance)
     elseif (computationInstance  == 3)
         % All other sizes
         params.ramPercentageEmployed = 1.2;  
-        params.cyclesPerDegreeExamined =  [4 8 16 32 50 60];
+        params.cyclesPerDegreeExamined =  [8 16 32 50 60];
+    elseif (computationInstance  == 16)
+        params.ramPercentageEmployed = 1.2;  
+        params.cyclesPerDegreeExamined = [16];
+    elseif (computationInstance  == 32)
+        params.ramPercentageEmployed = 1.4;  
+        params.cyclesPerDegreeExamined = [32];
     elseif (computationInstance  == 4)
         % All other sizes
         params.ramPercentageEmployed = 1.2;  
-        params.cyclesPerDegreeExamined =  [50];
+        params.cyclesPerDegreeExamined =  [60];
     else
         error('computational instance must be 0, 1, 2, or 3');
     end

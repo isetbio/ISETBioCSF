@@ -9,7 +9,7 @@ function run_OpticsVaryConditions
     makeSummaryFigure = true;
     
     % Mosaic to use
-    mosaicName = 'ISETbioHexEccBasedLMSrealistic';  %'originalBanks';
+    mosaicName = 'ISETbioHexEccBasedLMSrealistic';
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
     % Adjust any params we want to change from their default values
@@ -30,7 +30,6 @@ function run_OpticsVaryConditions
         'wvf-based PSF (subject C)' ...
         'wvf-based PSF (subject D)' ...
     };
-
 
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -68,32 +67,31 @@ function run_OpticsVaryConditions
             'theRatioTicks', theRatioTicks ...
             );
         
-        generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends);
+        generatePSFsFigure(examinedOpticsModels);
     end
 end
 
-function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends)
+function generatePSFsFigure(examinedOpticsModels)
     wavefrontSpatialSamples = 261*2+1;
     calcPupilDiameterMM = 3;
     umPerDegree = 300;
     psfRange = 2.5;
     showTranslation = false;
     
-    
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
                 'rowsNum', 3, ...
                 'colsNum', 2, ...
-                'heightMargin', 0.03, ...
+                'heightMargin', 0.015, ...
                 'widthMargin', 0.02, ...
                 'leftMargin', 0.01, ...
                 'rightMargin', 0.001, ...
-                'bottomMargin', 0.04, ...
-                'topMargin', 0.02);
+                'bottomMargin', 0.05, ...
+                'topMargin', 0.001);
             
     hFig = figure(1); clf;
     formatFigureForPaper(hFig, 'figureType', 'PSFS');
 
-    prefices = {'B.', 'C.', 'D.', 'E.', 'F.', 'G.'};
+    prefices = {' B ', ' C ', ' D ', ' E ', ' F ', ' G '};
     for oiIndex = 1:numel(examinedOpticsModels)
         col = mod(oiIndex-1,2)+1;
         row = floor((oiIndex-1)/2)+1;
@@ -141,8 +139,6 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends)
         hold off;
         set(gca, 'XLim', psfRange*1.05*[-1 1], 'YLim', psfRange*1.05*[-1 1], 'FontSize', 14);
         set(gca, 'XTick', -10:1:10, 'YTick', -10:1:10);
-        axis 'square';
-        grid on; box on;
         set(gca, 'YTickLabel', {});
         if (row < 3)
             set(gca, 'XTickLabel', {});
@@ -150,11 +146,14 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends)
             xlabel('retinal position (arc min)', 'FontWeight', 'bold');
         end
             
-        opticsName = sprintf('%s %s', prefices{oiIndex}, strrep(examinedOpticsModelLegends{oiIndex}, 'based', ''));
+        inGraphTextPos = [-2.3 2.0];
+        t = text(gca, inGraphTextPos(1), inGraphTextPos(2), prefices{oiIndex});
+        
         formatFigureForPaper(hFig, ...
-                'figureType', 'MOSAICS', ...
+                'figureType', 'PSFS', ...
                 'theAxes', gca, ...
-                'theFigureTitle', opticsName);
+                'theText', t, ...
+                'theFigureTitle', '');
     end
     
     cmap = brewermap(1024, 'greys');
