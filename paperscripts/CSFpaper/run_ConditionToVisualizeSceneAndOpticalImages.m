@@ -18,23 +18,29 @@ function run_ConditionToVisualizeSceneAndOpticalImages
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
     % Adjust any params we want to change from their default values
-
-
+    params.opticsModel = opticsName;
+    params.lowContrast = 1.0;
+    params.highContrast =  1.0;
+    params.nContrastsPerDirection =  1;
+    params.nTrainingSamples = 1;
+    params.cyclesPerDegreeExamined = [4 8 16 32 50];
+    
     % Simulation steps to perform
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
     params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
-    params.visualizeResponses = ~true;
+    params.visualizeResponses = true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = true;
+    params.visualizeSpatialPoolingScheme = true;
     params.visualizeMosaicWithFirstEMpath = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = ~true;
     params.deleteResponseInstances = ~true;
 

@@ -16,7 +16,7 @@ function params = getCSFpaperDefaultParams(mosaicName,  computationInstance)
     params.centeredEMPaths = true;
     
     % Stimulus luminance
-    params.luminancesExamined =  [34];
+    params.luminancesExamined = [34];
     
     % Stimulus size
     params.imagePixels = 512;           % stimuli will be 512x512 pixels

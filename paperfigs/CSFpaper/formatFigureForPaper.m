@@ -38,6 +38,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theAxes, 'on');
                 grid(theAxes, 'on');
+                xtickformat(theAxes, '%.2f'); ytickformat(theAxes, '%.2f');
             end
             
         case {'MOSAICS', 'PSFS'}
