@@ -37,6 +37,7 @@ p.addParameter('osMeanCurrents', [], @isnumeric);
 p.addParameter('computePhotocurrentResponseInstances', true, @islogical);
 p.addParameter('computeNoiseFreeSignals', true, @islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
+p.addParameter('visualizeStimulusAndOpticalImage', false, @islogical);
 p.addParameter('visualizeOIsequence', false, @islogical);
 p.addParameter('visualizeMosaicWithFirstEMpath', false, @islogical);
 p.addParameter('paramsList', {}, @iscell);
@@ -100,6 +101,10 @@ if (p.Results.visualizeOIsequence)
        
     % Also visualize the modulated scene luminance and retinal illuminance
     visualizeSceneLuminanceAndIlluminance(modulatedScene, oiModulated, p.Results.paramsList);
+end
+
+if (p.Results.visualizeStimulusAndOpticalImage)
+    visualizeSceneAndOpticalImage(modulatedScene, oiModulated, p.Results.paramsList);
 end
 
 %% Co-visualize the optical image and the cone mosaic

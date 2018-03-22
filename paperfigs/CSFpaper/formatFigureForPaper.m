@@ -30,6 +30,16 @@ function varargout = formatFigureForPaper(hFig, varargin)
     theFigureTitle = p.Results.theFigureTitle;
     
     switch (figureType)
+        case 'STIMULUS_AND_OPTICAL_IMAGE'
+            if (isempty(theAxes))
+                set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
+            else
+                axis(theAxes, 'square');
+                set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                box(theAxes, 'on');
+                grid(theAxes, 'on');
+            end
+            
         case {'MOSAICS', 'PSFS'}
             if (isempty(theAxes))
                 set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
