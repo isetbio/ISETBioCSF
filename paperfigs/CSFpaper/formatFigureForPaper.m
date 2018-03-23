@@ -30,9 +30,13 @@ function varargout = formatFigureForPaper(hFig, varargin)
     theFigureTitle = p.Results.theFigureTitle;
     
     switch (figureType)
-        case 'STIMULUS_AND_OPTICAL_IMAGE'
+        case {'STIMULUS_AND_OPTICAL_IMAGE', 'STIMULUS_OPTICAL_IMAGE_ISOMERIZATIONS_PHOTOCURRENTS'}
             if (isempty(theAxes))
-                set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
+                if (strcmp(figureType, 'STIMULUS_AND_OPTICAL_IMAGE'))
+                    set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
+                else
+                    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1400 450]);
+                end
             else
                 axis(theAxes, 'square');
                 set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);

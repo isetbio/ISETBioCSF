@@ -116,7 +116,7 @@ if (p.Results.visualizeSpatialScheme)
 end
     
 % Clear oiModulated and oiBackground to save space
-varsToClear = {'oiBackground', 'oiModulated'};
+varsToClear = {'backgroundScene', 'oiBackground'};
 clear(varsToClear{:});
 
 %% Compute number of eye movements
@@ -244,6 +244,14 @@ end
 % Restore noiseFlags to none
 theMosaic.noiseFlag = originalIsomerizationNoiseFlag;
 theMosaic.os.noiseFlag = originalPhotocurrentNoiseFlag;
+
+
+if (p.Results.visualizeStimulusAndOpticalImage)
+    visualizeSceneOpticalImageAndMeanResponses(modulatedScene, oiModulated, theMosaic, responseStruct.noiseFreeIsomerizations, responseStruct.noiseFreePhotocurrents, p.Results.paramsList);
+end
+
+varsToClear = {'modulatedScene', 'oiModulated'};
+clear(varsToClear{:});
 
 % Store
 responseStruct.noiseFreeIsomerizations = squeeze(responseStruct.noiseFreeIsomerizations);

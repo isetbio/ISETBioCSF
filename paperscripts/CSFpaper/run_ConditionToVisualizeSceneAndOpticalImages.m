@@ -1,6 +1,6 @@
 function run_ConditionToVisualizeSceneAndOpticalImages
-% This is the script used to just display the stimuli used and their
-% optical images
+% This is the script used to just display the stimuli their optical images
+% and the corresponding noise-free isomerizations and photocurrents
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
@@ -23,14 +23,14 @@ function run_ConditionToVisualizeSceneAndOpticalImages
     params.highContrast =  1.0;
     params.nContrastsPerDirection =  1;
     params.nTrainingSamples = 1;
-    params.cyclesPerDegreeExamined = [4 8 16 32 50];
+    params.cyclesPerDegreeExamined = [16]; % [4 8 16 32 50];
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
     params.computeResponses = true;
-    params.computePhotocurrentResponseInstances = ~true;
+    params.computePhotocurrentResponseInstances = true;
     params.visualizeResponses = true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
