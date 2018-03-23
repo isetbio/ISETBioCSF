@@ -13,7 +13,7 @@ function importColorMaterialISETbioData
     renderDemosaiceIsomerizationMaps = true;
              
     % Load the data
-    horizontalFOV = 15;
+    horizontalFOV = 2;
     allScenesData = loadAllSceneData(horizontalFOV);
     
     % Retrieve the scene names

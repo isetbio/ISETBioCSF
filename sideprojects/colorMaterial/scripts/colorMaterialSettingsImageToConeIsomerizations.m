@@ -15,17 +15,17 @@ function colorMaterialSettingsImageToConeIsomerizations
     
     [localDir,~] = fileparts(which(fullfile(mfilename)));
     
-    horizontalFOV = 1.0;
+    horizontalFOV = 2.0;
     
     regenerateScenes = ~true;
-    regenerateConeMosaic = true;
-    generateOI = true;
+    regenerateConeMosaic = ~true;
+    generateOI = ~true;
     generateResponses = true;
     
     visualizeScenes = ~true;
-    visualizeMosaic = true;
+    visualizeMosaic = ~true;
     visualizeOI = ~true;
-    visualizePSF = ~true;
+    visualizePSF = true;
     visualizeSceneOIandMosaic = ~true;
 
     
@@ -87,15 +87,27 @@ function colorMaterialSettingsImageToConeIsomerizations
     end
     
     if (visualizeMosaic)
-        hFig = theConeMosaic.visualizeGrid('backgroundColor', [.75 .75 .75], ...
+        visualizeConeDensities = false;
+        if (visualizeConeDensities)
+            hFig = theConeMosaic.visualizeGrid('backgroundColor', [.75 .75 .75], ...
             'foregroundColor', [0 0 0], ...
             'visualizedConeAperture', 'geometricArea', ...
             'labelConeTypes', false,...
             'overlay cone density contour','theoretical_and_measured', ...
             'conedensitycontourlevels', [10 15 30 50 75 100 125 150 200] * 1000, ... % [75 100 125 150 200]* 1000, ... % [10 15 30 60 120 240]*1000, ...
             'apertureshape', 'hexagons');
+        else
+            hFig = theConeMosaic.visualizeGrid('backgroundColor', [.75 .75 .75], ...
+            'foregroundColor', [0 0 0], ...
+            'visualizedConeAperture', 'geometricArea', ...
+            'labelConeTypes', true, ...
+            'apertureshape', 'hexagons');
+        end
+        
         set(hFig, 'Position', [1 1 1340 1300]);
         grid on; box on;
+        set(gca, 'XTickLabel', {}, 'YTickLabel', {});
+        xlabel(''); ylabel('');
         set(hFig, 'Color', [1 1 1])
         NicePlot.exportFigToPNG(sprintf('mosaic_%2.0fdeg.png', horizontalFOV), hFig, 300);
         pause
@@ -127,9 +139,14 @@ function colorMaterialSettingsImageToConeIsomerizations
     
         if (visualizePSF)
             micronsPerDegree = 300;
-            visualizePSFfromOI(theOI, micronsPerDegree);
+            visualizePSFfromOI(theOI, micronsPerDegree, ...
+                'colormapToUse', gray(1024), ...
+                'visualizedWavelengths', [430 490 550 610 670], ...
+                'rows', 1, 'cols', 5, ...
+                'labelLastPSF', ~false, ...
+                'displayWavelengthInTitle', ~false);
         end
-        
+        pause
         
         
         % Container to hold all sceneData
