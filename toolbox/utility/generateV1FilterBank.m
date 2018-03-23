@@ -47,8 +47,11 @@ function [V1filterBank, hFig] = generateV1FilterBank(spatialParams, mosaicParams
     V1filterBank = makeV1FilterBank(spatialParams, filterWidthInDegrees, coneLocsInDegs, xaxis, yaxis, coneDensity, thresholdParams.spatialPoolingKernelParams);
 
     if (visualizeSpatialScheme)
+        coneRadiusMicrons = mosaicParams.innerSegmentSizeMicrons/2;
+        coneRadiusMicrons = 0.5*diameterForCircularApertureFromWidthForSquareAperture(theMosaic.pigment.width)*1e6;
         hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, ...
-            thresholdParams.spatialPoolingKernelParams, V1filterBank, coneLocsInDegs, mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs);
+            thresholdParams.spatialPoolingKernelParams, V1filterBank, coneLocsInDegs, ...
+            mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs, coneRadiusMicrons);
     
         % Save figure
         theProgram = mfilename;

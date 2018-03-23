@@ -44,6 +44,7 @@ function [spatialPoolingFilter, hFig] = generateSpatialPoolingKernel(spatialPara
     
     if (visualizeSpatialScheme)
         coneRadiusMicrons = mosaicParams.innerSegmentSizeMicrons/2;
+        coneRadiusMicrons = 0.5*diameterForCircularApertureFromWidthForSquareAperture(theMosaic.pigment.width)*1e6; 
         hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, ...
             thresholdParams.spatialPoolingKernelParams, spatialPoolingFilter, coneLocsInDegs, mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs, coneRadiusMicrons);
     

@@ -30,6 +30,17 @@ function varargout = formatFigureForPaper(hFig, varargin)
     theFigureTitle = p.Results.theFigureTitle;
     
     switch (figureType)
+        case 'CONE_SPATIAL_POOLING'
+            if (isempty(theAxes))
+                set(hFig, 'Position', [10 10 450 1200], 'Color', [1 1 1]);
+            else
+                axis(theAxes, 'equal');
+                axis(theAxes, 'xy');
+                set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                box(theAxes, 'on');
+                grid(theAxes, 'on');
+                xtickformat(theAxes, '%.2f'); ytickformat(theAxes, '%.2f');
+            end
         case {'STIMULUS_AND_OPTICAL_IMAGE', 'STIMULUS_OPTICAL_IMAGE_ISOMERIZATIONS_PHOTOCURRENTS'}
             if (isempty(theAxes))
                 if (strcmp(figureType, 'STIMULUS_AND_OPTICAL_IMAGE'))
