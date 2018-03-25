@@ -3,10 +3,10 @@ function run_InferenceEngineVaryConditions
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 0;
+    computationInstance = 50;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
+    makeSummaryFigure = ~true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
@@ -17,18 +17,22 @@ function run_InferenceEngineVaryConditions
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
     % Adjust any params we want to change from their default values
-    % Optics models we tested
+    
     examinedInferenceEngines = {...
         'mlpt' ...
         'svm' ...
         'svmV1FilterBank' ...
+        'svmV1FilterEnsemble' ...
     };
     examinedInferenceEngineLegends = {...
         'MLPT' ...
         'SVM' ...
         'SVM (QPhE)' ...
+        'SVM (QPhE) population' ...
     };
 
+    examinedInferenceEngines = {examinedInferenceEngines{4}};
+    examinedInferenceEngineLegends = {examinedInferenceEngineLegends{4}};
 
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -40,10 +44,12 @@ function run_InferenceEngineVaryConditions
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
+    params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
+    params.visualizeSpatialPoolingScheme = true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     

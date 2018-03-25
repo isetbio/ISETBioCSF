@@ -139,6 +139,12 @@ if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaic
    ((strcmp(thresholdParams.method, 'svmV1FilterBank')))
     error('Currently, classification using the ''svmV1FilterBank'' method is only implemented for  hex mosaics.\n')
 end
+
+if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaicParams.conePacking, 'hexReg')) && ... 
+   ((strcmp(thresholdParams.method, 'svmV1FilterEnsemble')))
+    error('Currently, classification using the ''svmV1FilterEnsemble'' method is only implemented for  hex mosaics.\n')
+end
+
 if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaicParams.conePacking, 'hexReg')) && ...
    (strcmp(thresholdParams.method, 'svmGaussianRF'))
     error('Currently, classification using the ''svmGaussianRF'' method is only implemented for  hex mosaics.\n')
@@ -151,6 +157,13 @@ if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
         'spatialPoolingKernel', V1filterBank);
 end
 
+if (strcmp(thresholdParams.method, 'svmV1FilterEnsemble'))
+    % Generate V1 filter ensemble struct and add it to thresholdParams
+    V1filterEnsemble = generateV1FilterEnsemble(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams, constantParamsList);
+    thresholdParams = modifyStructParams(thresholdParams, ...
+        'spatialPoolingKernel', V1filterEnsemble);
+end
+
 if (strcmp(thresholdParams.method, 'svmGaussianRF')) || (strcmp(thresholdParams.method, 'mlptGaussianRF'))
     gaussianPoolingKernel = generateSpatialPoolingKernel(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams, constantParamsList);
     thresholdParams = modifyStructParams(thresholdParams, ...
@@ -161,7 +174,7 @@ end
 %% Compute if desired
 if (p.Results.compute)   
     % Inform the user regarding what we are currently working on
-    if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmGaussianRF'))
+    if (strcmp(thresholdParams.method, 'svmV1FilterBank')) || (strcmp(thresholdParams.method, 'svmGaussianRF')) || (strcmp(thresholdParams.method, 'svmV1FilterEnsemble'))
         fprintf('Computing performance for <strong>%s</strong> emPaths using an <strong>%s</strong> classifier operating on the raw <strong>%s</strong>.\n', ...
         rParams.temporalParams.emPathType, thresholdParams.method, thresholdParams.signalSource);                  
     elseif (~strcmp(thresholdParams.method, 'mlpt'))

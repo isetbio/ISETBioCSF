@@ -35,6 +35,11 @@ if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
         error('thresholdParams must have a spatialPoolingKernel field when using the svmV1FilterBank classifier\n');
     end
     [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals);
+elseif (strcmp(thresholdParams.method, 'svmV1FilterEnsemble'))
+    if ((~isfield(thresholdParams, 'spatialPoolingKernel')) || (isfield(thresholdParams, 'spatialPoolingKernel')) && (isempty(thresholdParams.spatialPoolingKernel)))
+        error('thresholdParams must have a spatialPoolingKernel field when using the svmV1FilterEnsemble classifier\n');
+    end
+    [noStimData, stimData] = transformDataWithV1FilterEnsemble(noStimData, stimData, thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals);
 elseif (strcmp(thresholdParams.method, 'svmSpaceTimeSeparable'))
     [noStimData, stimData] = transformDataWithSeparableSpaceTimeComponents(noStimData, stimData, thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals);
 elseif (strcmp(thresholdParams.method, 'svmGaussianRF')) || (strcmp(thresholdParams.method, 'mlptGaussianRF'))
@@ -50,7 +55,7 @@ end
 %% Decide what type of classifier we are running
 switch (thresholdParams.method)
     
-    case {'svmV1FilterBank', 'svmGaussianRF', 'svmSpaceTimeSeparable'}
+    case {'svmV1FilterBank', 'svmV1FilterEnsemble', 'svmGaussianRF', 'svmSpaceTimeSeparable'}
         % Perform SVM classification for this stimulus vs the zero contrast stimulus
         fprintf('\tRunning special SVM ...');
         [usePercentCorrect, useStdErr, svm] = classifyWithSVM(classificationData,classes,thresholdParams.kFold,...
