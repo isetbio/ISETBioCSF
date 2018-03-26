@@ -4,12 +4,12 @@ function [noStimData, stimData] = transformDataWithV1FilterEnsemble(noStimData, 
 % energy response of a V1 quadrature pair filter bank
 %
 
-    fprintf(2,'Need to implement the ''transformDataWithV1FilterEnsemble'' function. See ''transformDataWithV1FilterBank''\n');
- 
     V1filterEnsemble = thresholdParams.spatialPoolingKernel;
 
     fprintf('Transforming data via projection to the spatial components of a population of V1-based filters\n');
 
+    fprintf('Input response size: %d %d %d\n', size(stimData,1), size(stimData,2), size(stimData,3));
+    
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
         if (isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
             error('photocurrents has not been computed');
@@ -63,6 +63,8 @@ function [noStimData, stimData] = transformDataWithV1FilterEnsemble(noStimData, 
             'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
     end % visualize transformed signals
 
+    fprintf('Output response size: %d %d %d\n', size(stimData,1), size(stimData,2), size(stimData,3));
+    
 end
 
 

@@ -6,7 +6,7 @@ function run_SVMRepsVaryConditions
     computationInstance = 32;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
@@ -27,38 +27,35 @@ function run_SVMRepsVaryConditions
     params.centeredEMPaths = true;
     
     % Trials to generate
-    params.nTrainingSamples = 1024*32;
+    params.nTrainingSamples = 1024*16;
     
     % Trials to use in the classifier - vary this one
     params.performanceTrialsUsed = params.nTrainingSamples;
     
-    maxK = 1;
+    maxK = 5;
     for k = 1:maxK
         performanceTrialsUsed = params.nTrainingSamples/(2^k);
         examinedCond(k).classifier = 'svmV1FilterBank';
         examinedCond(k).performanceTrialsUsed = performanceTrialsUsed;
         examinedCond(k).legend = sprintf('QPhE SVM, %d trials', performanceTrialsUsed);
-        
-%         examinedCond(maxK+k).classifier = 'svm';
-%         examinedCond(maxK+k).performanceTrialsUsed = performanceTrialsUsed;
-%         examinedCond(maxK+k).legend = sprintf('SVM, %d trials', performanceTrialsUsed);
     end
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
+    params.visualizeSpatialPoolingScheme = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
-    params.visualizePerformance = ~true;
+    params.findPerformance = true;
+    params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
     % Go
