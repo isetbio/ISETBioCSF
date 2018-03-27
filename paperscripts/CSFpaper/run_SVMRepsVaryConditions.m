@@ -27,16 +27,16 @@ function run_SVMRepsVaryConditions
     params.centeredEMPaths = true;
     
     % Trials to generate
-    params.nTrainingSamples = 1024*16;
+    params.nTrainingSamples = 1024*64;
     
-    params.lowContrast = 0.13;
-    params.highContrast =  0.18;
-    params.nContrastsPerDirection =  2;
+    params.lowContrast = 0.01;
+    params.highContrast =  0.3;
+    params.nContrastsPerDirection =  20;
     
     % Trials to use in the classifier - vary this one
     params.performanceTrialsUsed = params.nTrainingSamples;
     
-    maxK = 1;
+    maxK = 1; % 6;
     for k = 1:maxK
         performanceTrialsUsed = params.nTrainingSamples/(2^(k-1));
         examinedCond(maxK+1-k).classifier = 'svmV1FilterBank';
