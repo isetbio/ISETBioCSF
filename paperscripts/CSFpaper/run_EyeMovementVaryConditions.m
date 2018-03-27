@@ -40,7 +40,7 @@ function run_EyeMovementVaryConditions
     examinedCond(condIndex).classifier = 'svmV1FilterBank';
     examinedCond(condIndex).legend = 'no eye movements, SVM (QPhE)';
     examinedCond(condIndex).centeredEMpaths = true;
-    examinedCond(condIndex).frameRate = 20;
+    examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
     
@@ -59,7 +59,7 @@ function run_EyeMovementVaryConditions
     examinedCond(condIndex).classifier = 'svm';
     examinedCond(condIndex).legend = 'drifts+\mu-saccades (origin), SVM';
     examinedCond(condIndex).centeredEMpaths = ~true;
-    examinedCond(condIndex).frameRate = 10;
+    examinedCond(condIndex).frameRate = 10;  %(10 frames/sec, so 1 frame, 100 msec long)
     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
     
@@ -68,7 +68,7 @@ function run_EyeMovementVaryConditions
     examinedCond(condIndex).classifier = 'svmV1FilterBank';
     examinedCond(condIndex).legend = 'drifts+\mu-saccades (origin), SVM (QPhE)';
     examinedCond(condIndex).centeredEMpaths = ~true;
-    examinedCond(condIndex).frameRate = 10;
+    examinedCond(condIndex).frameRate = 10;  %(10 frames/sec, so 1 frame, 100 msec long)
     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
     
@@ -77,7 +77,7 @@ function run_EyeMovementVaryConditions
     examinedCond(condIndex).classifier = 'svm';
     examinedCond(condIndex).legend = 'drifts+\mu-saccades (random), SVM';
     examinedCond(condIndex).centeredEMpaths = true;
-    examinedCond(condIndex).frameRate = 20;
+    examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
     
@@ -86,7 +86,7 @@ function run_EyeMovementVaryConditions
     examinedCond(condIndex).classifier = 'svmV1FilterBank';
     examinedCond(condIndex).legend = 'drifts+\mu-saccades (random), SVM (QPhE)';
     examinedCond(condIndex).centeredEMpaths = true;
-    examinedCond(condIndex).frameRate = 20;
+    examinedCond(condIndex).frameRate = 20;  %(20 frames/sec, so 2 frames, each 50 msec long)
     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
     

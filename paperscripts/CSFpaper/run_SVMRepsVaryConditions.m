@@ -18,7 +18,7 @@ function run_SVMRepsVaryConditions
     
     params.opticsModel = opticsName;
     
-    params.frameRate = 10; %(10 frames/sec = one 100 msec frame)
+    params.frameRate = 10; %(10 frames/sec, so 1 frame, 100 msec long)
     params.responseStabilizationMilliseconds = 40;
     params.responseExtinctionMilliseconds = 40;
     

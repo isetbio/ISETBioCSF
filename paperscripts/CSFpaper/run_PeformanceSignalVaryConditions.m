@@ -20,7 +20,7 @@ function run_PeformanceSignalVaryConditions
     params.opticsModel = opticsName;
     
     % Response duration params
-    params.frameRate = 20; %(2 frames)
+    params.frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
     params.responseStabilizationMilliseconds = 100;
     params.responseExtinctionMilliseconds = 50;
     
