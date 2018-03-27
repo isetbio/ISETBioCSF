@@ -88,13 +88,13 @@ function params = getCSFpaperDefaultParams(mosaicName,  computationInstance)
         params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined = [16];
     elseif (computationInstance  == 32)
-        params.ramPercentageEmployed = 1.4;  
+        params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined = [32];
     elseif (computationInstance  == 50)
-        params.ramPercentageEmployed = 1.4;  
+        params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined = [50];
     elseif (computationInstance  == 60)
-        params.ramPercentageEmployed = 1.4;  
+        params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined = [60];
     elseif (computationInstance  == 4)
         % All other sizes
