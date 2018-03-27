@@ -6,7 +6,7 @@ function run_SVMRepsVaryConditions
     computationInstance = 32;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
+    makeSummaryFigure = ~true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
@@ -18,7 +18,7 @@ function run_SVMRepsVaryConditions
     
     params.opticsModel = opticsName;
     
-    params.frameRate = 1; %(1 frames)
+    params.frameRate = 10; %(10 frames/sec = one 100 msec frame)
     params.responseStabilizationMilliseconds = 40;
     params.responseExtinctionMilliseconds = 40;
     
@@ -29,22 +29,26 @@ function run_SVMRepsVaryConditions
     % Trials to generate
     params.nTrainingSamples = 1024*16;
     
+    params.lowContrast = 0.13;
+    params.highContrast =  0.18;
+    params.nContrastsPerDirection =  2;
+    
     % Trials to use in the classifier - vary this one
     params.performanceTrialsUsed = params.nTrainingSamples;
     
-    maxK = 5;
+    maxK = 1;
     for k = 1:maxK
-        performanceTrialsUsed = params.nTrainingSamples/(2^k);
-        examinedCond(k).classifier = 'svmV1FilterBank';
-        examinedCond(k).performanceTrialsUsed = performanceTrialsUsed;
-        examinedCond(k).legend = sprintf('QPhE SVM, %d trials', performanceTrialsUsed);
+        performanceTrialsUsed = params.nTrainingSamples/(2^(k-1));
+        examinedCond(maxK+1-k).classifier = 'svmV1FilterBank';
+        examinedCond(maxK+1-k).performanceTrialsUsed = performanceTrialsUsed;
+        examinedCond(maxK+1-k).legend = sprintf('QPhE SVM, %d trials', performanceTrialsUsed);
     end
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;

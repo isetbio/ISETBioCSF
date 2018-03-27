@@ -24,62 +24,71 @@ function run_EyeMovementVaryConditions
     params.responseStabilizationMilliseconds = 100;
     params.responseExtinctionMilliseconds = 50;
     
-   % examinedCond(1).emPathType = 'frozen0';
-   % examinedCond(1).classifier = 'mlpt';
-   % examinedCond(1).legend = 'no eye movements, MLPT';
-    
-   % examinedCond(1).emPathType = 'frozen0';
-   % examinedCond(1).classifier = 'svm';
-   % examinedCond(1).legend = 'no eye movements, SVM';
-    
-    examinedCond(1).emPathType = 'frozen0';
-    examinedCond(1).classifier = 'svmV1FilterBank';
-    examinedCond(1).legend = 'no eye movements, SVM (QPhE)';
-    examinedCond(1).centeredEMpaths = true;
-    examinedCond(1).frameRate = 20;
-    examinedCond(1).responseStabilizationMilliseconds = 100;
-    examinedCond(1).responseExtinctionMilliseconds = 50;
-    
-%     examinedCond(6).emPathType = 'frozen0';
-%     examinedCond(6).classifier = 'svmV1FilterBank';
-%     examinedCond(6).legend = 'no eye movements(2), SVM (QPhE)';
-%     examinedCond(6).centeredEMpaths = true;
-%     examinedCond(6).frameRate = 10;
-%     examinedCond(6).responseStabilizationMilliseconds = 40;
-%     examinedCond(6).responseExtinctionMilliseconds = 40;
+    condIndex = 0;
     
     
-    examinedCond(2).emPathType = 'random';
-    examinedCond(2).classifier = 'svm';
-    examinedCond(2).legend = 'drifts+\mu-saccades (origin), SVM';
-    examinedCond(2).centeredEMpaths = ~true;
-    examinedCond(2).frameRate = 10;
-    examinedCond(2).responseStabilizationMilliseconds = 40;
-    examinedCond(2).responseExtinctionMilliseconds = 40;
+   % examinedCond(condIndex).emPathType = 'frozen0';
+   % examinedCond(condIndex).classifier = 'mlpt';
+   % examinedCond(condIndex).legend = 'no eye movements, MLPT';
     
-    examinedCond(3).emPathType = 'random';
-    examinedCond(3).classifier = 'svmV1FilterBank';
-    examinedCond(3).legend = 'drifts+\mu-saccades (origin), SVM (QPhE)';
-    examinedCond(3).centeredEMpaths = ~true;
-    examinedCond(3).frameRate = 10;
-    examinedCond(3).responseStabilizationMilliseconds = 40;
-    examinedCond(3).responseExtinctionMilliseconds = 40;
+   % examinedCond(condIndex).emPathType = 'frozen0';
+   % examinedCond(condIndex).classifier = 'svm';
+   % examinedCond(condIndex).legend = 'no eye movements, SVM';
     
-    examinedCond(4).emPathType = 'random';
-    examinedCond(4).classifier = 'svm';
-    examinedCond(4).legend = 'drifts+\mu-saccades (random), SVM';
-    examinedCond(4).centeredEMpaths = true;
-    examinedCond(4).frameRate = 20;
-    examinedCond(4).responseStabilizationMilliseconds = 100;
-    examinedCond(4).responseExtinctionMilliseconds = 50;
+    condIndex = condIndex+1;
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).classifier = 'svmV1FilterBank';
+    examinedCond(condIndex).legend = 'no eye movements, SVM (QPhE)';
+    examinedCond(condIndex).centeredEMpaths = true;
+    examinedCond(condIndex).frameRate = 20;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
     
-    examinedCond(5).emPathType = 'random';
-    examinedCond(5).classifier = 'svmV1FilterBank';
-    examinedCond(5).legend = 'drifts+\mu-saccades (random), SVM (QPhE)';
-    examinedCond(5).centeredEMpaths = true;
-    examinedCond(5).frameRate = 20;
-    examinedCond(5).responseStabilizationMilliseconds = 100;
-    examinedCond(5).responseExtinctionMilliseconds = 50;
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).emPathType = 'frozen0';
+%     examinedCond(condIndex).classifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).legend = 'no eye movements(2), SVM (QPhE)';
+%     examinedCond(condIndex).centeredEMpaths = true;
+%     examinedCond(condIndex).frameRate = 10;
+%     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+%     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+    
+
+    condIndex = condIndex+1;
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).classifier = 'svm';
+    examinedCond(condIndex).legend = 'drifts+\mu-saccades (origin), SVM';
+    examinedCond(condIndex).centeredEMpaths = ~true;
+    examinedCond(condIndex).frameRate = 10;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+    
+    condIndex = condIndex+1;
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).classifier = 'svmV1FilterBank';
+    examinedCond(condIndex).legend = 'drifts+\mu-saccades (origin), SVM (QPhE)';
+    examinedCond(condIndex).centeredEMpaths = ~true;
+    examinedCond(condIndex).frameRate = 10;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+    
+    condIndex = condIndex+1;
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).classifier = 'svm';
+    examinedCond(condIndex).legend = 'drifts+\mu-saccades (random), SVM';
+    examinedCond(condIndex).centeredEMpaths = true;
+    examinedCond(condIndex).frameRate = 20;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    
+    condIndex = condIndex+1;
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).classifier = 'svmV1FilterBank';
+    examinedCond(condIndex).legend = 'drifts+\mu-saccades (random), SVM (QPhE)';
+    examinedCond(condIndex).centeredEMpaths = true;
+    examinedCond(condIndex).frameRate = 20;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
     
     
     % Simulation steps to perform
