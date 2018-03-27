@@ -56,6 +56,7 @@ function run_SVMRepsVaryConditions
     params.visualizeOptics = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
     params.visualizeSpatialPoolingScheme = ~true;
+    params.visualizeStimulusAndOpticalImage = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = true;
