@@ -7,8 +7,6 @@ function [noStimData, stimData] = transformDataWithV1FilterEnsemble(noStimData, 
     V1filterEnsemble = thresholdParams.spatialPoolingKernel;
 
     fprintf('Transforming data via projection to the spatial components of a population of V1-based filters\n');
-
-    fprintf('Input response size: %d %d %d\n', size(stimData,1), size(stimData,2), size(stimData,3));
     
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
         if (isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
@@ -47,24 +45,34 @@ function [noStimData, stimData] = transformDataWithV1FilterEnsemble(noStimData, 
     end
     
     % Visualize the transformed signals only if we are working on the full temporal response (i.e. no temporal PCA)
-    if (visualizeTheTransformedSignals) && (isinf(V1filterBank.temporalPCAcoeffs))
+    if (visualizeTheTransformedSignals) && (isinf(V1filterEnsemble{1}.temporalPCAcoeffs))
         if (strcmp(thresholdParams.signalSource,'photocurrents'))
-            hFig = visualizeTransformedEnsembleSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicPhotocurrents, stimData.responseInstanceArray.theMosaicPhotocurrents, thresholdParams.signalSource, stimData.testContrast*100, sprintf('V1 filter (%s,%s)', V1filterBank.type, V1filterBank.activationFunction));
+            hFigs = visualizeTransformedEnsembleSignals(V1filterEnsemble, ...
+                noStimData.responseInstanceArray.timeAxis, ...
+                noStimData.responseInstanceArray.theMosaicPhotocurrents, ...
+                stimData.responseInstanceArray.theMosaicPhotocurrents, ...
+                thresholdParams.signalSource, stimData.testContrast*100, ...
+                sprintf('%s(%s)', V1filterEnsemble{1}.type, V1filterEnsemble{1}.activationFunction));
         else
-            hFig = visualizeTransformedEnsembleSignals(noStimData.responseInstanceArray.timeAxis, noStimData.responseInstanceArray.theMosaicIsomerizations, stimData.responseInstanceArray.theMosaicIsomerizations, thresholdParams.signalSource, stimData.testContrast*100, sprintf('V1 filter (%s,%s)', V1filterBank.type, V1filterBank.activationFunction));
+            hFigs = visualizeTransformedEnsembleSignals(V1filterEnsemble, ...
+                noStimData.responseInstanceArray.timeAxis, ...
+                noStimData.responseInstanceArray.theMosaicIsomerizations, ...
+                stimData.responseInstanceArray.theMosaicIsomerizations, ...
+                thresholdParams.signalSource, stimData.testContrast*100, ...
+                sprintf('%s(%s)', V1filterEnsemble{1}.type, V1filterEnsemble{1}.activationFunction));
         end
         
-        % Save figure
-        theProgram = mfilename;
-        rwObject = IBIOColorDetectReadWriteBasic;
-        data = 0;
-        fileName = sprintf('%s-based_%s_%s_%s_%.2fshrinkageFactor_outputs', thresholdParams.signalSource, thresholdParams.method, thresholdParams.spatialPoolingKernelParams.type, thresholdParams.spatialPoolingKernelParams.activationFunction, thresholdParams.spatialPoolingKernelParams.shrinkageFactor);
-        rwObject.write(fileName, data, paramsList, theProgram, ...
-            'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+        for bandwidthIndex = 1:numel(hFigs)
+            % Save figure
+            theProgram = mfilename;
+            rwObject = IBIOColorDetectReadWriteBasic;
+            data = 0;
+            fileName = sprintf('%s-based_%s_%s_%s_bandwidthIndex_%.0f', thresholdParams.signalSource, thresholdParams.method, thresholdParams.spatialPoolingKernelParams.type, thresholdParams.spatialPoolingKernelParams.activationFunction, bandwidthIndex);
+            rwObject.write(fileName, data, paramsList, theProgram, ...
+                'type', 'NicePlotExportPDF', 'FigureHandle', hFigs(bandwidthIndex), 'FigureType', 'pdf');
+        end
+        
     end % visualize transformed signals
-
-    fprintf('Output response size: %d %d %d\n', size(stimData,1), size(stimData,2), size(stimData,3));
-    
 end
 
 
@@ -99,15 +107,13 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
         else
             error('Activation function (''%s''), must be either energy ot fullWaveRectifier\n', V1filterEnsemble{unitIndex}.activationFunction);
         end
-        
-        % Put back in expected shape [trials spatial temporal]
-        noStimData = permute(noStimDataUnits, [2 1 3]); 
-        stimData = permute(stimDataUnits, [2 1 3]); 
-        
-        noStimDataPCAapproximation = [];
-        stimDataPCAapproximation =  [];
-        
-        % No PCA for now
     end
     
+    % Put back in expected shape [trials spatial temporal]
+    noStimData = permute(noStimDataUnits, [2 1 3]); 
+    stimData = permute(stimDataUnits, [2 1 3]); 
+
+    % no PCA
+    noStimDataPCAapproximation = [];
+    stimDataPCAapproximation =  [];
 end

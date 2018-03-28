@@ -31,18 +31,36 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
     
     % modify some params for small V1 RFs
     spatialParams.windowType = 'Gaussian';
-    cyclesPerRF = 1.5;
-    spatialParams.gaussianFWHMDegs = cyclesPerRF/spatialParams.cyclesPerDegree;
+    cyclesPerRFs = [1.0 2.0 3.0 4.0];
+    orientationRFs = [-20 0 20];
     
-    ensemblePositions = 4;
+    ensemblePositions = 6;
     ensembleSampleSpacing = round((spatialParams.row/2)/ensemblePositions);
     
     fprintf('Generating %d v1 pooling units\n', (2*ensemblePositions+1)^2);
     unitIndex = 0;
-    for rowOffset = -ensemblePositions:ensemblePositions
+    ft2Dindex = 0;
+    
+    for bandwidthIndex = 1:numel(cyclesPerRFs)
+    for orientationIndex = 1:numel(orientationRFs)
+        ft2Dindex = ft2Dindex + 1;
+        for rowOffset = -ensemblePositions:ensemblePositions
         for colOffset = -ensemblePositions:ensemblePositions
             
+            cyclesPerRF = cyclesPerRFs(bandwidthIndex);
+            orientationRF = orientationRFs(orientationIndex);
+            
+            spatialParams.gaussianFWHMDegs = cyclesPerRF/spatialParams.cyclesPerDegree;
             spatialParams.center = [colOffset rowOffset]*ensembleSampleSpacing;
+            spatialParams.ang = orientationRF/180*pi;
+            
+            v1Unit.cyclesPerRF = cyclesPerRF;
+            v1Unit.orientationRF = orientationRF;
+            
+            v1Unit.ft2Dindex = ft2Dindex;
+            v1Unit.bandwidthIndex = bandwidthIndex;
+            v1Unit.orientationIndex = orientationIndex;
+            
             v1Unit.spatialPosition = spatialParams.center * spatialParams.fieldOfViewDegs/2;
             v1Unit.rowColPosition = [colOffset rowOffset];
             
@@ -107,6 +125,9 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
             unitIndex = unitIndex + 1;
             V1filterEnsemble{unitIndex} = v1Unit;
         end
+        end
+        end
+    
     end
     
 
