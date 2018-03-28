@@ -67,7 +67,7 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData,
         isomerizationLevels = [0 14000]; 
         hFig = visualizeResponsesInstancesAndNoiseFreeResponsesAsDensityPlots(timeAxis, ...
         noStimIsomerizationsResponseInstances, stimIsomerizationsResponseInstances, ...
-        noStimNoiseFreeIsomerizationsResponse, stimNoiseFreeIsomerizationsResponse, 0, isomerizationLevels, isomerizationQuantizationLevelsNum, 'density', 'R*/cone/sec', 5001);
+        noStimNoiseFreeIsomerizationsResponse, stimNoiseFreeIsomerizationsResponse, isomerizationLevels, isomerizationQuantizationLevelsNum, 'density', 'R*/cone/sec', 5001);
     else
         hFig = [];
     end 
@@ -80,7 +80,7 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData,
         photocurrentsLevels = [-90 -50]; 
         hFig = visualizeResponsesInstancesAndNoiseFreeResponsesAsDensityPlots(timeAxis, ...
         noStimPhotocurrentsResponseInstances, stimPhotocurrentsResponseInstances, ...
-        noStimNoiseFreePhotocurrentsResponse, stimNoiseFreePhotocurrentsResponse, 0, photocurrentsLevels, photocurrentsQuantizationLevelsNum, 'line', 'pAmps', 5002);
+        noStimNoiseFreePhotocurrentsResponse, stimNoiseFreePhotocurrentsResponse,  photocurrentsLevels, photocurrentsQuantizationLevelsNum, 'line', 'pAmps', 5002);
     else
         hFig = [];
     end

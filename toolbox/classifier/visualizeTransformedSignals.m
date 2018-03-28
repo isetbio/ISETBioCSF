@@ -1,7 +1,6 @@
 function hFig = visualizeTransformedSignals(timeAxis, noStimResponseInstances, stimResponseInstances, signalSource, stimContrast, spatialFilterName)
 
     responseQuantizationLevelsNum = 100;
-    p = 0;
     
     noStimNoiseFreeResponse = squeeze(mean(noStimResponseInstances,1));
     stimNoiseFreeResponse = squeeze(mean(stimResponseInstances,1));
@@ -20,5 +19,5 @@ function hFig = visualizeTransformedSignals(timeAxis, noStimResponseInstances, s
     hFig = visualizeResponsesInstancesAndNoiseFreeResponsesAsDensityPlots(...
         timeAxis, noStimResponseInstances, stimResponseInstances, ...
         noStimNoiseFreeResponse, stimNoiseFreeResponse,  ...
-        p, responseRange, responseQuantizationLevelsNum, plotType, sprintf('%s (%s)', spatialFilterName, signalSource), 5003+sum(signalSource-'a'));
+        responseRange, responseQuantizationLevelsNum, plotType, sprintf('%s (%s)', spatialFilterName, signalSource), 5003+sum(signalSource-'a'));
 end
