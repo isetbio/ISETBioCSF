@@ -41,11 +41,11 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
     for bandwidthIndex = 1:numel(cyclesPerRFs)
         cyclesPerRF = cyclesPerRFs(bandwidthIndex);
         if (cyclesPerRF == 1.0)
-            ensemblePositions = 7;   
+            ensemblePositions = 9;   
         elseif (cyclesPerRF == 2)
-            ensemblePositions = 7;
+            ensemblePositions = 9;
         elseif (cyclesPerRF == 3)
-            ensemblePositions = 7;
+            ensemblePositions = 9;
         end
         
         ensembleSampleSpacing = round((spatialParams.row/2)/ensemblePositions);
@@ -146,7 +146,7 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
                 theFigHandle = hFig(figIndex);
                 fileName = sprintf('V1poolingEnsemble_%d', figIndex);
                 rwObject.write(fileName, data, paramsList, theProgram, ...
-                    'type', 'NicePlotExportPDF', 'FigureHandle', theFigHandle , 'FigureType', 'pdf');
+                    'type', 'NicePlotExportPNG', 'FigureHandle', theFigHandle , 'FigureType', 'png');
             end
         end
     end % visualizeSpatialScheme  
