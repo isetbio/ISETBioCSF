@@ -6,7 +6,7 @@ function run_SVMRepsVaryConditions
     computationInstance = 32;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
@@ -36,19 +36,20 @@ function run_SVMRepsVaryConditions
     % Trials to use in the classifier - vary this one
     params.performanceTrialsUsed = params.nTrainingSamples;
     
-    maxK = 1; % 6;
+    maxK = 7;
     for k = 1:maxK
         performanceTrialsUsed = params.nTrainingSamples/(2^(k-1));
         examinedCond(maxK+1-k).classifier = 'svmV1FilterBank';
         examinedCond(maxK+1-k).performanceTrialsUsed = performanceTrialsUsed;
-        examinedCond(maxK+1-k).legend = sprintf('QPhE SVM, %d trials', performanceTrialsUsed);
+        examinedCond(maxK+1-k)
+        legends{k} = sprintf('QPhE SVM, %d trials', performanceTrialsUsed);
     end
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -59,7 +60,7 @@ function run_SVMRepsVaryConditions
     params.visualizeStimulusAndOpticalImage = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
@@ -74,7 +75,7 @@ function run_SVMRepsVaryConditions
         variedParamName = 'SVMTrials';
         theRatioLims = [0.05 0.5];
         theRatioTicks = [0.05 0.1 0.2 0.5];
-        generateFigureForPaper(theFigData, examinedInferenceEngineLegends, variedParamName, '', ...
+        generateFigureForPaper(theFigData, legends, variedParamName, '', ...
             'figureType', 'CSF', ...
             'inGraphText', ' A ', ...
             'plotFirstConditionInGray', true, ...
