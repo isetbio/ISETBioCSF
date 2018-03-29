@@ -28,7 +28,6 @@ function run_SVMRepsVaryConditions
     emLegend = 'drifts+\mu-saccades (random)';
     
     
-    
     % Contrast range to examine and trials num
     if (computationInstance == 32)
         params.lowContrast = 0.01;
@@ -47,7 +46,7 @@ function run_SVMRepsVaryConditions
     % Trials to use in the classifier - vary this one
     params.performanceTrialsUsed = params.nTrainingSamples;
     
-    maxK = 7;
+    maxK = 8;
     for k = 1:maxK
         kk = maxK-k+1;
         performanceTrialsUsed = params.nTrainingSamples/(2^(k-1));
@@ -88,10 +87,10 @@ function run_SVMRepsVaryConditions
         if (numel(thePsychometricFunctions) > 1)
             error('There were more than 1 spatial frequency point\n');
         end
-         thePsychometricFunctions =  thePsychometricFunctions{:};
-         thePsychometricFunctions = thePsychometricFunctions{1};
-         sf0PsychometricFunctions{condIndex} = thePsychometricFunctions;
-         theTrials(condIndex) = params.performanceTrialsUsed ;
+        thePsychometricFunctions =  thePsychometricFunctions{:};
+        thePsychometricFunctions = thePsychometricFunctions{1};
+        sf0PsychometricFunctions{condIndex} = thePsychometricFunctions;
+        theTrials(condIndex) = params.performanceTrialsUsed ;
     end
     
     
@@ -169,7 +168,7 @@ function generatePsychometricFunctionsPlot(psychometricFunctions, theTrials, tri
                 
     set(theAxes, 'XLim', [0.008 0.35], 'XTick', [0.01 0.03 0.1 0.3], 'YLim', [0.4 1.0], 'XTick', [0.003 0.01 0.03 0.1 0.3]);
     set(theRatioAxes, 'XTick', [300 1000 3000 10000 30000 100000],  ...
-        'XLim', [500 100000], ...
+        'XLim', [300 100000], ...
         'YLim', thresholdLims, 'YTick', [0.05:0.01:0.3]);
     
     exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', 'projects/IBIOColorDetect/paperfigs/CSFpaper/exports');

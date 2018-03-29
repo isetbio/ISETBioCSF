@@ -22,45 +22,42 @@ end
 
 function hFigs = visualizeEnsembleResponses(V1filterEnsemble, timeAxis, noStimResponseInstances, stimResponseInstances, responseRange, responseLevelsNum, plotType, yAxisLabel, figNo)
 
-
     responseLevels = linspace(responseRange(1), responseRange(2), responseLevelsNum);
-    
-    
     responseInstancesNum = size(noStimResponseInstances,1);
     unitsNums = size(noStimResponseInstances,2);
-    
-    rows = abs(V1filterEnsemble{1}.rowColPosition(1))*2+1;
-    cols = abs(V1filterEnsemble{1}.rowColPosition(2))*2+1;
-    halfRows = (rows-1)/2;
-    halfCols = (cols-1)/2;
-    
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-       'rowsNum', rows, ...
-       'colsNum', cols, ...
-       'heightMargin',   0.02, ...
-       'widthMargin',    0.02, ...
-       'leftMargin',     0.04, ...
-       'rightMargin',    0.01, ...
-       'bottomMargin',   0.03, ...
-       'topMargin',      0.01);
-        
-   timeAxis = timeAxis*1000;
-   hFigs = [];
+      
+    timeAxis = timeAxis*1000;
+    hFigs = [];
    
-   for unitIndex = 1:unitsNums
+    for unitIndex = 1:unitsNums
        bandwidthIndex = V1filterEnsemble{unitIndex}.bandwidthIndex;
        orientationIndex = V1filterEnsemble{unitIndex}.orientationIndex;
        ft2DIndex = V1filterEnsemble{unitIndex}.ft2Dindex;
        
-       if (numel(hFigs) < ft2Dindex)
-            hFigs(ft2Dindex) = figure(figNo+ft2Dindex); clf;
-            set(hFigs(ft2Dindex), 'Position', [10+ft2Dindex*100 10+ft2Dindex*50 1490 1340], 'Color', [1 1 1]);
+       if (numel(hFigs) < ft2DIndex)
+            rows = V1filterEnsemble{unitIndex}.rowsNum;
+            cols = V1filterEnsemble{unitIndex}.colsNum;
+            halfRows = (rows-1)/2;
+            halfCols = (cols-1)/2;
+    
+            subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+            'rowsNum', rows, ...
+            'colsNum', cols, ...
+            'heightMargin',   0.02, ...
+            'widthMargin',    0.02, ...
+            'leftMargin',     0.04, ...
+            'rightMargin',    0.01, ...
+            'bottomMargin',   0.03, ...
+            'topMargin',      0.01);
+        
+            hFigs(ft2DIndex) = figure(figNo+ft2DIndex); clf;
+            set(hFigs(ft2DIndex), 'Position', [10+ft2DIndex*100 10+ft2DIndex*50 1490 1340], 'Color', [1 1 1]);
             set(gcf,'renderer','opengl');
        end
        
        row = V1filterEnsemble{unitIndex}.rowColPosition(1) + halfRows+1;
        col = V1filterEnsemble{unitIndex}.rowColPosition(2) + halfCols+1;
-       subplot('Position', subplotPosVectors(row,col).v);
+       subplot('Position', subplotPosVectors(rows+1-row,col).v);
        
        % Concatenate responses: null - test 
        unitResponses= squeeze(noStimResponseInstances(:,unitIndex,:));

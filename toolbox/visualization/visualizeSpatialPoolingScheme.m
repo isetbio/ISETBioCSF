@@ -38,6 +38,12 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         
     elseif (strcmp(spatialPoolingKernelParams.type, 'V1QuadraturePair'))
         
+        if iscell(spatialPoolingFilter)
+            hFig = visualizeEnsembleSpatialPoolingScheme(xaxis, yaxis, spatialModulation, ...
+                spatialPoolingKernelParams, spatialPoolingFilter, coneLocsInDegs, mosaicFOVDegs, stimulusFOVDegs, coneRadiusMicrons);
+            return;
+        end
+        
         subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', 3, ...
            'colsNum', 1, ...
@@ -77,14 +83,13 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
              'figureType', 'CONE_SPATIAL_POOLING', ...
              'theAxes', ax, ...
              'theFigureTitle', 'no pooling' ...
-         );
+        );
         set(gca, 'CLim', [0 1], 'XLim', [xaxis(1) xaxis(end)], 'YLim', [yaxis(1) yaxis(end)]);
         set(gca, 'XTick', -0.2:0.1:0.2, 'YTick', -0.2:tickIncrementDegs:0.2);
         set(gca, 'XTickLabel', {});
         %xlabel(ax, 'degrees');
         ylabel(ax, 'degrees');
     
-        
         if iscell(spatialPoolingFilter)
             for quadratureIndex = 1:2
                 ax = subplot('Position', subplotPosVectors(quadratureIndex+1,1).v);
@@ -92,16 +97,27 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
             end
         end
         
+        % which bandwidth index to display
+        displayedBandwidthIndex = 3;
+        % which orientation index to display
+        displayedOrientationIndex = 2;
+                
         for unitIndex = 1:numel(spatialPoolingFilter)
-            fprintf('displaying weights for unit %d of %d\n', unitIndex, numel(spatialPoolingFilter))
+            fprintf('displaying weights for unit %d of %d\n', unitIndex, numel(spatialPoolingFilter));
+            
             if iscell(spatialPoolingFilter)
+                % ensemble of V1-receptive field like filters
                 theSpatialPoolingFilter = spatialPoolingFilter{unitIndex};
             else
                 theSpatialPoolingFilter = spatialPoolingFilter;
             end
         
             if (isstruct(spatialPoolingFilter)) || ...
-                    (iscell(spatialPoolingFilter) && (all(theSpatialPoolingFilter.rowColPosition == [0 0])))
+               ( (iscell(spatialPoolingFilter)) && ...
+                 (all(theSpatialPoolingFilter.rowColPosition == [0 0])) && ...
+                 ((theSpatialPoolingFilter.bandwidthIndex   == displayedBandwidthIndex)   && ...
+                  (theSpatialPoolingFilter.orientationIndex == displayedOrientationIndex)) ...
+               )
             
                 fprintf('displaying unit %d of %d\n', unitIndex, numel(spatialPoolingFilter))
                 
@@ -119,7 +135,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
                     ax = subplot('Position', subplotPosVectors(quadratureIndex+1,1).v);
                     hold(ax, 'on');
                     plotQuantizedWeights(quantizedWeights/maxWeight, quantizationLevels, coneLocsInDegs, coneX, coneY);
-                    plotHorizontalPoolingProfile(xaxis, min(yaxis) + 0.1*((max(yaxis)-min(yaxis))), (max(yaxis)-min(yaxis)) * 0.1, quantizedWeights, coneLocsInDegs, desiredProfile, coneRadiusDegs);
+                    %plotHorizontalPoolingProfile(xaxis, min(yaxis) + 0.1*((max(yaxis)-min(yaxis))), (max(yaxis)-min(yaxis)) * 0.1, quantizedWeights, coneLocsInDegs, desiredProfile, coneRadiusDegs);
                     plot(ax,[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
                     plot(ax,[0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
                 end % quadrature index
@@ -130,16 +146,9 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         if iscell(spatialPoolingFilter)
             for unitIndex = 1:numel(spatialPoolingFilter)
                 theSpatialPoolingFilter = spatialPoolingFilter{unitIndex};
-
-                if (all(theSpatialPoolingFilter.rowColPosition == [0 0])) || ...
-                   (all(theSpatialPoolingFilter.rowColPosition == [-1 0])) || ...
-                   (all(theSpatialPoolingFilter.rowColPosition == [1 0])) || ...
-                   (all(theSpatialPoolingFilter.rowColPosition == [0 1])) || ...
-                   (all(theSpatialPoolingFilter.rowColPosition == [0 -1])) || ...
-                   (all(theSpatialPoolingFilter.rowColPosition == [1 1])) || ...
-                   (all(theSpatialPoolingFilter.rowColPosition == [-1 -1])) || ...
-                   (all(theSpatialPoolingFilter.rowColPosition == [-1 1])) || ...
-                   (all(theSpatialPoolingFilter.rowColPosition == [1 -1]))
+                
+                if ~((theSpatialPoolingFilter.bandwidthIndex == displayedBandwidthIndex) && ...
+                      (theSpatialPoolingFilter.orientationIndex == displayedOrientationIndex))
                         continue;
                 end
                 
@@ -261,6 +270,7 @@ function plotQuantizedWeights(quantizedWeights, quantizationLevels, coneLocsInDe
     quantizedWeights(quantizedWeights >  1) = 1;
     quantizedWeights(quantizedWeights < -1) = -1;
     quantizedWeights = round(quantizationLevels/2 * (1+quantizedWeights));
+
 
     for iLevel = quantizationLevels/2:quantizationLevels
         idx = find(quantizedWeights == iLevel);

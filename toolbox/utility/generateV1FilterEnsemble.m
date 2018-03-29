@@ -31,27 +31,39 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
     
     % modify some params for small V1 RFs
     spatialParams.windowType = 'Gaussian';
-    cyclesPerRFs = [1.0 2.0 3.0 4.0];
+    
+    cyclesPerRFs = [1.0 2.0 3.0];
     orientationRFs = [-20 0 20];
     
-    ensemblePositions = 6;
-    ensembleSampleSpacing = round((spatialParams.row/2)/ensemblePositions);
-    
-    fprintf('Generating %d v1 pooling units\n', (2*ensemblePositions+1)^2);
     unitIndex = 0;
     ft2Dindex = 0;
     
     for bandwidthIndex = 1:numel(cyclesPerRFs)
-    for orientationIndex = 1:numel(orientationRFs)
-        ft2Dindex = ft2Dindex + 1;
+        cyclesPerRF = cyclesPerRFs(bandwidthIndex);
+        if (cyclesPerRF == 1.0)
+            ensemblePositions = 7;   
+        elseif (cyclesPerRF == 2)
+            ensemblePositions = 7;
+        elseif (cyclesPerRF == 3)
+            ensemblePositions = 7;
+        end
+        
+        ensembleSampleSpacing = round((spatialParams.row/2)/ensemblePositions);
+        
+        v1Unit.rowsNum = 2*ensemblePositions+1;
+        v1Unit.colsNum = 2*ensemblePositions+1;
+        
+        for orientationIndex = 1:numel(orientationRFs)
+            ft2Dindex = ft2Dindex + 1;
         for rowOffset = -ensemblePositions:ensemblePositions
         for colOffset = -ensemblePositions:ensemblePositions
             
-            cyclesPerRF = cyclesPerRFs(bandwidthIndex);
+            
             orientationRF = orientationRFs(orientationIndex);
             
             spatialParams.gaussianFWHMDegs = cyclesPerRF/spatialParams.cyclesPerDegree;
             spatialParams.center = [colOffset rowOffset]*ensembleSampleSpacing;
+            v1Unit.rowColPosition = [rowOffset colOffset];
             spatialParams.ang = orientationRF/180*pi;
             
             v1Unit.cyclesPerRF = cyclesPerRF;
@@ -61,8 +73,11 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
             v1Unit.bandwidthIndex = bandwidthIndex;
             v1Unit.orientationIndex = orientationIndex;
             
-            v1Unit.spatialPosition = spatialParams.center * spatialParams.fieldOfViewDegs/2;
-            v1Unit.rowColPosition = [colOffset rowOffset];
+            v1Unit.spatialPosition = spatialParams.center/(spatialParams.row/2) * spatialParams.fieldOfViewDegs/2;
+            
+            %[~, nearestConeIndex] = min(sqrt(sum((bsxfun(@minus, coneLocsDegs, v1Unit.spatialPosition)).^2,2)));
+            %v1Unit.spatialPosition = coneLocsDegs(nearestConeIndex,:);
+            %spatialParams.center = v1Unit.spatialPosition * (spatialParams.row/2)/(spatialParams.fieldOfViewDegs/2);
             
             spatialParams.ph = 0;
             cosPhaseFilter = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams, 1.0));
@@ -85,31 +100,9 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
                 [~, idx] = pdist2(rfCoordsDegs, coneLocsDegs, 'euclidean', 'Smallest', 1);
             end
             
-            v1Unit.outlineX = spatialParams.gaussianFWHMDegs * cosd(0:5:360);
-            v1Unit.outlineX = spatialParams.gaussianFWHMDegs * sind(0:5:360);
-            
-            if (1==2)
-                figure(1);
-                subplot(1,3,1)
-                imagesc(xaxisDegs, yaxisDegs, v1Unit.sinPhasePoolingProfile);
-                set(gca, 'CLim', [-1 1]);
-                axis 'square'
-                subplot(1,3,2)
-                imagesc(xaxisDegs, yaxisDegs, v1Unit.cosPhasePoolingProfile);
-                set(gca, 'CLim', [-1 1]);
-                axis 'square'
-                subplot(1,3,3)
-                imagesc(xaxisDegs, yaxisDegs, v1Unit.RFprofile);
-                set(gca, 'CLim', [-1 1]);
-                axis 'square'
-                colormap(gray);
-                drawnow;
-            end
-            
             v1Unit.cosPhasePoolingWeights = v1Unit.cosPhasePoolingProfile(idx);
             v1Unit.sinPhasePoolingWeights = v1Unit.sinPhasePoolingProfile(idx);
             v1Unit.envelopePoolingWeights = v1Unit.RFprofile(idx);
-    
              
             % Adjust weights by the inverse of the coneDensity
             if (thresholdParams.spatialPoolingKernelParams.adjustForConeDensity)
@@ -143,11 +136,19 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
         theProgram = mfilename;
         rwObject = IBIOColorDetectReadWriteBasic;
         data = 0;
-        fileName = sprintf('V1poolingKernel');
         paramsList{numel(paramsList)+1} = thresholdParams;
-        rwObject.write(fileName, data, paramsList, theProgram, ...
-           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
-       
+        if (numel(hFig) == 1)
+            fileName = sprintf('V1poolingKernel');
+            rwObject.write(fileName, data, paramsList, theProgram, ...
+            'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+        else
+            for figIndex = 1:numel(hFig)
+                theFigHandle = hFig(figIndex);
+                fileName = sprintf('V1poolingEnsemble_%d', figIndex);
+                rwObject.write(fileName, data, paramsList, theProgram, ...
+                    'type', 'NicePlotExportPDF', 'FigureHandle', theFigHandle , 'FigureType', 'pdf');
+            end
+        end
     end % visualizeSpatialScheme  
     
 end
