@@ -32,24 +32,18 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
     % modify some params for small V1 RFs
     spatialParams.windowType = 'Gaussian';
     
-    cyclesPerRFs = [1.0 2.0 3.0];
-    orientationRFs = [-20 0 20];
+    cyclesPerRFs = [1.5 2.0 2.5];
+    orientationRFs = 15*[-1 0 1];
     
+    ensemblePositions = 9;   
+    ensembleSampleSpacing = round((spatialParams.row/2)/ensemblePositions);
+        
     unitIndex = 0;
     ft2Dindex = 0;
     
     for bandwidthIndex = 1:numel(cyclesPerRFs)
         cyclesPerRF = cyclesPerRFs(bandwidthIndex);
-        if (cyclesPerRF == 1.0)
-            ensemblePositions = 9;   
-        elseif (cyclesPerRF == 2)
-            ensemblePositions = 9;
-        elseif (cyclesPerRF == 3)
-            ensemblePositions = 9;
-        end
-        
-        ensembleSampleSpacing = round((spatialParams.row/2)/ensemblePositions);
-        
+ 
         v1Unit.rowsNum = 2*ensemblePositions+1;
         v1Unit.colsNum = 2*ensemblePositions+1;
         
