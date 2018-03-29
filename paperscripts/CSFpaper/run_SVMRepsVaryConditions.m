@@ -2,8 +2,8 @@ function run_SVMRepsVaryConditions
 % This is the script used to assess the impact of different # of trials on the SVM-based CSF
 %  
     % How to split the computation
-    % 16 or 32
-    computationInstance = 32;
+    % 16 or 32 (already did 32 with 64K reps)
+    computationInstance = 16;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -29,9 +29,16 @@ function run_SVMRepsVaryConditions
     % Trials to generate
     params.nTrainingSamples = 1024*64;
     
-    params.lowContrast = 0.01;
-    params.highContrast =  0.3;
-    params.nContrastsPerDirection =  20;
+    % Contrast range to examine
+    if (computationInstance == 32)
+        params.lowContrast = 0.01;
+        params.highContrast =  0.3;
+        params.nContrastsPerDirection =  20;
+    elseif (computationInstance == 16)
+        params.lowContrast = 0.001;
+        params.highContrast =  0.3;
+        params.nContrastsPerDirection =  15;
+    end
     
     % Trials to use in the classifier - vary this one
     params.performanceTrialsUsed = params.nTrainingSamples;
@@ -41,7 +48,6 @@ function run_SVMRepsVaryConditions
         performanceTrialsUsed = params.nTrainingSamples/(2^(k-1));
         examinedCond(maxK+1-k).classifier = 'svmV1FilterBank';
         examinedCond(maxK+1-k).performanceTrialsUsed = performanceTrialsUsed;
-        examinedCond(maxK+1-k)
         legends{k} = sprintf('QPhE SVM, %d trials', performanceTrialsUsed);
     end
     
@@ -60,7 +66,7 @@ function run_SVMRepsVaryConditions
     params.visualizeStimulusAndOpticalImage = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
