@@ -1,9 +1,9 @@
 function varargout = run_BanksPhotocurrentEyeMovementConditions(params)
  
 varargout = {};
-varargout{1} = [];
-varargout{2} = [];
-varargout{3} = [];
+varargout{1} = [];  % the mosaic
+varargout{2} = [];  % psychometric functions
+varargout{3} = [];  % the figData
 
     % Assign parfor workers num based on computer name
     [~, computerNetworkName] = system('uname -n');

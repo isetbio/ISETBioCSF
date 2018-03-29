@@ -30,6 +30,32 @@ function varargout = formatFigureForPaper(hFig, varargin)
     theFigureTitle = p.Results.theFigureTitle;
     
     switch (figureType)
+        case 'PSYCHOMETRIC_FUNCTIONS'
+            if (isempty(theAxes))
+                set(hFig, 'Position', [10 10 1000 450], 'Color', [1 1 1]);
+                varargout{1} = subplot('Position', [0.06 0.13 0.44 0.78]);
+                varargout{2} = subplot('Position', [0.55 0.13 0.44 0.78]);     
+            else
+                axis(theAxes, 'square');
+                axis(theAxes, 'xy');
+                set(theAxes, 'XScale', 'log', 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                box(theAxes, 'on');
+                grid(theAxes, 'on');
+                xtickformat(theAxes, '%.2f'); ytickformat(theAxes, '%.2f');
+                
+                if (~isempty(theLegend))
+                    set(theLegend,  'Location', 'NorthWest');
+                end
+            
+                axis(theRatioAxes, 'square');
+                axis(theRatioAxes, 'xy');
+                set(theRatioAxes, 'XScale', 'log', 'YScale', 'linear', 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                box(theRatioAxes, 'on');
+                grid(theRatioAxes, 'on');
+                xtickformat(theRatioAxes, '%3.0g'); ytickformat(theRatioAxes, '%.2f');
+                
+            end
+            
         case 'CONE_SPATIAL_POOLING'
             if (isempty(theAxes))
                 set(hFig, 'Position', [10 10 450 1200], 'Color', [1 1 1]);

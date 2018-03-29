@@ -59,7 +59,7 @@ p.addParameter('plotSvmBoundary',false,@islogical);
 p.addParameter('plotPCAAxis1',1,@isnumeric)
 p.addParameter('plotPCAAxis2',2,@isnumeric)
 p.addParameter('delete',false',@islogical);
-p.addParameter('IBIOColorDetectSnapshot', [], @isstruct);
+p.addParameter('IBIOColorDetectSnapshot', struct(), @isstruct);
 
 p.parse(varargin{:});
 rParams = p.Results.rParams;

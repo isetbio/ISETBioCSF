@@ -35,7 +35,7 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
     hFig = figure(1); clf;
     [theAxes, theRatioAxes] = formatFigureForPaper(hFig, ...
         'figureType', figureType, ...
-        'plotRatiosOfOtherConditionsToFirst', plotRatiosOfOtherConditionsToFirst)
+        'plotRatiosOfOtherConditionsToFirst', plotRatiosOfOtherConditionsToFirst);
     
     
     % Displayed colors
