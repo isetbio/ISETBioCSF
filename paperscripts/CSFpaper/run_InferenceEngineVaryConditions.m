@@ -41,8 +41,8 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (6)' ...
     };
 
-    examinedInferenceEngines = {examinedInferenceEngines{4}};
-    examinedInferenceEngineLegends = {examinedInferenceEngineLegends{4}};
+    examinedInferenceEngines = {examinedInferenceEngines{5:9}};
+    examinedInferenceEngineLegends = {examinedInferenceEngineLegends{5:9}};
     
     ensembleFilterParamsStructs{1} = struct(...
         'spatialPositionsNum',  9, ...
