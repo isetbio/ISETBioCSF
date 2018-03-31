@@ -39,6 +39,9 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (5)' ...
     };
 
+    examinedInferenceEngines = {examinedInferenceEngines{4}};
+    examinedInferenceEngineLegends = {examinedInferenceEngineLegends{4}};
+    
     ensembleFilterParamsStructs{1} = struct(...
         'spatialPositionsNum',  9, ...
         'cyclesPerRFs', 1.5, ...
@@ -64,8 +67,7 @@ function run_InferenceEngineVaryConditions
         'cyclesPerRFs', [1.5 2.0 2.5], ...
         'orientations', 15*[-1 0 1]);
     
-    examinedInferenceEngines = {examinedInferenceEngines{4}};
-    examinedInferenceEngineLegends = {examinedInferenceEngineLegends{4}};
+    
 
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -90,15 +92,15 @@ function run_InferenceEngineVaryConditions
     for engineIndex = 1:numel(examinedInferenceEngines)
         params.performanceClassifier = examinedInferenceEngines{engineIndex};
         if strcmp(params.performanceClassifier, 'svmV1FilterEnsemble')
-            if strcmp(params.examinedInferenceEngineLegends, 'SVM (QPhE) population (1)')
+            if strcmp(examinedInferenceEngineLegends, 'SVM (QPhE) population (1)')
                 ensembleFilterParams = ensembleFilterParamsStructs{1};
-            elseif strcmp(params.examinedInferenceEngineLegends, 'SVM (QPhE) population (2)')
+            elseif strcmp(examinedInferenceEngineLegends, 'SVM (QPhE) population (2)')
                 ensembleFilterParams = ensembleFilterParamsStructs{2};
-            elseif strcmp(params.examinedInferenceEngineLegends, 'SVM (QPhE) population (3)')
+            elseif strcmp(examinedInferenceEngineLegends, 'SVM (QPhE) population (3)')
                 ensembleFilterParams = ensembleFilterParamsStructs{3};
-            elseif strcmp(params.examinedInferenceEngineLegends, 'SVM (QPhE) population (4)')
+            elseif strcmp(examinedInferenceEngineLegends, 'SVM (QPhE) population (4)')
                 ensembleFilterParams = ensembleFilterParamsStructs{4};
-            elseif strcmp(params.examinedInferenceEngineLegends, 'SVM (QPhE) population (5)')
+            elseif strcmp(examinedInferenceEngineLegends, 'SVM (QPhE) population (5)')
                 ensembleFilterParams = ensembleFilterParamsStructs{5};
             end
             params.spatialPoolingKernelParams.spatialPositionsNum = ensembleFilterParams.spatialPositionsNum;
