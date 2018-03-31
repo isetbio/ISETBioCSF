@@ -32,10 +32,10 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
     % modify some params for small V1 RFs
     spatialParams.windowType = 'Gaussian';
     
-    cyclesPerRFs = [1.5 2.0 2.5];
-    orientationRFs = 15*[-1 0 1];
+    cyclesPerRFs = thresholdParams.spatialPoolingKernelParams.cyclesPerRFs;
+    orientationRFs = thresholdParams.spatialPoolingKernelParams.orientations;
     
-    ensemblePositions = 9;   
+    ensemblePositions = thresholdParams.spatialPoolingKernelParams.spatialPositionsNum;   
     ensembleSampleSpacing = round((spatialParams.row/2)/ensemblePositions);
         
     unitIndex = 0;
@@ -43,78 +43,76 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
     
     for bandwidthIndex = 1:numel(cyclesPerRFs)
         cyclesPerRF = cyclesPerRFs(bandwidthIndex);
- 
+        spatialParams.gaussianFWHMDegs = cyclesPerRF/spatialParams.cyclesPerDegree;
+        
+        v1Unit.cyclesPerRF = cyclesPerRF;
+        v1Unit.bandwidthIndex = bandwidthIndex;
+         
         v1Unit.rowsNum = 2*ensemblePositions+1;
         v1Unit.colsNum = 2*ensemblePositions+1;
         
         for orientationIndex = 1:numel(orientationRFs)
-            ft2Dindex = ft2Dindex + 1;
-        for rowOffset = -ensemblePositions:ensemblePositions
-        for colOffset = -ensemblePositions:ensemblePositions
-            
-            
             orientationRF = orientationRFs(orientationIndex);
-            
-            spatialParams.gaussianFWHMDegs = cyclesPerRF/spatialParams.cyclesPerDegree;
-            spatialParams.center = [colOffset rowOffset]*ensembleSampleSpacing;
-            v1Unit.rowColPosition = [rowOffset colOffset];
+            v1Unit.orientationIndex = orientationIndex;
+            v1Unit.orientationRF = orientationRF;
             spatialParams.ang = orientationRF/180*pi;
             
-            v1Unit.cyclesPerRF = cyclesPerRF;
-            v1Unit.orientationRF = orientationRF;
-            
+            ft2Dindex = ft2Dindex + 1;
             v1Unit.ft2Dindex = ft2Dindex;
-            v1Unit.bandwidthIndex = bandwidthIndex;
-            v1Unit.orientationIndex = orientationIndex;
             
-            v1Unit.spatialPosition = spatialParams.center/(spatialParams.row/2) * spatialParams.fieldOfViewDegs/2;
+            for rowOffset = -ensemblePositions:ensemblePositions
+            for colOffset = -ensemblePositions:ensemblePositions
             
-            %[~, nearestConeIndex] = min(sqrt(sum((bsxfun(@minus, coneLocsDegs, v1Unit.spatialPosition)).^2,2)));
-            %v1Unit.spatialPosition = coneLocsDegs(nearestConeIndex,:);
-            %spatialParams.center = v1Unit.spatialPosition * (spatialParams.row/2)/(spatialParams.fieldOfViewDegs/2);
+                spatialParams.center = [colOffset rowOffset]*ensembleSampleSpacing;
+                v1Unit.rowColPosition = [rowOffset colOffset];
+                v1Unit.spatialPosition = spatialParams.center/(spatialParams.row/2) * spatialParams.fieldOfViewDegs/2;
             
-            spatialParams.ph = 0;
-            cosPhaseFilter = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams, 1.0));
-            v1Unit.cosPhasePoolingProfile = cosPhaseFilter-1;
-            spatialParams.ph = pi/2;
-            sinPhaseFilter = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams, 1.0));
-            v1Unit.sinPhasePoolingProfile = sinPhaseFilter-1;
+                % re-center RF to nearest cone
+                %[~, nearestConeIndex] = min(sqrt(sum((bsxfun(@minus, coneLocsDegs, v1Unit.spatialPosition)).^2,2)));
+                %v1Unit.spatialPosition = coneLocsDegs(nearestConeIndex,:);
+                %spatialParams.center = v1Unit.spatialPosition * (spatialParams.row/2)/(spatialParams.fieldOfViewDegs/2);
+            
+                spatialParams.ph = 0;
+                cosPhaseFilter = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams, 1.0));
+                v1Unit.cosPhasePoolingProfile = cosPhaseFilter-1;
+                spatialParams.ph = pi/2;
+                sinPhaseFilter = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams, 1.0));
+                v1Unit.sinPhasePoolingProfile = sinPhaseFilter-1;
               
-            % Compute energy envelope
-            RFprofile = v1Unit.cosPhasePoolingProfile.^2 + v1Unit.sinPhasePoolingProfile.^2;
-            v1Unit.RFprofile = RFprofile / max(abs(RFprofile(:)));
+                % Compute energy envelope
+                RFprofile = v1Unit.cosPhasePoolingProfile.^2 + v1Unit.sinPhasePoolingProfile.^2;
+                v1Unit.RFprofile = RFprofile / max(abs(RFprofile(:)));
             
-            if (rowOffset == -ensemblePositions) && (colOffset == -ensemblePositions)
-                xaxisDegs = (0:(size(RFprofile,2)-1))/size(RFprofile,2) * spatialParams.fieldOfViewDegs;
-                xaxisDegs = xaxisDegs - mean(xaxisDegs);
-                yaxisDegs = (0:(size(RFprofile,1)-1))/size(RFprofile,1) * spatialParams.fieldOfViewDegs;
-                yaxisDegs = yaxisDegs - mean(yaxisDegs);
-                [X,Y] = meshgrid(xaxisDegs, yaxisDegs);
-                rfCoordsDegs = [X(:) Y(:)];
-                [~, idx] = pdist2(rfCoordsDegs, coneLocsDegs, 'euclidean', 'Smallest', 1);
-            end
+                if (rowOffset == -ensemblePositions) && (colOffset == -ensemblePositions)
+                    xaxisDegs = (0:(size(RFprofile,2)-1))/size(RFprofile,2) * spatialParams.fieldOfViewDegs;
+                    xaxisDegs = xaxisDegs - mean(xaxisDegs);
+                    yaxisDegs = (0:(size(RFprofile,1)-1))/size(RFprofile,1) * spatialParams.fieldOfViewDegs;
+                    yaxisDegs = yaxisDegs - mean(yaxisDegs);
+                    [X,Y] = meshgrid(xaxisDegs, yaxisDegs);
+                    rfCoordsDegs = [X(:) Y(:)];
+                    [~, idx] = pdist2(rfCoordsDegs, coneLocsDegs, 'euclidean', 'Smallest', 1);
+                end
             
-            v1Unit.cosPhasePoolingWeights = v1Unit.cosPhasePoolingProfile(idx);
-            v1Unit.sinPhasePoolingWeights = v1Unit.sinPhasePoolingProfile(idx);
-            v1Unit.envelopePoolingWeights = v1Unit.RFprofile(idx);
+                v1Unit.cosPhasePoolingWeights = v1Unit.cosPhasePoolingProfile(idx);
+                v1Unit.sinPhasePoolingWeights = v1Unit.sinPhasePoolingProfile(idx);
+                v1Unit.envelopePoolingWeights = v1Unit.RFprofile(idx);
              
-            % Adjust weights by the inverse of the coneDensity
-            if (thresholdParams.spatialPoolingKernelParams.adjustForConeDensity)
-                v1Unit.cosPhasePoolingWeights = v1Unit.cosPhasePoolingWeights ./ coneDensity;
-                v1Unit.sinPhasePoolingWeights = v1Unit.sinPhasePoolingWeights ./ coneDensity;
-                v1Unit.envelopePoolingWeights = v1Unit.envelopePoolingWeights ./ coneDensity;
+                % Adjust weights by the inverse of the coneDensity
+                if (thresholdParams.spatialPoolingKernelParams.adjustForConeDensity)
+                    v1Unit.cosPhasePoolingWeights = v1Unit.cosPhasePoolingWeights ./ coneDensity;
+                    v1Unit.sinPhasePoolingWeights = v1Unit.sinPhasePoolingWeights ./ coneDensity;
+                    v1Unit.envelopePoolingWeights = v1Unit.envelopePoolingWeights ./ coneDensity;
+                end
+    
+                v1Unit.type = thresholdParams.spatialPoolingKernelParams.type;
+                v1Unit.activationFunction = thresholdParams.spatialPoolingKernelParams.activationFunction;
+                v1Unit.temporalPCAcoeffs = thresholdParams.spatialPoolingKernelParams.temporalPCAcoeffs;
+
+                unitIndex = unitIndex + 1;
+                V1filterEnsemble{unitIndex} = v1Unit;
             end
-    
-            v1Unit.type = thresholdParams.spatialPoolingKernelParams.type;
-            v1Unit.activationFunction = thresholdParams.spatialPoolingKernelParams.activationFunction;
-            v1Unit.temporalPCAcoeffs = thresholdParams.spatialPoolingKernelParams.temporalPCAcoeffs;
-    
-            unitIndex = unitIndex + 1;
-            V1filterEnsemble{unitIndex} = v1Unit;
+            end
         end
-        end
-        end
-    
     end
     
 
@@ -143,6 +141,5 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
                     'type', 'NicePlotExportPNG', 'FigureHandle', theFigHandle , 'FigureType', 'png');
             end
         end
-    end % visualizeSpatialScheme  
-    
+    end % visualizeSpatialScheme
 end
