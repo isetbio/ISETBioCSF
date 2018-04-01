@@ -3,7 +3,7 @@ function run_SVMRepsVaryConditions
 %  
     % How to split the computation
     % 16 or 32 (already did 32 with 64K reps)
-    computationInstance = 32;
+    computationInstance = 16;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -26,9 +26,7 @@ function run_SVMRepsVaryConditions
     params.emPathType = 'random';
     params.centeredEMPaths = true;
     emLegend = 'drifts+\mu-saccades (random)';
-    
-    
-    % Contrast range to examine and trials num
+     % Contrast range to examine and trials num
     if (computationInstance == 32)
         params.lowContrast = 0.01;
         params.highContrast =  0.3;
@@ -46,7 +44,7 @@ function run_SVMRepsVaryConditions
     % Trials to use in the classifier - vary this one
     params.performanceTrialsUsed = params.nTrainingSamples;
     
-    maxK = 8;
+    maxK = 9;
     for k = 1:maxK
         kk = maxK-k+1;
         performanceTrialsUsed = params.nTrainingSamples/(2^(k-1));
@@ -56,8 +54,6 @@ function run_SVMRepsVaryConditions
         legendsForPsychometricFunctions{kk} = sprintf('%d trials', performanceTrialsUsed);
     end
     
-    theTitle = sprintf('%2.0f c/deg, %s\n%s', computationInstance, examinedCond(1).classifier, emLegend);
-    fixedParamName = sprintf('%2.0fCPD_%s_%s', computationInstance, examinedCond(1).classifier, emLegend);
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -95,8 +91,10 @@ function run_SVMRepsVaryConditions
     
     
     if (makeSummaryFigure)
-        
+        theTitle = sprintf('%2.0f c/deg, %s\n%s', computationInstance, examinedCond(1).classifier, emLegend);
+        fixedParamName = sprintf('%2.0fCPD_%s_%s', computationInstance, examinedCond(1).classifier, emLegend);
         generatePsychometricFunctionsPlot(sf0PsychometricFunctions, theTrials, legendsForPsychometricFunctions, theTitle, fixedParamName);
+        
         variedParamName = 'SVMTrials';
         theRatioLims = [0.05 0.5];
         theRatioTicks = [0.05 0.1 0.2 0.5];
@@ -159,6 +157,7 @@ function generatePsychometricFunctionsPlot(psychometricFunctions, theTrials, tri
         'theTextFontSize', inGraphTextFontSize);
     
     thresholdLims = [0.1 0.15];
+    thresholdLims  = [0.02 0.04]
     theText = text(2000, thresholdLims(2)*0.97, theTitle);
     set(theText, 'FontSize', 16, ...
                     'FontWeight', 'Normal', ...
