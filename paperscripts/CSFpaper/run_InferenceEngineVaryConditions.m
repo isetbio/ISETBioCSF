@@ -6,7 +6,7 @@ function run_InferenceEngineVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
+    makeSummaryFigure = ~true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
@@ -17,6 +17,16 @@ function run_InferenceEngineVaryConditions
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
     % Adjust any params we want to change from their default values
+    params.opticsModel = opticsName;
+    
+    % Response duration params
+    params.frameRate = 10; %(1 frames)
+    params.responseStabilizationMilliseconds = 40;
+    params.responseExtinctionMilliseconds = 40;
+    
+    % Eye movement params
+    params.emPathType = 'random';
+    params.centeredEMpaths = true;
     
     examinedInferenceEngines = {...
         'mlpt' ...
@@ -41,8 +51,9 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (6)' ...
     };
 
-    examinedInferenceEngines = {examinedInferenceEngines{5:9}};
-    examinedInferenceEngineLegends = {examinedInferenceEngineLegends{5:9}};
+    examinedInferenceEngines = {examinedInferenceEngines{4:9}};
+    examinedInferenceEngineLegends = {examinedInferenceEngineLegends{4:9}};
+
     
     ensembleFilterParamsStructs{1} = struct(...
         'spatialPositionsNum',  9, ...
@@ -86,7 +97,7 @@ function run_InferenceEngineVaryConditions
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
-    params.visualizeSpatialPoolingScheme = true;
+    params.visualizeSpatialPoolingScheme = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = true;
@@ -116,7 +127,6 @@ function run_InferenceEngineVaryConditions
             params.spatialPoolingKernelParams.cyclesPerRFs = ensembleFilterParams.cyclesPerRFs;
             params.spatialPoolingKernelParams.orientations = ensembleFilterParams.orientations;
         end
-        params.opticsModel = opticsName;
         [~,~, theFigData{engineIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end
     
