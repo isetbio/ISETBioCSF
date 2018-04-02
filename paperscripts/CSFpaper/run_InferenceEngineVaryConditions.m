@@ -3,10 +3,10 @@ function run_InferenceEngineVaryConditions
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 0;
+    computationInstance = 50;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
@@ -20,13 +20,13 @@ function run_InferenceEngineVaryConditions
     params.opticsModel = opticsName;
     
     % Response duration params
-    params.frameRate = 10; %(1 frames)
-    params.responseStabilizationMilliseconds = 40;
-    params.responseExtinctionMilliseconds = 40;
-    
-    % Eye movement params
-    params.emPathType = 'random';
-    params.centeredEMpaths = true;
+     params.frameRate = 10; %(1 frames)
+     params.responseStabilizationMilliseconds = 40;
+     params.responseExtinctionMilliseconds = 40;
+%     
+%     % Eye movement params
+     params.emPathType = 'random';
+     params.centeredEMpaths = true;
     
     examinedInferenceEngines = {...
         'mlpt' ...
@@ -51,8 +51,11 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (6)' ...
     };
 
-    examinedInferenceEngines = {examinedInferenceEngines{4:9}};
-    examinedInferenceEngineLegends = {examinedInferenceEngineLegends{4:9}};
+    %examinedInferenceEngines = {examinedInferenceEngines{4:9}};
+    %examinedInferenceEngineLegends = {examinedInferenceEngineLegends{4:9}};
+
+    examinedInferenceEngines = {examinedInferenceEngines{6}};
+    examinedInferenceEngineLegends = {examinedInferenceEngineLegends{6}};
 
     
     ensembleFilterParamsStructs{1} = struct(...
@@ -97,10 +100,10 @@ function run_InferenceEngineVaryConditions
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
-    params.visualizeSpatialPoolingScheme = ~true;
+    params.visualizeSpatialPoolingScheme = true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     

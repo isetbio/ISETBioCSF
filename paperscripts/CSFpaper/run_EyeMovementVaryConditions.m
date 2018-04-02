@@ -24,6 +24,8 @@ function run_EyeMovementVaryConditions
     params.responseStabilizationMilliseconds = 100;
     params.responseExtinctionMilliseconds = 50;
     
+    defaultSpatialPoolingKernelParams = params.spatialPoolingKernelParams;
+    
     condIndex = 0;
     
     
@@ -43,6 +45,7 @@ function run_EyeMovementVaryConditions
     examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
     
 %     condIndex = condIndex+1;
 %     examinedCond(condIndex).emPathType = 'frozen0';
@@ -57,38 +60,55 @@ function run_EyeMovementVaryConditions
     condIndex = condIndex+1;
     examinedCond(condIndex).emPathType = 'random';
     examinedCond(condIndex).classifier = 'svm';
-    examinedCond(condIndex).legend = 'drifts+\mu-saccades (origin), SVM';
+    examinedCond(condIndex).legend = 'drifts+\mu-sacc. (orgn), SVM';
     examinedCond(condIndex).centeredEMpaths = ~true;
     examinedCond(condIndex).frameRate = 10;  %(10 frames/sec, so 1 frame, 100 msec long)
     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+    examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
     
     condIndex = condIndex+1;
     examinedCond(condIndex).emPathType = 'random';
     examinedCond(condIndex).classifier = 'svmV1FilterBank';
-    examinedCond(condIndex).legend = 'drifts+\mu-saccades (origin), SVM (QPhE)';
+    examinedCond(condIndex).legend = 'drifts+\mu-sacc. (orgn), SVM (stim-match QPhE)';
     examinedCond(condIndex).centeredEMpaths = ~true;
     examinedCond(condIndex).frameRate = 10;  %(10 frames/sec, so 1 frame, 100 msec long)
     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+    examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
     
     condIndex = condIndex+1;
     examinedCond(condIndex).emPathType = 'random';
     examinedCond(condIndex).classifier = 'svm';
-    examinedCond(condIndex).legend = 'drifts+\mu-saccades (random), SVM';
+    examinedCond(condIndex).legend = 'drifts+\mu-sacc. (rnd), SVM';
     examinedCond(condIndex).centeredEMpaths = true;
     examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
     
     condIndex = condIndex+1;
     examinedCond(condIndex).emPathType = 'random';
     examinedCond(condIndex).classifier = 'svmV1FilterBank';
-    examinedCond(condIndex).legend = 'drifts+\mu-saccades (random), SVM (QPhE)';
+    examinedCond(condIndex).legend = 'drifts+\mu-sacc. (rnd), SVM (stim-match QPhE)';
     examinedCond(condIndex).centeredEMpaths = true;
     examinedCond(condIndex).frameRate = 20;  %(20 frames/sec, so 2 frames, each 50 msec long)
     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+     
+    condIndex = condIndex+1;
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).classifier = 'svmV1FilterEnsemble';
+    examinedCond(condIndex).legend = 'drifts+\mu-sacc. (rnd), SVM (v1RF-match QPhE(1))';
+    examinedCond(condIndex).centeredEMpaths = true;
+    examinedCond(condIndex).frameRate = 10;  %(20 frames/sec, so 2 frames, each 50 msec long)
+    examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 40; 
+    examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+    examinedCond(condIndex).spatialPoolingKernelParams.spatialPositionsNum = 9;
+    examinedCond(condIndex).spatialPoolingKernelParams.cyclesPerRFs = 1;
+    examinedCond(condIndex).spatialPoolingKernelParams.orientations = 0;
     
     
     % Simulation steps to perform
@@ -125,6 +145,9 @@ function run_EyeMovementVaryConditions
         params.responseStabilizationMilliseconds = cond.responseStabilizationMilliseconds;
         params.responseExtinctionMilliseconds = cond.responseExtinctionMilliseconds;
         params.performanceClassifier = cond.classifier;
+        params.spatialPoolingKernelParams = cond.spatialPoolingKernelParams;
+
+        
         examinedEyeMovementTypeLegends{condIndex} = cond.legend;
         [~,~, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end
