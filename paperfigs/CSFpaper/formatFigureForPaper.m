@@ -30,6 +30,17 @@ function varargout = formatFigureForPaper(hFig, varargin)
     theFigureTitle = p.Results.theFigureTitle;
     
     switch (figureType)
+        case 'DISPLAY_PROPERTIES'
+            if (isempty(theAxes))
+                set(hFig, 'Position', [10 10 1300 950], 'Color', [1 1 1]);
+            else
+                axis(theAxes, 'square');
+                set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                box(theAxes, 'on');
+                grid(theAxes, 'on');
+                ytickformat(theAxes, '%.1f');
+                xtickformat(theAxes, '%.1f');
+            end
         case 'PSYCHOMETRIC_FUNCTIONS'
             if (isempty(theAxes))
                 set(hFig, 'Position', [10 10 1000 450], 'Color', [1 1 1]);

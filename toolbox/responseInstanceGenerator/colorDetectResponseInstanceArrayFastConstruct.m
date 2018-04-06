@@ -36,6 +36,7 @@ p.addParameter('osImpulseResponseFunctions', [], @isnumeric);
 p.addParameter('osMeanCurrents', [], @isnumeric);
 p.addParameter('computePhotocurrentResponseInstances', true, @islogical);
 p.addParameter('computeNoiseFreeSignals', true, @islogical);
+p.addParameter('visualizeDisplay', false, @islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
 p.addParameter('visualizeStimulusAndOpticalImage', false, @islogical);
 p.addParameter('visualizeOIsequence', false, @islogical);
@@ -57,7 +58,7 @@ oiParamsTemp.pupilDiamMm = 1000*opticsGet(oiGet(theOI,'optics'),'aperture diamet
 theBaseColorModulationParams = colorModulationParams;
 theBaseColorModulationParams.coneContrasts = [0 0 0]';
 theBaseColorModulationParams.contrast = 0;
-backgroundScene = colorSceneCreate(spatialParams, backgroundParams, ...
+[backgroundScene, ~, theDisplay] = colorSceneCreate(spatialParams, backgroundParams, ...
     theBaseColorModulationParams, oiParamsTemp);
 
 %% Create the modulated scene
@@ -86,6 +87,18 @@ if (strcmp(spatialParams.spatialType, 'pedestalDisk'))
 else
     theOIsequence = oiSequence(oiBackground, oiModulated, stimulusTimeAxis, stimulusModulationFunction, ...
         'composition', 'blend');
+end
+
+%% Visualize the display
+if (p.Results.visualizeDisplay)
+    hFig = visualizeDisplayProperties(theDisplay, backgroundParams, modulatedScene);
+    % Save figure
+    theProgram = mfilename;
+    rwObject = IBIOColorDetectReadWriteBasic;
+    data = 0;
+    fileName = sprintf('Display');
+    rwObject.write(fileName, data, p.Results.paramsList, theProgram, ...
+           'type', 'NicePlotExportPNG', 'FigureHandle', hFig, 'FigureType', 'png');
 end
 
 %%  Visualize the oiSequence
