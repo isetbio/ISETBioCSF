@@ -97,18 +97,44 @@ function run_EyeMovementVaryConditions
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
     examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
      
-    condIndex = condIndex+1;
-    examinedCond(condIndex).emPathType = 'random';
-    examinedCond(condIndex).classifier = 'svmV1FilterEnsemble';
-    examinedCond(condIndex).legend = 'drifts+\mu-sacc. (rnd), SVM (v1RF-match QPhE(1))';
-    examinedCond(condIndex).centeredEMpaths = true;
-    examinedCond(condIndex).frameRate = 10;  %(20 frames/sec, so 2 frames, each 50 msec long)
-    examinedCond(condIndex).responseStabilizationMilliseconds = 40;
-    examinedCond(condIndex).responseExtinctionMilliseconds = 40; 
-    examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
-    examinedCond(condIndex).spatialPoolingKernelParams.spatialPositionsNum = 9;
-    examinedCond(condIndex).spatialPoolingKernelParams.cyclesPerRFs = 1;
-    examinedCond(condIndex).spatialPoolingKernelParams.orientations = 0;
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).emPathType = 'random';
+%     examinedCond(condIndex).classifier = 'svmV1FilterEnsemble';
+%     examinedCond(condIndex).legend = 'drifts+\mu-sacc. (rnd), SVM (v1RF-match QPhE(1.0))';
+%     examinedCond(condIndex).centeredEMpaths = true;
+%     examinedCond(condIndex).frameRate = 10;  %(20 frames/sec, so 2 frames, each 50 msec long)
+%     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+%     examinedCond(condIndex).responseExtinctionMilliseconds = 40; 
+%     examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+%     examinedCond(condIndex).spatialPoolingKernelParams.spatialPositionsNum = 9;
+%     examinedCond(condIndex).spatialPoolingKernelParams.cyclesPerRFs = 1;
+%     examinedCond(condIndex).spatialPoolingKernelParams.orientations = 0;
+%     
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).emPathType = 'random';
+%     examinedCond(condIndex).classifier = 'svmV1FilterEnsemble';
+%     examinedCond(condIndex).legend = 'drifts+\mu-sacc. (rnd), SVM (v1RF-match QPhE(1.5))';
+%     examinedCond(condIndex).centeredEMpaths = true;
+%     examinedCond(condIndex).frameRate = 10;  %(20 frames/sec, so 2 frames, each 50 msec long)
+%     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+%     examinedCond(condIndex).responseExtinctionMilliseconds = 40; 
+%     examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+%     examinedCond(condIndex).spatialPoolingKernelParams.spatialPositionsNum = 9;
+%     examinedCond(condIndex).spatialPoolingKernelParams.cyclesPerRFs = 1.5;
+%     examinedCond(condIndex).spatialPoolingKernelParams.orientations = 0;
+%     
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).emPathType = 'random';
+%     examinedCond(condIndex).classifier = 'svmV1FilterEnsemble';
+%     examinedCond(condIndex).legend = 'drifts+\mu-sacc. (rnd), SVM (v1RF-match QPhE(2.0))';
+%     examinedCond(condIndex).centeredEMpaths = true;
+%     examinedCond(condIndex).frameRate = 10;  %(20 frames/sec, so 2 frames, each 50 msec long)
+%     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+%     examinedCond(condIndex).responseExtinctionMilliseconds = 40; 
+%     examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+%     examinedCond(condIndex).spatialPoolingKernelParams.spatialPositionsNum = 9;
+%     examinedCond(condIndex).spatialPoolingKernelParams.cyclesPerRFs = 2.0;
+%     examinedCond(condIndex).spatialPoolingKernelParams.orientations = 0;
     
     
     % Simulation steps to perform

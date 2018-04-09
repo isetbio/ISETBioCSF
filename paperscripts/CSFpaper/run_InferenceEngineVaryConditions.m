@@ -3,7 +3,7 @@ function run_InferenceEngineVaryConditions
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 50;
+    computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -25,8 +25,8 @@ function run_InferenceEngineVaryConditions
      params.responseExtinctionMilliseconds = 40;
 %     
 %     % Eye movement params
-     params.emPathType = 'random';
-     params.centeredEMpaths = true;
+%      params.emPathType = 'random';
+%      params.centeredEMpaths = true;
     
     examinedInferenceEngines = {...
         'mlpt' ...
@@ -51,11 +51,9 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (6)' ...
     };
 
-    %examinedInferenceEngines = {examinedInferenceEngines{4:9}};
-    %examinedInferenceEngineLegends = {examinedInferenceEngineLegends{4:9}};
-
-    examinedInferenceEngines = {examinedInferenceEngines{6}};
-    examinedInferenceEngineLegends = {examinedInferenceEngineLegends{6}};
+    visualizedConditions = 1:5;
+    examinedInferenceEngines = {examinedInferenceEngines{visualizedConditions}};
+    examinedInferenceEngineLegends = {examinedInferenceEngineLegends{visualizedConditions}};
 
     
     ensembleFilterParamsStructs{1} = struct(...
@@ -100,7 +98,7 @@ function run_InferenceEngineVaryConditions
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
-    params.visualizeSpatialPoolingScheme = true;
+    params.visualizeSpatialPoolingScheme = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = ~true;
