@@ -533,8 +533,7 @@ if (p.Results.compute)
         osMeanCurrents = {};
         
         % Parfor over blocks of trials
-        %parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum) 
-        for trialBlock = 1:nParforTrialBlocks
+        parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum) 
             % Get the parallel pool worker ID
             t = getCurrentTask();
             
