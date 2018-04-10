@@ -25,8 +25,8 @@ function run_InferenceEngineVaryConditions
      params.responseExtinctionMilliseconds = 40;
 %     
 %     % Eye movement params
-%      params.emPathType = 'random';
-%      params.centeredEMpaths = true;
+      params.emPathType = 'random';
+      params.centeredEMpaths = true;
     
     examinedInferenceEngines = {...
         'mlpt' ...
@@ -51,7 +51,7 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (6)' ...
     };
 
-    visualizedConditions = 1:5;
+    visualizedConditions = 3:9;
     examinedInferenceEngines = {examinedInferenceEngines{visualizedConditions}};
     examinedInferenceEngineLegends = {examinedInferenceEngineLegends{visualizedConditions}};
 
@@ -133,8 +133,8 @@ function run_InferenceEngineVaryConditions
     
     if (makeSummaryFigure)
         variedParamName = 'InferenceEngine';
-        theRatioLims = [0.05 0.5];
-        theRatioTicks = [0.05 0.1 0.2 0.5];
+        theRatioLims = [0.3 1.0];
+        theRatioTicks = [0.3 0.5 0.7 1.0];
         generateFigureForPaper(theFigData, examinedInferenceEngineLegends, variedParamName, sprintf('%s_%s',mosaicName, opticsName), ...
             'figureType', 'CSF', ...
             'inGraphText', ' A ', ...
