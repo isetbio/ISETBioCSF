@@ -6,7 +6,7 @@ function run_LuminanceVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
+    makeSummaryFigure = ~true;
     
     % Mosaic to use
     mosaicName = 'originalBanks'; 
@@ -29,39 +29,56 @@ function run_LuminanceVaryConditions
         '3.4 cd/m^2 (2mm pupil)' ...
     };
 
-
+    % Stimulus cone contrast modulation vector
+    params.coneContrastDirection = 'L+M+S';
+    
+    % Response duration params
+    params.frameRate = 10; %(1 frames)
+    params.responseStabilizationMilliseconds = 40;
+    params.responseExtinctionMilliseconds = 40;
+     
+    % Eye movement params
+    params.emPathType = 'frozen0';
+    params.centeredEMpaths = ~true;
+      
     % Simulation steps to perform
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
+    params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
+    params.visualizeSpatialPoolingScheme = ~true;
+    params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 
    
     params.opticsModel = opticsName;
     params.pupilDiamMm = 2.0;
-    defaultCyclesPerDegreeExamined = [2 4 8 16 32 50];
+    
+    defaultCyclesPerDegreeExamined = [8 16 32 50]; % [2 4 8 16 32 50];
     
     % Go
     for lumIndex = 1:numel(examinedLuminances)
         params.luminancesExamined = examinedLuminances{lumIndex};
 
-        if (params.luminancesExamined == 3.4)
-            params.cyclesPerDegreeExamined = defaultCyclesPerDegreeExamined(1:end-1);
-        else
-            params.cyclesPerDegreeExamined = defaultCyclesPerDegreeExamined;
-        end
+%         if (params.luminancesExamined == 3.4)
+%             params.cyclesPerDegreeExamined = defaultCyclesPerDegreeExamined(1:end-1);
+%         else
+%             params.cyclesPerDegreeExamined = defaultCyclesPerDegreeExamined;
+%         end
     
+        params.cyclesPerDegreeExamined = defaultCyclesPerDegreeExamined;
+         
         [~,~, theFigData{lumIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end
     

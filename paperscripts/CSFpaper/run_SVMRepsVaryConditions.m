@@ -3,7 +3,7 @@ function run_SVMRepsVaryConditions
 %  
     % How to split the computation
     % 16 or 32 (already did 32 with 64K reps)
-    computationInstance = 16;
+    computationInstance =  32;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -44,16 +44,19 @@ function run_SVMRepsVaryConditions
     % Trials to use in the classifier - vary this one
     params.performanceTrialsUsed = params.nTrainingSamples;
     
-    maxK = 9;
-    for k = 1:maxK
-        kk = maxK-k+1;
-        performanceTrialsUsed = params.nTrainingSamples/(2^(k-1));
+    trainingSamples = 2.^[10 11 12 13 14 15];
+    maxK = 8;
+    for k = 1:numel(trainingSamples)
+        kk = k;
+        performanceTrialsUsed = trainingSamples(k);
         examinedCond(kk).classifier = 'svmV1FilterBank';
         examinedCond(kk).performanceTrialsUsed = performanceTrialsUsed;
         legends{kk} = sprintf('QPhE SVM, %d trials', performanceTrialsUsed);
         legendsForPsychometricFunctions{kk} = sprintf('%d trials', performanceTrialsUsed);
     end
     
+    theTitle = ''; %sprintf('%2.0f c/deg, %s\n%s', computationInstance, examinedCond(1).classifier, emLegend);
+    fixedParamName = sprintf('%2.0fCPD_%s_%s', computationInstance, examinedCond(1).classifier, emLegend);
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -91,10 +94,14 @@ function run_SVMRepsVaryConditions
     
     
     if (makeSummaryFigure)
-        theTitle = sprintf('%2.0f c/deg, %s\n%s', computationInstance, examinedCond(1).classifier, emLegend);
-        fixedParamName = sprintf('%2.0fCPD_%s_%s', computationInstance, examinedCond(1).classifier, emLegend);
-        generatePsychometricFunctionsPlot(sf0PsychometricFunctions, theTrials, legendsForPsychometricFunctions, theTitle, fixedParamName);
         
+            if (computationInstance ==16)
+        csLims = [30 35];
+    else
+        csLims = [5 10];
+            end
+    
+        generatePsychometricFunctionsPlot(sf0PsychometricFunctions, csLims, theTrials, legendsForPsychometricFunctions, theTitle, fixedParamName);
         variedParamName = 'SVMTrials';
         theRatioLims = [0.05 0.5];
         theRatioTicks = [0.05 0.1 0.2 0.5];
@@ -109,7 +116,7 @@ function run_SVMRepsVaryConditions
     end
 end
 
-function generatePsychometricFunctionsPlot(psychometricFunctions, theTrials, trialLegends, theTitle, fixedParamName)
+function generatePsychometricFunctionsPlot(psychometricFunctions, csLims,  theTrials, trialLegends, theTitle, fixedParamName)
     conditionsNum = numel(psychometricFunctions);
     
     hFig = figure(15); clf;
@@ -142,9 +149,9 @@ function generatePsychometricFunctionsPlot(psychometricFunctions, theTrials, tri
     ylabel(theAxes, 'percent correct', 'FontWeight', 'Bold');
     hL = legend(theAxes, trialLegends);
     
-    plot(theRatioAxes, theTrials, theThresholds, 'ko-', 'MarkerSize', 10, 'MarkerFaceColor', [0.75 0.75 0.75]);
+    plot(theRatioAxes, theTrials, 1./theThresholds, 'ko-', 'MarkerSize', 10, 'MarkerFaceColor', [0.75 0.75 0.75]);
     xlabel(theRatioAxes, 'trials', 'FontWeight', 'Bold');
-    ylabel(theRatioAxes, 'threshold contrast', 'FontWeight', 'Bold');
+    ylabel(theRatioAxes, 'contrast sensitivity', 'FontWeight', 'Bold');
     
     inGraphTextFontSize = [];
     % Format figure
@@ -156,19 +163,22 @@ function generatePsychometricFunctionsPlot(psychometricFunctions, theTrials, tri
         'theLegend', hL, ...
         'theTextFontSize', inGraphTextFontSize);
     
-    thresholdLims = [0.1 0.15];
-    thresholdLims  = [0.02 0.04]
-    theText = text(2000, thresholdLims(2)*0.97, theTitle);
+
+    
+    
+    
+    csTicks = [2 5 6 7 8 9 10  20 30 31 32 33 34 35 50 100 200 500 1000 2000 5000 10000];
+    theText = text(2000, csLims(2)*0.97, theTitle);
     set(theText, 'FontSize', 16, ...
                     'FontWeight', 'Normal', ...
                     'BackgroundColor', [1 1 1], ...
                     'EdgeColor', [ 0 0 0], ...
                     'LineWidth', 1.0);
                 
-    set(theAxes, 'XLim', [0.008 0.35], 'XTick', [0.01 0.03 0.1 0.3], 'YLim', [0.4 1.0], 'XTick', [0.003 0.01 0.03 0.1 0.3]);
+    set(theAxes, 'XLim', [0.001 0.35], 'XTick', [0.01 0.03 0.1 0.3], 'YLim', [0.4 1.0], 'XTick', [0.003 0.01 0.03 0.1 0.3]);
     set(theRatioAxes, 'XTick', [300 1000 3000 10000 30000 100000],  ...
-        'XLim', [300 100000], ...
-        'YLim', thresholdLims, 'YTick', [0.05:0.01:0.3]);
+        'YScale', 'log', 'XLim', [300 100000], ...
+        'YLim', csLims, 'YTick', csTicks);
     
     exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', 'projects/IBIOColorDetect/paperfigs/CSFpaper/exports');
     variedParamName = 'TrialsNum';

@@ -18,8 +18,63 @@ function hFigs = visualizeEnsembleSpatialPoolingScheme(xaxis, yaxis, spatialModu
     displayedHalfRows = 2;
     displayedHalfCols = 3;
     
+    envelopePoolingWeights = [];
+    
+    bandwidthIndices = 0;
+    orientationIndices = 0;
     for unitIndex = 1:unitsNum
+        theSpatialPoolingFilter = V1filterEnsemble{unitIndex};
+        bandwidthIndex = theSpatialPoolingFilter.bandwidthIndex;
+        orientationIndex = theSpatialPoolingFilter.orientationIndex;
+        if (bandwidthIndex > bandwidthIndices)
+            bandwidthIndices = bandwidthIndex;
+        end
+         if (orientationIndex > orientationIndices)
+            orientationIndices = orientationIndex;
+         end
         
+        ft2DIndex = theSpatialPoolingFilter.ft2Dindex;
+        ft2DindexList(ft2DIndex,:) = [bandwidthIndex orientationIndex];
+        
+        if (isempty(envelopePoolingWeights))
+            envelopePoolingWeights = zeros(100,numel(theSpatialPoolingFilter.envelopePoolingWeights));
+            envelopePoolingWeights(ft2DIndex,:) = theSpatialPoolingFilter.envelopePoolingWeights;
+        else
+            envelopePoolingWeights(ft2DIndex,:) = envelopePoolingWeights(ft2DIndex,:) + theSpatialPoolingFilter.envelopePoolingWeights;
+        end
+    end
+    envelopePoolingWeights = envelopePoolingWeights(1:ft2DIndex,:);
+    maxWeights = max(envelopePoolingWeights(:));
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+            'rowsNum', orientationIndices, ...
+            'colsNum', bandwidthIndices, ...
+            'heightMargin',   0.005, ...
+            'widthMargin',    0.005, ...
+            'leftMargin',     0.005, ...
+            'rightMargin',    0.001, ...
+            'bottomMargin',   0.001, ...
+            'topMargin',      0.001);
+        
+    hFigEnvelopes = figure(1000); clf;
+    set(hFigEnvelopes, 'Position', [10 10 1000 1000], 'Color', [1 1 1]);
+    
+    for ft2DIndex = 1:size(envelopePoolingWeights,1)
+        r = squeeze(ft2DindexList(ft2DIndex,:));
+        subplot('Position', subplotPosVectors(r(2),r(1)).v);
+        weights = squeeze(envelopePoolingWeights(ft2DIndex,:));
+        hold on;
+        plotQuantizedWeights(weights/maxWeights, quantizationLevels, coneLocsDegs, coneX, coneY);
+        plot(gca,[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
+        plot(gca,[0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
+        axis 'image'; axis 'xy';  box 'on'
+        set(gca, 'Color', [0.5 0.5 0.5]);
+        set(gca, 'CLim', [0 1], 'XLim', [xaxis(1) xaxis(end)], 'YLim', [yaxis(1) yaxis(end)]);
+        set(gca, 'XTickLabel', {}, 'YTickLabel', {});
+    end
+    drawnow;
+    
+    for unitIndex = 1:unitsNum 
        theSpatialPoolingFilter = V1filterEnsemble{unitIndex};
        bandwidthIndex = theSpatialPoolingFilter.bandwidthIndex;
        orientationIndex = theSpatialPoolingFilter.orientationIndex;
@@ -77,6 +132,8 @@ function hFigs = visualizeEnsembleSpatialPoolingScheme(xaxis, yaxis, spatialModu
     
     colormap(gray(1024));
     drawnow;
+    
+    hFigs(numel(hFigs)+1) = hFigEnvelopes;
 end
 
 function plotConeLocations(coneLocsDegs, coneX, coneY, xaxis, yaxis)
@@ -98,9 +155,9 @@ function plotQuantizedWeights(quantizedWeights, quantizationLevels, coneLocsInDe
     quantizedWeights(quantizedWeights >  1) = 1;
     quantizedWeights(quantizedWeights < -1) = -1;
     quantizedWeights = round(quantizationLevels/2 * (1+quantizedWeights));
-
+    
     for iLevel = quantizationLevels/2:quantizationLevels
-        idx = find(quantizedWeights == iLevel);
+        idx = find(quantizedWeights==iLevel);
         if (~isempty(idx))
             for k = 1:numel(idx)
                 c = [0.5 0.5 0.5] + (iLevel-quantizationLevels/2)/(quantizationLevels/2)*[0.5 -0.4 -0.4];
@@ -110,7 +167,7 @@ function plotQuantizedWeights(quantizedWeights, quantizationLevels, coneLocsInDe
     end
 
     for iLevel = 0:quantizationLevels/2-1
-        idx = find(quantizedWeights == iLevel);
+        idx = find(quantizedWeights==iLevel);
         if (~isempty(idx))
             for k = 1:numel(idx)
                 c = [0.5 0.5 0.5] + (quantizationLevels/2-iLevel)/(quantizationLevels/2)*[-0.4 -0.4 0.5];

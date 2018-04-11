@@ -80,8 +80,8 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
                 v1Unit.sinPhasePoolingProfile = sinPhaseFilter-1;
               
                 % Compute energy envelope
-                RFprofile = v1Unit.cosPhasePoolingProfile.^2 + v1Unit.sinPhasePoolingProfile.^2;
-                v1Unit.RFprofile = RFprofile / max(abs(RFprofile(:)));
+                RFprofile = (v1Unit.cosPhasePoolingProfile).^2 + (v1Unit.sinPhasePoolingProfile).^2;
+                v1Unit.RFprofile = RFprofile / max(RFprofile(:));
             
                 if (rowOffset == -ensemblePositions) && (colOffset == -ensemblePositions)
                     xaxisDegs = (0:(size(RFprofile,2)-1))/size(RFprofile,2) * spatialParams.fieldOfViewDegs;
@@ -90,20 +90,22 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
                     yaxisDegs = yaxisDegs - mean(yaxisDegs);
                     [X,Y] = meshgrid(xaxisDegs, yaxisDegs);
                     rfCoordsDegs = [X(:) Y(:)];
+                    % Find nearest cone location
                     [~, idx] = pdist2(rfCoordsDegs, coneLocsDegs, 'euclidean', 'Smallest', 1);
                 end
             
+                % Sample according to cone locations
                 v1Unit.cosPhasePoolingWeights = v1Unit.cosPhasePoolingProfile(idx);
                 v1Unit.sinPhasePoolingWeights = v1Unit.sinPhasePoolingProfile(idx);
-                v1Unit.envelopePoolingWeights = v1Unit.RFprofile(idx);
-             
+                
                 % Adjust weights by the inverse of the coneDensity
                 if (thresholdParams.spatialPoolingKernelParams.adjustForConeDensity)
                     v1Unit.cosPhasePoolingWeights = v1Unit.cosPhasePoolingWeights ./ coneDensity;
                     v1Unit.sinPhasePoolingWeights = v1Unit.sinPhasePoolingWeights ./ coneDensity;
-                    v1Unit.envelopePoolingWeights = v1Unit.envelopePoolingWeights ./ coneDensity;
                 end
     
+                v1Unit.envelopePoolingWeights = (v1Unit.cosPhasePoolingWeights).^2 + (v1Unit.sinPhasePoolingWeights).^2;
+
                 v1Unit.type = thresholdParams.spatialPoolingKernelParams.type;
                 v1Unit.activationFunction = thresholdParams.spatialPoolingKernelParams.activationFunction;
                 v1Unit.temporalPCAcoeffs = thresholdParams.spatialPoolingKernelParams.temporalPCAcoeffs;
@@ -120,6 +122,7 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
     if (visualizeSpatialScheme)
         coneRadiusMicrons = mosaicParams.innerSegmentSizeMicrons/2;
         coneRadiusMicrons = 0.5*diameterForCircularApertureFromWidthForSquareAperture(theMosaic.pigment.width)*1e6;
+        
         hFig = visualizeSpatialPoolingScheme(xaxisDegs, yaxisDegs, spatialModulation, ...
             thresholdParams.spatialPoolingKernelParams, V1filterEnsemble, coneLocsDegs, ...
             mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs, coneRadiusMicrons);

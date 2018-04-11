@@ -1,4 +1,4 @@
-function [theScene, gamutScaleFactor] = colorSceneCreate(spatialParams,backgroundParams,colorModulationParams,oiParams,gamutCheckFlag)
+function [theScene, gamutScaleFactor, varargout] = colorSceneCreate(spatialParams,backgroundParams,colorModulationParams,oiParams,gamutCheckFlag)
 % [theScene,gamutScaleFactor] = colorSceneCreate(spatialParams,backgroundParams,colorModulationParams,oiParams,[gamutCheckFlag])
 %
 % Creates a colored Gabor IBIO scene. The scene will produce a specified
@@ -26,10 +26,13 @@ if (nargin < 5 || isempty(gamutCheckFlag))
     gamutCheckFlag = false;
 end
 
+%% Initialize varargout
+varargout{1} = [];   % the display used
+
 %% Extract this field since it's used throughout the function.
 %
 % All spatial pattern parameter types should define this type
-if (~isfield(spatialParams,'fieldOfViewDegs'));
+if (~isfield(spatialParams,'fieldOfViewDegs'))
     error('Spatial parameters must have a fieldOfViewDegs field');
 end
 fieldOfViewDegs = spatialParams.fieldOfViewDegs;
@@ -94,6 +97,7 @@ switch (colorModulationParams.modulationType)
         % Make sure that the contrast and background vectors are
         % both column vectors.
         coneContrast = colorModulationParams.coneContrasts(:);
+
         backgroundxyY = backgroundParams.backgroundxyY(:);
         backgroundxyY(3) = backgroundxyY(3)*backgroundParams.lumFactor;
         
@@ -227,7 +231,10 @@ switch (colorModulationParams.modulationType)
         theScene = sceneFromFile(patternRGB,'rgb',[],display);
         theScene = sceneSet(theScene, 'h fov', fieldOfViewDegs);
         
-        debug = false;
+        % Return the display used
+        varargout{1} = display;
+        
+        debug = ~true;
         if (debug) && (colorModulationParams.contrast > 0)
             hFig = figure(); clf;
             set(hFig, 'Position', [10 10  900 400]);

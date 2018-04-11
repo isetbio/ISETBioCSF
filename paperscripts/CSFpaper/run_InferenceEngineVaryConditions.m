@@ -6,7 +6,7 @@ function run_InferenceEngineVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
@@ -20,13 +20,13 @@ function run_InferenceEngineVaryConditions
     params.opticsModel = opticsName;
     
     % Response duration params
-    params.frameRate = 10; %(1 frames)
-    params.responseStabilizationMilliseconds = 40;
-    params.responseExtinctionMilliseconds = 40;
-    
-    % Eye movement params
-    params.emPathType = 'random';
-    params.centeredEMpaths = true;
+     params.frameRate = 10; %(1 frames)
+     params.responseStabilizationMilliseconds = 40;
+     params.responseExtinctionMilliseconds = 40;
+%     
+%     % Eye movement params
+      params.emPathType = 'random';
+      params.centeredEMpaths = true;
     
     examinedInferenceEngines = {...
         'mlpt' ...
@@ -51,8 +51,9 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (6)' ...
     };
 
-    examinedInferenceEngines = {examinedInferenceEngines{4:9}};
-    examinedInferenceEngineLegends = {examinedInferenceEngineLegends{4:9}};
+    visualizedConditions = 3:9;
+    examinedInferenceEngines = {examinedInferenceEngines{visualizedConditions}};
+    examinedInferenceEngineLegends = {examinedInferenceEngineLegends{visualizedConditions}};
 
     
     ensembleFilterParamsStructs{1} = struct(...
@@ -100,7 +101,7 @@ function run_InferenceEngineVaryConditions
     params.visualizeSpatialPoolingScheme = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
@@ -132,8 +133,8 @@ function run_InferenceEngineVaryConditions
     
     if (makeSummaryFigure)
         variedParamName = 'InferenceEngine';
-        theRatioLims = [0.05 0.5];
-        theRatioTicks = [0.05 0.1 0.2 0.5];
+        theRatioLims = [0.3 1.0];
+        theRatioTicks = [0.3 0.5 0.7 1.0];
         generateFigureForPaper(theFigData, examinedInferenceEngineLegends, variedParamName, sprintf('%s_%s',mosaicName, opticsName), ...
             'figureType', 'CSF', ...
             'inGraphText', ' A ', ...

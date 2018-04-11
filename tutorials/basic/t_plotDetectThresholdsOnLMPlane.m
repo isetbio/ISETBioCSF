@@ -110,10 +110,19 @@ testConeContrasts = psychoData.testConeContrasts;
 thresholdContrasts = psychoData.thresholdContrasts;
 thresholdConeContrasts = psychoData.thresholdConeContrasts;
 
+
+%% Validation data
+if (nargout > 0)
+    validationData.testContrasts = testContrasts;
+    validationData.testConeContrasts = testConeContrasts;
+    validationData.thresholdContrasts = thresholdContrasts;
+end
+
 %% Make sure S cone component of test contrasts is 0, because in this
 % routine we are assuming that we are just looking in the LM plane.
 if (any(testConeContrasts(3,:) ~= 0))
-    error('This tutorial only knows about the LM plane');
+    fprintf('Currently only fitting ellipses in the LM plane Skipping this step...\n');
+    return;
 end
 
 %% Thresholds are generally symmetric around the contrast origin
@@ -154,12 +163,6 @@ circleIn2D = UnitCircleGenerate(nThetaEllipse);
 circleInLMPlane = [circleIn2D(1,:) ; circleIn2D(2,:) ; zeros(size(circleIn2D(1,:)))];
 ellipsoidInLMPlane = PointsOnEllipsoidFind(fitQ,circleInLMPlane);
 
-%% Validation data
-if (nargout > 0)
-    validationData.testContrasts = testContrasts;
-    validationData.testConeContrasts = testConeContrasts;
-    validationData.thresholdContrasts = thresholdContrasts;
-end
 
 %% Plot the threshold ellipse in the LM contrast plane
 if (p.Results.generatePlots && p.Results.plotEllipse)
