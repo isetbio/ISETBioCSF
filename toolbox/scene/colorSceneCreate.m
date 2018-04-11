@@ -96,7 +96,7 @@ switch (colorModulationParams.modulationType)
     case 'monitor'
         % Make sure that the contrast and background vectors are
         % both column vectors.
-        coneContrast = colorModulationParams.coneContrasts(:)
+        coneContrast = colorModulationParams.coneContrasts(:);
 
         backgroundxyY = backgroundParams.backgroundxyY(:);
         backgroundxyY(3) = backgroundxyY(3)*backgroundParams.lumFactor;

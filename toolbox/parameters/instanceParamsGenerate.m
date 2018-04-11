@@ -75,14 +75,14 @@ switch (params.instanceType)
         params.trialsNum = 100;
         
         % Azimuth sampling in LM plane (samples between 0 and 180 degrees)
-        params.startAzimuthAngle = 0;
+        params.startAzimuthAngle = 45;
         params.deltaAzimuthAngle = 90;
-        params.nAzimuthAngles = 2;
+        params.nAzimuthAngles = 1;
         
         % Elevation sampling from LM plane (samples between 0 and 90 degrees)
-        params.startElevationAngle = 0;
-        params.deltaElevationAngle = 45;
-        params.nElevationAngles = 2;
+        params.startElevationAngle = 45;
+        params.deltaElevationAngle = 90;
+        params.nElevationAngles = 1;
         
         params.baseStimulusLength = 1;
         params.scaleIntoMonitorGamut = true;

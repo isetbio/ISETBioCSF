@@ -38,12 +38,17 @@ switch (testDirectionParams.instanceType)
         end
 end
 
-% Find the highest in gamut cone contrast and define cone contrast
-% vector to be just under this length.
-colorModulationParamsTemp = rParams.colorModulationParams;
-colorModulationParamsTemp.coneContrasts = baseTestConeContrastDirs(:,angleIndex);
-colorModulationParamsTemp.contrast = 1;
-[~,contrastScaleFactor(angleIndex)] = colorSceneCreate(rParams.spatialParams,rParams.backgroundParams,colorModulationParamsTemp,rParams.oiParams,true);
-testConeContrasts(:,angleIndex) = 0.98*contrastScaleFactor(angleIndex)*baseTestConeContrastDirs(:,angleIndex);
+for angleIndex = 1:size(baseTestConeContrastDirs,2)
+    % Find the highest in gamut cone contrast and define cone contrast
+    % vector to be just under this length.
+    colorModulationParamsTemp = rParams.colorModulationParams;
+    colorModulationParamsTemp.coneContrasts = baseTestConeContrastDirs(:,angleIndex);
+    colorModulationParamsTemp.contrast = 1;
+    [~,contrastScaleFactor(angleIndex)] = colorSceneCreate(rParams.spatialParams,rParams.backgroundParams,colorModulationParamsTemp,rParams.oiParams,true);
+    testConeContrasts(:,angleIndex) = 0.98*contrastScaleFactor(angleIndex)*baseTestConeContrastDirs(:,angleIndex);
+    fprintf('Max in-gamut cone contrast for direction #%d: %f %f %f\n', angleIndex, testConeContrasts(1,angleIndex), testConeContrasts(2,angleIndex), testConeContrasts(3,angleIndex));
+end
+end
+
  
             
