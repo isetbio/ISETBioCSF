@@ -6,7 +6,7 @@ function run_LuminanceVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     % Mosaic to use
     mosaicName = 'originalBanks'; 
@@ -29,8 +29,12 @@ function run_LuminanceVaryConditions
         '3.4 cd/m^2 (2mm pupil)' ...
     };
 
+    params.opticsModel = opticsName;
+    params.pupilDiamMm = 2.0;
+    
     % Stimulus cone contrast modulation vector
     params.coneContrastDirection = 'L+M+S';
+    params.cyclesPerDegreeExamined = [2 4 8 16 32 50];
     
     % Response duration params
     params.frameRate = 10; %(1 frames)
@@ -61,24 +65,10 @@ function run_LuminanceVaryConditions
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 
-   
-    params.opticsModel = opticsName;
-    params.pupilDiamMm = 2.0;
-    
-    defaultCyclesPerDegreeExamined = [8 16 32 50]; % [2 4 8 16 32 50];
-    
+ 
     % Go
     for lumIndex = 1:numel(examinedLuminances)
-        params.luminancesExamined = examinedLuminances{lumIndex};
-
-%         if (params.luminancesExamined == 3.4)
-%             params.cyclesPerDegreeExamined = defaultCyclesPerDegreeExamined(1:end-1);
-%         else
-%             params.cyclesPerDegreeExamined = defaultCyclesPerDegreeExamined;
-%         end
-    
-        params.cyclesPerDegreeExamined = defaultCyclesPerDegreeExamined;
-         
+        params.luminancesExamined = examinedLuminances{lumIndex};         
         [~,~, theFigData{lumIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end
     
