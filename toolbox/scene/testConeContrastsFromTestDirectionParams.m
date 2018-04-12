@@ -44,10 +44,12 @@ for angleIndex = 1:size(baseTestConeContrastDirs,2)
     colorModulationParamsTemp = rParams.colorModulationParams;
     colorModulationParamsTemp.coneContrasts = baseTestConeContrastDirs(:,angleIndex);
     colorModulationParamsTemp.contrast = 1;
-    [~,contrastScaleFactor(angleIndex)] = colorSceneCreate(rParams.spatialParams,rParams.backgroundParams,colorModulationParamsTemp,rParams.oiParams,true);
-    testConeContrasts(:,angleIndex) = 0.98*contrastScaleFactor(angleIndex)*baseTestConeContrastDirs(:,angleIndex);
-    fprintf('Max in-gamut cone contrast for direction #%d: %f %f %f\n', angleIndex, testConeContrasts(1,angleIndex), testConeContrasts(2,angleIndex), testConeContrasts(3,angleIndex));
+    [~,contrastScaleFactor] = colorSceneCreate(rParams.spatialParams,rParams.backgroundParams,colorModulationParamsTemp,rParams.oiParams,true);
+    testConeContrasts(:,angleIndex) = 0.98*contrastScaleFactor*baseTestConeContrastDirs(:,angleIndex);
+    fprintf('Max in gamut cone contrast for direction #%d: %f %f %f (scaled by a factor of %f)\n', angleIndex, testConeContrasts(1,angleIndex), testConeContrasts(2,angleIndex), testConeContrasts(3,angleIndex), contrastScaleFactor);
 end
+
+
 end
 
  

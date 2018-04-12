@@ -16,6 +16,7 @@ function run_ConditionToVisualizeSceneAndOpticalImages
     
     % Adjust any params we want to change from their default values
     params.opticsModel = opticsName;
+    params.coneContrastDirection = 'L+M+S';
     params.lowContrast = 1.0;
     params.highContrast =  1.0;
     params.nContrastsPerDirection =  1;
