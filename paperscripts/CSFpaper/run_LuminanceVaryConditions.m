@@ -49,7 +49,7 @@ function run_LuminanceVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -61,7 +61,7 @@ function run_LuminanceVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 
@@ -76,6 +76,11 @@ function run_LuminanceVaryConditions
         variedParamName = 'Luminance';
         theRatioLims = [0.1 10];
         theRatioTicks = logspace(log10(0.1), log10(10), 5);
+        
+        load('BanksCSF.mat', 'BanksCSF');
+        for k = 1:numel(theFigData)
+            theFigData{k}.BanksCSF = BanksCSF;
+        end
         
         generateFigureForPaper(theFigData, examinedPupilSizeLegends, variedParamName, sprintf('%s_%s',mosaicName, opticsName), ...
             'figureType', 'CSF', ...

@@ -30,6 +30,32 @@ function varargout = formatFigureForPaper(hFig, varargin)
     theFigureTitle = p.Results.theFigureTitle;
     
     switch (figureType)
+        case 'PIGMENT_TRANSMITTANCE'
+            if (isempty(theAxes))
+                set(hFig, 'Position', [10 10 500 500], 'Color', [1 1 1]);
+            else
+                axis(theAxes, 'square');
+                set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                box(theAxes, 'on');
+                grid(theAxes, 'on');
+                ytickformat(theAxes, '%.1f');
+                xtickformat(theAxes, '%.0f');
+                if (~isempty(theLegend))
+                    set(theLegend,  'Location', 'SouthEast');
+                end
+                if (~isempty(theText))
+                    if (isempty(theTextFontSize))
+                        theTextFontSize = 30;
+                    end
+                    set(theText, 'FontSize', theTextFontSize, ...
+                        'FontWeight', 'Bold', ...
+                        'BackgroundColor', [1 1 1], ...
+                        'EdgeColor', [ 0 0 0], ...
+                        'LineWidth', 1.0);
+                end
+                
+            end
+            
         case 'DISPLAY_PROPERTIES'
             if (isempty(theAxes))
                 set(hFig, 'Position', [10 10 1300 950], 'Color', [1 1 1]);
@@ -40,6 +66,20 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 grid(theAxes, 'on');
                 ytickformat(theAxes, '%.1f');
                 xtickformat(theAxes, '%.1f');
+                if (~isempty(theLegend))
+                    set(theLegend,  'Location', 'SouthEast');
+                end
+                if (~isempty(theText))
+                    if (isempty(theTextFontSize))
+                        theTextFontSize = 30;
+                    end
+                    set(theText, 'FontSize', theTextFontSize, ...
+                        'FontWeight', 'Bold', ...
+                        'BackgroundColor', [1 1 1], ...
+                        'EdgeColor', [ 0 0 0], ...
+                        'LineWidth', 1.0);
+                end
+            
             end
         case 'PSYCHOMETRIC_FUNCTIONS'
             if (isempty(theAxes))

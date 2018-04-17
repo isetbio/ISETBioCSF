@@ -53,10 +53,15 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
     hold(theAxes(1), 'on');
 
     if (showBanksPaperIOAcurves)
-        banksFactor = 1;
-        plot(theAxes,figData.D(:,1),figData.D(:,2)*banksFactor,'-','Color', squeeze(colors(1,:)), 'LineWidth',2);
-        plot(theAxes,figData.C(:,1),figData.C(:,2)*banksFactor,'-','Color', squeeze(colors(2,:)), 'LineWidth',2);
-        plot(theAxes,figData.E(:,1),figData.E(:,2)*banksFactor,'-','Color', squeeze(colors(3,:)), 'LineWidth',2);
+        %banksFactor = 1;
+        %plot(theAxes,figData.D(:,1),figData.D(:,2)*banksFactor,'-','Color', squeeze(colors(1,:)), 'LineWidth',2);
+        %plot(theAxes,figData.C(:,1),figData.C(:,2)*banksFactor,'-','Color', squeeze(colors(2,:)), 'LineWidth',2);
+        %plot(theAxes,figData.E(:,1),figData.E(:,2)*banksFactor,'-','Color', squeeze(colors(3,:)), 'LineWidth',2);
+        
+        plot(theAxes,figData.BanksCSF('34 cd/m2').x,figData.BanksCSF('34 cd/m2').y,'-','Color', squeeze(colors(1,:)), 'LineWidth',2);
+        plot(theAxes,figData.BanksCSF('340 cd/m2').x,figData.BanksCSF('340 cd/m2').y,'-','Color', squeeze(colors(2,:)), 'LineWidth',2);
+        plot(theAxes,figData.BanksCSF('3.4 cd/m2').x,figData.BanksCSF('3.4 cd/m2').y,'-','Color', squeeze(colors(3,:)), 'LineWidth',2);
+        
         for condIndex = 1:numel(theFigData)
             plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o', 'Color', squeeze(colors(condIndex,:)), ...
             'MarkerEdgeColor', squeeze(colors(condIndex,:)), ...
