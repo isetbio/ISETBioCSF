@@ -27,33 +27,47 @@ function run_PupilSizeVaryConditions
         '3 mm pupil (34 cd/m^2)' ...
     };
 
-
+    idx = 1;
+    examinedPupilSizes = examinedPupilSizes(idx);
+    examinedPupilSizeLegends = examinedPupilSizeLegends(idx);
+    
+    % Stimulus cone contrast modulation vector
+    params.opticsModel = opticsName;
+    params.coneContrastDirection = 'L+M+S';
+    params.cyclesPerDegreeExamined = [2 4 8 16 32 50];
+    
+    % Response duration params
+    params.frameRate = 10; %(1 frames)
+    params.responseStabilizationMilliseconds = 40;
+    params.responseExtinctionMilliseconds = 40;
+    
+    % Eye movement params
+    params.emPathType = 'frozen0';
+    params.centeredEMpaths = ~true;
+    
     % Simulation steps to perform
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
+    params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
+    params.visualizeSpatialPoolingScheme = ~true;
+    params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
-
-    if (strcmp(mosaicName, 'originalBanks')) && (strcmp(opticsName,'Geisler'))
-        params.cyclesPerDegreeExamined = params.cyclesPerDegreeExamined(1:end-1);
-    end
         
     % Go
     for pupilSizeIndex = 1:numel(examinedPupilSizes)
         params.pupilDiamMm = examinedPupilSizes{pupilSizeIndex};
-        params.opticsModel = opticsName;
-        
         [~,~, theFigData{pupilSizeIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end
     
