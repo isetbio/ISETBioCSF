@@ -27,7 +27,7 @@ function run_PupilSizeVaryConditions
         '3 mm pupil (34 cd/m^2)' ...
     };
 
-    idx = 1;
+    idx = 1:2;
     examinedPupilSizes = examinedPupilSizes(idx);
     examinedPupilSizeLegends = examinedPupilSizeLegends(idx);
     
@@ -49,7 +49,7 @@ function run_PupilSizeVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -61,7 +61,7 @@ function run_PupilSizeVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
         
