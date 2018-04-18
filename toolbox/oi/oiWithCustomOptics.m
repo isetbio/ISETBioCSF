@@ -43,8 +43,11 @@ function [theCustomOI, Zcoeffs, theWVF] = oiWithCustomOptics(opticsModel, wavefr
     idx = find(availableThibosMeasPupilSizes>= calcPupilDiameterMM);
     if (isempty(idx))
         error('There are no Thibos data for pupil size large enough for %2.2f mm', calcPupilDiameterMM);
+    else
+        measPupilDiameterMM = availableThibosMeasPupilSizes(idx(1));
+        fprintf('Using the %3.2f mm Thibos data set to compute optics for %3.2f mm pupil.\n', measPupilDiameterMM, calcPupilDiameterMM);
     end
-    measPupilDiameterMM = availableThibosMeasPupilSizes(idx(1));
+    
     [Zcoeffs_SampleMean, Zcoeffs_S, subject_coeffs] = wvfLoadThibosVirtualEyes(measPupilDiameterMM);
     ZcoeffSubjects = subject_coeffs.bothEyes;
        

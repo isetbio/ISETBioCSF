@@ -1,15 +1,15 @@
-function visualizeOptics
+function plotAberrationMapAndPSF
 
     opticsModels = availableCustomWvfOpticsModels();
     visualizedOpticsModelIndex = 7;
-    visualizedOpticsModel = opticsModels{visualizedOpticsModelIndex};
+    visualizedOpticsModel = opticsModels{visualizedOpticsModelIndex}
     
-    targetWavelengths = [450 550 650];
+    targetWavelength = [550];
+    calcPupilDiameterMM = 4;
     
     showPupilRayMap = true;
-    calcPupilDiameterMM = 3;
     umPerDegree = 300;
-    wavefrontSpatialSamples = 261*2+1;
+    wavefrontSpatialSamples = 261*4+1;
     psfRange = 3;
     otfRange = 95;
     
@@ -23,68 +23,94 @@ function visualizeOptics
     % Select visualize wavelength
     optics = oiGet(theCustomOI, 'optics');
     wavelengths = opticsGet(optics, 'otf wave');
-    
-    
-    for iw = 1:numel(targetWavelengths)
-        targetWavelength = targetWavelengths(iw);
-        
-        [~,iw] = min(abs(wavelengths-targetWavelength));
-        targetWavelength = wavelengths(iw);
-
-        xSfCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
-        ySfCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
-        [xSfGridCyclesDeg,ySfGridCyclesDeg] = meshgrid(xSfCyclesDeg,ySfCyclesDeg);
-
-        waveOTF = opticsGet(optics,'otf data',targetWavelength);
-        [xGridMinutes, yGridMinutes, wavePSF] = OtfToPsf(...
+    [~,iw] = min(abs(wavelengths-targetWavelength));
+    targetWavelength = wavelengths(iw);
+    waveOTF = opticsGet(optics,'otf data',targetWavelength);
+    xSfCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
+    ySfCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
+    [xSfGridCyclesDeg,ySfGridCyclesDeg] = meshgrid(xSfCyclesDeg,ySfCyclesDeg);
+    [xGridMinutes, yGridMinutes, wavePSF] = OtfToPsf(...
                 xSfGridCyclesDeg,ySfGridCyclesDeg,fftshift(waveOTF), ...
                 'warningInsteadOfErrorForNegativeValuedPSF', 1 ...
          );
-        xMinutes = squeeze(xGridMinutes(1,:));
-        yMinutes = squeeze(yGridMinutes(:,1));    
+    xMinutes = squeeze(xGridMinutes(1,:));
+    yMinutes = squeeze(yGridMinutes(:,1));  
+    xx = find(abs(xMinutes) <= psfRange);
+    yy = find(abs(yMinutes) <= psfRange);
+    wavePSF = wavePSF(yy,xx);
+    xMinutes = xMinutes(xx);
+    yMinutes = yMinutes(yy);
+    
+    aberrationMap = wvfGet(theWVF, 'wavefrontaberrations', targetWavelength);
+    pupilFunction = wvfGet(theWVF, 'pupil function', targetWavelength);
+    pupilSupport = wvfGet(theWVF, 'pupil spatial samples', 'mm', targetWavelength);
+    
+    renderComboPlot(pupilSupport, aberrationMap, xMinutes, yMinutes, wavePSF, targetWavelength, calcPupilDiameterMM)
+    
+end
 
-        hFig = figure(1); clf;
-        set(hFig, 'Color', [1 1 1], 'Position', [10 10 1600 450]);
-        subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', 1, ...
-           'colsNum', 4, ...
-            'heightMargin', 0.10, ...
-            'widthMargin', 0.03, ...
-            'leftMargin', 0.02, ...
-            'rightMargin', 0.001, ...
-            'bottomMargin', 0.04, ...
-            'topMargin', 0.02);
+function renderComboPlot(pupilSupport, aberrationMap, xMinutes, yMinutes, PSF, targetWavelength, pupilDiameter)
+    % Render figure
+    hFig = figure(1); clf;
+    formatFigureForPaper(hFig, 'figureType', 'ABERRATION_MAP_PSF_COMBO');
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+       'rowsNum', 1, ...
+       'colsNum', 2, ...
+       'heightMargin', 0.10, ...
+       'widthMargin', 0.03, ...
+       'leftMargin', 0.04, ...
+       'rightMargin', 0.001, ...
+       'bottomMargin', 0.08, ...
+       'topMargin', 0.02);
 
-        ax1 = subplot('Position', subplotPosVectors(1,2).v);
-        ax2 = subplot('Position', subplotPosVectors(1,1).v);
+    % Render the aberration map
+    
 
-        aberrationMap = wvfGet(theWVF, 'wavefrontaberrations', targetWavelength);
-        pupilFunction = wvfGet(theWVF, 'pupil function', targetWavelength);
-        pupilSupport = wvfGet(theWVF, 'pupil spatial samples', 'mm', targetWavelength);
-
-        
-        plotPupilFunction(aberrationMap, pupilFunction, pupilSupport, targetWavelength, visualizedOpticsModel, ax1, ax2, ...
-            'showRayMap',showPupilRayMap);
-
-        % this is how it is actually computed
-        %amp = fftshift(fft2(ifftshift(pupilFunctionData{iw}.pupilfunc)));
-        %inten = (amp .* conj(amp));
-        %wavePSF2 = real(inten);
-       
-        ax3 = subplot('Position', subplotPosVectors(1,3).v);
-        plotOpticalTransferFunction(xMinutes, yMinutes, wavePSF, psfRange, ...
-            'retinal space (arc min)', -10:0.5:10, sprintf('point spread function @%2.0f nm', targetWavelength), ax3);
-
-        
-        ax4 = subplot('Position', subplotPosVectors(1,4).v);
-        plotOpticalTransferFunction(xSfCyclesDeg, ySfCyclesDeg, fftshift(abs(waveOTF)), otfRange, ...
-            'spatial frequency (cpd)', -100:20:100, sprintf('abs(optical transfer function) @%2.0f nm', targetWavelength), ax4);
-
-
-        pngFigName = sprintf('%s_%2.0f.png', visualizedOpticsModel, targetWavelength);
-        NicePlot.exportFigToPNG(pngFigName, hFig, 300);
-    end % iw
-
+    outline.x = 0.99*pupilDiameter/2 * cosd(0:360);
+    outline.y = 0.99*pupilDiameter/2 * sind(0:360);
+    aberrationMapRange = 0.5*[-1 1];
+    
+    ax1 = subplot('Position', subplotPosVectors(1,1).v);
+    imagesc(ax1, pupilSupport, pupilSupport, aberrationMap);
+    hold(ax1, 'on');
+    plot(ax1,outline.x, outline.y, 'k-', 'LineWidth', 2.0);
+    cmap = brewermap(1024, 'RdYlBu');
+    colormap(ax1, cmap);
+    %colorbar('Orientation', 'Horizontal', 'Location', 'North');
+    axis(ax1, 'image'); axis(ax1, 'xy');
+    set(ax1, 'CLim', aberrationMapRange, 'XLim', 1.02*pupilDiameter/2*[-1 1], 'YLim', 1.02*pupilDiameter/2*[-1 1], 'FontSize', 14);
+    set(ax1, 'XTick', -(pupilDiameter/2):0.5:(pupilDiameter/2), 'YTick', -(pupilDiameter/2):0.5:(pupilDiameter/2));
+    set(ax1, 'YTickLabel', {});
+    xlabel(ax1,'pupil plane, x'' (mm)', 'FontWeight', 'bold');
+    box(ax1, 'on'); grid(ax1, 'on');   
+    
+    % Render the PSF
+    ax2 = subplot('Position', subplotPosVectors(1,2).v);
+    PSF = PSF / max(abs(PSF(:)));
+    contourLevels = 0:0.05:1.0;
+    contourf(ax2,xMinutes, yMinutes, PSF, contourLevels);
+    hold(ax2, 'on');
+    %contourLevels = 0:0.1:1.0;
+    %contour(ax,xSfCyclesDeg, ySfCyclesDeg, waveOTF, contourLevels, 'LineWidth', 1.0);
+    
+    
+    midRow = floor(size(PSF,1)/2)+1;
+    psfRange = xMinutes(end);
+    theTicks = -5:1:5;
+    plot(ax2,xMinutes, -psfRange + 1.8*psfRange * squeeze(PSF(midRow,:)), '-', 'Color', [0.2 0.6 0.9], 'LineWidth', 3.0);
+    plot(ax2,yMinutes, -psfRange + 1.8*psfRange * squeeze(PSF(midRow,:)), 'b-', 'LineWidth', 1.5);
+    plot(ax2,[0 0], [xMinutes(1) xMinutes(end)], 'r-', 'LineWidth', 1.0);
+    plot(ax2,[yMinutes(1) yMinutes(end)], [0 0], 'r-', 'LineWidth', 1.0);
+    hold(ax2, 'off');
+    axis(ax2, 'image'); axis(ax2, 'xy');
+    set(ax2, 'ZLim', [0 1], 'CLim', [0 1], 'XLim', psfRange*1.05*[-1 1], 'YLim', psfRange*1.05*[-1 1], 'FontSize', 14);
+    set(ax2, 'XTick', theTicks, 'YTick', theTicks);
+    set(ax2, 'YTickLabel', {});
+    xlabel(ax2,'retinal image plane, x (arc min)', 'FontWeight', 'bold');
+    grid(ax2, 'on'); box(ax2, 'on');
+    cmap = brewermap(1024, 'greys');
+    colormap(ax2, cmap);
+    
 end
 
 function plotPupilFunction(aberrationMap, pupilFunction, pFsupport, wavelength, opticsModel, ax1, ax2, varargin)
@@ -101,7 +127,6 @@ function plotPupilFunction(aberrationMap, pupilFunction, pFsupport, wavelength, 
     
     % Plot the phase map
     imagesc(ax1, pFsupport, pFsupport, pupilPhaseMap);
-    [min(pupilPhaseMap(:)) max(pupilPhaseMap(:))]
     hold(ax1,'on');
     plot(ax1,outline.x, outline.y, 'k-', 'LineWidth', 2.0);
     colormap(ax1, cmap);
