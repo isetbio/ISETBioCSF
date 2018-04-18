@@ -4,52 +4,74 @@ function plotAberrationMapAndPSF
     visualizedOpticsModelIndex = 7;
     visualizedOpticsModel = opticsModels{visualizedOpticsModelIndex};
     
-    targetWavelength = [550];
-    calcPupilDiameterMM = 2;
+    targetWavelengths = 550 + [0 -70 70];
+    calcPupilDiametersMM = [2 3];
     
+    localDir = strrep(isetRootPath, 'toolboxes/isetbio/isettools', 'projects/IBIOColorDetect/paperfigs/CSFpaper/exports');
     showRayTranslationMap = true;
-    maxAberrationMap = 1.0;
+    maxAberrationMicrons = 0.8;
     
     umPerDegree = 300;
     wavefrontSpatialSamples = 261*4+1;
     psfRange = 5;
     
-    % Generate the wavefront map and the optics
-    [theCustomOI, Zcoeffs, theWVF] = oiWithCustomOptics(visualizedOpticsModel, ...
-            wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree, ...
-            'wavelengths', 550+[-100:5:100], ...
-            'centeringWavelength', [], ...  %  do not center PSF
-            'showTranslation',false);
+    kkk = -2;
+    for iW = 1:numel(targetWavelengths)
+        targetWavelength = targetWavelengths(iW);
+        for iP = 1:numel(calcPupilDiametersMM)
+            kkk = kkk + 2;
+            calcPupilDiameterMM = calcPupilDiametersMM(iP);
+            % Generate the wavefront map and the optics
+            [theCustomOI, Zcoeffs, theWVF] = oiWithCustomOptics(visualizedOpticsModel, ...
+                    wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree, ...
+                    'wavelengths', 550+[-100:5:100], ...
+                    'centeringWavelength', [], ...  %  do not center PSF
+                    'showTranslation',false);
     
-    % Select visualize wavelength
-    optics = oiGet(theCustomOI, 'optics');
-    wavelengths = opticsGet(optics, 'otf wave');
-    [~,iw] = min(abs(wavelengths-targetWavelength));
-    targetWavelength = wavelengths(iw);
-    waveOTF = opticsGet(optics,'otf data',targetWavelength);
-    xSfCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
-    ySfCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
-    [xSfGridCyclesDeg,ySfGridCyclesDeg] = meshgrid(xSfCyclesDeg,ySfCyclesDeg);
-    [xGridMinutes, yGridMinutes, wavePSF] = OtfToPsf(...
-                xSfGridCyclesDeg,ySfGridCyclesDeg,fftshift(waveOTF), ...
-                'warningInsteadOfErrorForNegativeValuedPSF', 1 ...
-         );
-    xMinutes = squeeze(xGridMinutes(1,:));
-    yMinutes = squeeze(yGridMinutes(:,1));  
-    xx = find(abs(xMinutes) <= psfRange);
-    yy = find(abs(yMinutes) <= psfRange);
-    wavePSF = wavePSF(yy,xx);
-    xMinutes = xMinutes(xx);
-    yMinutes = yMinutes(yy);
+            % Select visualize wavelength
+            optics = oiGet(theCustomOI, 'optics');
+            wavelengths = opticsGet(optics, 'otf wave');
+            [~,iw] = min(abs(wavelengths-targetWavelength));
+            targetWavelength = wavelengths(iw);
+            waveOTF = opticsGet(optics,'otf data',targetWavelength);
+            xSfCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
+            ySfCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
+            [xSfGridCyclesDeg,ySfGridCyclesDeg] = meshgrid(xSfCyclesDeg,ySfCyclesDeg);
+            [xGridMinutes, yGridMinutes, wavePSF] = OtfToPsf(...
+                        xSfGridCyclesDeg,ySfGridCyclesDeg,fftshift(waveOTF), ...
+                        'warningInsteadOfErrorForNegativeValuedPSF', 1 ...
+                 );
+            xMinutes = squeeze(xGridMinutes(1,:));
+            yMinutes = squeeze(yGridMinutes(:,1));  
+            xx = find(abs(xMinutes) <= psfRange);
+            yy = find(abs(yMinutes) <= psfRange);
+            wavePSF = wavePSF(yy,xx);
+            xMinutes = xMinutes(xx);
+            yMinutes = yMinutes(yy);
     
-    aberrationMap = wvfGet(theWVF, 'wavefrontaberrations', targetWavelength);
-    pupilFunction = wvfGet(theWVF, 'pupil function', targetWavelength);
-    pupilSupport = wvfGet(theWVF, 'pupil spatial samples', 'mm', targetWavelength);
+            aberrationMapInMicrons = wvfGet(theWVF, 'wavefrontaberrations', targetWavelength);
+            pupilSupport = wvfGet(theWVF, 'pupil spatial samples', 'mm', targetWavelength);
     
-    renderComboPlot(pupilSupport, aberrationMap, maxAberrationMap, xMinutes, yMinutes, wavePSF, calcPupilDiameterMM, showRayTranslationMap)
+    
+            export = struct(...
+                'format','PDF', ...
+                'name', fullfile(localDir, sprintf('AberrationMapAndPSF_%dnm%2.0fPupil.pdf', targetWavelength, calcPupilDiameterMM*10)) ...
+                );
+    
+            panelLabels(1) = struct(...
+                'text', sprintf(' %s ', char(double('A')+kkk)), ...
+                'xyPos', [-3/2*0.97 3/2*0.89]);
+
+            panelLabels(2) = struct(...
+                'text', sprintf(' %s ', char(double('A')+kkk+1)), ...
+                'xyPos', [xMinutes(1)*1.01 yMinutes(end)*0.915]);
+    
+            renderComboPlot(pupilSupport, aberrationMapInMicrons, maxAberrationMicrons, xMinutes, yMinutes, wavePSF, calcPupilDiameterMM, showRayTranslationMap, panelLabels, export);
+        end
+    end
 end
 
-function renderComboPlot(pupilSupport, aberrationMap, maxAberrationMap, xMinutes, yMinutes, PSF, pupilDiameter, showRayTranslationMap)
+function renderComboPlot(pupilSupport, aberrationMap, maxAberrationMap, xMinutes, yMinutes, PSF, pupilDiameter, showRayTranslationMap, panelLabels, export)
     % Render figure
     hFig = figure(1); clf;
     formatFigureForPaper(hFig, 'figureType', 'ABERRATION_MAP_PSF_COMBO');
@@ -58,10 +80,10 @@ function renderComboPlot(pupilSupport, aberrationMap, maxAberrationMap, xMinutes
        'colsNum', 2, ...
        'heightMargin', 0.10, ...
        'widthMargin', 0.03, ...
-       'leftMargin', 0.03, ...
+       'leftMargin', 0.02, ...
        'rightMargin', 0.001, ...
-       'bottomMargin', 0.1, ...
-       'topMargin', 0.02);
+       'bottomMargin', 0.11, ...
+       'topMargin', 0.01);
 
     if (showRayTranslationMap)
         % Compute the gradient of the pupil phase map over some range
@@ -75,8 +97,8 @@ function renderComboPlot(pupilSupport, aberrationMap, maxAberrationMap, xMinutes
     end
     
     % Render the aberration map
-    outline.x = 0.999*pupilDiameter/2 * cosd(0:360);
-    outline.y = 0.999*pupilDiameter/2 * sind(0:360);
+    outline.x = 0.995*pupilDiameter/2 * cosd(0:360);
+    outline.y = 0.995*pupilDiameter/2 * sind(0:360);
     aberrationMapRange = maxAberrationMap*[-1 1];
     [xx,yy] = meshgrid(pupilSupport, pupilSupport);
     in = inpolygon(xx(:), yy(:), outline.x(:), outline.y(:));
@@ -99,20 +121,31 @@ function renderComboPlot(pupilSupport, aberrationMap, maxAberrationMap, xMinutes
         hold(ax1, 'off');
     end
     
+    xlabel(ax1,'pupil plane, x'' (mm)', 'FontWeight', 'bold');
     cmap = brewermap(1024, 'RdYlBu');
     % nan points will plot as white
     cmap(1,:) = [1 1 1];
     colormap(ax1, cmap);
-    %colorbar('Orientation', 'Horizontal', 'Location', 'North');
-    axis(ax1, 'image'); axis(ax1, 'xy');
-    set(ax1, 'CLim', aberrationMapRange, 'XLim', 1.02*pupilDiameter/2*[-1 1], 'YLim', 1.02*pupilDiameter/2*[-1 1], 'FontSize', 14);
-    set(ax1, 'XTick', -(pupilDiameter/2):0.5:(pupilDiameter/2), 'YTick', -(pupilDiameter/2):0.5:(pupilDiameter/2));
+    hL = colorbar('Orientation', 'Vertical', ...
+        'Location', 'EastOutside');
+    ylabel(hL, sprintf('optical path length difference (microns)'), ...
+        'FontWeight', 'bold');
+    hL.XTick = -1:0.2:1;
+    
+    
+    set(ax1, 'CLim', aberrationMapRange, 'XLim', 1.02*3/2*[-1 1], 'YLim', 1.02*3/2*[-1 1], 'FontSize', 14);
+    set(ax1, 'XTick', -(3/2):0.5:(3/2), 'YTick', -(3/2):0.5:(3/2));
+    
+    t = text(panelLabels(1).xyPos(1), panelLabels(1).xyPos(2), panelLabels(1).text);
+    formatFigureForPaper(hFig, 'figureType', 'ABERRATION_MAP_PSF_COMBO', ...
+        'theAxes', ax1,  'theText', t);
     set(ax1, 'YTickLabel', {});
-    xlabel(ax1,'pupil plane, x'' (mm)', 'FontWeight', 'bold');
-    box(ax1, 'on'); grid(ax1, 'on');   
+    
     
     % Render the PSF
-    ax2 = subplot('Position', subplotPosVectors(1,2).v);
+    psfPlotPos = subplotPosVectors(1,2).v;
+    psfPlotPos(1) = psfPlotPos(1) + 0.03;
+    ax2 = subplot('Position', psfPlotPos);
     PSF = PSF / max(abs(PSF(:)));
     contourLevels = 0:0.05:1.0;
     contourf(ax2,xMinutes, yMinutes, PSF, contourLevels);
@@ -125,12 +158,19 @@ function renderComboPlot(pupilSupport, aberrationMap, maxAberrationMap, xMinutes
     plot(ax2,[0 0], [xMinutes(1) xMinutes(end)], 'r-', 'LineWidth', 1.0);
     plot(ax2,[yMinutes(1) yMinutes(end)], [0 0], 'r-', 'LineWidth', 1.0);
     hold(ax2, 'off');
-    axis(ax2, 'image'); axis(ax2, 'xy');
     set(ax2, 'ZLim', [0 1], 'CLim', [0 1], 'XLim', psfRange*1.05*[-1 1], 'YLim', psfRange*1.05*[-1 1], 'FontSize', 14);
     set(ax2, 'XTick', theTicks, 'YTick', theTicks);
-    set(ax2, 'YTickLabel', {});
     xlabel(ax2,'retinal image plane, x (arc min)', 'FontWeight', 'bold');
-    grid(ax2, 'on'); box(ax2, 'on');
     cmap = brewermap(1024, 'greys');
     colormap(ax2, cmap); 
+    
+    t = text(panelLabels(2).xyPos(1), panelLabels(2).xyPos(2), panelLabels(2).text);
+    formatFigureForPaper(hFig, 'figureType', 'ABERRATION_MAP_PSF_COMBO', ...
+        'theAxes', ax2,  'theText', t);
+    
+    set(ax2, 'YTickLabel', {});
+    xtickformat(ax2, '%.0f');
+    if strcmp(export.format, 'PDF')
+        NicePlot.exportFigToPDF(export.name, hFig, 300);
+    end
 end
