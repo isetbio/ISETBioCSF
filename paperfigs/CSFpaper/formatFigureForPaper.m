@@ -30,6 +30,12 @@ function varargout = formatFigureForPaper(hFig, varargin)
     theFigureTitle = p.Results.theFigureTitle;
     
     switch (figureType)
+        case 'ABERRATION_MAP_PSF_COMBO'
+            if (isempty(theAxes))
+                set(hFig, 'Position', [10 10 1000 500], 'Color', [1 1 1]);
+            else
+            end
+            
         case 'PIGMENT_TRANSMITTANCE'
             if (isempty(theAxes))
                 set(hFig, 'Position', [10 10 500 500], 'Color', [1 1 1]);
