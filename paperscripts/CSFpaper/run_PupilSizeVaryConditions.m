@@ -58,7 +58,7 @@ function run_PupilSizeVaryConditions
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
     params.visualizeSpatialPoolingScheme = ~true;
-    params.visualizeDisplay = ~true;
+    params.visualizeDisplay= ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = ~true;

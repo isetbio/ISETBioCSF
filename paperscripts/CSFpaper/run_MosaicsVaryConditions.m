@@ -32,17 +32,29 @@ function run_MosaicsVaryConditions
         
         % Special case: the Geisler optics/original Banks mosaic was run up
         % to 50 c/deg
-        if (strcmp(mosaicName, 'originalBanks')) && (strcmp(opticsName,'Geisler'))
-            params.cyclesPerDegreeExamined = params.cyclesPerDegreeExamined(1:end-1);
-        end
+%         if (strcmp(mosaicName, 'originalBanks')) && (strcmp(opticsName,'Geisler'))
+%             params.cyclesPerDegreeExamined = params.cyclesPerDegreeExamined(1:end-1);
+%         end
         
         params.opticsModel = opticsName;
        
+        params.coneContrastDirection = 'L+M+S';
+    params.cyclesPerDegreeExamined = [2 4 8 16 32 50];
+    
+    % Response duration params
+    params.frameRate = 10; %(1 frames)
+    params.responseStabilizationMilliseconds = 40;
+    params.responseExtinctionMilliseconds = 40;
+    
+    % Eye movement params
+    params.emPathType = 'frozen0';
+    params.centeredEMpaths = ~true;
+    
         % Simulation steps to perform
         params.computeMosaic = ~true; 
         params.visualizeMosaic = ~true;
     
-        params.computeResponses = ~true;
+        params.computeResponses = true;
         params.computePhotocurrentResponseInstances = ~true;
         params.visualizeMosaic = makeMosaicsFigure;
         params.visualizeResponses = ~true;
@@ -50,9 +62,14 @@ function run_MosaicsVaryConditions
         params.visualizeOIsequence = ~true;
         params.visualizeOptics = ~true;
         params.visualizeMosaicWithFirstEMpath = ~true;
+    params.visualizeSpatialPoolingScheme = ~true;
+    params.visualizeStimulusAndOpticalImage = ~true;
+    
+    
+    params.visualizeDisplay = ~true;
     
         params.visualizeKernelTransformedSignals = ~true;
-        params.findPerformance = ~true;
+        params.findPerformance = true;
         params.visualizePerformance = makeSummaryFigure;
         params.deleteResponseInstances = ~true;
 
