@@ -55,7 +55,7 @@ function renderPlots(BanksMosaicAperture, HexMosaicAperture, export)
     axis 'square';
     hL = legend({'Banks ''87', 'ecc-varying'}, 'Location', 'NorthEast');
     
-    t = text(3.3, 0.93, ' A ');
+    t = text(3.3, 0.93, ' C ');
     formatFigureForPaper(hFig, 'figureType', 'CONE_APERTURE', 'theAxes', gca, 'theLegend', hL, 'theText', t);
     
     plotAperture(0.15, 0.21, BanksMosaicAperture, 3.0/2, [1 0 0]);

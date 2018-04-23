@@ -1,14 +1,11 @@
-function plotLensAndMacularPigmentTransmittance
+function plotMacularPigmentTransmittance
 
     lens = Lens();
     lambda = lens.wave;
-    idx = find(lambda == 460);
-    lensTransmittance = lens.transmittance;
-    lensTransmittance(idx)
     
     macular = Macular('wave', lambda);
     macularTransmittance = macular.transmittance;
-    macularTransmittance (idx)
+
     
     xLims = [lambda(1) lambda(end)];
     yLims = [0 1];
@@ -19,12 +16,12 @@ function plotLensAndMacularPigmentTransmittance
     
     export = struct(...
         'format','PDF', ...
-        'name', fullfile(localDir, 'LensMacularPigmentTransmittance.pdf') ...
+        'name', fullfile(localDir, 'MacularPigmentTransmittance.pdf') ...
         );
-    renderXYplot(lambda,lensTransmittance, macularTransmittance, xLims, yLims, xTicks, yTicks, 'wavelength (nm)', 'transmittance', export);
+    renderXYplot(lambda, macularTransmittance, xLims, yLims, xTicks, yTicks, 'wavelength (nm)', 'transmittance', export);
 end
 
-function renderXYplot(lambda,lensTransmittance, macularTransmittance, xLims, yLims, xTicks, yTicks, xLabel, yLabel, export)
+function renderXYplot(lambda,macularTransmittance, xLims, yLims, xTicks, yTicks, xLabel, yLabel, export)
     % Render figure
     hFig = figure(1); clf;
     formatFigureForPaper(hFig, 'figureType', 'PIGMENT_TRANSMITTANCE');
@@ -37,13 +34,13 @@ function renderXYplot(lambda,lensTransmittance, macularTransmittance, xLims, yLi
     
     % Lens transmittance on the top plot
     subplot('Position', [0.12 0.12 0.86 0.88]);
-    plot(lambda, lensTransmittance, '-o', 'Color', squeeze(colors(1,:)), 'LineWidth', 1.5, ...
+%     plot(lambda, lensTransmittance, '-o', 'Color', squeeze(colors(1,:)), 'LineWidth', 1.5, ...
+%         'MarkerFaceColor', squeeze(colors(1,:)), 'MarkerEdgeColor', markerEdgeColor, 'MarkerSize', 9);
+%     hold on;
+    plot(lambda, macularTransmittance, '-o', 'Color', squeeze(colors(1,:)), 'LineWidth', 1.5, ...
         'MarkerFaceColor', squeeze(colors(1,:)), 'MarkerEdgeColor', markerEdgeColor, 'MarkerSize', 9);
-    hold on;
-    plot(lambda, macularTransmittance, '-o', 'Color', squeeze(colors(2,:)), 'LineWidth', 1.5, ...
-        'MarkerFaceColor', squeeze(colors(2,:)), 'MarkerEdgeColor', markerEdgeColor, 'MarkerSize', 9);
-    plot(lambda, macularTransmittance.*lensTransmittance, '-o', 'Color', squeeze(colors(3,:)), 'LineWidth', 1.5, ...
-        'MarkerFaceColor', squeeze(colors(3,:)), 'MarkerEdgeColor', markerEdgeColor, 'MarkerSize', 9);
+%     plot(lambda, macularTransmittance.*lensTransmittance, '-o', 'Color', squeeze(colors(3,:)), 'LineWidth', 1.5, ...
+%         'MarkerFaceColor', squeeze(colors(3,:)), 'MarkerEdgeColor', markerEdgeColor, 'MarkerSize', 9);
     dy = 0.02*(yLims(2)-yLims(1));
     dx = 0.02*(xLims(2)-xLims(1));
     %plot(outline.x, outline.y, 'k-', 'LineWidth', 0.5);

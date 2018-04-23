@@ -72,7 +72,7 @@ function axesHandle = generateRadianceMap(stimulusScene, targetWavelength, displ
     set(gca, 'CLim', [0 maxPhotons],  'XTick', -0.5:0.1:0.5, 'YTick', -0.5:0.1:0.5);
     axis 'square'
     colorbar();
-    colorbarLabel = sprintf('photons/sec @ %2.0fnm', sceneSpectralSupport(idx));
+    colorbarLabel = sprintf('photons/sample/sec @ %2.0fnm', sceneSpectralSupport(idx));
     colorbarTicks = (1:2:10)*1.0000e+15;
     colorbarTickLabels = sprintf('%2.0fe15\n', colorbarTicks/1e+15);
     renderColorBar(gca, colorbarTicks, colorbarTickLabels, colorbarLabel);

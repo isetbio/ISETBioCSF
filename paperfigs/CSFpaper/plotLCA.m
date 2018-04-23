@@ -4,7 +4,7 @@ function plotLCA
     defocus = 633.46 * (1/(lambdaFocus - 214.1) - 1./(lambda-214.1));
     
     xLims = [lambda(1) lambda(end)];
-    yLims = [-1.6 0.8];
+    yLims = [-1.6 0.6];
     xTicks = 400:50:700;
     yTicks = -2:0.2:1;
     
@@ -40,7 +40,7 @@ function renderXYplot(x,y, xLims, yLims, xTicks, yTicks, xLabel, yLabel, export)
     grid on; box on;
     axis 'square';
     
-    t = text(410, 0.69, ' B ');
+    t = text(410, 0.5, ' B ');
     formatFigureForPaper(hFig, 'figureType', 'PIGMENT_TRANSMITTANCE', 'theAxes', gca,  'theText', t);
     
     if strcmp(export.format, 'PDF')
