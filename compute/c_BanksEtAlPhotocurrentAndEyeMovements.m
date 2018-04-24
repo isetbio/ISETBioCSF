@@ -202,11 +202,11 @@ for ll = 1:length(p.Results.luminances)
                'IBIOColorDetectSnapshot', IBIOColorDetectSnapshot ...
             );
         
-            if (cc == 1)
-                % Get the OI and the mosaic for the lowest spatial frequency
-                varargout{4} = theOI;
-                varargout{5} = theMosaic;
-            end
+            %
+            % Get the OI and the mosaic for the lowest spatial frequency
+            varargout{4}.theOIs{cc} = theOI;
+            varargout{5}.theMosaics{cc} = theMosaic;
+            %end
         end 
         
         %% Visualize response instances
