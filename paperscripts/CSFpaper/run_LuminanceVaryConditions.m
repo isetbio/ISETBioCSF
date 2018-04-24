@@ -3,7 +3,7 @@ function run_LuminanceVaryConditions
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 0;
+    computationInstance = 1;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -49,7 +49,7 @@ function run_LuminanceVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -61,7 +61,7 @@ function run_LuminanceVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 
