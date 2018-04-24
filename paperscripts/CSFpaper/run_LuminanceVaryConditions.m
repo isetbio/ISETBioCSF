@@ -2,7 +2,7 @@ function run_LuminanceVaryConditions
 % This is the script used to assess the impact of different pupil sizes on the CSF
 %  
     % How to split the computation
-    % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
+    % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all except 2 largest)
     computationInstance = 1;
     
     % Whether to make a summary figure with CSF from all examined conditions
