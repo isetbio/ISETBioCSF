@@ -22,6 +22,8 @@ function run_MosaicsVaryConditions
         'eccentricity-based LMS density' ...
     };
 
+    idx = 2:3;
+    examinedMosaicModels = {examinedMosaicModels{idx}};
     
     % Tun the mosaic-vary condition using the Geisler optics
     opticsName = 'Geisler';
@@ -46,10 +48,10 @@ function run_MosaicsVaryConditions
         params.centeredEMpaths = ~true;
 
         % Simulation steps to perform
-        params.computeMosaic = true; 
+        params.computeMosaic = ~true; 
         params.visualizeMosaic = ~true;
 
-        params.computeResponses = ~true;
+        params.computeResponses = true;
         params.computePhotocurrentResponseInstances = ~true;
         params.visualizeMosaic = makeMosaicsFigure;
         params.visualizeResponses = ~true;
@@ -62,17 +64,12 @@ function run_MosaicsVaryConditions
         params.visualizeDisplay = ~true;
     
         params.visualizeKernelTransformedSignals = ~true;
-        params.findPerformance = ~true;
+        params.findPerformance = true;
         params.visualizePerformance = makeSummaryFigure;
         params.deleteResponseInstances = ~true;
 
         [theMosaics{mosaicIndex},thePsychometricFunctions{mosaicIndex}, theFigData{mosaicIndex}] = ...
             run_BanksPhotocurrentEyeMovementConditions(params);
-        
-        allSFsMosaicsList = theMosaics{mosaicIndex}.theMosaics;
-        for sfIndex = 1:numel(allSFsMosaicsList)
-            fprintf('Mosaic ''%s'' (sfIndex:d), has inner segment/cone coverage: %2.2f/%2.2f\n', examinedMosaicLegends{mosaicIndex},allSFsMosaicsList{sfIndex}.innerSegmentCoverage, allSFsMosaicsList{sfIndex}.coverage);
-        end
     end
     
     if (makeSummaryFigure)
