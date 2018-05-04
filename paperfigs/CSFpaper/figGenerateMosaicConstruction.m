@@ -10,11 +10,11 @@ cd(localDir)
 % Set random seed to obtain replicable results
 rng(1235);
 
-params.fovDegs = [1.1 1.1]; % [0.75 0.4]; % FOV in degrees ([width height], default: 0.25x0.25
+params.fovDegs = [1.15 1.15]; % [0.75 0.4]; % FOV in degrees ([width height], default: 0.25x0.25
 
-saveLatticeAdjustmentProgression = ~true;                % set to true, only if interested to see how the mosaic lattice is iteratively adjusted when eccBasedConeDensity is true               
+saveLatticeAdjustmentProgression = true;                % set to true, only if interested to see how the mosaic lattice is iteratively adjusted when eccBasedConeDensity is true               
 
-makeNew = ~true;
+makeNew = true;
 if (makeNew)
     % Set coneMosaicHex - specific params
     params.resamplingFactor = 9;                            % 9 is good;how fine to sample the hex mosaic positions with an underlying rect mosaic                         
@@ -27,9 +27,8 @@ if (makeNew)
     params.sConeFreeRadiusMicrons = 45;                     % radius of S-cone free retina, in microns
     params.latticeAdjustmentPositionalToleranceF = [];      % determines cone delta movement tolerance for terminating iterative adjustment - by default this is 0.01 (here setting it lower for faster, but less acurate mosaic generation)
     params.latticeAdjustmentDelaunayToleranceF = [];        % determines position tolerance for triggering another Delaunay triangularization - by default this is 0.001 (here setting it lower for faster, but less acurate mosaic generation)
-    params.maxGridAdjustmentIterations = 500;
+    params.maxGridAdjustmentIterations = 1500;
     params.marginF = [];
-    
 
     % Generate the mosaic
     theHexMosaic = coneMosaicHex(params.resamplingFactor, ...
