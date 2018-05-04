@@ -32,7 +32,7 @@ function renderPlots(BanksMosaicAperture, HexMosaicAperture, export)
     formatFigureForPaper(hFig, 'figureType', 'CONE_APERTURE');
     
     targetSF = 60;
-    [~,idx] = min(abs(BanksMosaicMTF.support1D-targetSF))
+    [~,idx] = min(abs(BanksMosaicMTF.support1D-targetSF));
     fprintf('Banks mosaic MTF at %2.1f c/deg: %2.2f\n', BanksMosaicMTF.support1D(idx), BanksMosaicMTF.mtf1D(idx));
     
     [~,idx] = min(abs(HexMosaicMTF.support1D-targetSF));
@@ -58,8 +58,8 @@ function renderPlots(BanksMosaicAperture, HexMosaicAperture, export)
     t = text(3.3, 0.93, ' C ');
     formatFigureForPaper(hFig, 'figureType', 'CONE_APERTURE', 'theAxes', gca, 'theLegend', hL, 'theText', t);
     
-    plotAperture(0.15, 0.21, BanksMosaicAperture, 3.0/2, [1 0 0]);
-    plotAperture(0.37, 0.21, HexMosaicAperture, 1.5797/2, [0 0 1]);
+    plotAperture(0.15, 0.21, BanksMosaicAperture, 3.0/2, [0 0 1]);
+    plotAperture(0.37, 0.21, HexMosaicAperture, 1.5797/2, [1 0 0]);
     
     colormap(gray(1024));
     

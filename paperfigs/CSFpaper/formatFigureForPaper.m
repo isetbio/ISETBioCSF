@@ -203,7 +203,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
             
         case 'CSF'
             csTicks = [2 5 10 20 50 100 200 500 1000 2000 5000 10000];
-            csLims = [2 12000];
+            csLims = [1.5 15000];
             sfTicks = [1 2 5 10 20 50 100];
             sfLims  = [1.2 100];
             dx1 = 0.2; dx2 = 20; dy1 = 0.4; dy2 = 1000;
@@ -247,11 +247,12 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 if (~isempty(theRatioAxes))
                     set(theRatioAxes, 'YScale', 'log', 'XScale', 'log', 'YTick', csTicks, 'XTick', sfTicks, ...
                         'XLim', [sfLims(1)-dx1 sfLims(2)+dx2]);
-                    if (~isempty(theRatioTicks))
-                        set(theRatioAxes, 'YTick', theRatioTicks);
-                    end
+                    
                     if (~isempty(theRatioLims))
                         set(theRatioAxes, 'YLim', theRatioLims);
+                    end
+                    if (~isempty(theRatioTicks))
+                        set(theRatioAxes, 'YTick', theRatioTicks);
                     end
                     ytickformat(theRatioAxes,'%.2f')
                     box(theRatioAxes, 'on'); grid(theRatioAxes, 'on');

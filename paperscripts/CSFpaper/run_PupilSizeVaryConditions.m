@@ -74,7 +74,7 @@ function run_PupilSizeVaryConditions
     if (makeSummaryFigure)
         variedParamName = 'PupilSize';
         theRatioLims = [0.5 3];
-        theRatioTicks = logspace(log10(0.5), log10(2.6), 4);
+        theRatioTicks = [0.5 1 1.5 3]; % logspace(log10(0.5), log10(2.6), 4);
         
         generateFigureForPaper(theFigData, examinedPupilSizeLegends, variedParamName, sprintf('%s_%s',mosaicName, opticsName), ...
             'figureType', 'CSF', ...

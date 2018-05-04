@@ -3,7 +3,7 @@ function run_LuminanceVaryConditions
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all except 2 largest)
-    computationInstance = 1;
+    computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -29,6 +29,10 @@ function run_LuminanceVaryConditions
         '3.4 cd/m^2 (2mm pupil)' ...
     };
 
+    idx = 1:3;
+    examinedLuminances = {examinedLuminances{idx}};
+    examinedPupilSizeLegends = {examinedPupilSizeLegends{idx}};
+    
     params.opticsModel = opticsName;
     params.pupilDiamMm = 2.0;
     
@@ -49,7 +53,7 @@ function run_LuminanceVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -61,21 +65,21 @@ function run_LuminanceVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance =~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 
  
     % Go
     for lumIndex = 1:numel(examinedLuminances)
-        params.luminancesExamined = examinedLuminances{lumIndex};         
+        params.luminancesExamined = examinedLuminances{lumIndex};
         [~,~, theFigData{lumIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end
     
     if (makeSummaryFigure)
         variedParamName = 'Luminance';
         theRatioLims = [0.1 10];
-        theRatioTicks = logspace(log10(0.1), log10(10), 5);
+        theRatioTicks = [0.1 0.3 1 3 10]; % round(100*logspace(log10(0.1), log10(10), 5))/100;
         
         load('BanksCSF.mat', 'BanksCSF');
         for k = 1:numel(theFigData)

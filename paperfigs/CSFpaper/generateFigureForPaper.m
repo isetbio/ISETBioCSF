@@ -85,10 +85,10 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
         if (isempty(inGraphTextPos))
             if (plotRatiosOfOtherConditionsToFirst)
                 inGraphTextPos(1) = 1.1;
-                inGraphTextPos(2) = 8500;
+                inGraphTextPos(2) = 10000;
             else
                 inGraphTextPos(1) = 1.1;
-                inGraphTextPos(2) = 9000;
+                inGraphTextPos(2) = 9500;
             end
         end
         t = text(theAxes, inGraphTextPos(1), inGraphTextPos(2), inGraphText);
