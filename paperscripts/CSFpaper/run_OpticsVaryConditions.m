@@ -35,16 +35,19 @@ function run_OpticsVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
-    
+    params.visualizeSpatialPoolingScheme = ~true;
+    params.visualizeStimulusAndOpticalImage = ~true;
+    params.visualizeDisplay = ~true;
+        
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
