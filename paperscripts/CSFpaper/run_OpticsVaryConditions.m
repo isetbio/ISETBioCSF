@@ -31,6 +31,18 @@ function run_OpticsVaryConditions
         'wvf-based PSF (subject D)' ...
     };
 
+    params.coneContrastDirection = 'L+M+S';
+    params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
+    
+    % Response duration params
+    params.frameRate = 10; %(1 frames)
+    params.responseStabilizationMilliseconds = 40;
+    params.responseExtinctionMilliseconds = 40;
+
+    % Eye movement params
+    params.emPathType = 'frozen0';
+    params.centeredEMpaths = ~true;
+        
     % Simulation steps to perform
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
