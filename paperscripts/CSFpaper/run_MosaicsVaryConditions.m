@@ -7,7 +7,7 @@ function run_MosaicsVaryConditions
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
-    makeMosaicsFigure = true;
+    makeMosaicsFigure = ~true;
     
     % Mosaic to use
     examinedMosaicModels = {...
@@ -71,9 +71,11 @@ function run_MosaicsVaryConditions
         [theMosaicTypes, thePsychometricFunctions{mosaicIndex}, theFigData{mosaicIndex}] = ...
             run_BanksPhotocurrentEyeMovementConditions(params);
         
-        sfIndex = 1;
-        theMosaicTypesAtSpecificSF{mosaicIndex} = theMosaicTypes.theMosaics(sfIndex);
-        theMosaicTypesAtSpecificSF{mosaicIndex}.displayInfo();
+        if (makeMosaicsFigure)
+            sfIndex = 1;
+            theMosaicTypesAtSpecificSF{mosaicIndex} = theMosaicTypes.theMosaics(sfIndex);
+            theMosaicTypesAtSpecificSF{mosaicIndex}.displayInfo();
+        end
     end
     
     if (makeSummaryFigure)
