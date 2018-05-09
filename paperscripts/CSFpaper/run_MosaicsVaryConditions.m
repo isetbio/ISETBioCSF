@@ -6,8 +6,8 @@ function run_MosaicsVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
-    makeMosaicsFigure = ~true;
+    makeSummaryFigure = true;
+    makeMosaicsFigure = true;
     
     % Mosaic to use
     examinedMosaicModels = {...
@@ -22,8 +22,8 @@ function run_MosaicsVaryConditions
         'eccentricity-based LMS density' ...
     };
 
-    idx = 2:3;
-    examinedMosaicModels = {examinedMosaicModels{idx}};
+%     idx = 1:3;
+%     examinedMosaicModels = {examinedMosaicModels{idx}};
     
     % Tun the mosaic-vary condition using the Geisler optics
     opticsName = 'Geisler';
@@ -51,7 +51,7 @@ function run_MosaicsVaryConditions
         params.computeMosaic = ~true; 
         params.visualizeMosaic = ~true;
 
-        params.computeResponses = true;
+        params.computeResponses = ~true;
         params.computePhotocurrentResponseInstances = ~true;
         params.visualizeMosaic = makeMosaicsFigure;
         params.visualizeResponses = ~true;
@@ -64,12 +64,16 @@ function run_MosaicsVaryConditions
         params.visualizeDisplay = ~true;
     
         params.visualizeKernelTransformedSignals = ~true;
-        params.findPerformance = true;
+        params.findPerformance = ~true;
         params.visualizePerformance = makeSummaryFigure;
         params.deleteResponseInstances = ~true;
 
-        [theMosaics{mosaicIndex},thePsychometricFunctions{mosaicIndex}, theFigData{mosaicIndex}] = ...
+        [theMosaicTypes, thePsychometricFunctions{mosaicIndex}, theFigData{mosaicIndex}] = ...
             run_BanksPhotocurrentEyeMovementConditions(params);
+        
+        sfIndex = 1;
+        theMosaicTypesAtSpecificSF{mosaicIndex} = theMosaicTypes.theMosaics(sfIndex);
+        theMosaicTypesAtSpecificSF{mosaicIndex}.displayInfo();
     end
     
     if (makeSummaryFigure)
@@ -87,7 +91,7 @@ function run_MosaicsVaryConditions
     end
     
     if (makeMosaicsFigure)
-        generateMosaicsFigure(theMosaics, examinedMosaicLegends,  ...
+        generateMosaicsFigure(theMosaicTypesAtSpecificSF, examinedMosaicLegends,  ...
             'inGraphTexts', {' B ', ' C ', ' D '}, ...
             'visualizedFOV', 0.35);
     end
@@ -118,7 +122,6 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
     
     for mosaicIndex = 1:numel(theMosaics)
         cm = theMosaics{mosaicIndex};
-        
         posRangeY = 0.5*visualizedFOV*cm.micronsPerDegree * 1e-6 * [-1 1];
         posRangeX = 1.8*posRangeY;
         mosaicName = examinedMosaicLegends{mosaicIndex};
@@ -129,10 +132,10 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
         end
         ax = subplot('Position', subplotPosVectors(mosaicIndex,1).v);
         cm.visualizeGrid(...
-            'axes handle', ax, ...
-            'aperture shape', apertureShape, ...
+            'axesHandle', ax, ...
+            'apertureShape', apertureShape, ...
             'visualizedConeAperture', 'geometricArea', ...
-            'label cone types', true, ...
+            'labelConeTypes', true, ...
             'overlayHexMesh', false); % , ...
             %'backgroundcolor', [1 1 1]);
         
