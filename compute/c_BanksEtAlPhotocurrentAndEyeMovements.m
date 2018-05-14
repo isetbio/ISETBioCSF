@@ -203,9 +203,9 @@ for ll = 1:length(p.Results.luminances)
             );
         
             %
-            % Get the OI and the mosaic for the lowest spatial frequency
+            % Get the OI and the mosaic for the current spatial frequency
             varargout{4}.theOIs{cc} = theOI;
-            varargout{5}.theMosaics{cc} = theMosaic;
+            varargout{5}.theMosaics(cc) = theMosaic;
             %end
         end 
         
