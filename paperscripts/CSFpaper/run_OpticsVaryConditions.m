@@ -31,6 +31,10 @@ function run_OpticsVaryConditions
         'wvf-based PSF (subject D)' ...
     };
 
+    idx = 1:6;
+    examinedOpticsModels = {examinedOpticsModels{idx}};
+    examinedOpticsModelLegends = {examinedOpticsModelLegends{idx}};
+    
     params.coneContrastDirection = 'L+M+S';
     params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
     
@@ -47,7 +51,7 @@ function run_OpticsVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -59,7 +63,7 @@ function run_OpticsVaryConditions
     params.visualizeDisplay = ~true;
         
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
@@ -103,7 +107,7 @@ function generatePSFsFigure(examinedOpticsModels)
                 'bottomMargin', 0.05, ...
                 'topMargin', 0.001);
             
-    hFig = figure(1); clf;
+    hFig = figure(2); clf;
     formatFigureForPaper(hFig, 'figureType', 'PSFS');
 
     prefices = {' B ', ' C ', ' D ', ' E ', ' F ', ' G '};
@@ -134,7 +138,7 @@ function generatePSFsFigure(examinedOpticsModels)
         waveOTF = opticsGet(optics,'otf data',targetWavelength);
             [xGridMinutes, yGridMinutes, wavePSF] = OtfToPsf(...
                 xSfGridCyclesDeg,ySfGridCyclesDeg,fftshift(waveOTF), ...
-                'warningInsteadOfErrorForNegativeValuedPSF', true ...
+                'warningInsteadOfErrorForNegativeValuedPSF', 1 ...
         );
         xMinutes = squeeze(xGridMinutes(1,:));
         yMinutes = squeeze(yGridMinutes(:,1));  
