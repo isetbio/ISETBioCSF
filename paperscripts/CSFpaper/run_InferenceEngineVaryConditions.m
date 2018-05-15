@@ -12,21 +12,28 @@ function run_InferenceEngineVaryConditions
     mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
     
     % Optics to use
-    opticsName = 'ThibosBestPSFSubject3MMPupil';
+    opticsName = 'ThibosAverageSubject3MMPupil';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
     % Adjust any params we want to change from their default values
     params.opticsModel = opticsName;
     
+    % Chromatic direction params
+    params.coneContrastDirection = 'L+M+S';
+    params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
+    
     % Response duration params
-     params.frameRate = 10; %(1 frames)
-     params.responseStabilizationMilliseconds = 40;
-     params.responseExtinctionMilliseconds = 40;
-%     
-%     % Eye movement params
-      params.emPathType = 'random';
-      params.centeredEMpaths = true;
+    params.frameRate = 10; %(1 frames)
+    params.responseStabilizationMilliseconds = 40;
+    params.responseExtinctionMilliseconds = 40;
+
+    % Eye movement params
+    params.emPathType = 'frozen0';
+    params.centeredEMpaths = ~true;
+    
+    %params.emPathType = 'random';
+    %params.centeredEMpaths = true;
     
     examinedInferenceEngines = {...
         'mlpt' ...
@@ -51,7 +58,8 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (6)' ...
     };
 
-    visualizedConditions = 3:9;
+    idx = 2;
+    visualizedConditions = idx;
     examinedInferenceEngines = {examinedInferenceEngines{visualizedConditions}};
     examinedInferenceEngineLegends = {examinedInferenceEngineLegends{visualizedConditions}};
 
@@ -90,7 +98,7 @@ function run_InferenceEngineVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -99,9 +107,11 @@ function run_InferenceEngineVaryConditions
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
     params.visualizeSpatialPoolingScheme = ~true;
+    params.visualizeStimulusAndOpticalImage = ~true;
+    params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     

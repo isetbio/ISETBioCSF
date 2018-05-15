@@ -8,6 +8,10 @@ function run_OpticsVaryConditions
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
     
+    % Whether to visualize the employed PSFs
+    makePSFfigure = true;
+    visualizedWavelengths = 550;
+        
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealistic';
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
@@ -25,16 +29,16 @@ function run_OpticsVaryConditions
     examinedOpticsModelLegends = {...
         'Geisler PSF' ...
         'wvf-based PSF (best subject)' ...
-        'wvf-based PSF (subject A)' ...
-        'wvf-based PSF (subject B)' ...
-        'wvf-based PSF (subject C)' ...
-        'wvf-based PSF (subject D)' ...
+        'wvf-based PSF (subject i)' ...
+        'wvf-based PSF (subject j)' ...
+        'wvf-based PSF (subject k)' ...
+        'wvf-based PSF (subject l)' ...
     };
 
-    idx = 1:6;
-    examinedOpticsModels = {examinedOpticsModels{idx}};
-    examinedOpticsModelLegends = {examinedOpticsModelLegends{idx}};
-    
+%     idx = 1:6;
+%     examinedOpticsModels = {examinedOpticsModels{idx}};
+%     examinedOpticsModelLegends = {examinedOpticsModelLegends{idx}};
+%     
     params.coneContrastDirection = 'L+M+S';
     params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
     
@@ -77,20 +81,31 @@ function run_OpticsVaryConditions
         variedParamName = 'Optics';
         theRatioLims = [0.5 12];
         theRatioTicks = [0.5 1 2 5 10];
+%         generateFigureForPaper(theFigData, examinedOpticsModelLegends, variedParamName, mosaicName, ...
+%             'figureType', 'CSF', ...
+%             'inGraphText', ' A ', ...
+%             'plotFirstConditionInGray', true, ...
+%             'plotRatiosOfOtherConditionsToFirst', true, ...
+%             'theRatioLims', theRatioLims, ...
+%             'theRatioTicks', theRatioTicks ...
+%             );
         generateFigureForPaper(theFigData, examinedOpticsModelLegends, variedParamName, mosaicName, ...
             'figureType', 'CSF', ...
-            'inGraphText', ' A ', ...
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks ...
             );
-        
-        generatePSFsFigure(examinedOpticsModels);
+    end
+    
+    if (makePSFfigure)
+        for iw = 1:numel(visualizedWavelengths)
+            generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, visualizedWavelengths(iw));
+        end
     end
 end
 
-function generatePSFsFigure(examinedOpticsModels)
+function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, visualizedWavelength)
     wavefrontSpatialSamples = 261*2+1;
     calcPupilDiameterMM = 3;
     umPerDegree = 300;
@@ -110,8 +125,22 @@ function generatePSFsFigure(examinedOpticsModels)
     hFig = figure(2); clf;
     formatFigureForPaper(hFig, 'figureType', 'PSFS');
 
-    prefices = {' B ', ' C ', ' D ', ' E ', ' F ', ' G '};
-    for oiIndex = 1:numel(examinedOpticsModels)
+    for oiIndex = 1:numel(examinedOpticsModels)    
+        switch (examinedOpticsModelLegends{oiIndex})
+            case 'Geisler PSF'
+                prefix = 'Geisler';
+            case 'wvf-based PSF (best subject)'
+                prefix = 'best subj.';
+            case 'wvf-based PSF (subject i)'
+                prefix = 'subj. i';
+            case 'wvf-based PSF (subject j)'
+                prefix = 'subj. j';
+            case 'wvf-based PSF (subject k)'
+                prefix = 'subj. k';
+            case 'wvf-based PSF (subject l)'
+                prefix = 'subj. l';
+        end
+        
         col = mod(oiIndex-1,2)+1;
         row = floor((oiIndex-1)/2)+1;
         
@@ -129,7 +158,8 @@ function generatePSFsFigure(examinedOpticsModels)
         
         optics = oiGet(theCustomOI, 'optics');
         wavelengths = opticsGet(optics, 'wave');
-        targetWavelength = wavelengths(find(wavelengths == 550));
+        [~,idx] = min(abs(wavelengths - visualizedWavelength));
+        targetWavelength = wavelengths(idx);
 
         xSfCyclesDeg = opticsGet(optics, 'otf fx', 'cyclesperdeg');
         ySfCyclesDeg = opticsGet(optics, 'otf fy', 'cyclesperdeg');
@@ -165,13 +195,14 @@ function generatePSFsFigure(examinedOpticsModels)
             xlabel('retinal position (arc min)', 'FontWeight', 'bold');
         end
             
-        inGraphTextPos = [-2.3 2.0];
-        t = text(gca, inGraphTextPos(1), inGraphTextPos(2), prefices{oiIndex});
+        inGraphTextPos = [-2.3 2.3];
+        t = text(gca, inGraphTextPos(1), inGraphTextPos(2), sprintf('%s (%2.0fnm)', prefix, visualizedWavelength));
         
         formatFigureForPaper(hFig, ...
                 'figureType', 'PSFS', ...
                 'theAxes', gca, ...
                 'theText', t, ...
+                'theTextFontSize', 20, ...
                 'theFigureTitle', '');
     end
     
@@ -180,7 +211,7 @@ function generatePSFsFigure(examinedOpticsModels)
     drawnow;
         
     exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', 'projects/IBIOColorDetect/paperfigs/CSFpaper/exports');
-    figureName = fullfile(exportsDir, sprintf('PSFsEmployed.pdf'));
+    figureName = fullfile(exportsDir, sprintf('PSFsEmployed%2.0fnm.pdf', targetWavelength));
     NicePlot.exportFigToPDF(figureName, hFig, 300);
 end
 
