@@ -38,7 +38,8 @@ function run_InferenceEngineVaryConditions
     examinedInferenceEngines = {...
         'mlpt' ...
         'svm' ...
-        'svmV1FilterBank' ...
+        'svmV1FilterBank' ...       % stimulus-matched
+        'svmV1FilterBank' ...       % energy
         'svmV1FilterEnsemble' ...
         'svmV1FilterEnsemble' ...
         'svmV1FilterEnsemble' ...
@@ -49,6 +50,7 @@ function run_InferenceEngineVaryConditions
     examinedInferenceEngineLegends = {...
         'MLPT' ...
         'SVM' ...
+        'SVM (StimulusMatchedPooling)' ...
         'SVM (QPhE)' ...
         'SVM (QPhE) population (1)' ...
         'SVM (QPhE) population (2)' ...
@@ -58,7 +60,7 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (6)' ...
     };
 
-    idx = 2;
+    idx = 3:3;
     visualizedConditions = idx;
     examinedInferenceEngines = {examinedInferenceEngines{visualizedConditions}};
     examinedInferenceEngineLegends = {examinedInferenceEngineLegends{visualizedConditions}};
@@ -98,7 +100,7 @@ function run_InferenceEngineVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -118,7 +120,18 @@ function run_InferenceEngineVaryConditions
     % Go
     for engineIndex = 1:numel(examinedInferenceEngines)
         params.performanceClassifier = examinedInferenceEngines{engineIndex};
-        if strcmp(params.performanceClassifier, 'svmV1FilterEnsemble')
+        
+        if (strcmp(params.performanceClassifier, 'svmV1FilterBank'))
+            if strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM (StimulusMatchedPooling)')
+                params.spatialPoolingKernelParams.type = 'V1CosUnit';
+                params.spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+            % 'SVM (StimulusMatchedPooling)')
+            elseif strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM (QPhE)')
+                params.spatialPoolingKernelParams.type = 'V1QuadraturePair';
+                params.spatialPoolingKernelParams.activationFunction = 'energy';
+            end % 'SVM (QPhE)'
+            
+        elseif strcmp(params.performanceClassifier, 'svmV1FilterEnsemble')
             if strcmp(examinedInferenceEngineLegends{engineIndex}, 'SVM (QPhE) population (1)')
                 ensembleFilterParams = ensembleFilterParamsStructs{1};
             elseif strcmp(examinedInferenceEngineLegends{engineIndex}, 'SVM (QPhE) population (2)')
@@ -143,8 +156,8 @@ function run_InferenceEngineVaryConditions
     
     if (makeSummaryFigure)
         variedParamName = 'InferenceEngine';
-        theRatioLims = [0.3 1.0];
-        theRatioTicks = [0.3 0.5 0.7 1.0];
+        theRatioLims = [0.05 0.5];
+        theRatioTicks = [0.05 0.07 0.1 0.3 0.5];
         generateFigureForPaper(theFigData, examinedInferenceEngineLegends, variedParamName, sprintf('%s_%s',mosaicName, opticsName), ...
             'figureType', 'CSF', ...
             'inGraphText', ' A ', ...
