@@ -2,57 +2,71 @@ function run_SVMRepsVaryConditions
 % This is the script used to assess the impact of different # of trials on the SVM-based CSF
 %  
     % How to split the computation
-    % 16 or 32 (already did 32 with 64K reps)
-    computationInstance =  32;
+    % 8, 16 or 32
+    computationInstance = 8;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
+    makeSummaryFigure = ~true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
     
     % Optics to use
-    opticsName = 'ThibosBestPSFSubject3MMPupil';
+    opticsName = 'ThibosAverageSubject3MMPupil';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
     params.opticsModel = opticsName;
     
-    params.frameRate = 10; %(10 frames/sec, so 1 frame, 100 msec long)
+    % Chromatic direction params
+    params.coneContrastDirection = 'L+M+S';
+    params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
+    
+    % Response duration params
+    params.frameRate = 10; %(1 frames)
     params.responseStabilizationMilliseconds = 40;
     params.responseExtinctionMilliseconds = 40;
+
+    % Eye movement params
+    params.emPathType = 'frozen0';
+    params.centeredEMpaths = ~true;
     
-     % Eye movement setup
-    params.emPathType = 'random';
-    params.centeredEMPaths = true;
-    emLegend = 'drifts+\mu-saccades (random)';
-     % Contrast range to examine and trials num
+    % Trials num
+    params.nTrainingSamples = 1024*32;
+    % Contrast range to examine
     if (computationInstance == 32)
         params.lowContrast = 0.01;
         params.highContrast =  0.3;
         params.nContrastsPerDirection =  20;
-        % Trials to generate
-        params.nTrainingSamples = 1024*64;
     elseif (computationInstance == 16)
         params.lowContrast = 0.001;
         params.highContrast =  0.3;
-        params.nContrastsPerDirection =  15;
-        % Trials to generate
-        params.nTrainingSamples = 1024*32;
+        params.nContrastsPerDirection =  18;
+    elseif (computationInstance == 8)
+        params.lowContrast = 0.001;
+        params.highContrast = 0.1;
+        params.nContrastsPerDirection =  18;
     end
     
     % Trials to use in the classifier - vary this one
     params.performanceTrialsUsed = params.nTrainingSamples;
     
-    trainingSamples = 2.^[10 11 12 13 14 15];
-    maxK = 8;
+    trainingSamples = 2.^[10 11 12 13 14];
     for k = 1:numel(trainingSamples)
-        kk = k;
         performanceTrialsUsed = trainingSamples(k);
-        examinedCond(kk).classifier = 'svmV1FilterBank';
-        examinedCond(kk).performanceTrialsUsed = performanceTrialsUsed;
-        legends{kk} = sprintf('QPhE SVM, %d trials', performanceTrialsUsed);
-        legendsForPsychometricFunctions{kk} = sprintf('%d trials', performanceTrialsUsed);
+        examinedCond(k).classifier = 'svm';
+        examinedCond(k).performanceTrialsUsed = performanceTrialsUsed;
+        legends{k} = sprintf('SVM, %d trials', performanceTrialsUsed);
+        legendsForPsychometricFunctions{k} = sprintf('%d trials', performanceTrialsUsed);
+    end
+    
+    computeResponses = true;
+    if (computeResponses)
+        % Run the full reps when computing responses
+        idx = numel(trainingSamples);
+        examinedCond = examinedCond(idx);
+        legends = {legends{idx}};
+        legendsForPsychometricFunctions = {legendsForPsychometricFunctions{idx}};
     end
     
     theTitle = ''; %sprintf('%2.0f c/deg, %s\n%s', computationInstance, examinedCond(1).classifier, emLegend);
@@ -62,7 +76,7 @@ function run_SVMRepsVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = computeResponses;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -73,7 +87,7 @@ function run_SVMRepsVaryConditions
     params.visualizeStimulusAndOpticalImage = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
@@ -94,12 +108,11 @@ function run_SVMRepsVaryConditions
     
     
     if (makeSummaryFigure)
-        
-            if (computationInstance ==16)
-        csLims = [30 35];
-    else
-        csLims = [5 10];
-            end
+        if (computationInstance ==16)
+            csLims = [30 35];
+        else
+            csLims = [5 10];
+        end
     
         generatePsychometricFunctionsPlot(sf0PsychometricFunctions, csLims, theTrials, legendsForPsychometricFunctions, theTitle, fixedParamName);
         variedParamName = 'SVMTrials';
