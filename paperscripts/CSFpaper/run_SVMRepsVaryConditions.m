@@ -30,7 +30,7 @@ function run_SVMRepsVaryConditions
     % Eye movement params
     params.emPathType = 'frozen0';
     params.centeredEMpaths = ~true;
-    
+ 
     % Trials num
     params.nTrainingSamples = 1024*32;
     % Contrast range to examine
@@ -48,10 +48,8 @@ function run_SVMRepsVaryConditions
         params.nContrastsPerDirection =  18;
     end
     
-    % Trials to use in the classifier - vary this one
-    params.performanceTrialsUsed = params.nTrainingSamples;
-    
-    trainingSamples = 2.^[10 11 12 13 14];
+    % Trials to use in the classifier - vary this one 
+    trainingSamples = params.nTrainingSamples ./ (2.^[4 3 2 1 0])
     for k = 1:numel(trainingSamples)
         performanceTrialsUsed = trainingSamples(k);
         examinedCond(k).classifier = 'svm';
@@ -69,8 +67,8 @@ function run_SVMRepsVaryConditions
         legendsForPsychometricFunctions = {legendsForPsychometricFunctions{idx}};
     end
     
-    theTitle = ''; %sprintf('%2.0f c/deg, %s\n%s', computationInstance, examinedCond(1).classifier, emLegend);
-    fixedParamName = sprintf('%2.0fCPD_%s_%s', computationInstance, examinedCond(1).classifier, emLegend);
+    theTitle = ''; %sprintf('%2.0f c/deg, %s\n%s', computationInstance, examinedCond(1).classifier, params.emPathType);
+    fixedParamName = sprintf('%2.0fCPD_%s_%s', computationInstance, examinedCond(1).classifier, params.emPathType);
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -85,6 +83,7 @@ function run_SVMRepsVaryConditions
     params.visualizeMosaicWithFirstEMpath = ~true;
     params.visualizeSpatialPoolingScheme = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
+    params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = true;
