@@ -20,7 +20,7 @@ function run_SVMRepsVaryConditions
     
     % Chromatic direction params
     params.coneContrastDirection = 'L+M+S';
-    params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
+    
     
     % Response duration params
     params.frameRate = 10; %(1 frames)
