@@ -4,6 +4,8 @@ function run_SVMRepsVaryConditions
     % How to split the computation
     % 8, 16 or 32
     computationInstance = 8;
+    computeResponses = ~true;
+    findPerformance = ~true;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -49,7 +51,15 @@ function run_SVMRepsVaryConditions
     end
     
     % Trials to use in the classifier - vary this one 
-    trainingSamples = params.nTrainingSamples ./ (2.^[6 5 4 3 2 1])
+    switch (computationInstance)
+        case 8
+            trainingSamples = params.nTrainingSamples ./ (2.^[6 5 4 3 2 1]);
+        case 16
+            trainingSamples = params.nTrainingSamples ./ (2.^[6 5 4 3 2 1 0]);
+        otherwise
+            error('Training samples sequence not set for computationInstance:%d', computationInstance);
+    end
+    
     for k = 1:numel(trainingSamples)
         performanceTrialsUsed = trainingSamples(k);
         examinedCond(k).classifier = 'svm';
@@ -58,7 +68,7 @@ function run_SVMRepsVaryConditions
         legendsForPsychometricFunctions{k} = sprintf('%d trials', performanceTrialsUsed);
     end
     
-    computeResponses = ~true;
+    
     if (computeResponses)
         % Run the full reps when computing responses
         idx = numel(trainingSamples);
@@ -86,7 +96,7 @@ function run_SVMRepsVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = findPerformance;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
