@@ -6,7 +6,7 @@ function run_SVMRepsVaryConditions
     computationInstance = 8;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
@@ -49,7 +49,7 @@ function run_SVMRepsVaryConditions
     end
     
     % Trials to use in the classifier - vary this one 
-    trainingSamples = params.nTrainingSamples ./ (2.^[4 3 2 1 0])
+    trainingSamples = params.nTrainingSamples ./ (2.^[6 5 4 3 2 1])
     for k = 1:numel(trainingSamples)
         performanceTrialsUsed = trainingSamples(k);
         examinedCond(k).classifier = 'svm';
@@ -58,7 +58,7 @@ function run_SVMRepsVaryConditions
         legendsForPsychometricFunctions{k} = sprintf('%d trials', performanceTrialsUsed);
     end
     
-    computeResponses = true;
+    computeResponses = ~true;
     if (computeResponses)
         % Run the full reps when computing responses
         idx = numel(trainingSamples);
