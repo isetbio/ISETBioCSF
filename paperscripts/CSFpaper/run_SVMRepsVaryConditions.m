@@ -3,9 +3,9 @@ function run_SVMRepsVaryConditions
 %  
     % How to split the computation
     % 8, 16 or 32
-    computationInstance = 8;
-    computeResponses = ~true;
-    findPerformance = ~true;
+    computationInstance = 16;
+    computeResponses = true;
+    findPerformance = true;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -34,7 +34,7 @@ function run_SVMRepsVaryConditions
     params.centeredEMpaths = ~true;
  
     % Trials num
-    params.nTrainingSamples = 1024*32;
+    
     % Contrast range to examine
     if (computationInstance == 32)
         params.lowContrast = 0.01;
@@ -53,8 +53,10 @@ function run_SVMRepsVaryConditions
     % Trials to use in the classifier - vary this one 
     switch (computationInstance)
         case 8
-            trainingSamples = params.nTrainingSamples ./ (2.^[6 5 4 3 2 1]);
+            params.nTrainingSamples = 1024*16;
+            trainingSamples = params.nTrainingSamples ./ (2.^[5 4 3 2 1 0]);
         case 16
+            params.nTrainingSamples = 1024*32;
             trainingSamples = params.nTrainingSamples ./ (2.^[6 5 4 3 2 1 0]);
         otherwise
             error('Training samples sequence not set for computationInstance:%d', computationInstance);
@@ -68,15 +70,6 @@ function run_SVMRepsVaryConditions
         legendsForPsychometricFunctions{k} = sprintf('%d trials', performanceTrialsUsed);
     end
     
-    
-    if (computeResponses)
-        % Run the full reps when computing responses
-        idx = numel(trainingSamples);
-        examinedCond = examinedCond(idx);
-        legends = {legends{idx}};
-        legendsForPsychometricFunctions = {legendsForPsychometricFunctions{idx}};
-    end
-    
     theTitle = ''; %sprintf('%2.0f c/deg, %s\n%s', computationInstance, examinedCond(1).classifier, params.emPathType);
     fixedParamName = sprintf('%2.0fCPD_%s_%s', computationInstance, examinedCond(1).classifier, params.emPathType);
     
@@ -84,7 +77,7 @@ function run_SVMRepsVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = computeResponses;
+    
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -101,7 +94,12 @@ function run_SVMRepsVaryConditions
     params.deleteResponseInstances = ~true;
     
     % Go
-    for condIndex = 1:numel(examinedCond)
+    for condIndex = numel(examinedCond):-1:1
+        if (computeResponses && coneIndex==numel(examinedCond))
+            params.computeResponses = true;
+        else
+            params.computeResponses = false;
+        end
         params.performanceClassifier = examinedCond(condIndex).classifier;
         params.performanceTrialsUsed = examinedCond(condIndex).performanceTrialsUsed;
         [~, thePsychometricFunctions, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
@@ -117,7 +115,7 @@ function run_SVMRepsVaryConditions
     
     
     if (makeSummaryFigure)
-        if (computationInstance ==16)
+        if (computationInstance == 16)
             csLims = [30 35];
         else
             csLims = [5 10];
