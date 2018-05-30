@@ -4,11 +4,11 @@ function run_SVMRepsVaryConditions
     % How to split the computation
     % 8, 16 or 32
     computationInstance = 16;
-    computeResponses = true;
+    computeResponses = ~true;
     findPerformance = true;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
+    makeSummaryFigure = ~true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
@@ -23,7 +23,6 @@ function run_SVMRepsVaryConditions
     % Chromatic direction params
     params.coneContrastDirection = 'L+M+S';
     
-    
     % Response duration params
     params.frameRate = 10; %(1 frames)
     params.responseStabilizationMilliseconds = 40;
@@ -33,8 +32,6 @@ function run_SVMRepsVaryConditions
     params.emPathType = 'frozen0';
     params.centeredEMpaths = ~true;
  
-    % Trials num
-    
     % Contrast range to examine
     if (computationInstance == 32)
         params.lowContrast = 0.01;
@@ -53,8 +50,8 @@ function run_SVMRepsVaryConditions
     % Trials to use in the classifier - vary this one 
     switch (computationInstance)
         case 8
-            params.nTrainingSamples = 1024*16;
-            trainingSamples = params.nTrainingSamples ./ (2.^[5 4 3 2 1 0]);
+            params.nTrainingSamples = 1024*32;
+            trainingSamples = params.nTrainingSamples ./ (2.^[6 5 4 3 2 1]);
         case 16
             params.nTrainingSamples = 1024*32;
             trainingSamples = params.nTrainingSamples ./ (2.^[6 5 4 3 2 1 0]);
@@ -64,14 +61,15 @@ function run_SVMRepsVaryConditions
     
     for k = 1:numel(trainingSamples)
         performanceTrialsUsed = trainingSamples(k);
-        examinedCond(k).classifier = 'svm';
+        examinedCond(k).classifier =  'svmV1FilterBank';     % Choose between 'svm' and 'svmV1FilterBank'
+        examinedCond(k).poolingType = 'V1CosUnit' ;          % Choose between 'V1CosUnit' and 'V1QuadraturePair
         examinedCond(k).performanceTrialsUsed = performanceTrialsUsed;
         legends{k} = sprintf('SVM, %d trials', performanceTrialsUsed);
         legendsForPsychometricFunctions{k} = sprintf('%d trials', performanceTrialsUsed);
     end
     
     theTitle = ''; %sprintf('%2.0f c/deg, %s\n%s', computationInstance, examinedCond(1).classifier, params.emPathType);
-    fixedParamName = sprintf('%2.0fCPD_%s_%s', computationInstance, examinedCond(1).classifier, params.emPathType);
+    fixedParamName = sprintf('%2.0fCPD_%s_%s', computationInstance, params.emPathType, examinedCond(1).classifier);
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -101,6 +99,17 @@ function run_SVMRepsVaryConditions
             params.computeResponses = false;
         end
         params.performanceClassifier = examinedCond(condIndex).classifier;
+        if (strcmp(params.performanceClassifier, 'svmV1FilterBank'))
+            params.spatialPoolingKernelParams.type = examinedCond(condIndex).poolingType;
+            
+            if (strcmp(params.spatialPoolingKernelParams.type, 'V1QuadraturePair'))
+                params.spatialPoolingKernelParams.activationFunction = 'energy';
+            elseif (strcmp(examinedCond(condIndex).poolingType, 'V1CosUnit'))
+                params.spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+            else
+                error('Unknwon poolingType: ''%s''.', poolingType);
+            end
+        end
         params.performanceTrialsUsed = examinedCond(condIndex).performanceTrialsUsed;
         [~, thePsychometricFunctions, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
        
@@ -117,8 +126,10 @@ function run_SVMRepsVaryConditions
     if (makeSummaryFigure)
         if (computationInstance == 16)
             csLims = [30 35];
+        elseif (computationInstance == 8)
+            csLims = [50 150];
         else
-            csLims = [5 10];
+            csLims = [1 1000];
         end
     
         generatePsychometricFunctionsPlot(sf0PsychometricFunctions, csLims, theTrials, legendsForPsychometricFunctions, theTitle, fixedParamName);
@@ -184,10 +195,7 @@ function generatePsychometricFunctionsPlot(psychometricFunctions, csLims,  theTr
         'theTextFontSize', inGraphTextFontSize);
     
 
-    
-    
-    
-    csTicks = [2 5 6 7 8 9 10  20 30 31 32 33 34 35 50 100 200 500 1000 2000 5000 10000];
+    csTicks = [2 5 6 7 8 9 10  20 30 31 32 33 34 35 50 70 100 150 200 500 1000 2000 5000 10000];
     theText = text(2000, csLims(2)*0.97, theTitle);
     set(theText, 'FontSize', 16, ...
                     'FontWeight', 'Normal', ...
