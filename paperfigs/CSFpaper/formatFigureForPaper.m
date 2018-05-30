@@ -138,7 +138,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 xtickformat(theAxes, '%.2f'); ytickformat(theAxes, '%.2f');
                 
                 if (~isempty(theLegend))
-                    set(theLegend,  'Location', 'NorthWest');
+                    set(theLegend,  'Location', 'SouthEast');
                 end
             
                 axis(theRatioAxes, 'square');
