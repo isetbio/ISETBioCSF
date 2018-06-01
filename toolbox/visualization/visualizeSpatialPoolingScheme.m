@@ -36,7 +36,8 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         set(gca, 'CLim', [0 1], 'XLim', max([mosaicFOVDegs stimulusFOVDegs])/2*[-1 1]*1.02, 'YLim', max([mosaicFOVDegs stimulusFOVDegs])/2*[-1 1]*1.02, 'XTickLabels', {});
         set(gca, 'FontSize', 20);  
         
-    elseif (strcmp(spatialPoolingKernelParams.type, 'V1QuadraturePair'))
+    elseif ((strcmp(spatialPoolingKernelParams.type, 'V1QuadraturePair')) || ...
+            (strcmp(spatialPoolingKernelParams.type, 'V1CosUnit')) )
         
         if iscell(spatialPoolingFilter)
             hFig = visualizeEnsembleSpatialPoolingScheme(xaxis, yaxis, spatialModulation, ...

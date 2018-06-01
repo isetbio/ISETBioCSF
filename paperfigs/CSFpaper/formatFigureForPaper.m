@@ -3,10 +3,12 @@ function varargout = formatFigureForPaper(hFig, varargin)
     p.addParameter('figureType', 'CSF', @ischar);
     p.addParameter('plotRatiosOfOtherConditionsToFirst', false, @islogical);
     p.addParameter('theAxes', []);
+    p.addParameter('theAxes2', []);
     p.addParameter('theRatioAxes', []);
     p.addParameter('theRatioLims', []);
     p.addParameter('theRatioTicks', []);
     p.addParameter('theLegend', []);
+    p.addParameter('theLegend2', []);
     p.addParameter('theText', []);
     p.addParameter('theTextFontSize', [], @isnumeric);
     p.addParameter('theFigureTitle', '', @ischar);
@@ -21,10 +23,12 @@ function varargout = formatFigureForPaper(hFig, varargin)
     plotRatiosOfOtherConditionsToFirst = p.Results.plotRatiosOfOtherConditionsToFirst;
     
     theAxes =  p.Results.theAxes;
+    theAxes2 =  p.Results.theAxes2;
     theRatioAxes = p.Results.theRatioAxes;
     theRatioLims = p.Results.theRatioLims;
     theRatioTicks = p.Results.theRatioTicks;
     theLegend = p.Results.theLegend;
+    theLegend2 = p.Results.theLegend2;
     theText = p.Results.theText;
     theTextFontSize = p.Results.theTextFontSize;
     theFigureTitle = p.Results.theFigureTitle;
@@ -124,6 +128,55 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 end
             
             end
+            
+        case 'PSYCHOMETRIC_FUNCTIONS_2_CLASSIFIERS'
+            if (isempty(theAxes))
+                set(hFig, 'Position', [10 10 1450 450], 'Color', [1 1 1]);
+                varargout{1} = subplot('Position', [0.03      0.13 0.32 0.8]);
+                varargout{2} = subplot('Position', [0.03+0.33 0.13 0.32 0.8]);
+                varargout{3} = subplot('Position', [0.03+0.66 0.13 0.32 0.8]);     
+            else
+                axis(theAxes, 'square');
+                axis(theAxes, 'xy');
+                set(theAxes, 'XScale', 'log', 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                box(theAxes, 'on');
+                grid(theAxes, 'on');
+                xtickformat(theAxes, '%.3f'); ytickformat(theAxes, '%.2f');
+                
+                axis(theAxes2, 'square');
+                axis(theAxes2, 'xy');
+                set(theAxes2, 'XScale', 'log', 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                box(theAxes2, 'on');
+                grid(theAxes2, 'on');
+                xtickformat(theAxes2, '%.3f'); ytickformat(theAxes2, '%.2f');
+                
+                if (~isempty(theLegend))
+                    set(theLegend,  'Location', 'SouthEast');
+                end
+            
+                if (~isempty(theLegend2))
+                    set(theLegend2,  'Location', 'SouthEast');
+                end
+                
+                if (~isempty(theText))
+                    if (isempty(theTextFontSize))
+                        theTextFontSize = 30;
+                    end
+                    set(theText, 'FontSize', theTextFontSize, ...
+                        'FontWeight', 'Bold', ...
+                        'BackgroundColor', [1 1 1], ...
+                        'EdgeColor', [ 0 0 0], ...
+                        'LineWidth', 1.0);
+                end
+            
+                axis(theRatioAxes, 'square');
+                axis(theRatioAxes, 'xy');
+                set(theRatioAxes, 'XScale', 'log', 'YScale', 'linear', 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                box(theRatioAxes, 'on');
+                grid(theRatioAxes, 'on');
+                xtickformat(theRatioAxes, '%3.0g'); ytickformat(theRatioAxes, '%.0f'); 
+            end
+            
         case 'PSYCHOMETRIC_FUNCTIONS'
             if (isempty(theAxes))
                 set(hFig, 'Position', [10 10 1000 450], 'Color', [1 1 1]);
@@ -135,7 +188,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 set(theAxes, 'XScale', 'log', 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theAxes, 'on');
                 grid(theAxes, 'on');
-                xtickformat(theAxes, '%.2f'); ytickformat(theAxes, '%.2f');
+                xtickformat(theAxes, '%.3f'); ytickformat(theAxes, '%.2f');
                 
                 if (~isempty(theLegend))
                     set(theLegend,  'Location', 'SouthEast');
@@ -146,8 +199,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 set(theRatioAxes, 'XScale', 'log', 'YScale', 'linear', 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theRatioAxes, 'on');
                 grid(theRatioAxes, 'on');
-                xtickformat(theRatioAxes, '%3.0g'); ytickformat(theRatioAxes, '%.2f');
-                
+                xtickformat(theRatioAxes, '%3.0g'); ytickformat(theRatioAxes, '%.0f'); 
             end
             
         case 'CONE_SPATIAL_POOLING'

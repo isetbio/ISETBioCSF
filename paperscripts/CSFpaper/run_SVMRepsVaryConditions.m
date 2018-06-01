@@ -81,7 +81,7 @@ function run_SVMRepsVaryConditions
     end
     
     theTitle = ''; %sprintf('%2.0f c/deg, %s\n%s', computationInstance, examinedCond(1).classifier, params.emPathType);
-    fixedParamName = sprintf('%2.0fCPD_%s_%s', computationInstance, params.emPathType, performanceClassifier);
+    fixedParamName = sprintf('%.0fCPD_%s_%s', computationInstance, params.emPathType, performanceClassifier);
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -229,5 +229,4 @@ function generatePsychometricFunctionsPlot(psychometricFunctions, csLims,  theTr
     fixedParamName = strrep(fixedParamName, '\mu', 'micro');
     figureName = fullfile(exportsDir, sprintf('%sVary%s.pdf', variedParamName, fixedParamName));
     NicePlot.exportFigToPDF(figureName, hFig, 300);
-    
 end
