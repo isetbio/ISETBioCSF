@@ -16,8 +16,8 @@ function run_ConditionToVisualizeResponses
     % Adjust any params we want to change from their default values
     params.opticsModel = opticsName;
     params.coneContrastDirection = 'L+M+S';
-    params.lowContrast = 0.05;
-    params.highContrast =  0.3;
+    params.lowContrast = 0.01;
+    params.highContrast =  0.1;
     params.nContrastsPerDirection =  2;
     params.nTrainingSamples = 1023;
     params.performanceTrialsUsed = [];
@@ -27,7 +27,7 @@ function run_ConditionToVisualizeResponses
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeDisplay = ~true;
     params.visualizeResponses = true;
