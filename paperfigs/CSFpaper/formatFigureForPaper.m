@@ -130,11 +130,11 @@ function varargout = formatFigureForPaper(hFig, varargin)
             end
             
         case 'PSYCHOMETRIC_FUNCTIONS_2_CLASSIFIERS'
-            if (isempty(theAxes))
-                set(hFig, 'Position', [10 10 1450 450], 'Color', [1 1 1]);
-                varargout{1} = subplot('Position', [0.03      0.13 0.32 0.8]);
-                varargout{2} = subplot('Position', [0.03+0.33 0.13 0.32 0.8]);
-                varargout{3} = subplot('Position', [0.03+0.66 0.13 0.32 0.8]);     
+            if (isempty(theAxes)) 
+                set(hFig, 'Position', [10 10 1000 450], 'Color', [1 1 1]);
+                varargout{1} = subplot('Position', [0.06 0.13 0.44 0.78]);
+                varargout{2} = subplot('Position', [0.55 0.13 0.44 0.78]);     
+                
             else
                 axis(theAxes, 'square');
                 axis(theAxes, 'xy');
@@ -168,13 +168,6 @@ function varargout = formatFigureForPaper(hFig, varargin)
                         'EdgeColor', [ 0 0 0], ...
                         'LineWidth', 1.0);
                 end
-            
-                axis(theRatioAxes, 'square');
-                axis(theRatioAxes, 'xy');
-                set(theRatioAxes, 'XScale', 'log', 'YScale', 'linear', 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
-                box(theRatioAxes, 'on');
-                grid(theRatioAxes, 'on');
-                xtickformat(theRatioAxes, '%3.0g'); ytickformat(theRatioAxes, '%.0f'); 
             end
             
         case 'PSYCHOMETRIC_FUNCTIONS'
