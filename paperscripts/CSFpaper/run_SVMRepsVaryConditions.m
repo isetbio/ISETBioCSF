@@ -2,12 +2,12 @@ function run_SVMRepsVaryConditions
 % This is the script used to assess the impact of different # of trials on the SVM-based CSF
 %  
     % Which spatial frequency to analyze
-    computationInstance = 8;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
-    performanceClassifier = 'svmV1FilterBank';     % Choose between 'svm' and 'svmV1FilterBank'
+    computationInstance = 32;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
+    performanceClassifier = 'svm'; %';     % Choose between 'svm' and 'svmV1FilterBank'
     poolingType = 'V1CosUnit' ;        % Choose between 'V1CosUnit' and 'V1QuadraturePair (only applicable if classifier = 'svmV1FilterBank')
         
     computeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
