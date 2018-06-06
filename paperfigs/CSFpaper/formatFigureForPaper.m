@@ -151,11 +151,11 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 xtickformat(theAxes2, '%.3f'); ytickformat(theAxes2, '%.2f');
                 
                 if (~isempty(theLegend))
-                    set(theLegend,  'Location', 'SouthEast');
+                    set(theLegend,  'Location', 'NorthWest');
                 end
             
                 if (~isempty(theLegend2))
-                    set(theLegend2,  'Location', 'SouthEast');
+                    set(theLegend2,  'Location', 'NorthWest');
                 end
                 
                 if (~isempty(theText))

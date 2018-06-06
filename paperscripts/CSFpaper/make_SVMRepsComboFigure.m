@@ -3,7 +3,7 @@ function make_SVMRepsComboFigure
 %  
     % Which spatial frequency to analyze
     thePanelLabel = ' C ';         % Label for the first panel
-    computationInstance = 16;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
+    computationInstance = 32;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
     performanceClassifiersVisualized = {'svm', 'svmV1FilterBank', 'mlpt'};     % Choose between 'svm' and 'svmV1FilterBank'
     performanceClassifiersVisualizedLegends = {...
         'SVM - PCA projection', ...
@@ -129,6 +129,7 @@ function make_SVMRepsComboFigure
                     error('Unknwon poolingType: ''%s''.', poolingType);
                 end
             end
+            
             if (strcmp(params.performanceClassifier, 'mlpt')) && (condIndex == numel(examinedCond))
                 paramsMLPT = params;
                 paramsMLPT.lowContrast = 0.00003;
@@ -139,6 +140,7 @@ function make_SVMRepsComboFigure
                 [~, thePsychometricFunctions, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(paramsMLPT);
                 thePsychometricFunctions = thePsychometricFunctions{:};
                 psychometricFunctionMLPT = thePsychometricFunctions{1};
+                
             elseif(~strcmp(params.performanceClassifier, 'mlpt'))
                 params.performanceTrialsUsed = examinedCond(condIndex).performanceTrialsUsed;
                 [~, thePsychometricFunctions, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
@@ -158,15 +160,33 @@ function make_SVMRepsComboFigure
     end
     
     if (makeSummaryFigure)
-        if (computationInstance == 16)
-            csLims = [30 1500];
+        if (computationInstance == 32)
+            csLims = [5 800];
+            contrastLims =  [0.01 0.3];
+            ratioLims = [.1 .7];
+            showLegend = false;
+        elseif (computationInstance == 16)
+            csLims = [5 800];
+            contrastLims =  [0.01 0.3]/3;
+            ratioLims = [.1 .7];
+            showLegend = false;
         elseif (computationInstance == 8)
-            csLims = [30 1500];
+            csLims = [5 800];
+            contrastLims =  [0.01 0.3]/6;
+            ratioLims = [.1 .7];
+            showLegend = true;
         else
-            csLims = [30 1500];
+            contrastLims =  [0.0005 0.15];
+            csLims = [30 600];
+            ratioLims = [.1 .7];
+            showLegend = true;
         end
     
-        generatePsychometricFunctionsPlot(targetSFPsychometricFunctions, targetSFPsychometricFunctions2, psychometricFunctionMLPT, csLims, theTrials, legendsForPsychometricFunctions, performanceClassifiersVisualizedLegends, thePanelLabel, fixedParamName);
+        generatePsychometricFunctionsPlot(targetSFPsychometricFunctions, ...
+            targetSFPsychometricFunctions2, psychometricFunctionMLPT, ...
+            csLims, contrastLims, ratioLims, theTrials, legendsForPsychometricFunctions, ...
+            performanceClassifiersVisualizedLegends, thePanelLabel, fixedParamName, showLegend);
+        
         variedParamName = 'SVMTrials';
         theRatioLims = [0.05 0.5];
         theRatioTicks = [0.05 0.1 0.2 0.5];
@@ -176,12 +196,17 @@ function make_SVMRepsComboFigure
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
-            'theRatioTicks', theRatioTicks ...
+            'theRatioTicks', theRatioTicks...
             );
     end
 end
 
-function generatePsychometricFunctionsPlot(psychometricFunctions, psychometricFunctions2, psychometricFunctionMLPT, csLims,  theTrials, trialLegends, classifierLegends, thePanelLabel, fixedParamName)
+function generatePsychometricFunctionsPlot(psychometricFunctions, ...
+    psychometricFunctions2, psychometricFunctionMLPT, ...
+    csLims,  contrastLims, ratioLims, theTrials, trialLegends, ...
+    classifierLegends, thePanelLabel, fixedParamName, showLegend)
+
+
     conditionsNum = numel(psychometricFunctions);
     
     hFig = figure(15); clf;
@@ -205,13 +230,16 @@ function generatePsychometricFunctionsPlot(psychometricFunctions, psychometricFu
     hold(theAxes, 'off');
     xlabel(theAxes, 'contrast', 'FontWeight', 'Bold');
     ylabel(theAxes, 'percent correct', 'FontWeight', 'Bold');
-    hL = legend(theAxes, trialLegends);
+    if (showLegend)
+        hL = legend(theAxes, trialLegends);
+    else
+        hL = [];
+    end
     title(theAxes, classifierLegends{1});
     
     % Panel label in the first panel
-    inGraphTextPos = [min(psyF.x)*0.6 0.95];
+    inGraphTextPos = [min(psyF.x)*1.07 0.95];
     inGraphText = text(theAxes, inGraphTextPos(1), inGraphTextPos(2), thePanelLabel);
-    inGraphTextFontSize = [];
     
     
     % The psychometric functions for classifier #2
@@ -226,24 +254,28 @@ function generatePsychometricFunctionsPlot(psychometricFunctions, psychometricFu
     hold(theAxes2, 'off');
     xlabel(theAxes2, 'contrast', 'FontWeight', 'Bold');
     ylabel(theAxes2, 'percent correct', 'FontWeight', 'Bold');
+    if (showLegend)
+        hL2 = legend(theAxes2, trialLegends);
+    else
+        hL2 = [];
+    end
     title(theAxes2, classifierLegends{2});
     
-    set(theAxes, 'XLim', [0.0005 0.15], 'XTick', [0.01 0.03 0.1 0.3], ...
+
+    set(theAxes, 'XLim', contrastLims, 'XTick', [0.01 0.03 0.1 0.3], ...
         'YLim', [0.4 1.01], 'XTick', [0.001 0.003 0.01 0.03 0.1 0.3]);
     
-    set(theAxes2, 'XLim', [0.0005 0.15], 'XTick', [0.01 0.03 0.1 0.3], ...
+    set(theAxes2, 'XLim', contrastLims, 'XTick', [0.01 0.03 0.1 0.3], ...
         'YLim', [0.4 1.01], 'XTick', [0.001 0.003 0.01 0.03 0.1 0.3]);
     
     % Format figure
     formatFigureForPaper(hFig, ...
         'figureType', 'PSYCHOMETRIC_FUNCTIONS_2_CLASSIFIERS', ...
         'plotRatiosOfOtherConditionsToFirst', false, ...
-        'theText', inGraphText, ...
-        'theTextFontSize', inGraphTextFontSize, ...
         'theAxes', theAxes, ...
         'theAxes2', theAxes2, ...
         'theLegend', hL, ...
-        'theTextFontSize', inGraphTextFontSize);
+        'theLegend2', hL2);
     
     exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', 'projects/IBIOColorDetect/paperfigs/CSFpaper/exports');
     variedParamName = 'TrialsNumPsychometricFunction';
@@ -252,43 +284,25 @@ function generatePsychometricFunctionsPlot(psychometricFunctions, psychometricFu
     NicePlot.exportFigToPDF(figureName, hFig, 300);
     
     
-    hFig = figure(16); clf;
-    theAxes = formatFigureForPaper(hFig, ...
-        'figureType', 'CSF', ...
-        'plotRatiosOfOtherConditionsToFirst', false);
-    
     theThresholdsMLPT = psychometricFunctionMLPT.thresholdContrast;
     
-    colors = brewermap(2, 'Set1');
+    theData{1} = struct('trialsNum', theTrials, 'contrastSensitivity', 1/theThresholdsMLPT * ones(size(theTrials)));
+    theData{2} = struct('trialsNum', theTrials, 'contrastSensitivity', 1./theThresholds);
+    theData{3} = struct('trialsNum', theTrials, 'contrastSensitivity', 1./theThresholds2);
+    
+    classifierLegends = {'MLPT', classifierLegends{1}, classifierLegends{2}};
     theTrialsLims = [400 80000];
-    
-    % The change in the CSFs
-    plot(theAxes, theTrials, 1./theThresholds, 'ko-', ...
-        'MarkerSize', 10, 'MarkerFaceColor', squeeze(colors(1,:)), ...
-        'Color', squeeze(colors(1,:)), ...
-        'LineWidth', 1.5);
-    hold on;
-    plot(theAxes, theTrials, 1./theThresholds2, 'ks-', ...
-        'MarkerSize', 10, 'MarkerFaceColor',  squeeze(colors(2,:)), ...
-        'Color', squeeze(colors(2,:)), ...
-        'LineWidth', 1.5);
-    plot(theAxes, theTrialsLims, 1/theThresholdsMLPT*[1 1], 'k--',...
-         'LineWidth', 1.5);
      
-    xlabel(theAxes, 'trials', 'FontWeight', 'Bold');
-    ylabel(theAxes, 'contrast sensitivity', 'FontWeight', 'Bold');
-    
-    hL = legend(theAxes, classifierLegends);
-    inGraphText = text(theAxes, 450, 1200, thePanelLabel);
-    formatFigureForPaper(hFig, ...
-        'figureType', 'CSF', ...
-        'theAxes', theAxes, ...
-        'theLegend', hL, ...
-        'theText', inGraphText);
-    
-    set(theAxes, 'XTick', [300 1000 3000 10000 30000 100000],  ...
-        'XLim', theTrialsLims, 'YLim', csLims);
-    xlabel(theAxes, 'number of trials', 'FontWeight', 'bold', 'FontSize', 20);
+    hFig = generateCSFTrialsFigure(theData, classifierLegends, ...
+       'plotRatiosOfOtherConditionsToFirst', true, ...
+       'theTrialsLims', theTrialsLims, ...
+       'theCSLims', csLims, ...
+       'inGraphText', thePanelLabel, ...
+       'inGraphTextPos', [480 620], ...
+       'theRatioLims', ratioLims, ...
+       'theRatioTicks', [0.1 0.2 0.3 0.4 0.6], ...
+       'showLegend', showLegend...
+    );
     
     exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', 'projects/IBIOColorDetect/paperfigs/CSFpaper/exports');
     variedParamName = 'TrialsNumCSF';
@@ -296,4 +310,131 @@ function generatePsychometricFunctionsPlot(psychometricFunctions, psychometricFu
     figureName = fullfile(exportsDir, sprintf('%sVary%s.pdf', variedParamName, fixedParamName));
     NicePlot.exportFigToPDF(figureName, hFig, 300);
 
+end
+
+
+
+function hFig = generateCSFTrialsFigure(theData, variedParamLegends, varargin)
+
+    p = inputParser;
+    p.addParameter('plotFirstConditionInGray', true, @islogical);
+    p.addParameter('plotRatiosOfOtherConditionsToFirst', false, @islogical);
+    p.addParameter('theRatioLims', []);
+    p.addParameter('theRatioTicks', []);
+    p.addParameter('theTrialsLims', []);
+    p.addParameter('theCSLims', []);
+    p.addParameter('inGraphText', '', @ischar);
+    p.addParameter('inGraphTextPos', [], @isnumeric);
+    p.addParameter('inGraphTextFontSize', [], @isnumeric);
+    p.addParameter('showLegend', true, @islogical);
+    p.parse(varargin{:});
+    
+  
+    plotFirstConditionInGray = p.Results.plotFirstConditionInGray;
+    inGraphText = p.Results.inGraphText;
+    inGraphTextPos = p.Results.inGraphTextPos;
+    inGraphTextFontSize = p.Results.inGraphTextFontSize;
+    plotRatiosOfOtherConditionsToFirst = p.Results.plotRatiosOfOtherConditionsToFirst;
+    theRatioLims = p.Results.theRatioLims;
+    theRatioTicks = p.Results.theRatioTicks;
+    theTrialsLims = p.Results.theTrialsLims;
+    theCSLims = p.Results.theCSLims;
+    showLegend = p.Results.showLegend;
+    
+    % Initialize figure
+    hFig = figure(20); clf;
+    [theAxes, theRatioAxes] = formatFigureForPaper(hFig, ...
+        'figureType', 'CSF', ...
+        'plotRatiosOfOtherConditionsToFirst', plotRatiosOfOtherConditionsToFirst);
+    
+    
+    % Displayed colors
+    if (plotFirstConditionInGray)
+        colors(1,:) = [0.5 0.5 0.5];
+        if (numel(theData)>1)
+            colors(2:numel(theData),:) = brewermap(numel(theData)-1, 'Set1');
+        end
+    else
+        colors = brewermap(numel(theData), 'Set1');
+    end
+    
+    faceColor = [0.3 0.3 0.3];
+    
+    hold(theAxes(1), 'on');
+    for condIndex = 1:numel(theData)
+            plot(theAxes, theData{condIndex}.trialsNum, theData{condIndex}.contrastSensitivity, 'o-', 'Color', squeeze(colors(condIndex,:)), ...
+            'MarkerEdgeColor', max(0, squeeze(colors(condIndex,:)) - faceColor), ...
+            'MarkerFaceColor', min(1, squeeze(colors(condIndex,:)) + faceColor), ...
+            'MarkerSize',12,'LineWidth',2);
+    end
+
+    
+    if (showLegend)
+       % Add legend
+       hL = legend(theAxes, variedParamLegends, 'Location', 'SouthEast');
+    else
+       hL = []; 
+    end
+    % Add text
+    if (~isempty(inGraphText))
+        if (isempty(inGraphTextPos))
+            if (plotRatiosOfOtherConditionsToFirst)
+                inGraphTextPos(1) = 550;
+                inGraphTextPos(2) = 450;
+            else
+                inGraphTextPos(1) = 550;
+                inGraphTextPos(2) = 450;
+            end
+        end
+        t = text(theAxes, inGraphTextPos(1), inGraphTextPos(2), inGraphText);
+    else
+        t = '';
+    end
+    hold(theAxes, 'off');
+    
+    if (plotRatiosOfOtherConditionsToFirst)
+        
+        hold(theRatioAxes, 'on');
+        refTrials = theData{1}.trialsNum;
+        refSensitivity = theData{1}.contrastSensitivity;
+        for condIndex = 2:numel(theData)
+            condTrials = theData{condIndex}.trialsNum;
+            condSensitivity = theData{condIndex}.contrastSensitivity;
+            ratios = zeros(1,numel(refTrials ));
+            for k = 1:numel(condTrials)
+                idx = find(condTrials(k) == refTrials);
+                if (~isempty(idx))
+                    ratios(k) = condSensitivity(idx)./refSensitivity(idx);
+                end
+            end
+            plot(theRatioAxes, refTrials, ratios, ...
+                'ko-', 'Color', squeeze(colors(condIndex,:)), ...
+                'MarkerEdgeColor', squeeze(colors(condIndex,:)), ...
+                'MarkerFaceColor', min(1, squeeze(colors(condIndex,:)) + faceColor), ...
+                'MarkerSize',12,'LineWidth',2);
+        end
+        hold(theRatioAxes, 'off');
+    end
+    
+    
+    % Format figure
+    formatFigureForPaper(hFig, ...
+        'figureType', 'CSF', ...
+        'plotRatiosOfOtherConditionsToFirst', plotRatiosOfOtherConditionsToFirst, ...
+        'theAxes', theAxes, ...
+        'theRatioAxes', theRatioAxes, ...
+        'theRatioLims', theRatioLims, ...
+        'theRatioTicks', theRatioTicks, ...
+        'theLegend', hL, ...
+        'theText', t, ...
+        'theTextFontSize', inGraphTextFontSize);
+    
+    
+    set(theAxes, 'XTick', [300 1000 3000 10000 30000 100000],  ...
+        'XLim', theTrialsLims, 'YLim', theCSLims);
+    set(theRatioAxes, 'XTick', [300 1000 3000 10000 30000 100000],  ...
+        'XLim', theTrialsLims);
+    
+    xlabel(theRatioAxes, 'number of trials', 'FontWeight', 'bold', 'FontSize', 20);
+    
 end
