@@ -17,10 +17,10 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
            'rowsNum', 1, ...
            'colsNum', 1, ...
            'heightMargin',   0.00, ...
-           'widthMargin',    0.00, ...
-           'leftMargin',     0.03, ...
+           'widthMargin',    0.05, ...
+           'leftMargin',     0.01, ...
            'rightMargin',    0.001, ...
-           'bottomMargin',   0.01, ...
+           'bottomMargin',   0.02, ...
            'topMargin',      0.005);
        
         hFig = figure(1); clf;
@@ -45,55 +45,86 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
             return;
         end
         
+        if (strcmp(spatialPoolingKernelParams.type, 'V1CosUnit'))
+            colsNum = 3;
+            quadratureIndices = 1;
+        else
+            colsNum = 4;
+            quadratureIndices = 2;
+        end
+        
         subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', 3, ...
-           'colsNum', 1, ...
+           'rowsNum', 1, ...
+           'colsNum', colsNum, ...
            'heightMargin',   0.04, ...
-           'widthMargin',    0.001, ...
-           'leftMargin',     0.11, ...
+           'widthMargin',    0.02, ...
+           'leftMargin',     0.05, ...
            'rightMargin',    0.001, ...
-           'bottomMargin',   0.01, ...
-           'topMargin',      0.02);
+           'bottomMargin',   0.04, ...
+           'topMargin',      0.01);
         
         hFig = figure(1); clf;
         formatFigureForPaper(hFig, ...
             'figureType', 'CONE_SPATIAL_POOLING');
         
+        % Stimulus modulation
+        tickIncrementDegs = 0.1;
         ax = subplot('Position', subplotPosVectors(1,1).v);
         imagesc(xaxis, yaxis, 0.5 + 0.3*spatialModulation);
         hold on;
-        % Spatial RF envelope
-        %envelopeLevels = [0.05:0.05:1];
-        %contour(xaxis, yaxis, spatialPoolingFilter.RFprofile, envelopeLevels, 'Color', 'g', 'LineWidth', 1.5, 'LineStyle', '-');
-   
-        tickIncrementDegs = 0.1;
-        
-        % All cone locations
-        X = zeros(numel(coneX), size(coneLocsInDegs,1));
-        Y = X;
-        for k = 1:size(coneLocsInDegs,1)
-            X(:,k) = coneLocsInDegs(k,1)+coneX;
-            Y(:,k) = coneLocsInDegs(k,2)+coneY;
-        end
-        line(X,Y,'color','k', 'LineWidth', 0.75)
         plot([xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
         plot([0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
-        
         hold off;
         formatFigureForPaper(hFig, ...
              'figureType', 'CONE_SPATIAL_POOLING', ...
              'theAxes', ax, ...
-             'theFigureTitle', 'no pooling' ...
+             'theFigureTitle', 'stimulus modulation' ...
+        );
+        set(ax, 'CLim', [0 1], 'XLim', [xaxis(1) xaxis(end)], 'YLim', [yaxis(1) yaxis(end)]);
+        set(ax, 'XTick', -0.2:0.1:0.2, 'YTick', -0.2:tickIncrementDegs:0.2);
+        ylabel(ax, 'degrees');
+        
+        % Spatial RF envelope
+        %envelopeLevels = [0.05:0.05:1];
+        %contour(xaxis, yaxis, spatialPoolingFilter.RFprofile, envelopeLevels, 'Color', 'g', 'LineWidth', 1.5, 'LineStyle', '-');
+   
+        % The cone mosaic
+        if iscell(spatialPoolingFilter)
+           % ensemble of V1-receptive field like filters
+           theSpatialPoolingFilter = spatialPoolingFilter{1};
+        else
+           theSpatialPoolingFilter = spatialPoolingFilter;
+        end
+            
+        ax = subplot('Position', subplotPosVectors(1,2).v);
+        hold on
+        plotQuantizedWeights(0*theSpatialPoolingFilter.cosPhasePoolingWeights, quantizationLevels, coneLocsInDegs, coneX, coneY);
+        plot(ax,[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
+        plot(ax,[0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
+                    
+        % All cone locations
+%         X = zeros(numel(coneX), size(coneLocsInDegs,1));
+%         Y = X;
+%         for k = 1:size(coneLocsInDegs,1)
+%             X(:,k) = coneLocsInDegs(k,1)+coneX;
+%             Y(:,k) = coneLocsInDegs(k,2)+coneY;
+%         end
+%         line(X,Y,'color','k', 'LineWidth', 0.75)
+        hold off;
+        formatFigureForPaper(hFig, ...
+             'figureType', 'CONE_SPATIAL_POOLING', ...
+             'theAxes', ax, ...
+             'theFigureTitle', 'cone mosaic' ...
         );
         set(gca, 'CLim', [0 1], 'XLim', [xaxis(1) xaxis(end)], 'YLim', [yaxis(1) yaxis(end)]);
         set(gca, 'XTick', -0.2:0.1:0.2, 'YTick', -0.2:tickIncrementDegs:0.2);
-        set(gca, 'XTickLabel', {});
+        set(gca, 'YTickLabel', {});
         %xlabel(ax, 'degrees');
-        ylabel(ax, 'degrees');
+        %ylabel(ax, 'degrees');
     
         if iscell(spatialPoolingFilter)
             for quadratureIndex = 1:2
-                ax = subplot('Position', subplotPosVectors(quadratureIndex+1,1).v);
+                ax = subplot('Position', subplotPosVectors(1, quadratureIndex+2).v);
                 imagesc(ax, xaxis, yaxis, 0.5 + 0.0*spatialModulation);
             end
         end
@@ -124,7 +155,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
                 
                 % The cos/sin-weights
                 maxWeight = max([max(abs(theSpatialPoolingFilter.cosPhasePoolingWeights(:))) max(abs(theSpatialPoolingFilter.sinPhasePoolingWeights(:)))]);
-                for quadratureIndex = 1:2
+                for quadratureIndex = 1:quadratureIndices
                     if (quadratureIndex == 1)
                         quantizedWeights = theSpatialPoolingFilter.cosPhasePoolingWeights;
                         desiredProfile = theSpatialPoolingFilter.cosPhasePoolingProfile;
@@ -133,7 +164,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
                         desiredProfile = theSpatialPoolingFilter.sinPhasePoolingProfile;
                     end
 
-                    ax = subplot('Position', subplotPosVectors(quadratureIndex+1,1).v);
+                    ax = subplot('Position', subplotPosVectors(1, quadratureIndex+2).v);
                     hold(ax, 'on');
                     plotQuantizedWeights(quantizedWeights/maxWeight, quantizationLevels, coneLocsInDegs, coneX, coneY);
                     %plotHorizontalPoolingProfile(xaxis, min(yaxis) + 0.1*((max(yaxis)-min(yaxis))), (max(yaxis)-min(yaxis)) * 0.1, quantizedWeights, coneLocsInDegs, desiredProfile, coneRadiusDegs);
@@ -154,7 +185,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
                 end
                 
                 for quadratureIndex = 1:2
-                    ax = subplot('Position', subplotPosVectors(quadratureIndex+1,1).v);
+                    ax = subplot('Position', subplotPosVectors(1, quadratureIndex+2).v);
                     hold(ax, 'on');
                     fprintf('Plotting RF outline for unit %d of %d\n', unitIndex, numel(spatialPoolingFilter));
                     % Spatial RF envelope
@@ -166,14 +197,18 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
             end
         end
         
-        for quadratureIndex = 1:2
+        for quadratureIndex = 1:quadratureIndices
             if (quadratureIndex == 1)
-                figTitle = 'cos-phase pooling';
+                if (strcmp(spatialPoolingKernelParams.type, 'V1CosUnit'))
+                    figTitle = 'pooling weights';
+                else
+                    figTitle = 'cos-phase pooling';
+                end
             else
                 figTitle = 'sin-phase pooling';
             end
                     
-            ax = subplot('Position', subplotPosVectors(quadratureIndex+1,1).v);
+            ax = subplot('Position', subplotPosVectors(1, quadratureIndex+2).v);
             formatFigureForPaper(hFig, ...
                      'figureType', 'CONE_SPATIAL_POOLING', ...
                      'theAxes', ax, ...
@@ -181,8 +216,8 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
             );
             set(ax, 'CLim', [0 1], 'XLim', [xaxis(1) xaxis(end)], 'YLim', [yaxis(1) yaxis(end)]);
             set(ax, 'XTick', -0.2:tickIncrementDegs:0.2, 'YTick', -0.2:tickIncrementDegs:0.2);
-            set(ax, 'XTickLabel', {});
-            ylabel(ax, 'degrees');
+            set(ax, 'YTickLabel', {});
+            %xlabel(ax, 'degrees');
         end
         
     elseif (strcmp(spatialPoolingKernelParams.type, 'V1envelope'))
