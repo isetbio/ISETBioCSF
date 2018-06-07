@@ -197,14 +197,14 @@ function varargout = formatFigureForPaper(hFig, varargin)
             
         case 'CONE_SPATIAL_POOLING'
             if (isempty(theAxes))
-                set(hFig, 'Position', [10 10 450 1200], 'Color', [1 1 1]);
+                set(hFig, 'Position', [10 10 1400 500], 'Color', [1 1 1]);
             else
                 axis(theAxes, 'equal');
                 axis(theAxes, 'xy');
                 set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theAxes, 'on');
                 grid(theAxes, 'on');
-                xtickformat(theAxes, '%.2f'); ytickformat(theAxes, '%.2f');
+                xtickformat(theAxes, '%.1f'); ytickformat(theAxes, '%.1f');
             end
         case {'STIMULUS_AND_OPTICAL_IMAGE', 'STIMULUS_OPTICAL_IMAGE_ISOMERIZATIONS_PHOTOCURRENTS'}
             if (isempty(theAxes))
