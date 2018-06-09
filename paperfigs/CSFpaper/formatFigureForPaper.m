@@ -78,6 +78,45 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 end
             end
             
+        case 'RESPONSE_INSTANCE_SINGLE_CONDIITION'
+            if (isempty(theAxes))
+                set(hFig, 'Position', [10 10 900 500], 'Color', [1 1 1]);
+            else
+                set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75, 'Ydir', 'Normal');
+                box(theAxes, 'on');
+                grid(theAxes, 'on');
+                xtickformat(theAxes, '%.0f');
+                
+                if (~isempty(theLegend))
+                    set(theLegend,  'Location', 'NorthEast');
+                end
+            end
+            
+        case 'RESPONSE_INSTANCE_THREE_CONDIITIONS'
+            if (isempty(theAxes))
+                set(hFig, 'Position', [10 10 900 1500], 'Color', [1 1 1]);
+            else
+                set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75, 'Ydir', 'Normal');
+                box(theAxes, 'on');
+                grid(theAxes, 'on');
+                xtickformat(theAxes, '%.0f');
+                
+                if (~isempty(theLegend))
+                    set(theLegend,  'Location', 'NorthEast');
+                end
+                if (~isempty(theText))
+                    if (isempty(theTextFontSize))
+                        theTextFontSize = 30;
+                    end
+                    set(theText, 'FontSize', theTextFontSize, ...
+                        'FontWeight', 'Bold', ...
+                        'BackgroundColor', [1 1 1], ...
+                        'EdgeColor', [ 0 0 0], ...
+                        'LineWidth', 1.0);
+                end
+                
+            end
+            
         case 'PIGMENT_TRANSMITTANCE'
             if (isempty(theAxes))
                 set(hFig, 'Position', [10 10 500 500], 'Color', [1 1 1]);

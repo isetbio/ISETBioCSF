@@ -24,10 +24,11 @@ function run_ConditionToVisualizeResponses
     params.cyclesPerDegreeExamined = [16]; % [4 8 16 32 50];
     
     % Simulation steps to perform
+    params.computeResponses = ~true;
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeDisplay = ~true;
     params.visualizeResponses = true;
@@ -35,7 +36,7 @@ function run_ConditionToVisualizeResponses
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
-    params.visualizeSpatialPoolingScheme = true;
+    params.visualizeSpatialPoolingScheme = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
     
     params.visualizeKernelTransformedSignals = true;

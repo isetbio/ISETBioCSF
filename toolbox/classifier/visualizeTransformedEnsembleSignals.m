@@ -1,7 +1,5 @@
 function hFigs = visualizeTransformedEnsembleSignals(V1filterEnsemble, timeAxis, noStimResponseInstances, stimResponseInstances, signalSource, stimContrast, spatialFilterName)
 
-    responseQuantizationLevelsNum = 100;
-    
     if (strcmp(signalSource, 'isomerizations'))
         plotType = 'density';
     else
@@ -13,111 +11,100 @@ function hFigs = visualizeTransformedEnsembleSignals(V1filterEnsemble, timeAxis,
         max([max(noStimResponseInstances(:)) max(stimResponseInstances(:))]) ...
         ];
     
+    responseQuantizationLevelsNum = 100;
+    if (strcmp(signalSource, 'isomerizations'))
+        responseRange(1) = 0;
+        responseQuantizationLevelsNum = round(responseRange(2));
+    end
+    
+    
     hFigs = visualizeEnsembleResponses(V1filterEnsemble, ...
         timeAxis, noStimResponseInstances, stimResponseInstances,  ...
-        responseRange, responseQuantizationLevelsNum, plotType, ...
+        responseRange, responseQuantizationLevelsNum, plotType, signalSource, ...
         sprintf('%s (%s)', spatialFilterName, signalSource), 5003+sum(signalSource-'a'));
 
 end
 
-function hFigs = visualizeEnsembleResponses(V1filterEnsemble, timeAxis, noStimResponseInstances, stimResponseInstances, responseRange, responseLevelsNum, plotType, yAxisLabel, figNo)
+function hFigs = visualizeEnsembleResponses(V1filterEnsemble, timeAxis, noStimResponseInstances, stimResponseInstances, responseRange, responseLevelsNum, plotType, signalSource, figName, figNo)
 
     responseLevels = linspace(responseRange(1), responseRange(2), responseLevelsNum);
     responseInstancesNum = size(noStimResponseInstances,1);
     unitsNums = size(noStimResponseInstances,2);
-      
+    
     timeAxis = timeAxis*1000;
     hFigs = [];
    
-    for unitIndex = 1:unitsNums
-       bandwidthIndex = V1filterEnsemble{unitIndex}.bandwidthIndex;
-       orientationIndex = V1filterEnsemble{unitIndex}.orientationIndex;
-       ft2DIndex = V1filterEnsemble{unitIndex}.ft2Dindex;
-       
-       if (numel(hFigs) < ft2DIndex)
-            rows = V1filterEnsemble{unitIndex}.rowsNum;
-            cols = V1filterEnsemble{unitIndex}.colsNum;
-            halfRows = (rows-1)/2;
-            halfCols = (cols-1)/2;
-    
-            subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-            'rowsNum', rows, ...
-            'colsNum', cols, ...
-            'heightMargin',   0.02, ...
-            'widthMargin',    0.02, ...
-            'leftMargin',     0.04, ...
-            'rightMargin',    0.01, ...
-            'bottomMargin',   0.03, ...
-            'topMargin',      0.01);
+    if (iscell(V1filterEnsemble))
+        for unitIndex = 1:unitsNums
+           bandwidthIndex = V1filterEnsemble{unitIndex}.bandwidthIndex;
+           orientationIndex = V1filterEnsemble{unitIndex}.orientationIndex;
+           ft2DIndex = V1filterEnsemble{unitIndex}.ft2Dindex;
+
+           if (numel(hFigs) < ft2DIndex)
+                rows = V1filterEnsemble{unitIndex}.rowsNum;
+                cols = V1filterEnsemble{unitIndex}.colsNum;
+                halfRows = (rows-1)/2;
+                halfCols = (cols-1)/2;
+
+                subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+                    'rowsNum', rows, ...
+                    'colsNum', cols, ...
+                    'heightMargin',   0.02, ...
+                    'widthMargin',    0.02, ...
+                    'leftMargin',     0.04, ...
+                    'rightMargin',    0.01, ...
+                    'bottomMargin',   0.03, ...
+                    'topMargin',      0.01);
+
+                hFigs(ft2DIndex) = figure(figNo+ft2DIndex); clf;
+                set(hFigs(ft2DIndex), 'Position', [10+ft2DIndex*100 10+ft2DIndex*50 1490 1340], 'Color', [1 1 1], 'Name', figureName);
+                set(gcf,'renderer','opengl');
+           end
+
+           row = V1filterEnsemble{unitIndex}.rowColPosition(1) + halfRows+1;
+           col = V1filterEnsemble{unitIndex}.rowColPosition(2) + halfCols+1;
+           ax1 = subplot('Position', subplotPosVectors(rows+1-row,col).v);
+           ax2 = [];
+           
+           noStimResponses = squeeze(noStimResponseInstances(:,unitIndex,:));
+           stimResponses = squeeze(stimResponseInstances(:,unitIndex,:));
+           renderNullTestComboResponse(ax1, ax2, ...
+               signalSource, ...
+               noStimResponses, stimResponses, [],[], ...
+               responseLevels, timeAxis, plotType, row, col, rows);
+       end % unitIndex
+    else
+        hFigs = figure(3333); clf;
+        formatFigureForPaper(hFigs, ...
+            'figureType','RESPONSE_INSTANCE_SINGLE_CONDIITION');
         
-            hFigs(ft2DIndex) = figure(figNo+ft2DIndex); clf;
-            set(hFigs(ft2DIndex), 'Position', [10+ft2DIndex*100 10+ft2DIndex*50 1490 1340], 'Color', [1 1 1]);
-            set(gcf,'renderer','opengl');
-       end
-       
-       row = V1filterEnsemble{unitIndex}.rowColPosition(1) + halfRows+1;
-       col = V1filterEnsemble{unitIndex}.rowColPosition(2) + halfCols+1;
-       subplot('Position', subplotPosVectors(rows+1-row,col).v);
-       
-       % Concatenate responses: null - test 
-       unitResponses= squeeze(noStimResponseInstances(:,unitIndex,:));
-       unitResponses = cat(2, unitResponses, squeeze(stimResponseInstances(:,unitIndex,:)));
-       meanResponse = mean(unitResponses,1);
-       
-       timeAxisComboSecondResponseStart = timeAxis(end)+timeAxis(2)-timeAxis(1);
-       timeAxisCombo = cat(2, timeAxis, timeAxis(end)+timeAxis);
-       timeAxisCombo = timeAxisCombo+(timeAxisCombo(2)-timeAxisCombo(1));
-       
-       timeAxisLimits = [timeAxisCombo(1) timeAxisCombo(end)];
-       if (timeAxisCombo(1) == timeAxisCombo(end))
-            timeAxisLimits = timeAxisCombo(1) + [-0.5 0.5];
-       end
-    
-       if (strcmp(plotType, 'density'))
-            responseDistribution = compute2Dhistogram(unitResponses, responseLevels);
-            imagesc(timeAxisCombo, responseLevels, responseDistribution);
-            hold on;
-       elseif (strcmp(plotType, 'line'))
-           hold on;
-           for instanceIndex = 1:size(responseInstancesNum,1)
-               y = squeeze(unitResponses(instanceIndex, :));
-               xflip = [timeAxisCombo(1 : end - 1) fliplr(timeAxisCombo)];
-               yflip = [y(1 : end - 1) fliplr(y)];
-               patch(xflip, yflip, [0.1 0.1 0.1], 'EdgeAlpha', 0.1, 'FaceColor', 'none');
-           end 
-       end
-       
-       plot(timeAxisCombo, meanResponse, 'w-', 'LineWidth', 6.0);
-       plot(timeAxisCombo, meanResponse, 'r-', 'LineWidth', 2.0);
-       plot(timeAxisComboSecondResponseStart*[1 1], [responseLevels(1) responseLevels(end)], 'k-');
-       hold off;
-       grid on; box on;
-       set(gca, 'XTick', [0:25:200]);
-       if (row == rows) && (col == 1)
-           xlabel('time (msec)');
-           ylabel('response');
-       else
-           set(gca, 'XTickLabel', {}, 'YTickLabel', {});
-       end
-       
-       set(gca, 'CLim', [0 1]);
-       set(gca, 'YLim', [responseLevels(1) responseLevels(end)], 'XLim', timeAxisLimits, 'FontSize', 14);
-       axis 'xy';
-       
-       colormap(1-gray(1024));
-       drawnow; 
-   
-   end % unitIndex
-       
-   
+        ax1 = subplot('Position', [0.065 0.11 0.67 0.82]);
+        ax2 = subplot('Position', [0.78  0.11 0.20 0.82]);
+        
+        timeAxisLimits = renderNullTestComboResponse(ax1, ax2, ...
+            signalSource, ...
+            noStimResponseInstances, stimResponseInstances, [], [], ...
+            responseLevels, timeAxis, plotType, 1, 1, 1);
+        
+        formatFigureForPaper(hFigs, ...
+            'figureType','RESPONSE_INSTANCE_SINGLE_CONDIITION', ...
+            'theAxes', ax1);
+        
+        hL = legend(ax2, 'null stimulus', 'test stimulus');
+        formatFigureForPaper(hFigs, ...
+            'figureType','RESPONSE_INSTANCE_SINGLE_CONDIITION', ...
+            'theAxes', ax2, ...
+            'theLegend', hL);
+        
+        if (strcmp(signalSource, 'isomerizations'))
+            ytickformat(ax1, '%.0f');
+        else
+            ytickformat(ax1, '%.1f');
+        end
+        
+        xtickformat(ax2, '%0.2f');
+        grid(ax2, 'on');
+        drawnow
+    end 
 end
 
-function responseDistribution = compute2Dhistogram(responses, responseLevels)
-
-    responseDistribution = zeros(numel(responseLevels)-1, size(responses,2));
-    for tBin = 1:size(responses,2)
-        N = histcounts(squeeze(responses(:,tBin)),responseLevels);
-        responseDistribution(:,tBin) = N';
-    end
-    responseDistribution = responseDistribution/max(responseDistribution(:));
-end
