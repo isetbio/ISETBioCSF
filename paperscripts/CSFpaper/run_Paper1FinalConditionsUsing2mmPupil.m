@@ -20,10 +20,10 @@ function run_Paper1FinalConditionsUsing2mmPupil
     
     % Adjust any params we want to change from their default values
     % Pupil sizes compared
-    examinedPupilSizes = {...
+    examinedPupilSizes = [...
         2 ...
         3 ...
-    };
+    ];
     examinedPupilSizeLegends = {...
         '2mm pupil' ...
         '3mm pupil' ...
@@ -60,7 +60,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -73,7 +73,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance =~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
