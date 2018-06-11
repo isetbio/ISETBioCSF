@@ -2,8 +2,8 @@ function make_SVMRepsComboFigure
 % This is the script used to assess the generate a combo SVM-type reps effect figure
 %  
     % Which spatial frequency to analyze
-    thePanelLabel = ' C ';         % Label for the first panel
-    computationInstance = 32;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
+    thePanelLabel = ' B ';         % Label for the first panel
+    computationInstance = 16;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
     performanceClassifiersVisualized = {'svm', 'svmV1FilterBank', 'mlpt'};     % Choose between 'svm' and 'svmV1FilterBank'
     performanceClassifiersVisualizedLegends = {...
         'SVM - PCA projection', ...
@@ -164,7 +164,7 @@ function make_SVMRepsComboFigure
             csLims = [5 800];
             contrastLims =  [0.01 0.3];
             ratioLims = [.1 .7];
-            showLegend = false;
+            showLegend = true;
         elseif (computationInstance == 16)
             csLims = [5 800];
             contrastLims =  [0.01 0.3]/3;
@@ -182,7 +182,7 @@ function make_SVMRepsComboFigure
             showLegend = true;
         end
     
-        generatePsychometricFunctionsPlot(targetSFPsychometricFunctions, ...
+        theData = generatePsychometricFunctionsPlot(targetSFPsychometricFunctions, ...
             targetSFPsychometricFunctions2, psychometricFunctionMLPT, ...
             csLims, contrastLims, ratioLims, theTrials, legendsForPsychometricFunctions, ...
             performanceClassifiersVisualizedLegends, thePanelLabel, fixedParamName, showLegend);
@@ -198,10 +198,12 @@ function make_SVMRepsComboFigure
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks...
             );
+        
+        save(sprintf('theData%d.mat',computationInstance), 'theData');
     end
 end
 
-function generatePsychometricFunctionsPlot(psychometricFunctions, ...
+function theData = generatePsychometricFunctionsPlot(psychometricFunctions, ...
     psychometricFunctions2, psychometricFunctionMLPT, ...
     csLims,  contrastLims, ratioLims, theTrials, trialLegends, ...
     classifierLegends, thePanelLabel, fixedParamName, showLegend)
