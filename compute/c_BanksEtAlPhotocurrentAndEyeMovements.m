@@ -110,9 +110,9 @@ p.addParameter('deleteResponseInstances', false, @islogical);
 p.parse(varargin{:});
 
 % Take a snapshot of the current IBIOColorDetect deployment
-%IBIOColorDetectConfig = tbUseProject('IBIOColorDetect');
-%IBIOColorDetectSnapshot = tbDeploymentSnapshot(IBIOColorDetectConfig);
-IBIOColorDetectSnapshot = struct();
+IBIOColorDetectConfig = tbUseProject('IBIOColorDetect');
+IBIOColorDetectSnapshot = tbDeploymentSnapshot(IBIOColorDetectConfig);
+
 
 % Following does not work, so we will write the stuct out ourselves
 %tbWriteConfig(IBIOColorDetectShapshot, 'configPath', 'IBIOColorDetect_snapshot.json');
