@@ -5,6 +5,7 @@ function params = getParamsForMosaicWithLabel(mosaicName)
     params.latticeAdjustmentPositionalToleranceF = [];      
     params.latticeAdjustmentDelaunayToleranceF = [];
     params.marginF = [];
+    params.eccBasedConeQuantalEfficiency = false;
     
     params.resamplingFactor = [];   % Empty indicates that c_BanksEtAlPhotocurrentAndEyeMovements
                                     % will choose a resamplingFactor based
