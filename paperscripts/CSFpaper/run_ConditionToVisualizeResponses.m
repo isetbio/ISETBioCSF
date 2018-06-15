@@ -40,7 +40,7 @@ function run_ConditionToVisualizeResponses
     params.visualizeMosaicWithFirstEMpath = ~true;
     
     params.visualizeKernelTransformedSignals = true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 

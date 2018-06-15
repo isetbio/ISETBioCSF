@@ -8,38 +8,78 @@ function run_Paper1FinalConditionsUsing2mmPupil
     
 
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
-    % Mosaic to use
-    mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
     
-    % Optics to use
-    opticsName = 'ThibosAverageSubject3MMPupil';
+    condIndex = 0;
     
-    params = getCSFpaperDefaultParams(mosaicName, computationInstance);
+    % Original Banks computation
+    condIndex = condIndex+1;
+    examinedCond(condIndex).conditionLabel = 'Banks mosaic and optics, MLPT';
+    examinedCond(condIndex).mosaicName = 'originalBanks';
+    examinedCond(condIndex).opticsModel = 'Geisler';
+    examinedCond(condIndex).inferenceEngine = 'mlpt';
     
-    % Adjust any params we want to change from their default values
-    % Pupil sizes compared
-    examinedPupilSizes = [...
-        2 ...
-        3 ...
-    ];
-    examinedPupilSizeLegends = {...
-        '2mm pupil' ...
-        '3mm pupil' ...
-    };
+    % Our best estimate of mosaic + optics, MLPT inference engine
+    condIndex = condIndex+1;
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic and optics, MLPT';
+    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealistic';
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).inferenceEngine = 'mlpt';
+    
+    % Our best estimate of mosaic + optics, SVMpool inference engine
+    condIndex = condIndex+1;
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic and optics, SVMpool';
+    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealistic';
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    
+    % Go
+    examinedLegends = {};
+    for condIndex = 1:numel(examinedCond)
+        cond = examinedCond(condIndex);
+        mosaicName = cond.mosaicName;
+        params = getCSFpaperDefaultParams(mosaicName, computationInstance);
+        params.opticsModel = cond.opticsModel;
+        params.performanceClassifier = cond.inferenceEngine;
+        if (strcmp(params.performanceClassifier, 'svmV1FilterBank'))
+            params.spatialPoolingKernelParams.type = cond.spatialPoolingKernelParams.type;
+            params.spatialPoolingKernelParams.activationFunction = cond.spatialPoolingKernelParams.activationFunction;
+        end
+        params = getRemainingDefaultParams(params, condIndex);  
+        examinedLegends{numel(examinedLegends) + 1} = examinedCond(condIndex).conditionLabel;
+        [~,~, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
+    end
+    
+    if (makeSummaryFigure)
+        variedParamName = 'VariousParams';
+        theRatioLims = [0.05 1.5];
+        theRatioTicks = [0.05  0.1 0.2 0.5 1.0];
+        generateFigureForPaper(theFigData, examinedLegends, variedParamName, 'ComparedToBanks87', ...
+            'figureType', 'CSF', ...
+            'showSubjectData', true, ...
+            'plotFirstConditionInGray', true, ...
+            'plotRatiosOfOtherConditionsToFirst', true, ...
+            'theRatioLims', theRatioLims, ...
+            'theRatioTicks', theRatioTicks ...
+            );
+    end
+end
 
-    idx = 1:1;
-    examinedPupilSizes = examinedPupilSizes(idx);
-    examinedPupilSizeLegends = {examinedPupilSizeLegends{idx}};
+function params = getRemainingDefaultParams(params, condIndex)
 
-    % Adjust any params we want to change from their default values
-    params.opticsModel = opticsName;
-    
+    % All condsexained  with 2 mm pupil
+    params.pupilDiamMm = 2.0;
+            
     % Chromatic direction params
     params.coneContrastDirection = 'L+M+S';
-    params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
-    
+    if (condIndex == 1)
+        params.cyclesPerDegreeExamined = [2 4 8 16 32 50];
+    else
+        params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
+    end
     % Response duration params
     params.frameRate = 10; %(1 frames)
     params.responseStabilizationMilliseconds = 40;
@@ -49,12 +89,6 @@ function run_Paper1FinalConditionsUsing2mmPupil
     params.emPathType = 'frozen0';
     params.centeredEMpaths = ~true;
     
-    %params.emPathType = 'random';
-    %params.centeredEMpaths = true;
-
-    params.performanceClassifier = 'svmV1FilterBank';
-    params.spatialPoolingKernelParams.type = 'V1CosUnit';
-    params.spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
                 
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -73,28 +107,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance =~true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
-    
-    % Go
-    for pupilIndex = 1:numel(examinedPupilSizes)
-        params.pupilDiamMm  = examinedPupilSizes(pupilIndex);
-        [~,~, theFigData{pupilIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
-    end
-    
-    if (makeSummaryFigure)
-        variedParamName = 'PupilSize';
-        theRatioLims = [0.05 0.5];
-        theRatioTicks = [0.05  0.1 0.2 0.5];
-        generateFigureForPaper(theFigData, examinedInferenceEngineLegends, variedParamName, sprintf('%s_%s',mosaicName, opticsName), ...
-            'figureType', 'CSF', ...
-            'inGraphText', ' A ', ...
-            'plotFirstConditionInGray', true, ...
-            'plotRatiosOfOtherConditionsToFirst', true, ...
-            'theRatioLims', theRatioLims, ...
-            'theRatioTicks', theRatioTicks ...
-            );
-    end
 end
-

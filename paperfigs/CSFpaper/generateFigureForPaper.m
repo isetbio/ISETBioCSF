@@ -3,6 +3,7 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
     p = inputParser;
     p.addParameter('figureType', 'CSF', @ischar);
     p.addParameter('showBanksPaperIOAcurves', false, @islogical);
+    p.addParameter('showSubjectData', false, @islogical);
     p.addParameter('plotFirstConditionInGray', true, @islogical);
     p.addParameter('plotRatiosOfOtherConditionsToFirst', false, @islogical);
     p.addParameter('theRatioLims', []);
@@ -14,6 +15,7 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
     
     figureType = p.Results.figureType;
     showBanksPaperIOAcurves = p.Results.showBanksPaperIOAcurves;
+    showSubjectData = p.Results.showSubjectData;
     plotFirstConditionInGray = p.Results.plotFirstConditionInGray;
     inGraphText = p.Results.inGraphText;
     inGraphTextPos = p.Results.inGraphTextPos;
@@ -43,6 +45,12 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
         colors(1,:) = [0.5 0.5 0.5];
         if (numel(theFigData)>1)
             colors(2:numel(theFigData),:) = brewermap(numel(theFigData)-1, 'Set1');
+            if (showSubjectData)
+                colorsNum = numel(theFigData)+2;
+            else
+                colorsNum = numel(theFigData);
+            end
+            colors(2:colorsNum+1,:) = brewermap(colorsNum, 'Set1');
         end
     else
         colors = brewermap(numel(theFigData), 'Set1');
@@ -51,7 +59,7 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
     faceColor = [0.3 0.3 0.3];
     
     hold(theAxes(1), 'on');
-
+    
     if (showBanksPaperIOAcurves)
         %banksFactor = 1;
         %plot(theAxes,figData.D(:,1),figData.D(:,2)*banksFactor,'-','Color', squeeze(colors(1,:)), 'LineWidth',2);
@@ -76,6 +84,66 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
             'MarkerSize',12,'LineWidth',2);
         end
     end
+    
+    if (showSubjectData)
+        load('BanksCSF.mat', 'BanksCSF');
+        figData.BanksCSF = BanksCSF;
+        
+        idealObserverData.SFs = figData.BanksCSF('34 cd/m2').x;
+        idealObserverData.CSF = figData.BanksCSF('34 cd/m2').y;
+        msbSubjectRatios = [...
+            5.0910, 16.0268
+            7.0576,   18.3709
+            10.0095,   21.7148
+            14.1960,   17.7137
+            20.4416,   16.6040
+            28.5542,   16.0562
+            40.8058,    9.1792];
+        
+        pjbSubjectRatios = [...
+            4.92,	17.57
+            6.93,	21.20
+            8.89,	31.81
+            13.86,	29.48
+            19.59,	21.29
+            27.87,	18.54];
+
+        msbSubjectSFs = squeeze(msbSubjectRatios(:,1));
+        msbSubjectRatios = squeeze(msbSubjectRatios(:,2));
+        
+        pjbSubjectSFs = squeeze(pjbSubjectRatios(:,1));
+        pjbSubjectRatios = squeeze(pjbSubjectRatios(:,2));
+        
+        for dataPoint = 1:numel(msbSubjectSFs)
+            targetSF = msbSubjectSFs(dataPoint);
+            [~,idx] = min(abs(targetSF-idealObserverData.SFs));
+            %fprintf('matched SFs: target:%2.2f ideal observer match:%2.2f\n', targetSF, idealObserverData.SFs(idx));
+            msbSubjectCSFs(dataPoint) = idealObserverData.CSF(idx)./msbSubjectRatios(dataPoint);
+        end
+
+        for dataPoint = 1:numel(pjbSubjectRatios)
+            targetSF = pjbSubjectSFs(dataPoint);
+            [~,idx] = min(abs(targetSF-idealObserverData.SFs));
+            fprintf('matched SFs: target:%2.2f ideal observer match:%2.2f\n', targetSF, idealObserverData.SFs(idx));
+            pjbSubjectCSFs(dataPoint) = idealObserverData.CSF(idx)./pjbSubjectRatios(dataPoint);
+        end
+        
+        % Add in the subject data
+        colorIndex = size(colors,1)-1
+        plot(theAxes, msbSubjectSFs, msbSubjectCSFs, '^', 'Color', squeeze(colors(colorIndex,:)), ...
+            'MarkerEdgeColor', max(0, squeeze(colors(colorIndex,:))-faceColor), ...
+            'MarkerFaceColor', min(1, squeeze(colors(colorIndex,:)) + faceColor), ...
+            'MarkerSize',12,'LineWidth',2);
+        
+        colorIndex = size(colors,1)
+        plot(theAxes, pjbSubjectSFs, pjbSubjectCSFs, '^', 'Color', squeeze(colors(colorIndex,:)), ...
+            'MarkerEdgeColor', max(0, squeeze(colors(colorIndex,:))-faceColor), ...
+            'MarkerFaceColor', min(1, squeeze(colors(colorIndex,:)) + faceColor), ...
+            'MarkerSize',12,'LineWidth',2);
+        
+        variedParamLegends{numel(variedParamLegends)+1} = 'Subject MSB (Banks et al ''87)';
+        variedParamLegends{numel(variedParamLegends)+1} = 'Subject PJB (Banks et al ''87)';
+   end
     
     % Add legend
     hL = legend(theAxes, variedParamLegends);
