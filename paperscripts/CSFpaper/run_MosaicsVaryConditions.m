@@ -6,7 +6,7 @@ function run_MosaicsVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
+    makeSummaryFigure = ~true;
     makeMosaicsFigure = ~true;
     
     % Mosaic to use
@@ -24,11 +24,11 @@ function run_MosaicsVaryConditions
         'ecc-based LMS density and efficiency' ...
     };
 
-    idx = 1:3;
-    examinedMosaicModels = {examinedMosaicModels{idx}};
-    
-    %idx = 4:4;
+    %idx = 1:3;
     %examinedMosaicModels = {examinedMosaicModels{idx}};
+    
+    idx = 4:4;
+    examinedMosaicModels = {examinedMosaicModels{idx}};
      
     % Tun the mosaic-vary condition using the Geisler optics
     opticsName = 'Geisler';
@@ -56,7 +56,7 @@ function run_MosaicsVaryConditions
         params.computeMosaic = ~true; 
         params.visualizeMosaic = ~true;
 
-        params.computeResponses = ~true;
+        params.computeResponses = true;
         params.computePhotocurrentResponseInstances = ~true;
         params.visualizeMosaic = makeMosaicsFigure;
         params.visualizeResponses = ~true;
@@ -69,7 +69,7 @@ function run_MosaicsVaryConditions
         params.visualizeDisplay = ~true;
     
         params.visualizeKernelTransformedSignals = ~true;
-        params.findPerformance = ~true;
+        params.findPerformance = true;
         params.visualizePerformance = makeSummaryFigure;
         params.deleteResponseInstances = ~true;
 
