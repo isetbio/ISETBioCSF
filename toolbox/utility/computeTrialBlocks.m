@@ -38,8 +38,8 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
         trialBlockSize = trialBlockSize-1;
         totalMemoryPerWorker = computeTotalMemoryPerWorker();
         totalMemoryUsed = totalMemoryPerWorker * numberOfWorkers;
-        fprintf('in loop trialBlockSize: %d, total memory used: %f\n', trialBlockSize, totalMemoryUsed);
     end
+    fprintf('trialBlockSize: %d, total memory used: %f\n', trialBlockSize, totalMemoryUsed);
     
     trialBlockSize = min([nTrials max([1 trialBlockSize])]);
     nParforTrialBlocks = ceil(nTrials / trialBlockSize);
