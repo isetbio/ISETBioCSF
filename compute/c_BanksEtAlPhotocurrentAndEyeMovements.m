@@ -28,6 +28,7 @@ p.addParameter('mosaicRotationDegs', 0, @isnumeric);
 p.addParameter('coneDarkNoiseRate',[0 0 0], @isnumeric);
 p.addParameter('LMSRatio',[0.67 0.33 0],@isnumeric);
 p.addParameter('conePacking', 'hexReg',@ischar);
+p.addParameter('eccBasedConeQuantalEfficiency', false, @islogical);
 p.addParameter('freezeNoise',true,@islogical);
 
 % HEX MOSAIC OPTIONS
@@ -37,13 +38,13 @@ p.addParameter('latticeAdjustmentPositionalToleranceF', 0.01, @isnumeric);
 p.addParameter('latticeAdjustmentDelaunayToleranceF', 0.001, @isnumeric);
 p.addParameter('maxGridAdjustmentIterations', Inf, @isnumeric);  % * * * NEW * * * 
 p.addParameter('marginF', [], @isnumeric);     
-p.addParameter('resamplingFactor', 9, @isnumeric);             % * * * NEW * * * 
+p.addParameter('resamplingFactor', 9, @isnumeric);              
 
 % Stimulus params
 p.addParameter('imagePixels',400,@isnumeric);
 p.addParameter('wavelengths',[380 5 780],@isnumeric);
 p.addParameter('coneContrastDirection', 'L+M', @ischar);
-p.addParameter('stimulusDurationInSeconds', 100/1000, @isnumeric);   % * * * NEW * * * 
+p.addParameter('stimulusDurationInSeconds', 100/1000, @isnumeric);   
 p.addParameter('nContrastsPerDirection',20,@isnumeric);
 p.addParameter('lowContrast',0.0001,@isnumeric);
 p.addParameter('highContrast',0.1,@isnumeric);
@@ -109,8 +110,9 @@ p.addParameter('deleteResponseInstances', false, @islogical);
 p.parse(varargin{:});
 
 % Take a snapshot of the current IBIOColorDetect deployment
-IBIOColorDetectConfig = tbUseProject('IBIOColorDetect');
-IBIOColorDetectSnapshot = tbDeploymentSnapshot(IBIOColorDetectConfig);
+%IBIOColorDetectConfig = tbUseProject('IBIOColorDetect');
+%IBIOColorDetectSnapshot = tbDeploymentSnapshot(IBIOColorDetectConfig);
+IBIOColorDetectSnapshot = struct();
 
 % Following does not work, so we will write the stuct out ourselves
 %tbWriteConfig(IBIOColorDetectShapshot, 'configPath', 'IBIOColorDetect_snapshot.json');
@@ -517,6 +519,7 @@ function rParams = updateMosaicParams(rParams, userParams, mosaicFOVdegs)
         
     if strcmp(userParams.conePacking, 'hex')
         rParams.mosaicParams = modifyStructParams(rParams.mosaicParams, ...
+            'eccBasedConeQuantalEfficiency', userParams.eccBasedConeQuantalEfficiency, ...
             'sConeMinDistanceFactor', userParams.sConeMinDistanceFactor, ...
             'sConeFreeRadiusMicrons', userParams.sConeFreeRadiusMicrons, ...
             'latticeAdjustmentPositionalToleranceF', userParams.latticeAdjustmentPositionalToleranceF, ...
