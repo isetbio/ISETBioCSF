@@ -346,7 +346,6 @@ if (p.Results.compute)
         theMosaic.integrationTime = p.Results.overrideMosaicIntegrationTime;
     end
 
-    
     %% Define color modulation list
     switch (testDirectionParams.instanceType)
         case 'LMPlane'
@@ -415,6 +414,47 @@ if (p.Results.compute)
     parforRanSeeds = randi(1000000, nParforConditions, nParforTrialBlocks)+1;
     parforRanSeedsNoStim = randi(1000000,1, nParforTrialBlocks)+1;
     
+    
+    %% Generate an expandedMosaic with correction factors here so we do not 
+    %% compute it many times later
+    % Generate 1000 eye movements nParforTrials(1) in to obtain an estimate of padRows, padCols
+    typicalMaxStimulusDurationMilliseconds = 1000;
+    if (isnan(rParams.temporalParams.windowTauInSeconds))
+        [stimulusTimeAxis, ~, ~] = squareTemporalWindowCreate(rParams.temporalParams);
+    else
+        [stimulusTimeAxis, ~, ~] = gaussianTemporalWindowCreate(rParams.temporalParams);
+    end
+    rParams.temporalParams
+    stimulusTimeAxis
+    eyeMovementsNum = (stimulusTimeAxis(end)-stimulusTimeAxis(1))/theMosaic.integrationTime
+    [theEMpaths, ~] = colorDetectMultiTrialEMPathGenerate(...
+        theMosaic, max(nParforTrials), eyeMovementsNum, rParams.temporalParams.emPathType, ...
+        'centeredEMPaths', p.Results.centeredEMPaths);
+
+    padRows = max(max(abs(theEMpaths(:, :, 2))));
+    padCols = max(max(abs(theEMpaths(:, :, 1))));
+
+    % We need a larger expandedMosaic to cover these emPaths
+    theMosaic.absorptions = [];
+    theMosaic.current = [];
+    theMosaic.os.lmsConeFilter = [];
+    theExpandedMosaic = theMosaic.copy();
+    theExpandedMosaic.pattern = zeros(...
+        theMosaic.rows + 2 * padRows, ...
+        theMosaic.cols + 2 * padCols);
+
+    if (theExpandedMosaic.shouldCorrectAbsorptionsWithEccentricity())
+        coneTypesNum = 3;
+        correctionFactors = coneMosaicHex.computeConeEfficiencyCorrectionFactors(...
+                theExpandedMosaic, ...
+                mfilename(), ...
+                obj.rows + 2 * padRows, obj.cols + 2 * padCols, coneTypesNum);
+        % Save correctionFactors for re-use
+        theExpandedMosaic.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
+    end
+    
+    
+    
     % Create parallel pool
     poolOBJ = gcp('nocreate');
     if isempty(poolOBJ)
@@ -450,6 +490,7 @@ if (p.Results.compute)
             colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nParforTrials(trialBlock), ...
                 rParams.spatialParams, rParams.backgroundParams, colorModulationParamsNull, rParams.temporalParams, theOI, theMosaic, ...
                 'centeredEMPaths', p.Results.centeredEMPaths, ...
+                'theExpandedMosaic', theExpandedMosaic, ...
                 'osImpulseResponseFunctions', [], ...  % pass empty array, to compute the IR filters based on the null stimulus 
                 'osMeanCurrents', [], ...              % pass empty array, to compute the steady-state current based on the null stimulus 
                 'seed', parforRanSeedsNoStim(1, trialBlock), ...
@@ -547,6 +588,7 @@ if (p.Results.compute)
                 colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nParforTrials(trialBlock), ...
                     rParams.spatialParams, rParams.backgroundParams, colorModulationParamsTemp, rParams.temporalParams, theOI, theMosaic, ...
                     'centeredEMPaths', p.Results.centeredEMPaths, ...
+                    'theExpandedMosaic', theExpandedMosaic, ...
                     'osImpulseResponseFunctions', osImpulseResponseFunctionsFromNullStimulus{1}, ...  % use the IR filters computed from the null stimulus
                     'osMeanCurrents', meanCurrentsFromNullStimulus{1}, ...                            % use the to steady-state currents computed from the null stimulus  
                     'seed', parforRanSeeds(kk,trialBlock), ...
