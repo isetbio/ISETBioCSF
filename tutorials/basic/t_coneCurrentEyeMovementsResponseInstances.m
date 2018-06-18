@@ -417,22 +417,26 @@ if (p.Results.compute)
     
     %% Generate an expandedMosaic with correction factors here so we do not 
     %% compute it many times later
-    % Generate 1000 eye movements nParforTrials(1) in to obtain an estimate of padRows, padCols
-    typicalMaxStimulusDurationMilliseconds = 1000;
+    % Generate a reasonable sample of the eye movements so as to obtain an estimate of padRows, padCols
     if (isnan(rParams.temporalParams.windowTauInSeconds))
         [stimulusTimeAxis, ~, ~] = squareTemporalWindowCreate(rParams.temporalParams);
     else
         [stimulusTimeAxis, ~, ~] = gaussianTemporalWindowCreate(rParams.temporalParams);
     end
-    rParams.temporalParams
-    stimulusTimeAxis
-    eyeMovementsNum = (stimulusTimeAxis(end)-stimulusTimeAxis(1))/theMosaic.integrationTime
-    [theEMpaths, ~] = colorDetectMultiTrialEMPathGenerate(...
-        theMosaic, max(nParforTrials), eyeMovementsNum, rParams.temporalParams.emPathType, ...
-        'centeredEMPaths', p.Results.centeredEMPaths);
 
-    padRows = max(max(abs(theEMpaths(:, :, 2))));
-    padCols = max(max(abs(theEMpaths(:, :, 1))));
+    eyeMovementsNum = (stimulusTimeAxis(end)-stimulusTimeAxis(1))/theMosaic.integrationTime;
+    if (eyeMovementsNum > 0)
+        [theEMpaths, ~] = colorDetectMultiTrialEMPathGenerate(...
+            theMosaic, max(nParforTrials), eyeMovementsNum, rParams.temporalParams.emPathType, ...
+            'centeredEMPaths', p.Results.centeredEMPaths);
+        % estimate padRows, padCols with some extra boosting
+        padRows = ceil(max(max(abs(theEMpaths(:, :, 2))))*1.3);
+        padCols = ceil(max(max(abs(theEMpaths(:, :, 1))))*1.3);
+    else
+        padRows = 0;
+        padCols = 0;
+    end
+    
 
     % We need a larger expandedMosaic to cover these emPaths
     theMosaic.absorptions = [];
@@ -448,12 +452,11 @@ if (p.Results.compute)
         correctionFactors = coneMosaicHex.computeConeEfficiencyCorrectionFactors(...
                 theExpandedMosaic, ...
                 mfilename(), ...
-                obj.rows + 2 * padRows, obj.cols + 2 * padCols, coneTypesNum);
+                theMosaic.rows + 2 * padRows, theMosaic.cols + 2 * padCols, coneTypesNum);
         % Save correctionFactors for re-use
         theExpandedMosaic.setConeQuantalEfficiencyCorrectionFactors(correctionFactors);
     end
-    
-    
+
     
     % Create parallel pool
     poolOBJ = gcp('nocreate');
