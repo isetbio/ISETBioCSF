@@ -13,7 +13,7 @@ function run_OpticsVaryConditions
     visualizedWavelengths = 550;
         
     % Mosaic to use
-    mosaicName = 'ISETbioHexEccBasedLMSrealistic';
+    mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
     % Adjust any params we want to change from their default values
@@ -35,9 +35,9 @@ function run_OpticsVaryConditions
         'wvf-based PSF (subject l)' ...
     };
 
-%     idx = 1:6;
-%     examinedOpticsModels = {examinedOpticsModels{idx}};
-%     examinedOpticsModelLegends = {examinedOpticsModelLegends{idx}};
+     idx = 4:4;
+     examinedOpticsModels = {examinedOpticsModels{idx}};
+     examinedOpticsModelLegends = {examinedOpticsModelLegends{idx}};
 %     
     params.coneContrastDirection = 'L+M+S';
     params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];

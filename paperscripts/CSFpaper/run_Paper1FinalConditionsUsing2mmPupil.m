@@ -23,14 +23,14 @@ function run_Paper1FinalConditionsUsing2mmPupil
     % Our best estimate of mosaic + optics, MLPT inference engine
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic and optics, MLPT';
-    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealistic';
+    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'mlpt';
     
     % Our best estimate of mosaic + optics, SVMpool inference engine
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic and optics, SVMpool';
-    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealistic';
+    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
