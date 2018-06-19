@@ -7,7 +7,7 @@ function run_MosaicsVaryConditions
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = ~true;
-    makeMosaicsFigure = true;
+    makeMosaicsFigure = ~true;
     
     % Mosaic to use
     examinedMosaicModels = {...
@@ -28,8 +28,8 @@ function run_MosaicsVaryConditions
     %idx = 1:3;
     %examinedMosaicModels = {examinedMosaicModels{idx}};
     
-    %idx = 4:4;
-    %examinedMosaicModels = {examinedMosaicModels{idx}};
+    idx = 4:4;
+    examinedMosaicModels = {examinedMosaicModels{idx}};
      
     % Tun the mosaic-vary condition using the Geisler optics
     opticsName = 'Geisler';
@@ -59,7 +59,7 @@ function run_MosaicsVaryConditions
         params.computeMosaic = ~true; 
         params.visualizeMosaic = ~true;
 
-        params.computeResponses = ~true;
+        params.computeResponses = true;
         params.computePhotocurrentResponseInstances = ~true;
         params.visualizeMosaic = makeMosaicsFigure;
         params.visualizeResponses = ~true;
@@ -72,7 +72,7 @@ function run_MosaicsVaryConditions
         params.visualizeDisplay = ~true;
     
         params.visualizeKernelTransformedSignals = ~true;
-        params.findPerformance = ~true;
+        params.findPerformance = true;
         params.visualizePerformance = makeSummaryFigure;
         params.deleteResponseInstances = ~true;
 
