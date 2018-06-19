@@ -28,8 +28,8 @@ function run_MosaicsVaryConditions
     %idx = 1:3;
     %examinedMosaicModels = {examinedMosaicModels{idx}};
     
-    idx = 4:4;
-    examinedMosaicModels = {examinedMosaicModels{idx}};
+    %idx = 4:4;
+    %examinedMosaicModels = {examinedMosaicModels{idx}};
      
     % Tun the mosaic-vary condition using the Geisler optics
     opticsName = 'Geisler';
