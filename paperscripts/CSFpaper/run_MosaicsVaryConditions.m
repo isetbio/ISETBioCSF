@@ -6,8 +6,8 @@ function run_MosaicsVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
-    makeMosaicsFigure = ~true;
+    makeSummaryFigure = ~true;
+    makeMosaicsFigure = true;
     
     % Mosaic to use
     examinedMosaicModels = {...
@@ -17,6 +17,7 @@ function run_MosaicsVaryConditions
         'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection' ...
         };
  
+    
     examinedMosaicLegends = {...
         'constant LM density (Banks ''87)' ...
         'ecc-based LM density' ...
@@ -33,6 +34,8 @@ function run_MosaicsVaryConditions
     % Tun the mosaic-vary condition using the Geisler optics
     opticsName = 'Geisler';
       
+    theMosaicTypesAtSpecificSF = {};
+    
     % Go !
     for mosaicIndex = 1:numel(examinedMosaicModels)
         mosaicName = examinedMosaicModels{mosaicIndex};
@@ -78,8 +81,12 @@ function run_MosaicsVaryConditions
         
         if (makeMosaicsFigure)
             sfIndex = 1;
-            theMosaicTypesAtSpecificSF{mosaicIndex} = theMosaicTypes.theMosaics(sfIndex);
-            theMosaicTypesAtSpecificSF{mosaicIndex}.displayInfo();
+            if (strcmp(examinedMosaicLegends{mosaicIndex}, 'ecc-based LMS density'))
+                continue;
+            end
+            theCurrentMosaic = theMosaicTypes.theMosaics{sfIndex};
+            theMosaicTypesAtSpecificSF{numel(theMosaicTypesAtSpecificSF) + 1} = theCurrentMosaic;
+            theCurrentMosaic.displayInfo();
         end
     end
     
@@ -132,6 +139,7 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
         posRangeY = 0.5*visualizedFOV*cm.micronsPerDegree * 1e-6 * [-1 1];
         posRangeX = 1.8*posRangeY;
         mosaicName = examinedMosaicLegends{mosaicIndex};
+        
         if (contains(mosaicName, 'Banks'))
             apertureShape = 'hexagons';
         else
