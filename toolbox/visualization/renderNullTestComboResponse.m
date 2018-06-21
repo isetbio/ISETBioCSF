@@ -33,8 +33,8 @@ function timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, no
         end
     end
     plot(ax1, timeAxisComboSecondResponseStart*[1 1], [responseLevels(1) responseLevels(end)], 'k-', 'LineWidth', 2.0);
-    dy = (responseLevels(2)-responseLevels(1))/2;
-    plot(ax1, timeAxisCombo, meanResponse-dy, 'k-', 'LineWidth', 4.0);
+    dy = (responseLevels(2)-responseLevels(1));
+    plot(ax1, timeAxisCombo, meanResponse-dy, 'k-', 'LineWidth', 5.0);
     plot(ax1, timeAxisCombo, meanResponse-dy, 'g-', 'LineWidth', 3.0);
     
     hold(ax1, 'off');
@@ -94,7 +94,7 @@ function timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, no
         xlabel(ax2,'probability', 'FontWeight', 'bold');
     end
     
-    colormap(1-gray(1024));
+    colormap(brewermap(1024, '*Greys'));
     drawnow; 
 end
 

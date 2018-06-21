@@ -9,31 +9,21 @@ function hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(
     noStimNoiseFreeResponse = noStimNoiseFreeResponse(coneTypeIndicesToVisualize,:);
     stimNoiseFreeResponse = stimNoiseFreeResponse(coneTypeIndicesToVisualize,:);
     
-    if (numel(timeAxis) > 1)
-        responseNums = size(noStimResponseInstances,1);
-        if (responseNums > 1)        
-            for k = 1:responseNums
-                subplotPosVectors(responseNums-k+1,1).v = [0.065 0.05+(k-1)*0.33 0.67 0.25];
-                subplotPosVectors(responseNums-k+1,2).v = [0.78 0.05+(k-1)*0.33 0.20 0.25];
-            end
-        else
-            responseNums = 1;
-            subplotPosVectors(1,1).v = [0.065 0.11 0.67 0.85];
-            subplotPosVectors(1,2).v = [0.78 0.11 0.20 0.85];
+    % Arrange subplot regions
+    responseNums = size(noStimResponseInstances,1);
+    if (responseNums > 1)        
+        for k = 1:responseNums
+            subplotPosVectors(responseNums-k+1,1).v = [0.065 0.05+(k-1)*0.33 0.67 0.25];
+            subplotPosVectors(responseNums-k+1,2).v = [0.78 0.05+(k-1)*0.33 0.19 0.25];
         end
+    elseif (responseNums == 1)
+        subplotPosVectors(1,1).v = [0.065 0.11 0.67 0.83];
+        subplotPosVectors(1,2).v = [0.78 0.11 0.19 0.83];
     else
-        responseNums = size(noStimResponseInstances,1);
-        if (responseNums > 1) 
-            for k = 1:responseNums
-                subplotPosVectors(responseNums-k+1,1).v = [0.065 0.05+(k-1)*0.33 0.67 0.25];
-                subplotPosVectors(responseNums-k+1,2).v = [0.78 0.05+(k-1)*0.33 0.20 0.25];
-            end
-        else
-            responseNums = 1;
-            subplotPosVectors(1,1).v = [0.065 0.11 0.67 0.85];
-            subplotPosVectors(1,2).v = [0.78 0.11 0.20 0.85];
-        end 
+        error('responseNums in %s is: %d\n', mfilename(), responseNums)
     end
+
+
     
     plotType = 'density';
     responseLevels = linspace(responseRange(1), responseRange(2), responseLevelsNum);
@@ -52,9 +42,9 @@ function hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(
         ax2 = subplot('Position', subplotPosVectors(responseIndex,2).v);
         
         if (responseNums == 1)
-            timeAxisLimits = renderNullTestComboResponse(ax1, ax2, ...
-                noStimResponseInstances, stimResponseInstances, signalSource, ...
-                noStimNoiseFreeResponse, stimNoiseFreeResponse, ...
+            timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, ...
+                squeeze(noStimResponseInstances(responseIndex,:,:)), squeeze(stimResponseInstances(responseIndex,:,:)), ...
+                squeeze(noStimNoiseFreeResponse(responseIndex,:)), squeeze(stimNoiseFreeResponse(responseIndex,:)), ...
                 responseLevels, timeAxis, plotType, 1, 1, 1);
         else
             timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, ...

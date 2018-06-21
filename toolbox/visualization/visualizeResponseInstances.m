@@ -1,5 +1,11 @@
-function hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData, visualizeOuterSegmentFilters, responseNormalization, condIndex, condsNum, format)
+function hFigsInfo = visualizeResponseInstances(theMosaic, ...
+    stimData, noStimData, visualizeOuterSegmentFilters, ...
+    responseNormalization, condIndex, condsNum, format)
 
+    % Which best cone types to visualize instances from
+    coneTypeIndicesToVisualize = [1 2 3];  % the best L, M- and S-cone
+    coneTypeIndicesToVisualize = [1];      % only the L-cone
+    
     instancesNum = size(stimData.responseInstanceArray.theMosaicIsomerizations,1);
     if (instancesNum < 1)
         return;
@@ -31,7 +37,10 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData,
     end
    
     % Noise free mosaic responses XT and XYat the time bin of peak response
-    [hFigs, peakConeIndex] = visualizeNoiseFreeXTandXYResponses(theMosaic, timeAxis, stimData, noStimData, 6000);
+    signalsToVisualize = 'isomerizationsAndPhotocurrents';
+    signalsToVisualize = 'isomerizationsOnly';
+    
+    [hFigs, peakConeIndex] = visualizeNoiseFreeXTandXYResponses(theMosaic, timeAxis, stimData, noStimData, 6000, signalsToVisualize);
     
     hFigsInfo{numel(hFigsInfo)+1} = struct(...
             'filename', 'noiseFreeXTResponses',...
@@ -40,7 +49,6 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData,
     hFigsInfo{numel(hFigsInfo)+1} = struct(...
             'filename', 'noiseFreeXYResponses',...
             'hFig', hFigs{2});
-        
         
         
     % Single L, M, and S-cone (best responses) showing distribution of all response instances
@@ -63,15 +71,8 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData,
         end
     end
     
-    
-    photocurrentsQuantizationLevelsNum = 100;
-    
-    % Which best cone types to visualize
-    coneTypeIndicesToVisualize = [1 2 3];  % the best L, M- and S-cone
-    %coneTypeIndicesToVisualize = [1];      % only the L-cone
-    
     if (~isempty(noStimData.responseInstanceArray.theMosaicIsomerizations))
-        isomerizationLevels = [0 50];
+        isomerizationLevels = [0 30];
         isomerizationQuantizationLevelsNum = round(isomerizationLevels(2)-isomerizationLevels(1));
         hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(...
             timeAxis, ...
@@ -93,7 +94,7 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, stimData, noStimData,
         
 
     if (~isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
-        
+        photocurrentsQuantizationLevelsNum = 100;
         photocurrentsLevels = [-90 -50]; 
         hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(...
             timeAxis, ...
@@ -138,7 +139,7 @@ function hFig = plotImpulseResponseFunctions(stimData)
 end
     
 
-function [hFig, peakConeIndex] = visualizeNoiseFreeXTandXYResponses(theMosaic, timeAxis, stimData, noStimData, figNo)
+function [hFig, peakConeIndex] = visualizeNoiseFreeXTandXYResponses(theMosaic, timeAxis, stimData, noStimData, figNo, signals)
 
     hFig{1} = [];
     hFig{2} = [];
@@ -173,8 +174,14 @@ function [hFig, peakConeIndex] = visualizeNoiseFreeXTandXYResponses(theMosaic, t
     end
     
     
+    if (strcmp(signals, 'isomerizationsAndPhotocurrents'))
+        rowsNum = 2;
+    else
+        rowsNum = 1;
+    end
+
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', 2, ...
+           'rowsNum', rowsNum, ...
            'colsNum', 2, ...
            'heightMargin',   0.08, ...
            'widthMargin',    0.02, ...
@@ -219,7 +226,6 @@ function [hFig, peakConeIndex] = visualizeNoiseFreeXTandXYResponses(theMosaic, t
             [bestModulation, idx] = max(abs(differentialStimNoStimIsomerizationResponses(:)));
             [bestCone, bestTimeBin] = ind2sub(size(differentialStimNoStimIsomerizationResponses), idx);
             peakConeIndex{submosaicIndex-1} = submosaicConeIndices(bestCone);
-            fprintf('Peak modulation for submosaic: %d = %f%%\n', submosaicIndex-1, bestModulation);
         end
     end
 
@@ -228,7 +234,11 @@ function [hFig, peakConeIndex] = visualizeNoiseFreeXTandXYResponses(theMosaic, t
     isomerizationsRangeModulation = max(abs(isomerizationModulation(:)))*[-1 1];
     
     hFig{1} = figure(figNo+1); clf;
-    set(hFig{1}, 'Position', [10 10 770 900], 'Color', [1 1 1]);
+    if (rowsNum == 2)
+        set(hFig{1}, 'Position', [10 10 770 900], 'Color', [1 1 1]);
+    else
+        set(hFig{1}, 'Position', [10 10 770 450], 'Color', [1 1 1]);
+    end
     subplot('Position', subplotPosVectors(1,1).v);
     
     imagesc(timeAxis, 1:size(noStimData.noiseFreeIsomerizations,1), noStimLMSnoiseFreeIsomerizations);
@@ -248,7 +258,7 @@ function [hFig, peakConeIndex] = visualizeNoiseFreeXTandXYResponses(theMosaic, t
     set(colorTitleHandle ,'String', 'noise-free isomerization rate modulation (%%)');
     set(hcb, 'FontSize', 12);
     
-    if (~isempty(noStimData.noiseFreePhotocurrents))
+    if (~isempty(noStimData.noiseFreePhotocurrents)) && (rowsNum == 2)
         deltaPhotocurrents = stimLMSnoiseFreePhotocurrents - noStimLMSnoiseFreePhotocurrents;
         [~,idx] = max(abs(deltaPhotocurrents(:)));
         [~,timeBinOfPeakPhotocurrentResponse] = ind2sub(size(deltaPhotocurrents), idx);
@@ -278,23 +288,24 @@ function [hFig, peakConeIndex] = visualizeNoiseFreeXTandXYResponses(theMosaic, t
     drawnow;
     
     
+    % Plot the 2D XY noise-free responses and modulations
     if (isa(theMosaic, 'coneMosaicHex'))
        
         stimData.noiseFreeIsomerizationsModulations = 100*(stimData.noiseFreeIsomerizations-noStimData.noiseFreeIsomerizations)./noStimData.noiseFreeIsomerizations;
         isomerizationsRangeModulation = max(abs(stimData.noiseFreeIsomerizationsModulations(:)))*[-1 1];
     
         subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', 2, ...
+           'rowsNum', rowsNum,  ...
            'colsNum', 2, ...
            'heightMargin',   0.05, ...
            'widthMargin',    0.07, ...
            'leftMargin',     0.015, ...
-           'rightMargin',    0.04, ...
+           'rightMargin',    0.05, ...
            'bottomMargin',   0.05, ...
            'topMargin',      0.04);
        
         hFig{2} = figure(figNo+2); clf;
-        if (~isempty(noStimData.noiseFreePhotocurrents))
+        if (~isempty(noStimData.noiseFreePhotocurrents)) && (rowsNum == 2)
             formatFigureForPaper(hFig{2}, 'figureType', 'RESPONSE_INSTANCE_TWO_CONDIITIONS');
         else
             formatFigureForPaper(hFig{2}, 'figureType', 'RESPONSE_INSTANCE_SINGLE_CONDIITION');
@@ -310,8 +321,8 @@ function [hFig, peakConeIndex] = visualizeNoiseFreeXTandXYResponses(theMosaic, t
              isomerizationsRangeModulation, activationLUT, [1 1 1], subplotPosVectors, [1 2], ...
              sprintf('test stimulus\nmean isomerization modulation'), ...
              sprintf('modulation (%%)'), ...
-             'displaylabelX', false, 'displaylabelY', false, ...
-             'displayTicksX', false, 'displayTicksY', false);
+             'displaylabelX', (rowsNum == 1),  'displayTicksX', (rowsNum == 1), ...
+             'displaylabelY', false, 'displayTicksY', false);
         
         % The response for the null stimulus on the left
         visualizedActivationPattern = theMosaic.reshapeHex1DmapToHex2Dmap(squeeze(noStimData.noiseFreeIsomerizations(:,timeBinOfPeakIsomerizationResponse)));
@@ -320,22 +331,21 @@ function [hFig, peakConeIndex] = visualizeNoiseFreeXTandXYResponses(theMosaic, t
              isomerizationsRange*theMosaic.integrationTime, activationLUT, [0 0 0], subplotPosVectors, [1 1], ...
              sprintf('null stimulus\n mean isomerizations / %2.0f msec', 1000*theMosaic.integrationTime), ...
              sprintf('R* / cone /%2.0fmsec', 1000*theMosaic.integrationTime), ...
-             'displaylabelX', false, 'displayTicksX', false, ...
+             'displaylabelX', (rowsNum == 1), 'displayTicksX', (rowsNum == 1), ...
              'displaylabelY', false, 'displayTicksY', false);
         
-        if (~isempty(noStimData.noiseFreePhotocurrents))
-            photocurrentScalingFactor = 100;
-            deltaPhotocurrents = photocurrentScalingFactor *(stimData.noiseFreePhotocurrents - noStimData.noiseFreePhotocurrents);
+        if (~isempty(noStimData.noiseFreePhotocurrents)) && (rowsNum == 2)
+            deltaPhotocurrents = (stimData.noiseFreePhotocurrents - noStimData.noiseFreePhotocurrents);
             [~,idx] = max(abs(deltaPhotocurrents(:)));
             [~,timeBinOfPeakPhotocurrentResponse] = ind2sub(size(deltaPhotocurrents), idx);
-            deltaPhotocurrentsRange = ceil(max(abs(deltaPhotocurrents(:))))*[-1 1];
+            deltaPhotocurrentsRange = max(abs(deltaPhotocurrents(:)))*[-1 1];
             visualizedActivationPattern = theMosaic.reshapeHex1DmapToHex2Dmap(squeeze(deltaPhotocurrents(:,timeBinOfPeakPhotocurrentResponse)));
 
             activationLUT = brewermap(512, '*RdBu');
             ax3 = plotMosaicActivation(theMosaic, visualizedActivationPattern, ...
                 deltaPhotocurrentsRange, activationLUT, [1 1 1], subplotPosVectors, [2 2], ...
                 sprintf('test stimulus\n mean photocurrent differential'), ...
-                sprintf('pAmps / %1.0f', photocurrentScalingFactor), ...
+                sprintf('pAmps'), ...
                 'displaylabelY', false, 'displayTicksY', false);
 
         
@@ -349,7 +359,7 @@ function [hFig, peakConeIndex] = visualizeNoiseFreeXTandXYResponses(theMosaic, t
             
         end
         
-        if (~isempty(noStimData.noiseFreePhotocurrents))
+        if (~isempty(noStimData.noiseFreePhotocurrents)) && (rowsNum == 2)
             formatFigureForPaper(hFig{2}, 'figureType', 'RESPONSE_INSTANCE_TWO_CONDIITIONS', 'theAxes', ax1);
             formatFigureForPaper(hFig{2}, 'figureType', 'RESPONSE_INSTANCE_TWO_CONDIITIONS', 'theAxes',ax2);
             formatFigureForPaper(hFig{2}, 'figureType', 'RESPONSE_INSTANCE_TWO_CONDIITIONS', 'theAxes',ax3);

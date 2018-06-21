@@ -85,7 +85,6 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75, 'Ydir', 'Normal');
                 box(theAxes, 'on');
                 grid(theAxes, 'on');
-                xtickformat(theAxes, '%.0f');
                 
                 if (~isempty(theLegend))
                     set(theLegend,  'Location', 'NorthEast');
