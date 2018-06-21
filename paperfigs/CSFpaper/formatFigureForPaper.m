@@ -92,6 +92,15 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 end
             end
             
+        case 'RESPONSE_INSTANCE_TWO_CONDIITIONS'
+            if (isempty(theAxes))
+                set(hFig, 'Position', [10 10 900 860], 'Color', [1 1 1]);
+            else
+                set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75, 'Ydir', 'Normal');
+                box(theAxes, 'on');
+                grid(theAxes, 'on');
+            end
+            
         case 'RESPONSE_INSTANCE_THREE_CONDIITIONS'
             if (isempty(theAxes))
                 set(hFig, 'Position', [10 10 900 1500], 'Color', [1 1 1]);

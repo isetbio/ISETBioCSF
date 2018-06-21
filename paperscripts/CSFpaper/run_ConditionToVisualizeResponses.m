@@ -5,11 +5,11 @@ function run_ConditionToVisualizeResponses
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
     computationInstance = 0;
     
-    % Mosaic to use
-    mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
+    % Mosaic to use (ecc-based cone density AND cone efficiency)
+    mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
     
     % Optics to use
-    opticsName = 'ThibosBestPSFSubject3MMPupil';  % ThibosVeryDefocusedSubject3MMPupil
+    opticsName = 'ThibosBestPSFSubject3MMPupil';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
@@ -41,7 +41,7 @@ function run_ConditionToVisualizeResponses
     
     params.visualizeKernelTransformedSignals = true;
     params.findPerformance = ~true;
-    params.visualizePerformance = true;
+    params.visualizePerformance = ~true;
     params.deleteResponseInstances = ~true;
 
     params.performanceClassifier = 'svmV1FilterBank';

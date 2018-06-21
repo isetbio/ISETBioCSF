@@ -1,9 +1,17 @@
-function hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(timeAxis, noStimResponseInstances, stimResponseInstances, noStimNoiseFreeResponse, stimNoiseFreeResponse, responseRange, responseLevelsNum, plotType, signalSource, yAxisLabel, figNo)
+function hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(...
+    timeAxis, noStimResponseInstances, stimResponseInstances, ...
+    noStimNoiseFreeResponse, stimNoiseFreeResponse, responseRange, ...
+    responseLevelsNum, coneTypeIndicesToVisualize, plotType, signalSource, yAxisLabel, figNo)
 
-
+    % Select what we are visualizing
+    noStimResponseInstances = noStimResponseInstances(coneTypeIndicesToVisualize,:,:);
+    stimResponseInstances = stimResponseInstances(coneTypeIndicesToVisualize,:,:);
+    noStimNoiseFreeResponse = noStimNoiseFreeResponse(coneTypeIndicesToVisualize,:);
+    stimNoiseFreeResponse = stimNoiseFreeResponse(coneTypeIndicesToVisualize,:);
+    
     if (numel(timeAxis) > 1)
-        if (ndims(noStimResponseInstances) == 3)
-            responseNums = size(noStimResponseInstances,1);
+        responseNums = size(noStimResponseInstances,1);
+        if (responseNums > 1)        
             for k = 1:responseNums
                 subplotPosVectors(responseNums-k+1,1).v = [0.065 0.05+(k-1)*0.33 0.67 0.25];
                 subplotPosVectors(responseNums-k+1,2).v = [0.78 0.05+(k-1)*0.33 0.20 0.25];
@@ -14,8 +22,8 @@ function hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(
             subplotPosVectors(1,2).v = [0.78 0.11 0.20 0.85];
         end
     else
-       if (ndims(noStimResponseInstances) == 2)
-            responseNums = size(noStimResponseInstances,1);
+        responseNums = size(noStimResponseInstances,1);
+        if (responseNums > 1) 
             for k = 1:responseNums
                 subplotPosVectors(responseNums-k+1,1).v = [0.065 0.05+(k-1)*0.33 0.67 0.25];
                 subplotPosVectors(responseNums-k+1,2).v = [0.78 0.05+(k-1)*0.33 0.20 0.25];
@@ -31,9 +39,14 @@ function hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(
     responseLevels = linspace(responseRange(1), responseRange(2), responseLevelsNum);
     
     hFig = figure(figNo); clf;
-    formatFigureForPaper(hFig, ...
+    if (responseNums > 1)
+        formatFigureForPaper(hFig, ...
             'figureType','RESPONSE_INSTANCE_THREE_CONDIITIONS');
-         
+    else
+        formatFigureForPaper(hFig, ...
+            'figureType','RESPONSE_INSTANCE_SINGLE_CONDIITION');
+    end
+    
     for responseIndex = 1:responseNums
         ax1 = subplot('Position', subplotPosVectors(responseIndex,1).v);
         ax2 = subplot('Position', subplotPosVectors(responseIndex,2).v);
@@ -66,16 +79,30 @@ function hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(
             
         end  
         
-        formatFigureForPaper(hFig, ...
-            'figureType','RESPONSE_INSTANCE_THREE_CONDIITIONS', ...
-            'theAxes', ax1, ...
-            'theText', t);
+        if (responseNums > 1)
+            formatFigureForPaper(hFig, ...
+                'figureType','RESPONSE_INSTANCE_THREE_CONDIITIONS', ...
+                'theAxes', ax1, ...
+                'theText', t);
+
+            hL = legend(ax2, 'null stimulus', 'test stimulus');
+            formatFigureForPaper(hFig, ...
+                'figureType','RESPONSE_INSTANCE_THREE_CONDIITIONS', ...
+                'theAxes', ax2, ...
+                'theLegend', hL);
+        else
+            formatFigureForPaper(hFig, ...
+                'figureType','RESPONSE_INSTANCE_SINGLE_CONDIITION', ...
+                'theAxes', ax1, ...
+                'theText', t);
+
+            hL = legend(ax2, 'null stimulus', 'test stimulus');
+            formatFigureForPaper(hFig, ...
+                'figureType','RESPONSE_INSTANCE_SINGLE_CONDIITION', ...
+                'theAxes', ax2, ...
+                'theLegend', hL);
+        end
         
-        hL = legend(ax2, 'null stimulus', 'test stimulus');
-        formatFigureForPaper(hFig, ...
-            'figureType','RESPONSE_INSTANCE_THREE_CONDIITIONS', ...
-            'theAxes', ax2, ...
-            'theLegend', hL);
         
         if (strcmp(signalSource, 'isomerizations'))
             ytickformat(ax1, '%.0f');

@@ -91,7 +91,7 @@ function timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, no
         set(ax2, 'XLim', [0 maxAll]);
         set(ax2, 'YLim', [responseLevels(1) responseLevels(end-1)]); 
         set(ax2, 'XTick', [0 maxAll], 'XTickLabel', {'0', sprintf('%2.2f', maxAll)}, 'YTickLabel', {});
-        xlabel('probability', 'FontSize', 18);
+        xlabel(ax2,'probability', 'FontWeight', 'bold');
     end
     
     colormap(1-gray(1024));
