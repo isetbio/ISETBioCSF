@@ -29,3 +29,5 @@ Job4.state.mat
 matlab_metadata.mat
 .DS_Store
 /ToolboxRegistry
+/sideprojects/colorMaterial/ColorMatStimuliRGB
+/paperfigs/CSFpaper/exports
