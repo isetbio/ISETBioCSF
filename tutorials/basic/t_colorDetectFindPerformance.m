@@ -54,6 +54,7 @@ p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
 p.addParameter('visualizeKernelTransformedSignals', false, @islogical);
+p.addParameter('visualizeVarianceExplained', false, @islogical);
 p.addParameter('plotPsychometric',false,@islogical);
 p.addParameter('plotSvmBoundary',false,@islogical);
 p.addParameter('plotPCAAxis1',1,@isnumeric)
@@ -345,6 +346,7 @@ if (p.Results.generatePlots && p.Results.plotPsychometric)
     testConeContrasts = performanceData.testConeContrasts;
     testContrasts = performanceData.testContrasts;
     
+
     for ii = 1:size(testConeContrasts,2)
         hFig = figure; clf;
         errorbar(testContrasts, squeeze(performanceData.percentCorrect(ii,:)), squeeze(performanceData.stdErr(ii, :)), ...
@@ -366,6 +368,47 @@ if (p.Results.generatePlots && p.Results.plotPsychometric)
                 'FontSize',rParams.plotParams.titleFontSize);
         end
         rwObject.write(sprintf('performanceData_%d',ii),hFig,paramsList,writeProgram,'Type','figure');
+    end
+end
+
+if (p.Results.visualizeVarianceExplained)
+    fprintf('Reading performance data ... ');
+    paramsList = constantParamsList;
+    paramsList{numel(paramsList)+1} = thresholdParams;
+    performanceData = rwObject.read('performanceData',paramsList,writeProgram);
+    fprintf('done\n');
+    
+    if (isfield(performanceData, 'varianceExplained'))
+        testConeContrasts = performanceData.testConeContrasts;
+        testContrasts = performanceData.testContrasts;
+        % Plot variance explained figure
+        for ii = 1:size(testConeContrasts,2)
+            hFig = figure(1200+ii-1); clf; 
+            set(hFig, 'Position', [10 10 960 1260], 'Color', [1 1 1]);
+            hold on;
+            pcaIndices = 1:size(performanceData.varianceExplained,3);
+            percentCorrect = squeeze(performanceData.percentCorrect(ii,:));
+            legends = {};
+            colors = brewermap(numel(testContrasts), '*Spectral');
+            for contrastIndex = numel(testContrasts):-1:1
+                variances = squeeze(performanceData.varianceExplained(ii,contrastIndex,:));
+                plot(pcaIndices, cumsum(variances), 'ko-', ...
+                    'MarkerSize', 6, 'MarkerFaceColor', squeeze(colors(contrastIndex,:)), ...
+                    'MarkerFaceColor', squeeze(colors(contrastIndex,:)), ...
+                    'Color', squeeze(colors(contrastIndex,:)), 'LineWidth', 1.5);
+                legends{numel(legends)+1} = sprintf('contrast:%2.1e, %%correct:%2.0f)',testContrasts(contrastIndex),100.0*percentCorrect(contrastIndex));
+            end
+            hL = legend(legends, 'Location', 'SouthEast');
+        end
+        set(gca, 'XScale', 'log', 'YScale', 'log', ...
+            'XLim', [1 numel(pcaIndices)], 'YLim', [0.1 100], ...
+            'XTick', [1 10 60 100 600 1000], 'YTick', [0.1 1 10 100], 'FontSize', 18);
+        xlabel('# of PCA components', 'FontWeight', 'bold');
+        ylabel('cumulative response variance explained (%)', 'FontWeight', 'bold');
+        title(sprintf('%d instances, %2.0f c/deg', thresholdParams.trialsUsed,rParams.spatialParams.cyclesPerDegree));
+        box('on'); grid('on');
+    else
+       fprintf('Did not find varianceExplained field in performanceData. No plotting.\n'); 
     end
 end
 
