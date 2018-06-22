@@ -130,7 +130,10 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
         theData = noStimData;
         theData = cat(1, theData, stimData);
         theData = reshape(theData, [nTrials*2 tBins]);
-        [theData, temporalPCAs] = transformDataWithPCA(theData, V1filterBank.temporalPCAcoeffs, standardizeData);
+        [theData, temporalPCAs, varianceExplained] = transformDataWithPCA(theData, V1filterBank.temporalPCAcoeffs, standardizeData);
+        for compIndex = 1:V1filterBank.temporalPCAcoeffs
+            fprintf('Variance explained by component #%d: %2.2f (accum: %2.2f)\n', compIndex, varianceExplained(compIndex), sum(varianceExplained(1:compIndex)));
+        end
         
         noStimData = theData(1:nTrials,:);
         stimData = theData(nTrials + (1:nTrials),:);

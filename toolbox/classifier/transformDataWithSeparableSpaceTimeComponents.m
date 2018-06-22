@@ -36,7 +36,11 @@ timeBinsNum = size(d, temporalDimension);
 
 % Find PCAs for the ensemble of STIM and NOSTIM data
 d = reshape(permute(d, [1 3 2]), [repsNum*2*timeBinsNum spatialBinsNum]);
-d = transformDataWithPCA(d,thresholdParams.PCAComponents,thresholdParams.STANDARDIZE);
+[d,~,varianceExplained] = transformDataWithPCA(d, thresholdParams.PCAComponents, thresholdParams.STANDARDIZE);
+for compIndex = 1:thresholdParams.PCAComponents
+   fprintf('Variance explained by component #%d: %2.2f (accum: %2.2f)\n', compIndex, varianceExplained(compIndex), sum(varianceExplained(1:compIndex)));
+end
+        
 d = permute(reshape(d, [repsNum*2 timeBinsNum thresholdParams.PCAComponents]), [1 3 2]);
 
 if (strcmp(thresholdParams.signalSource,'photocurrents'))

@@ -1,4 +1,4 @@
-function [data, coeff] = transformDataWithPCA(data,numPCAComponents,STANDARDIZE)
+function [data, coeff, varianceExplained] = transformDataWithPCA(data,numPCAComponents,STANDARDIZE)
 % data = transformDataWithPCA(data,numPCAComponents,[STANDARDIZE])
 %
 % Projects data along a specified number of principal components. PCA is
@@ -38,7 +38,10 @@ end
 
 %% Do PCA and project data into new vector space
 if (numPCAComponents > 0)   
-    coeff = pca(data,'NumComponents',numPCAComponents);
+    [coeff,score,latent,tsquared,varianceExplained] = pca(data,'NumComponents',numPCAComponents);
+    % varianceExplained is equal to latent/sum(latent) * 100
+    % tsquared is a statistic measuring how far each observation is from the ?center? of the entire dataset.
+    % usefull for identifying outliers
     data = data*coeff;
 end
 

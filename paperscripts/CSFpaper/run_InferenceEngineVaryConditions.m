@@ -9,7 +9,7 @@ function run_InferenceEngineVaryConditions
     makeSummaryFigure = true;
     
     % Mosaic to use
-    mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
+    mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
     
     % Optics to use
     opticsName = 'ThibosAverageSubject3MMPupil';
@@ -60,7 +60,7 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (6)' ...
     };
 
-    idx = 1:3;
+    idx = 2:2;
     visualizedConditions = idx;
     examinedInferenceEngines = {examinedInferenceEngines{visualizedConditions}};
     examinedInferenceEngineLegends = {examinedInferenceEngineLegends{visualizedConditions}};
@@ -113,7 +113,7 @@ function run_InferenceEngineVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
