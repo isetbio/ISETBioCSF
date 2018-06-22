@@ -7,21 +7,23 @@ function run_ConditionToVisualizeSceneAndOpticalImages
     computationInstance = 0;
     
     % Mosaic to use
-    mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
+    mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic'; 
     
     % Optics to use
-    opticsName = 'ThibosBestPSFSubject3MMPupil';  % ThibosVeryDefocusedSubject3MMPupil
+    opticsName = 'ThibosAverageSubject3MMPupil';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
     % Adjust any params we want to change from their default values
     params.opticsModel = opticsName;
     params.coneContrastDirection = 'L+M+S';
-    params.lowContrast = 1.0;
-    params.highContrast =  1.0;
+    params.lowContrast = 0.1;
+    params.highContrast =  0.1;
     params.nContrastsPerDirection =  1;
-    params.nTrainingSamples = 1;
-    params.cyclesPerDegreeExamined = [16]; % [4 8 16 32 50];
+    params.nTrainingSamples = 4;
+    params.performanceTrialsUsed = [];
+    params.cyclesPerDegreeExamined = [16];
+    
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -29,7 +31,7 @@ function run_ConditionToVisualizeSceneAndOpticalImages
     
     params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
-    params.visualizeDisplay = true;
+    params.visualizeDisplay = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
