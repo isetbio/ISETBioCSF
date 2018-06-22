@@ -73,9 +73,9 @@ switch (thresholdParams.method)
         % features with no variance.
         fprintf('\tExtracting the first %d principal components of the data ... ', thresholdParams.PCAComponents);
         [theData, ~, varianceExplained] = transformDataWithPCA(classificationData,thresholdParams.PCAComponents,thresholdParams.STANDARDIZE);
-        fprintf('done. Variance explained: %2.2f (sum of %d elements)\n', thresholdParams.PCAComponents, sum(varianceExplained), numel(varianceExplained));
+        fprintf('done. Variance explained: %2.4f (sum of %d elements)\n', thresholdParams.PCAComponents, sum(varianceExplained), numel(varianceExplained));
         for compIndex = 1:thresholdParams.PCAComponents
-            fprintf('Variance explained by component #%d: %2.2f (accum: %2.2f)\n', compIndex, varianceExplained(compIndex), sum(varianceExplained(1:compIndex)));
+            fprintf('Variance explained by component #%d: %2.4f (accum: %2.4f)\n', compIndex, varianceExplained(compIndex), sum(varianceExplained(1:compIndex)));
         end
         
         % Perform SVM classification for this stimulus vs the zero contrast stimulus
