@@ -272,7 +272,7 @@ if (p.Results.compute)
         % Get performance for this condition.  Optional parameters control
         % whether or not the routine returns a handle to a plot that
         % illustrates the classifier.
-        [usePercentCorrect(kk),useStdErr(kk),h] = ...
+        [usePercentCorrect(kk),useStdErr(kk),h, varianceExplained(kk,:)] = ...
             classifyForOneDirectionAndContrast(noStimData,stimData,thresholdParams, ...
             'paramsList', paramsList, ...
             'visualizeKernelTransformedSignals', p.Results.visualizeKernelTransformedSignals, ...
@@ -301,6 +301,7 @@ if (p.Results.compute)
         thisConditionStruct = parforConditionStructs{kk};
         performanceData.percentCorrect(thisConditionStruct.ii,thisConditionStruct.jj) = usePercentCorrect(kk);
         performanceData.stdErr(thisConditionStruct.ii,thisConditionStruct.jj) = useStdErr(kk);
+        performanceData.varianceExplained(thisConditionStruct.ii,thisConditionStruct.jj,:) = squeeze(varianceExplained(kk,:));
     end
     
     %% Tuck away other information that we want to store

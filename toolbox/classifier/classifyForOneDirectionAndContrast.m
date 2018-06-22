@@ -1,4 +1,4 @@
-function [usePercentCorrect,useStdErr,h] = classifyForOneDirectionAndContrast(noStimData,stimData,thresholdParams,varargin)
+function [usePercentCorrect,useStdErr,h, varargout] = classifyForOneDirectionAndContrast(noStimData,stimData,thresholdParams,varargin)
 % [usePercentCorrect,useStdErr,h] = classifyForOneDirectionAndContrast(noStimData,stimData,thresholdParams,varargin)
 %
 % Do classification for one stimulus color direction and contrast.
@@ -24,6 +24,9 @@ p.addParameter('plotSvmBoundary',false,@islogical);
 p.addParameter('plotPCAAxis1',1,@isnumeric);
 p.addParameter('plotPCAAxis2',2,@isnumeric);
 p.parse(noStimData,stimData,thresholdParams,varargin{:});
+
+% Initialize varargout
+varargout{1} = [];   % varianceExplained for PCA
 
 
 % Start timing
@@ -77,6 +80,7 @@ switch (thresholdParams.method)
         for compIndex = 1:thresholdParams.PCAComponents
             fprintf('Variance explained by component #%d: %2.4f (accum: %2.4f)\n', compIndex, varianceExplained(compIndex), sum(varianceExplained(1:compIndex)));
         end
+        varargout{1} = varianceExplained;
         
         % Perform SVM classification for this stimulus vs the zero contrast stimulus
         fprintf('\tRunning SVM ...');
