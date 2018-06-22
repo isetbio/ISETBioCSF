@@ -38,10 +38,16 @@ end
 
 %% Do PCA and project data into new vector space
 if (numPCAComponents > 0)   
+    % Request only the first numPCAComponents
     [coeff,score,latent,tsquared,varianceExplained] = pca(data,'NumComponents',numPCAComponents);
     % varianceExplained is equal to latent/sum(latent) * 100
     % tsquared is a statistic measuring how far each observation is from the ?center? of the entire dataset.
     % usefull for identifying outliers
+    size(coeff)
+    size(score)
+    size(latent)
+    size(varianceExplained)
+    numPCAComponents
     data = data*coeff;
 end
 
