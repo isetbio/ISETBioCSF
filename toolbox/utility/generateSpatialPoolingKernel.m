@@ -17,10 +17,19 @@ function [spatialPoolingFilter, hFig] = generateSpatialPoolingKernel(spatialPara
     
     
     if (strcmp(mosaicParams.conePacking, 'hex'))
-        % Find the density map around each cone
-        eccInMeters = sqrt(sum(coneLocsInMeters.^2, 2));
-        ang = atan2(squeeze(coneLocsInMeters(:,2)), squeeze(coneLocsInMeters(:,1)))/pi*180;
-        [~, ~, coneDensity] = coneSizeReadData('eccentricity',eccInMeters(:),'angle',ang(:));
+        p = properties(theMosaic);
+        if (any(ismember(p, 'eccBasedConeQuantalEfficiency'))) && (theMosaic.eccBasedConeQuantalEfficiency == false)
+            % Compute density map around each cone, so we can normalize the
+            % spatial pooling weights at each location based on the cone 
+            % density at that location
+            eccInMeters = sqrt(sum(coneLocsInMeters.^2, 2));
+            ang = atan2(squeeze(coneLocsInMeters(:,2)), squeeze(coneLocsInMeters(:,1)))/pi*180;
+            [~, ~, coneDensity] = coneSizeReadData('eccentricity',eccInMeters(:),'angle',ang(:));
+        else
+            % Cone efficiency corrections with eccentricity are on, so do
+            % not normalize spatial pooling weights with respect to cone density
+            coneDensity = 1;
+        end
     else
         coneDensity = 1;
     end
