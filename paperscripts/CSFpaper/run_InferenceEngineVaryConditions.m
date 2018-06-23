@@ -49,9 +49,9 @@ function run_InferenceEngineVaryConditions
     };
     examinedInferenceEngineLegends = {...
         'MLPT' ...
-        'SVM' ...
-        'SVM (optimal pooling)' ...
-        'SVM (QPhE)' ...
+        'SVM-PCA' ...
+        'SVM-Template' ...
+        'SVM-TemplateQ' ...
         'SVM (QPhE) population (1)' ...
         'SVM (QPhE) population (2)' ...
         'SVM (QPhE) population (3)' ...
@@ -60,7 +60,7 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (6)' ...
     };
 
-    idx = 3:3;
+    idx = 1:3;
     visualizedConditions = idx;
     examinedInferenceEngines = {examinedInferenceEngines{visualizedConditions}};
     examinedInferenceEngineLegends = {examinedInferenceEngineLegends{visualizedConditions}};
@@ -113,7 +113,7 @@ function run_InferenceEngineVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
@@ -122,14 +122,13 @@ function run_InferenceEngineVaryConditions
         params.performanceClassifier = examinedInferenceEngines{engineIndex};
         
         if (strcmp(params.performanceClassifier, 'svmV1FilterBank'))
-            if strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM (optimal pooling)')
+            if strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-Template')
                 params.spatialPoolingKernelParams.type = 'V1CosUnit';
                 params.spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
-            % 'SVM (StimulusMatchedPooling)')
-            elseif strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM (QPhE)')
+            elseif strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-TemplateQ')
                 params.spatialPoolingKernelParams.type = 'V1QuadraturePair';
                 params.spatialPoolingKernelParams.activationFunction = 'energy';
-            end % 'SVM (QPhE)'
+            end 
             
         elseif strcmp(params.performanceClassifier, 'svmV1FilterEnsemble')
             if strcmp(examinedInferenceEngineLegends{engineIndex}, 'SVM (QPhE) population (1)')
