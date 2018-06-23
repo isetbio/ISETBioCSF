@@ -8,7 +8,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     
 
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
+    makeSummaryFigure = ~true;
     
     
     condIndex = 0;
@@ -29,7 +29,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     
     % Our best estimate of mosaic + optics, SVMpool inference engine
     condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic and optics, SVMpool';
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic and optics, SVM-Template';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
@@ -38,7 +38,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     
     % Go
     examinedLegends = {};
-    for condIndex = 1:numel(examinedCond)
+    for condIndex = 2:2 % 1:numel(examinedCond)
         cond = examinedCond(condIndex);
         mosaicName = cond.mosaicName;
         params = getCSFpaperDefaultParams(mosaicName, computationInstance);
@@ -48,7 +48,10 @@ function run_Paper1FinalConditionsUsing2mmPupil
             params.spatialPoolingKernelParams.type = cond.spatialPoolingKernelParams.type;
             params.spatialPoolingKernelParams.activationFunction = cond.spatialPoolingKernelParams.activationFunction;
         end
+        
+        % Update params
         params = getRemainingDefaultParams(params, condIndex);  
+        
         examinedLegends{numel(examinedLegends) + 1} = examinedCond(condIndex).conditionLabel;
         [~,~, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end
@@ -94,7 +97,7 @@ function params = getRemainingDefaultParams(params, condIndex)
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -107,7 +110,7 @@ function params = getRemainingDefaultParams(params, condIndex)
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 end
