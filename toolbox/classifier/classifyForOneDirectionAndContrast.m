@@ -26,7 +26,7 @@ p.addParameter('plotPCAAxis2',2,@isnumeric);
 p.parse(noStimData,stimData,thresholdParams,varargin{:});
 
 % Initialize varargout
-varargout{1} = [];   % varianceExplained for PCA
+varargout{1} = nan;   % varianceExplained for PCA
 
 
 % Start timing
