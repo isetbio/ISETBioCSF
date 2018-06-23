@@ -21,7 +21,7 @@ function run_InferenceEngineVaryConditions
     
     % Chromatic direction params
     params.coneContrastDirection = 'L+M+S';
-    params.cyclesPerDegreeExamined = [8]; % [2 4 8 16 32 50 60];
+    params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
     
     % Response duration params
     params.frameRate = 10; %(1 frames)
@@ -60,7 +60,7 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (6)' ...
     };
 
-    idx = 2:2;
+    idx = 3:3;
     visualizedConditions = idx;
     examinedInferenceEngines = {examinedInferenceEngines{visualizedConditions}};
     examinedInferenceEngineLegends = {examinedInferenceEngineLegends{visualizedConditions}};
@@ -113,7 +113,7 @@ function run_InferenceEngineVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     

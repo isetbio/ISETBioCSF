@@ -371,14 +371,14 @@ if (p.Results.generatePlots && p.Results.plotPsychometric)
     end
 end
 
-if (p.Results.visualizeVarianceExplained)
+if (p.Results.visualizeVarianceExplained) 
     fprintf('Reading performance data ... ');
     paramsList = constantParamsList;
     paramsList{numel(paramsList)+1} = thresholdParams;
     performanceData = rwObject.read('performanceData',paramsList,writeProgram);
     fprintf('done\n');
     
-    if (isfield(performanceData, 'varianceExplained'))
+    if (isfield(performanceData, 'varianceExplained')) && (~(all(isnan(performanceData.varianceExplained(:))))
         testConeContrasts = performanceData.testConeContrasts;
         testContrasts = performanceData.testContrasts;
         % Plot variance explained figure
