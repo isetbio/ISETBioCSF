@@ -378,7 +378,7 @@ if (p.Results.visualizeVarianceExplained)
     performanceData = rwObject.read('performanceData',paramsList,writeProgram);
     fprintf('done\n');
     
-    if (isfield(performanceData, 'varianceExplained')) && (~(all(isnan(performanceData.varianceExplained(:))))
+    if (isfield(performanceData, 'varianceExplained')) && (~(all(isnan(performanceData.varianceExplained(:)))))
         testConeContrasts = performanceData.testConeContrasts;
         testContrasts = performanceData.testContrasts;
         % Plot variance explained figure

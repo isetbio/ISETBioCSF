@@ -113,7 +113,7 @@ function run_InferenceEngineVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
