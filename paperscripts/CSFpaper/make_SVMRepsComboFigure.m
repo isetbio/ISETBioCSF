@@ -2,12 +2,12 @@ function make_SVMRepsComboFigure
 % This is the script used to assess the generate a combo SVM-type reps effect figure
 %  
     % Which spatial frequency to analyze
-    thePanelLabel = ' B ';         % Label for the first panel
-    computationInstance = 16;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
+    thePanelLabel = ' C ';         % Label for the first panel
+    computationInstance = 32;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
     performanceClassifiersVisualized = {'svm', 'svmV1FilterBank', 'mlpt'};     % Choose between 'svm' and 'svmV1FilterBank'
     performanceClassifiersVisualizedLegends = {...
-        'SVM - PCA projection', ...
-        'SVM - spatial pooling'...
+        'SVM-PCA', ...
+        'SVM-Template'...
         'MLPT'
       }; 
     poolingType = 'V1CosUnit' ;        % Choose between 'V1CosUnit' and 'V1QuadraturePair (only applicable if classifier = 'svmV1FilterBank')
