@@ -9,10 +9,10 @@ function run_EyeMovementVaryConditions
     makeSummaryFigure = true;
     
     % Mosaic to use
-    mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
+    mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
     
     % Optics to use
-    opticsName = 'ThibosBestPSFSubject3MMPupil';
+    opticsName = 'ThibosAverageSubject3MMPupil';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
