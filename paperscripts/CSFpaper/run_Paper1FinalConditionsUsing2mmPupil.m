@@ -22,14 +22,14 @@ function run_Paper1FinalConditionsUsing2mmPupil
     
     % Our best estimate of mosaic + optics, MLPT inference engine
     condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic and optics, MLPT';
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, MLPT';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'mlpt';
     
     % Our best estimate of mosaic + optics, SVMpool inference engine
     condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic and optics, SVM-Template';
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
@@ -58,7 +58,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     
     if (makeSummaryFigure)
         variedParamName = 'VariousParams';
-        theRatioLims = [0.05 1.5];
+        theRatioLims = [0.03 1.5];
         theRatioTicks = [0.05  0.1 0.2 0.5 1.0];
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, 'ComparedToBanks87', ...
             'figureType', 'CSF', ...

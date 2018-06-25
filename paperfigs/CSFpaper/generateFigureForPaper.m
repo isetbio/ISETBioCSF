@@ -128,21 +128,46 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
             pjbSubjectCSFs(dataPoint) = idealObserverData.CSF(idx)./pjbSubjectRatios(dataPoint);
         end
         
+        % Compute the mean of the subjectCSF
+        [pjbSubjectSFsHiRes, pjbSubjectCSFsHiRes] = fitData(pjbSubjectSFs, pjbSubjectCSFs);
+        plot(pjbSubjectSFsHiRes, pjbSubjectCSFsHiRes, 'r-', 'LineWidth', 1.5);
+    
+        [msbSubjectSFsHiRes, msbSubjectCSFsHiRes] = fitData(msbSubjectSFs, msbSubjectCSFs);
+        plot(msbSubjectSFsHiRes, msbSubjectCSFsHiRes, 'b-', 'LineWidth', 1.5);
+    
+        meanSubjectCSF = 0.5*(msbSubjectCSFsHiRes+pjbSubjectCSFsHiRes);
+    
+        subjectCPD = msbSubjectSFsHiRes;
+        refSensitivity = contrastSensitivity{1};
+        refCPD = cpd{1};
+        
+        for k = 1:numel(refCPD)
+            idx = find(msbSubjectSFsHiRes == refCPD(k));
+            if (~isempty(idx))
+                meanSubjectRatios(k) = meanSubjectCSF(idx)./refSensitivity(k);
+            else
+                meanSubjectRatios(k) = nan;
+            end
+        end
+        
         % Add in the subject data
-        colorIndex = size(colors,1)-1
+        colorIndex = size(colors,1)-1;
         plot(theAxes, msbSubjectSFs, msbSubjectCSFs, '^', 'Color', squeeze(colors(colorIndex,:)), ...
             'MarkerEdgeColor', max(0, squeeze(colors(colorIndex,:))-faceColor), ...
             'MarkerFaceColor', min(1, squeeze(colors(colorIndex,:)) + faceColor), ...
             'MarkerSize',12,'LineWidth',2);
         
-        colorIndex = size(colors,1)
+        colorIndex = size(colors,1);
         plot(theAxes, pjbSubjectSFs, pjbSubjectCSFs, '^', 'Color', squeeze(colors(colorIndex,:)), ...
             'MarkerEdgeColor', max(0, squeeze(colors(colorIndex,:))-faceColor), ...
             'MarkerFaceColor', min(1, squeeze(colors(colorIndex,:)) + faceColor), ...
             'MarkerSize',12,'LineWidth',2);
         
+        plot(theAxes, msbSubjectSFsHiRes, meanSubjectCSF, 'k-', 'LineWidth', 2);
+        
         variedParamLegends{numel(variedParamLegends)+1} = 'Subject MSB (Banks et al ''87)';
         variedParamLegends{numel(variedParamLegends)+1} = 'Subject PJB (Banks et al ''87)';
+        variedParamLegends{numel(variedParamLegends)+1} = 'Mean of subjects PJB,MSB';
    end
     
     % Add legend
@@ -186,6 +211,15 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
                 'MarkerFaceColor', min(1, squeeze(colors(condIndex,:)) + faceColor), ...
                 'MarkerSize',12,'LineWidth',2);
         end
+        
+        if (showSubjectData)
+            plot(theRatioAxes, refCPD, meanSubjectRatios, ...
+                'k-', 'Color', [0 0 0], ...
+                'MarkerEdgeColor', [0 0 0], ...
+                'MarkerFaceColor', [0.5 0.5 0.5], ...
+                'MarkerSize',12,'LineWidth',2);
+        end
+        
         hold(theRatioAxes, 'off');
     end
     
@@ -207,3 +241,17 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
     NicePlot.exportFigToPDF(figureName, hFig, 300);
 end
 
+function [xFit, yFit] = fitData(xData,yData)
+
+    xdata = xData(:);
+    ydata = yData(:);
+    
+    F = @(p,xdata)p(1) + p(2)*exp(-p(3)*xdata.^p(6)) + p(4)*exp(-p(5)*xdata.^2);
+    params0 = [1.3090   43.5452    0.0379   92.5870    0.0356    1.3392]; 
+    
+    [params,resnorm,~,exitflag,output] = lsqcurvefit(F,params0,xdata,ydata);
+    
+    xFit = 4:0.1:32;
+    yFit = F(params,xFit);
+
+end
