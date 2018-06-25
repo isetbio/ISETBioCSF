@@ -35,9 +35,7 @@ function run_EyeMovementVaryConditions
     condIndex = 0;
     
     
-    condIndex = condIndex+1;
-
-    
+%    condIndex = condIndex+1;  
 %     examinedCond(condIndex).emPathType = 'frozen0';
 %     examinedCond(condIndex).classifier = 'svm';
 %     examinedCond(condIndex).legend = 'no eye movements, SVM-PCA';
