@@ -8,7 +8,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     
 
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     
     condIndex = 0;
@@ -38,7 +38,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     
     % Go
     examinedLegends = {};
-    for condIndex = 2:2 % 1:numel(examinedCond)
+    for condIndex = 1:numel(examinedCond)
         cond = examinedCond(condIndex);
         mosaicName = cond.mosaicName;
         params = getCSFpaperDefaultParams(mosaicName, computationInstance);
@@ -97,7 +97,7 @@ function params = getRemainingDefaultParams(params, condIndex)
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -110,7 +110,7 @@ function params = getRemainingDefaultParams(params, condIndex)
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 end
