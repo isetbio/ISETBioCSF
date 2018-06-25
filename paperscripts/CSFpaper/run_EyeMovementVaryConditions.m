@@ -22,6 +22,9 @@ function run_EyeMovementVaryConditions
     % All conds  with 2 mm pupilto compare to Banks subject data
     params.pupilDiamMm = 2.0;
     
+    % Chromatic direction params
+    params.coneContrastDirection = 'L+M+S';
+  
     % Response duration params
     params.frameRate = 20; %(2 frames)
     params.responseStabilizationMilliseconds = 100;
