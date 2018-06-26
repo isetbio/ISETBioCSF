@@ -256,7 +256,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
         case {'STIMULUS_AND_OPTICAL_IMAGE', 'STIMULUS_OPTICAL_IMAGE_ISOMERIZATIONS_PHOTOCURRENTS'}
             if (isempty(theAxes))
                 if (strcmp(figureType, 'STIMULUS_AND_OPTICAL_IMAGE'))
-                    set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
+                    set(hFig, 'Color', [1 1 1], 'Position', [10 10 900 400]); 
                 else
                     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1400 450]);
                 end
