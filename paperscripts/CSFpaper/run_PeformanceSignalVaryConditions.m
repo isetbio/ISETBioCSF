@@ -9,15 +9,21 @@ function run_PeformanceSignalVaryConditions
     makeSummaryFigure = true;
     
     % Mosaic to use
-    mosaicName = 'ISETbioHexEccBasedLMSrealistic'; 
+    mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection';
     
     % Optics to use
-    opticsName = 'ThibosBestPSFSubject3MMPupil';
+    opticsName = 'ThibosAverageSubject3MMPupil';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
     % Adjust any params we want to change from their default values
     params.opticsModel = opticsName;
+    
+    % All conds  with 2 mm pupil to compare to Banks subject data
+    params.pupilDiamMm = 2.0;
+    
+    % Chromatic direction params
+    params.coneContrastDirection = 'L+M+S';
     
     % Response duration params
     params.frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
@@ -26,7 +32,7 @@ function run_PeformanceSignalVaryConditions
     
     % Eye movement setup
     params.emPathType = 'random';
-    params.centeredEMPaths = true;
+    params.centeredEMPaths = ~true;
     
     % Performance classifier
     params.performanceClassifier = 'svmV1FilterBank';
@@ -43,18 +49,22 @@ function run_PeformanceSignalVaryConditions
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
-    params.visualizeMosaic = ~true;
-    
     params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
+    
+    params.visualizeMosaic = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
+    params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
+    params.visualizeSpatialPoolingScheme = ~true;
+    params.visualizeStimulusAndOpticalImage = ~true;
+    params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
