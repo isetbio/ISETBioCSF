@@ -112,8 +112,8 @@ function run_EyeMovementVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
-    params.computePhotocurrentResponseInstances = true;
+    params.computeResponses = ~true;
+    params.computePhotocurrentResponseInstances = ~true;
     
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -126,7 +126,7 @@ function run_EyeMovementVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
