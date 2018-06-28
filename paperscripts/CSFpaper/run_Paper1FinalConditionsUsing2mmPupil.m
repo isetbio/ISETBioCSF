@@ -19,6 +19,12 @@ function run_Paper1FinalConditionsUsing2mmPupil
     examinedCond(condIndex).mosaicName = 'originalBanks';
     examinedCond(condIndex).opticsModel = 'Geisler';
     examinedCond(condIndex).inferenceEngine = 'mlpt';
+    examinedCond(condIndex).signal = 'isomerizations';
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = ~true;
+    examinedCond(condIndex).frameRate = 10;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 40;
     
     % Our best estimate of mosaic + optics, MLPT inference engine
     condIndex = condIndex+1;
@@ -26,15 +32,59 @@ function run_Paper1FinalConditionsUsing2mmPupil
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'mlpt';
+    examinedCond(condIndex).signal = 'isomerizations';
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = ~true;
+    examinedCond(condIndex).frameRate = 10;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 40;
     
     % Our best estimate of mosaic + optics, SVMpool inference engine
     condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template';
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template (cos-profile)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
+    examinedCond(condIndex).signal = 'isomerizations';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = ~true;
+    examinedCond(condIndex).frameRate = 10;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+    
+    % Our best estimate of mosaic + optics + eye movements, SVMpool inference engine
+    condIndex = condIndex+1;
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM, SVM-Template (quadrature energy)';
+    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
+    examinedCond(condIndex).signal = 'isomerizations';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).centeredEMPaths = true;
+    examinedCond(condIndex).frameRate = 20;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    
+    
+    % Our best estimate of mosaic + optics + eye movements + photocurrents, SVMpool inference engine
+    condIndex = condIndex+1;
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + pCurrent, SVM-Template (quadrature energy)';
+    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
+    examinedCond(condIndex).signal = 'photocurrents';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).centeredEMPaths = true;
+    examinedCond(condIndex).frameRate = 20;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    
     
     % Go
     examinedLegends = {};
@@ -42,8 +92,16 @@ function run_Paper1FinalConditionsUsing2mmPupil
         cond = examinedCond(condIndex);
         mosaicName = cond.mosaicName;
         params = getCSFpaperDefaultParams(mosaicName, computationInstance);
+  
         params.opticsModel = cond.opticsModel;
         params.performanceClassifier = cond.inferenceEngine;
+        params.performanceSignal = cond.signal;
+        params.emPathType = cond.emPathType;
+        params.centeredEMPaths = cond.centeredEMPaths;
+        params.frameRate = cond.frameRate;
+        params.responseStabilizationMilliseconds = cond.responseStabilizationMilliseconds;
+        params.responseExtinctionMilliseconds = cond.responseExtinctionMilliseconds;
+        
         if (strcmp(params.performanceClassifier, 'svmV1FilterBank'))
             params.spatialPoolingKernelParams.type = cond.spatialPoolingKernelParams.type;
             params.spatialPoolingKernelParams.activationFunction = cond.spatialPoolingKernelParams.activationFunction;
@@ -60,7 +118,8 @@ function run_Paper1FinalConditionsUsing2mmPupil
         variedParamName = 'VariousParams';
         theRatioLims = [0.03 1.5];
         theRatioTicks = [0.05  0.1 0.2 0.5 1.0];
-        generateFigureForPaper(theFigData, examinedLegends, variedParamName, 'ComparedToBanks87', ...
+        formatLabel = 'ComparedToBanks87Photocurrents';  % 'ComparedToBanks87'
+        generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
             'showSubjectData', true, ...
             'plotFirstConditionInGray', true, ...
@@ -83,14 +142,6 @@ function params = getRemainingDefaultParams(params, condIndex)
     else
         params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
     end
-    % Response duration params
-    params.frameRate = 10; %(1 frames)
-    params.responseStabilizationMilliseconds = 40;
-    params.responseExtinctionMilliseconds = 40;
-
-    % Eye movement params
-    params.emPathType = 'frozen0';
-    params.centeredEMpaths = ~true;
     
                 
     % Simulation steps to perform

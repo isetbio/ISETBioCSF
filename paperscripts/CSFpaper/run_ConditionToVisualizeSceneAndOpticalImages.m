@@ -17,10 +17,10 @@ function run_ConditionToVisualizeSceneAndOpticalImages
     % Adjust any params we want to change from their default values
     params.opticsModel = opticsName;
     params.coneContrastDirection = 'L+M+S';
-    params.lowContrast = 0.1;
-    params.highContrast =  0.1;
+    params.lowContrast = 1.0;
+    params.highContrast =  1.0;
     params.nContrastsPerDirection =  1;
-    params.nTrainingSamples = 4;
+    params.nTrainingSamples = 8;
     params.performanceTrialsUsed = [];
     params.cyclesPerDegreeExamined = [16];
     
@@ -31,7 +31,7 @@ function run_ConditionToVisualizeSceneAndOpticalImages
     
     params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
-    params.visualizeDisplay = ~true;
+    params.visualizeDisplay = true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
