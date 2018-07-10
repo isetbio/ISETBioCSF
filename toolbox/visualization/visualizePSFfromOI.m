@@ -38,21 +38,21 @@ function visualizePSFfromOI(theOI, micronsPerDegree, varargin)
     ySupportMicrons = yGridMinutes(:,1);
 
     hFig = figure(10); clf;
-    set(hFig, 'Position', [10 10 1500 940], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 940 940], 'Color', [0 0 0]);
     
 
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
                'rowsNum', rows, ...
                'colsNum', cols, ...
-               'heightMargin',   0.04, ...
-               'widthMargin',    0.02, ...
-               'leftMargin',     0.03, ...
+               'heightMargin',   0.005, ...
+               'widthMargin',    0.005, ...
+               'leftMargin',     0.002, ...
                'rightMargin',    0.00, ...
-               'bottomMargin',   0.05, ...
-               'topMargin',      0.02);
+               'bottomMargin',   0.002, ...
+               'topMargin',      0.00);
     
     
-    psfRange = 7;
+    psfRange = 5;
     xx = find(abs(xSupportMicrons) <= psfRange);
     yy = find(abs(ySupportMicrons) <= psfRange);
 
@@ -74,7 +74,7 @@ function visualizePSFfromOI(theOI, micronsPerDegree, varargin)
         axis 'image'; axis 'xy';
         set(gca, 'XLim', psfRange*1.05*[-1 1], 'YLim', psfRange*1.05*[-1 1], 'CLim', [0 1], ...
             'XTick', [-10:2:10], 'YTick', [-10:2:10]);
-        set(gca, 'FontSize', 16);
+        set(gca, 'FontSize', 16, 'XColor', [0 0 0], 'YColor', [0 0 0], 'Color', [0 0 0]);
         
         if (waveIndex == numel(visualizedWavelengths)) && (labelLastPSF)
             xlabel('arc min');
@@ -83,9 +83,12 @@ function visualizePSFfromOI(theOI, micronsPerDegree, varargin)
             set(gca, 'XTickLabel', {}, 'YTickLabel',{});
         end
         
-        grid on; box on;
+        grid on; box on; axis 'xy';
         if (displayWavelengthInTitle)
-            title(sprintf('%2.0f nm', targetWavelength));   
+            xT = -psfRange/2;
+            yT = psfRange*0.93;
+            t = text(xT,yT,sprintf('%2.0f nm', targetWavelength)); 
+            set(t, 'Color', [1 1 1], 'FontSize', 40);
         end
     end
     
