@@ -6,10 +6,10 @@ function run_OpticsVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
+    makeSummaryFigure = ~true;
     
     % Whether to visualize the employed PSFs
-    makePSFfigure = true;
+    makePSFfigure = ~true;
     visualizedWavelengths = 550;
         
     % Mosaic to use
@@ -35,7 +35,7 @@ function run_OpticsVaryConditions
         'wvf-based PSF (subject l)' ...
     };
 
-     idx = 4:4;
+     idx = [1 2 3 5 6];
      examinedOpticsModels = {examinedOpticsModels{idx}};
      examinedOpticsModelLegends = {examinedOpticsModelLegends{idx}};
 %     
