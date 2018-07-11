@@ -85,9 +85,9 @@ function visualizePSFfromOI(theOI, micronsPerDegree, varargin)
         
         grid on; box on; axis 'xy';
         if (displayWavelengthInTitle)
-            xT = -psfRange/2;
+            xT = -psfRange/1.5;
             yT = psfRange*0.93;
-            t = text(xT,yT,sprintf('%2.0f nm', targetWavelength)); 
+            t = text(xT,yT,sprintf('\\lambda = %2.0f nm', targetWavelength)); 
             set(t, 'Color', [1 1 1], 'FontSize', 40);
         end
     end
