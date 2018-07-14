@@ -118,7 +118,7 @@ if (p.Results.visualizeOIsequence)
 end
 
 if (p.Results.visualizeStimulusAndOpticalImage)
-    visualizeSceneAndOpticalImage(modulatedScene, oiModulated, p.Results.paramsList);
+    visualizeSceneAndOpticalImage(backgroundScene, modulatedScene, oiBackground, oiModulated, p.Results.paramsList);
 end
 
 %% Co-visualize the optical image and the cone mosaic

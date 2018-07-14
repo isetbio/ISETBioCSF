@@ -1,109 +1,70 @@
-function visualizeSceneAndOpticalImage(modulatedScene, oiModulated, paramsList)
+function visualizeSceneAndOpticalImage(backgroundScene, modulatedScene, oiBackground, oiModulated, paramsList)
 
-    sceneNormalizingY = 1/1.4;
-    oiNormalizingY = 1/1.32;
-    
-    sceneXYZ = sceneGet(modulatedScene, 'rgb image');
-    [calFormat, cols,rows] = ImageToCalFormat(sceneXYZ);
-    % Normalize the luma channel
-    calFormat = calFormat * sceneNormalizingY;
-    sceneRGB = (xyz2rgb(calFormat'))';
-    sceneRGB = CalFormatToImage(sceneRGB, cols, rows);
-
+    sceneLMS = sceneGet(modulatedScene, 'lms');
+    sceneXYZ = sceneGet(modulatedScene, 'xyz');
+    oiLMS = oiGet(oiModulated, 'lms');
+    oiXYZ = oiGet(oiModulated, 'xyz');
+    [sceneSRGB, sceneLRGB, maxY] = xyz2srgb(sceneXYZ);
+    [oiSRGB, oiLRGB, maxY] = xyz2srgb(oiXYZ);
     
     sceneSpatialSupport = sceneGet(modulatedScene, 'spatial support');
     sceneFOV = sceneGet(modulatedScene, 'horizontalFOV');
-    
-    xSupport = squeeze(sceneSpatialSupport(1,:,1));
-    xSupport = xSupport / max(abs(xSupport(:))) * sceneFOV/2;
-    ySupport = squeeze(sceneSpatialSupport(:,1,2));
-    ySupport = ySupport / max(abs(ySupport(:))) * sceneFOV/2;
-    
-    opticalImageXYZ = oiGet(oiModulated, 'xyz');
-    [calFormat, cols,rows] = ImageToCalFormat(opticalImageXYZ);
-    % Normalize the luma channel
-    calFormat = calFormat * oiNormalizingY;
-    opticalImageRGB = (xyz2rgb(calFormat'))';
-    opticalImageRGB = CalFormatToImage(opticalImageRGB, cols, rows);
+    [xSupport, ySupport] = getXYspatialSupports(sceneSpatialSupport, sceneFOV);
     
     oiFOV = oiGet(oiModulated, 'hfov');
     oiSpatialSupport = oiGet(oiModulated, 'spatial support');
-    oiXSupport = squeeze(oiSpatialSupport(1,:,1));
-    oiXSupport = oiXSupport / max(abs(oiXSupport(:))) * oiFOV/2;
-    oiYSupport = squeeze(oiSpatialSupport(:,1,2));
-    oiYSupport = oiYSupport / max(abs(oiYSupport(:))) * oiFOV/2;
+    [oiXSupport, oiYSupport] = getXYspatialSupports(oiSpatialSupport, oiFOV);
     
-    xx = find(abs(oiXSupport)<= max(xSupport));
-    yy = find(abs(oiYSupport)<= max(ySupport));
-    tmp = ones(size(opticalImageRGB));
-    tmp(yy,xx,:) = opticalImageRGB(yy,xx,:);
-    opticalImageRGB = tmp;
+    sceneLMScontrast = weberContrast(sceneLMS, sceneGet(backgroundScene, 'lms'));
+    oiLMScontrast = weberContrast(oiLMS, oiGet(oiBackground, 'lms'));
     
-    
-    % Draw
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', 2, ...
-           'colsNum', 1, ...
-           'heightMargin',   0.04, ...
-           'widthMargin',    0.001, ...
-           'leftMargin',     0.03, ...
-           'rightMargin',    0.001, ...
-           'bottomMargin',   0.07, ...
-           'topMargin',      0.001);
-      
-    extraMargin = 1.05;
-    extraMargin = 1.00;
-    
-    hFig = figure(99); clf;
-    formatFigureForPaper(hFig, 'figureType', 'STIMULUS_AND_OPTICAL_IMAGE');
-    
-    ax = subplot('Position', subplotPosVectors(1,1).v);
-    image(ax, xSupport, ySupport, sceneRGB);
-    set(ax, 'CLim', [0 1]);
-    
-    if (max(xSupport) <= 0.1)
-        ticks = [-4:0.025:4];
-    elseif (max(xSupport) <= 0.2)
-        ticks = [-4:0.05:4];
-    elseif (max(xSupport) <= 0.4)
-        ticks = [-4:0.1:4];
-    elseif (max(xSupport) <= 0.6)
-        ticks = [-4:0.15:4];
-    elseif (max(xSupport) <= 1.0)
-        ticks = [-4:0.25:4];
-    elseif (max(xSupport) <= 2.0)
-        ticks = [-4:0.5:4];
-    else
-        ticks = [-4:2:4];
-    end
-        
-        
-    set(ax, 'XLim', extraMargin*max(xSupport(:))*[-1 1], 'YLim', extraMargin*max(xSupport(:))*[-1 1]);
-    set(ax, 'XTick', ticks, 'YTick', ticks);
-    t = 'scene';
-    formatFigureForPaper(hFig, ...
-            'figureType', 'STIMULUS_AND_OPTICAL_IMAGE', ...
-            'theAxes', ax, ...
-            'theText', t, ...
-            'theTextFontSize', [], ...
-            'theFigureTitle', '');
-    set(ax, 'XTickLabel', {});
-   
-    ax = subplot('Position', subplotPosVectors(2,1).v);
-    image(ax, oiXSupport, oiYSupport, opticalImageRGB);
-    set(ax, 'CLim', [0 1]);
+    [~,centerRow] = min(abs(ySupport));
+    sceneLMScontrast = squeeze(sceneLMScontrast(centerRow,:,:));
+    [~,centerRow] = min(abs(oiYSupport));
+    oiLMScontrast = squeeze(oiLMScontrast(centerRow,:,:));
 
-    set(ax, 'XLim', extraMargin*max(xSupport(:))*[-1 1], 'YLim', extraMargin*max(xSupport(:))*[-1 1]);
-    set(ax, 'XTick', ticks, 'YTick', ticks);
     
-    t = 'optical image';
-    xlabel(ax, 'degrees');
-    formatFigureForPaper(hFig, ...
-            'figureType', 'STIMULUS_AND_OPTICAL_IMAGE', ...
-            'theAxes', ax, ...
-            'theText', t, ...
-            'theTextFontSize', [], ...
-            'theFigureTitle', '');
+    xtickLabels = {'-0.2', '', '-0.1', '', '0', '', '+0.1', '', '+0.2'};
+    
+    hFig = figure(1); clf;
+    set(hFig, 'Position', [10 10 730 500], 'Color', [1 1 1]);
+    subplot('Position', [0.08 0.335 0.44 0.68]);
+    image(xSupport, ySupport, sceneSRGB);
+    axis 'image'
+    set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
+             'YLim', [ySupport(1) ySupport(end)], ...
+             'XTick', -2:0.05:2, 'YTick', -10.2:0.05:0.2, ...
+             'XTickLabel', {}, 'YTickLabel', {}, ...
+             'FontSize', 16);
+    grid 'on';
+    
+    subplot('Position', [0.55 0.335 0.44 0.68]);
+    image(oiXSupport, oiYSupport, oiSRGB)
+    axis 'image'
+    set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
+             'YLim', [ySupport(1) ySupport(end)], ...
+             'XTick', -1:0.05:1, 'YTick', -1:0.05:1, ...
+             'XTickLabel', {}, 'YTickLabel', {}, ...
+             'FontSize', 16);
+    grid 'on';
+    
+	subplot('Position', [0.08 0.095 0.44 0.24]);
+    plotContrasts(xSupport, sceneLMScontrast);
+    ytickLabels = {'-1.0', '', '-0.5', '', '0', '', '+0.5', '', '+1.0'};
+    set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
+        'XTick', -0.2:0.05:10.2, 'YLim', [-1 1], 'YTick', -1:0.25:1,  ...
+        'YTickLabel', ytickLabels, 'XTickLabel', xtickLabels, 'FontSize', 16);
+    grid 'on'; box 'on';
+    xlabel('space (deg)', 'FontWeight', 'bold');
+    ylabel('contrast', 'FontWeight', 'bold');
+    
+    subplot('Position', [0.55 0.095 0.44 0.24]);
+    plotContrasts(oiXSupport, oiLMScontrast);
+    set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
+        'XTick', -0.2:0.05:0.2, 'YLim', [-1 1], ...
+        'YTick', -1:0.25:1, 'XTickLabel', xtickLabels, 'YTickLabel', {}, 'FontSize', 16);
+    grid 'on'; box 'on';
+    xlabel('space (deg)', 'FontWeight', 'bold');
     
     drawnow;
     
@@ -116,6 +77,42 @@ function visualizeSceneAndOpticalImage(modulatedScene, oiModulated, paramsList)
         rwObject.write(fileName, data, paramsList, theProgram, ...
                'type', 'NicePlotExportPNG', 'FigureHandle', hFig, 'FigureType', 'png');
     end
-    
 end
+
+function plotContrasts(x, contrasts)
+    hold on
+    plotMode = 1;
+    if (plotMode == 1)
+        plot(x, contrasts(:,1), 'k-', 'lineWidth', 4.0);
+        plot(x, contrasts(:,2), 'k-', 'lineWidth', 4.0);
+        plot(x, contrasts(:,3), 'k-', 'lineWidth', 4.0);
+        plot(x, contrasts(:,1), 'r-', 'lineWidth', 2.0);
+        plot(x, contrasts(:,2), 'g-', 'lineWidth', 2.0);
+        plot(x, contrasts(:,3), 'c-', 'lineWidth', 2.0);
+    else
+        p1 = plot(x, contrasts(:,1), 'r:', 'lineWidth', 3);
+        p2 = plot(x, contrasts(:,2), 'g.-', 'lineWidth', 3);
+        p3 = plot(x, contrasts(:,3), 'b-', 'lineWidth', 1.5);
+        p1.Color(4) = 0.85;
+        p2.Color(4) = 0.85;
+        p3.Color(4) = 0.85;
+    end
+end
+
+function [xSupport, ySupport] = getXYspatialSupports(sceneSpatialSupport, sceneFOV)
+    xSupport = squeeze(sceneSpatialSupport(1,:,1));
+    xSupport = xSupport / max(abs(xSupport(:))) * sceneFOV/2;
+    ySupport = squeeze(sceneSpatialSupport(:,1,2));
+    ySupport = ySupport / max(abs(ySupport(:))) * sceneFOV/2;
+end
+
+function contrasts = weberContrast(stimulusExcitations, backgroundExcitations)
+    backgroundL = mean(mean(squeeze(backgroundExcitations(:,:,1))));
+    backgroundM = mean(mean(squeeze(backgroundExcitations(:,:,2))));
+    backgroundS = mean(mean(squeeze(backgroundExcitations(:,:,3))));
+    contrasts(:,:,1) = (stimulusExcitations(:,:,1) - backgroundL)/backgroundL;
+    contrasts(:,:,2) = (stimulusExcitations(:,:,2) - backgroundM)/backgroundM;
+    contrasts(:,:,3) = (stimulusExcitations(:,:,3) - backgroundS)/backgroundS;
+end
+
 
