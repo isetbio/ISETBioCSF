@@ -9,19 +9,19 @@ function run_ConditionToVisualizeResponses
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
     
     % Optics to use
-    opticsName = 'ThibosBestPSFSubject3MMPupil';
+    opticsName = 'ThibosDefaultSubject3MMPupil';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
     % Adjust any params we want to change from their default values
     params.opticsModel = opticsName;
     params.coneContrastDirection = 'L+M+S';
-    params.lowContrast = 0.01;
-    params.highContrast =  0.1;
-    params.nContrastsPerDirection =  2;
-    params.nTrainingSamples = 1023;
+    params.lowContrast = 0.1; % was 0.01;
+    params.highContrast =  1.0; % was 0.1;
+    params.nContrastsPerDirection = 2;
+    params.nTrainingSamples = 1023
     params.performanceTrialsUsed = [];
-    params.cyclesPerDegreeExamined = [16]; % [4 8 16 32 50];
+    params.cyclesPerDegreeExamined = [16];
     
     % Simulation steps to perform
     params.computeResponses = ~true;

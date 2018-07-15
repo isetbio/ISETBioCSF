@@ -6,8 +6,8 @@ function run_MosaicsVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
-    makeMosaicsFigure = ~true;
+    makeSummaryFigure = true;
+    makeMosaicsFigure = true;
     
     % Mosaic to use
     examinedMosaicModels = {...
@@ -28,7 +28,7 @@ function run_MosaicsVaryConditions
     %idx = 1:3;
     %examinedMosaicModels = {examinedMosaicModels{idx}};
     
-    idx = 4:4;
+    idx = 1:4;
     examinedMosaicModels = {examinedMosaicModels{idx}};
      
     % Tun the mosaic-vary condition using the Geisler optics
@@ -59,7 +59,7 @@ function run_MosaicsVaryConditions
         params.computeMosaic = ~true; 
         params.visualizeMosaic = ~true;
 
-        params.computeResponses = true;
+        params.computeResponses = ~true;
         params.computePhotocurrentResponseInstances = ~true;
         params.visualizeMosaic = makeMosaicsFigure;
         params.visualizeResponses = ~true;
@@ -72,7 +72,7 @@ function run_MosaicsVaryConditions
         params.visualizeDisplay = ~true;
     
         params.visualizeKernelTransformedSignals = ~true;
-        params.findPerformance = true;
+        params.findPerformance = ~true;
         params.visualizePerformance = makeSummaryFigure;
         params.deleteResponseInstances = ~true;
 
@@ -96,7 +96,7 @@ function run_MosaicsVaryConditions
         theRatioTicks = [0.3 0.5 0.7 1.0 2.0];
         generateFigureForPaper(theFigData, examinedMosaicLegends, variedParamName, opticsName, ...
             'figureType', 'CSF', ...
-            'inGraphText', ' A ', ...
+            'inGraphText', ' E ', ...
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
@@ -106,7 +106,7 @@ function run_MosaicsVaryConditions
     
     if (makeMosaicsFigure)
         generateMosaicsFigure(theMosaicTypesAtSpecificSF, examinedMosaicLegends,  ...
-            'inGraphTexts', {' B ', ' C ', ' D '}, ...
+            'inGraphTexts', {' A ', ' B ', ' D '}, ...
             'visualizedFOV', 0.35);
     end
 end

@@ -51,6 +51,15 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
             'hFig', hFigs{2});
         
         
+    hFigs = visualizeNoiseFreeAndFirstInstanceWithActivationProfile(...
+             stimData, noStimData, theMosaic);   
+    hFigsInfo{numel(hFigsInfo)+1} = struct(...
+            'filename', 'noiseFreeXYResponsesFirstInstanceAndActivationProfilesSTIM',...
+            'hFig', hFigs{1});   
+    hFigsInfo{numel(hFigsInfo)+1} = struct(...
+            'filename', 'noiseFreeXYResponsesFirstInstanceAndActivationProfilesNULL',...
+            'hFig', hFigs{2});
+        
     % Single L, M, and S-cone (best responses) showing distribution of all response instances
     for submosaicIndex = 1:3
         if (~isempty(peakConeIndex{submosaicIndex}))
@@ -401,4 +410,185 @@ function ax = plotMosaicActivation(cMosaic, visualizedActivationPattern, ...
     if (~p.Results.displayTicksX); set(ax, 'XTickLabels', {}); end
     if (~p.Results.displayTicksY); set(ax, 'YTickLabels', {}); end
     title(ax, titleText);
+end
+
+function hFigs = visualizeNoiseFreeAndFirstInstanceWithActivationProfile(...
+             stimData, noStimData, theMosaic)
+    
+    % Transform rates to counts
+    stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations * theMosaic.integrationTime;
+    noStimData.noiseFreeIsomerizations = noStimData.noiseFreeIsomerizations * theMosaic.integrationTime;
+    stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations * theMosaic.integrationTime;
+    noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations * theMosaic.integrationTime;
+    
+    % Determine visualized time bin of max response
+    [~,kidx] = max(stimData.noiseFreeIsomerizations(:));
+    [~,timeBinOfPeakIsomerizationResponse] = ind2sub(size(stimData.noiseFreeIsomerizations), kidx);
+    
+    % Visualized response instances
+    visualizedResponseInstances = (squeeze(stimData.responseInstanceArray.theMosaicIsomerizations(:,:,timeBinOfPeakIsomerizationResponse)))';
+    % Visualized noise-free isomerizations
+    visualizedNoiseFreeNoStimIsomerizations = squeeze(noStimData.noiseFreeIsomerizations(:,timeBinOfPeakIsomerizationResponse));
+    
+    % Determine visualized response range
+    isomerizationsRange = determineVisualizedIsomerizationsRange(theMosaic, stimData, timeBinOfPeakIsomerizationResponse);
+    
+    % Instance to visualize
+    visualizedResponseInstance = 1;
+    
+    signalRange = [-12 12]; coneLinePlotType = 'differential_activations';
+    hFigs{1} = renderFigure(1222, theMosaic, visualizedResponseInstance, ...
+        stimData, noStimData, timeBinOfPeakIsomerizationResponse, ...
+        isomerizationsRange, signalRange, coneLinePlotType, 'diff cone excitation');    
+    
+    signalRange = isomerizationsRange; coneLinePlotType = 'activations';
+    hFigs{2} = renderFigure(1333, theMosaic, visualizedResponseInstance, ...
+        noStimData, noStimData, timeBinOfPeakIsomerizationResponse, ...
+        isomerizationsRange, signalRange, coneLinePlotType, 'cone excitation');    
+    
+end
+
+function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
+    stimData, noStimData, timeBinOfPeakIsomerizationResponse, ...
+    isomerizationsRange, signalRange, coneLinePlotType, yLabelTitle)
+    
+    % Generate colormaps for modulations and for excitations
+    %modulationsColorMap = brewermap(512, '*RdBu');
+    excitationsColorMap = gray(1024);
+    
+    hFig = figure(figNo); clf;
+    set(hFig, 'Position', [10 10 730 500], 'Color', [1 1 1]);
+    ax = subplot('Position', [0.08 0.335 0.44 0.68]);
+    theMosaic.renderActivationMap(ax, squeeze(stimData.noiseFreeIsomerizations(:,timeBinOfPeakIsomerizationResponse)) ,...
+        'visualizedConeAperture', 'geometricArea', ...
+        'signalRange', isomerizationsRange, ...
+        'colorMap', excitationsColorMap, ...
+        'showColorBar', ~true, ...
+        'labelColorBarTicks', ~true, ...
+        'outlineConesAlongHorizontalMeridian', true, ...
+        'showXLabel', false, ...
+        'showYLabel', false, ...
+        'backgroundColor', 0*[0.5 0.5 0.5]);
+    set(gca, 'XTickLabel', {}, 'YTickLabel', {});
+    
+    
+    ax = subplot('Position', [0.55 0.335 0.44 0.68]);
+    theMosaic.renderActivationMap(ax, squeeze(stimData.responseInstanceArray.theMosaicIsomerizations(visualizedResponseInstance,:,timeBinOfPeakIsomerizationResponse))', ...
+            'visualizedConeAperture', 'geometricArea', ...
+            'signalRange', isomerizationsRange, ...
+            'colorMap', excitationsColorMap, ...
+            'showColorBar', ~true, ...
+            'labelColorBarTicks', ~true, ...
+            'outlineConesAlongHorizontalMeridian', true, ...
+            'showXLabel', false, ...
+            'showYLabel', false, ...
+            'backgroundColor', 0*[0.5 0.5 0.5]);
+    set(gca, 'XTickLabel', {}, 'YTickLabel', {});
+     
+    ax = subplot('Position', [0.08 0.095 0.44 0.24]);
+    generateConeLinePlot(ax, theMosaic, ...
+        squeeze(stimData.noiseFreeIsomerizations(:,timeBinOfPeakIsomerizationResponse)), ...
+        squeeze(noStimData.noiseFreeIsomerizations(:,timeBinOfPeakIsomerizationResponse)), ...
+        signalRange, coneLinePlotType, yLabelTitle);
+    
+    ax = subplot('Position', [0.55 0.095 0.44 0.24]);
+    generateConeLinePlot(ax, theMosaic, ...
+        squeeze(stimData.responseInstanceArray.theMosaicIsomerizations(visualizedResponseInstance,:,timeBinOfPeakIsomerizationResponse))', ...
+        squeeze(noStimData.noiseFreeIsomerizations(:,timeBinOfPeakIsomerizationResponse)), ...
+        signalRange, coneLinePlotType, '');
+end
+
+
+function generateConeLinePlot(ax, theMosaic, activation, nullStimActivation, signalRange, coneLinePlotType, yLabelTitle)
+    if (any(size(activation) ~= size(theMosaic.pattern)))    
+       activation = theMosaic.reshapeHex2DmapToHex3Dmap(activation);
+       nullStimActivation = theMosaic.reshapeHex2DmapToHex3Dmap(nullStimActivation);
+    end
+    sampledHexMosaicXaxis = squeeze(theMosaic.patternSupport(1, :, 1)) + ...
+        theMosaic.center(1);
+    sampledHexMosaicYaxis = squeeze(theMosaic.patternSupport(:, 1, 2)) + ...
+        theMosaic.center(2);
+    
+    dx = diameterForCircularApertureFromWidthForSquareAperture(...
+            theMosaic.pigment.width) * 1e6 / theMosaic.micronsPerDegree;
+        
+    idx = find(theMosaic.pattern > 1);
+    [iRows, iCols] = ind2sub(size(theMosaic.pattern), idx);  
+    coneXcoords = (sampledHexMosaicXaxis(iCols))';
+    coneYcoords = sampledHexMosaicYaxis(iRows);
+    coneActivations = activation(idx);
+    nullStimActivation = nullStimActivation(idx);
+    coneXcoordsDegs = coneXcoords * 1e6 / theMosaic.micronsPerDegree;
+    coneYcoordsDegs = coneYcoords * 1e6 / theMosaic.micronsPerDegree;
+    conePosRange = max([max(abs(coneXcoordsDegs)) max(abs(coneYcoordsDegs))]);
+    
+    % Find cones lying near the y=0 axis
+    indicesOfConesAlongXaxis = find(abs(coneYcoordsDegs) < dx);
+    coneXcoordsDegs = coneXcoordsDegs(indicesOfConesAlongXaxis);
+    coneYcoordsDegs = coneYcoordsDegs(indicesOfConesAlongXaxis);
+    coneActivations = coneActivations(indicesOfConesAlongXaxis);
+    nullStimActivation  = nullStimActivation(indicesOfConesAlongXaxis);
+    identitiesOfConesAlongXaxis = theMosaic.pattern(idx(indicesOfConesAlongXaxis));
+
+    hold(ax, 'on');
+    for coneIndex = 2:4
+        switch(coneIndex)
+            case 2
+                edgeColor = [1 0 0];
+                faceColor = [1 0.5 0.5];
+            case 3
+                edgeColor = [0 0.8 0];
+                faceColor = [0.5 1 0.5];
+            case 4
+                edgeColor = [0 0 1];
+                faceColor = [0.5 0.8 1];
+        end
+        iidx = find(identitiesOfConesAlongXaxis == coneIndex);
+        if (strcmp(coneLinePlotType, 'differential_activations'))
+            signal = coneActivations(iidx)-nullStimActivation(iidx);
+            yticks = -10:5:10;
+        else
+            signal = coneActivations(iidx);
+            yticks = 0:10:30;
+        end
+        plot(ax, coneXcoordsDegs(iidx), signal, ...
+            'o', 'Color', edgeColor, 'MarkerSize', 8, 'LineWidth', 1.5, ...
+            'MarkerFaceColor',faceColor,'MarkerEdgeColor',edgeColor);
+    end
+    xtickLabels = {'-0.2', '', '-0.1', '', '0', '', '+0.1', '', '+0.2'};
+    set(ax, 'XLim', conePosRange*[-1 1], 'YLim', signalRange, ...
+        'FontSize', 16, 'XTick', -0.2:0.05:0.2, 'XTickLabel', xtickLabels, ...
+        'YTick', yticks);
+    if (~isempty(yLabelTitle))
+        ylabel(yLabelTitle, 'FontWeight', 'bold')
+    else
+        set(gca, 'YTickLabel', {});
+    end
+    grid 'on'; box 'on';
+    xlabel('space (deg)', 'FontWeight', 'bold');
+end
+
+function isomerizationsRange = determineVisualizedIsomerizationsRange(theMosaic, stimData, timeBinOfPeakIsomerizationResponse)
+    % Determine response range based on the responses of L/M cones
+    nonNullCones = theMosaic.pattern(theMosaic.pattern > 1);
+    lmConeIndices = find(nonNullCones==2 | nonNullCones==3);
+    
+    noiseFreeIsomerizationsRange = [...
+        min(stimData.noiseFreeIsomerizations(lmConeIndices,timeBinOfPeakIsomerizationResponse)) ...
+        max(stimData.noiseFreeIsomerizations(lmConeIndices,timeBinOfPeakIsomerizationResponse)) ...
+        ];
+    instancesIsomerizationsRange = [ ...
+        min(min(squeeze(stimData.responseInstanceArray.theMosaicIsomerizations(:,lmConeIndices,timeBinOfPeakIsomerizationResponse)))) ...
+        max(max(squeeze(stimData.responseInstanceArray.theMosaicIsomerizations(:,lmConeIndices,timeBinOfPeakIsomerizationResponse)))) ...
+    ];
+
+    isomerizationsRange = noiseFreeIsomerizationsRange;
+    
+    % add to the range so the visualized range matches the low-end of the 
+    % instancesIsomerizationsRange
+    delta = isomerizationsRange(1)-instancesIsomerizationsRange(1);
+    if (delta > 0)
+        isomerizationsRange = isomerizationsRange + delta * [-1 1];
+    end
+    isomerizationsRange = round(isomerizationsRange);
 end
