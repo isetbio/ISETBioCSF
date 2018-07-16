@@ -1,52 +1,26 @@
 function visualizeSceneOpticalImageAndMeanResponses(modulatedScene, oiModulated, theMosaic, noiseFreeIsomerizations, noiseFreePhotocurrents, paramsList)
 
-    sceneNormalizingY = 1/1.4;
-    oiNormalizingY = 1/1.32;
-    
-    sceneXYZ = sceneGet(modulatedScene, 'rgb image');
-    [calFormat, cols,rows] = ImageToCalFormat(sceneXYZ);
-    % Normalize the luma channel
-    calFormat = calFormat * sceneNormalizingY;
-    sceneRGB = (xyz2rgb(calFormat'))';
-    sceneRGB = CalFormatToImage(sceneRGB, cols, rows);
-    sceneRGB = sceneRGB .^ 0.5;
+    sceneXYZ = sceneGet(modulatedScene, 'xyz');
+    oiXYZ = oiGet(oiModulated, 'xyz');
+    [sceneSRGB, ~, ~] = xyz2srgb(sceneXYZ);
+    [oiSRGB, ~, ~] = xyz2srgb(oiXYZ);
     
     sceneSpatialSupport = sceneGet(modulatedScene, 'spatial support');
     sceneFOV = sceneGet(modulatedScene, 'horizontalFOV');
-    
-    xSupport = squeeze(sceneSpatialSupport(1,:,1));
-    xSupport = xSupport / max(abs(xSupport(:))) * sceneFOV/2;
-    ySupport = squeeze(sceneSpatialSupport(:,1,2));
-    ySupport = ySupport / max(abs(ySupport(:))) * sceneFOV/2;
-    
-    opticalImageXYZ = oiGet(oiModulated, 'xyz');
-    [calFormat, cols,rows] = ImageToCalFormat(opticalImageXYZ);
-    % Normalize the luma channel
-    calFormat = calFormat * oiNormalizingY;
-    opticalImageRGB = (xyz2rgb(calFormat'))';
-    opticalImageRGB = CalFormatToImage(opticalImageRGB, cols, rows);
-    opticalImageRGB  = opticalImageRGB  .^ 0.5;
+    [xSupport, ySupport] = getXYspatialSupports(sceneSpatialSupport, sceneFOV);
     
     oiFOV = oiGet(oiModulated, 'hfov');
     oiSpatialSupport = oiGet(oiModulated, 'spatial support');
-    oiXSupport = squeeze(oiSpatialSupport(1,:,1));
-    oiXSupport = oiXSupport / max(abs(oiXSupport(:))) * oiFOV/2;
-    oiYSupport = squeeze(oiSpatialSupport(:,1,2));
-    oiYSupport = oiYSupport / max(abs(oiYSupport(:))) * oiFOV/2;
+    [oiXSupport, oiYSupport] = getXYspatialSupports(oiSpatialSupport, oiFOV);
     
-    xx = find(abs(oiXSupport)<= max(xSupport));
-    yy = find(abs(oiYSupport)<= max(ySupport));
-    tmp = ones(size(opticalImageRGB));
-    tmp(yy,xx,:) = opticalImageRGB(yy,xx,:);
-    opticalImageRGB = tmp;
     
     
     noiseFreeIsomerizations = squeeze(noiseFreeIsomerizations(1,:,:)) / theMosaic.integrationTime;
-    isomerizationsRange = [min(noiseFreeIsomerizations(:)) max(noiseFreeIsomerizations(:))]
-    isomerizationsRange = [2800 3600]
+    isomerizationsRange = [min(noiseFreeIsomerizations(:)) max(noiseFreeIsomerizations(:))];
+    isomerizationsRange = [2800 3600];
     isomerizationsTickIncrement = 200;
-    photocurrentsRange = [min(noiseFreePhotocurrents(:)) max(noiseFreePhotocurrents(:))]
-    photocurrentsRange = [-86 -74]
+    photocurrentsRange = [min(noiseFreePhotocurrents(:)) max(noiseFreePhotocurrents(:))];
+    photocurrentsRange = [-86 -74];
     photocurrentsTickIncrement = 2;
     % Draw
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -66,22 +40,22 @@ function visualizeSceneOpticalImageAndMeanResponses(modulatedScene, oiModulated,
     formatFigureForPaper(hFig, 'figureType', 'STIMULUS_OPTICAL_IMAGE_ISOMERIZATIONS_PHOTOCURRENTS');
     
     ax = subplot('Position', subplotPosVectors(1,1).v);
-    image(ax, xSupport, ySupport, sceneRGB);
+    image(ax, xSupport, ySupport, sceneSRGB);
     
     if (max(xSupport) <= 0.1)
-        ticks = [-4:0.025:4];
+        ticks = -4:0.025:4;
     elseif (max(xSupport) <= 0.2)
-        ticks = [-4:0.05:4];
+        ticks = -4:0.05:4;
     elseif (max(xSupport) <= 0.4)
-        ticks = [-4:0.1:4];
+        ticks = -4:0.1:4;
     elseif (max(xSupport) <= 0.6)
-        ticks = [-4:0.15:4];
+        ticks = -4:0.15:4;
     elseif (max(xSupport) <= 1.0)
-        ticks = [-4:0.25:4];
+        ticks = -4:0.25:4;
     elseif (max(xSupport) <= 2.0)
-        ticks = [-4:0.5:4];
+        ticks = -4:0.5:4;
     else
-        ticks = [-4:2:4];
+        ticks = -4:2:4;
     end
         
     XLims = extraMargin*max(xSupport(:))*[-1 1];
@@ -101,7 +75,7 @@ function visualizeSceneOpticalImageAndMeanResponses(modulatedScene, oiModulated,
     
     
     ax = subplot('Position', subplotPosVectors(1,2).v);
-    image(ax, oiXSupport, oiYSupport, opticalImageRGB);
+    image(ax, oiXSupport, oiYSupport, oiSRGB);
     formatFigureForPaper(hFig, ...
             'figureType', 'STIMULUS_OPTICAL_IMAGE_ISOMERIZATIONS_PHOTOCURRENTS', ...
             'theAxes', ax, ...
@@ -215,4 +189,11 @@ function renderColorBar(ax, colorbarTicks, colorbarTickLabels,  colorbarLabel)
     set(ax,'position',[newPosition(1) originalPosition(2) originalPosition(3) originalPosition(4)]);
     set(ax,'position',[newPosition(1) originalPosition(2) originalPosition(3) originalPosition(4)]);
     
+end
+
+function [xSupport, ySupport] = getXYspatialSupports(sceneSpatialSupport, sceneFOV)
+    xSupport = squeeze(sceneSpatialSupport(1,:,1));
+    xSupport = xSupport / max(abs(xSupport(:))) * sceneFOV/2;
+    ySupport = squeeze(sceneSpatialSupport(:,1,2));
+    ySupport = ySupport / max(abs(ySupport(:))) * sceneFOV/2;
 end

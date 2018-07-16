@@ -10,7 +10,7 @@ function run_ConditionToVisualizeSceneAndOpticalImages
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic'; 
     
     % Optics to use
-    opticsName = 'ThibosAverageSubject3MMPupil';
+    opticsName = 'ThibosDefaultSubject3MMPupil';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
