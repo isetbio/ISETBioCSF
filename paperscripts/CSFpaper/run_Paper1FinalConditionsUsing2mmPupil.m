@@ -44,7 +44,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, MLPT';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
-    examinedCond(condIndex).opticsModel = 'ThibosDefaultSubject3MMPupil';
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'mlpt';
     examinedCond(condIndex).signal = 'isomerizations';
     examinedCond(condIndex).emPathType = 'frozen0';
@@ -57,7 +57,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
-    examinedCond(condIndex).opticsModel = 'ThibosDefaultSubject3MMPupil';
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
     examinedCond(condIndex).signal = 'isomerizations';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
@@ -73,7 +73,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM, SVM-Template (quadrature energy)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
-    examinedCond(condIndex).opticsModel = 'ThibosDefaultSubject3MMPupil';
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
     examinedCond(condIndex).signal = 'isomerizations';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -91,7 +91,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + pCurrent, SVM-Template (quadrature energy)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
-    examinedCond(condIndex).opticsModel = 'ThibosDefaultSubject3MMPupil';
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
     examinedCond(condIndex).signal = 'photocurrents';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -134,7 +134,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     if (makeSummaryFigure)
         variedParamName = 'VariousParams';
         theRatioLims = [0.03 1.5];
-        theRatioLims = [0.01 1.0];
+        theRatioLims = [0.02 1.0];
         theRatioTicks = [0.05  0.1 0.2 0.5 1.0];
         formatLabel = 'ComparedToBanks87Photocurrents';  % 'ComparedToBanks87'
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
