@@ -270,7 +270,11 @@ function varargout = formatFigureForPaper(hFig, varargin)
             
         case {'MOSAICS', 'PSFS'}
             if (isempty(theAxes))
-                set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
+                if (strcmp(figureType, 'MOSAICS'))
+                    set(hFig, 'Color', [1 1 1], 'Position', [10 10 900 900]);
+                else
+                    set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
+                end
             else
                 if (strcmp(figureType, 'MOSAICS'))
                     axis(theAxes, 'equal');

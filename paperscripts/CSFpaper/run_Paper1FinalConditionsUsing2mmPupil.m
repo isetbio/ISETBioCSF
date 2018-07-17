@@ -6,12 +6,26 @@ function run_Paper1FinalConditionsUsing2mmPupil
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
     computationInstance = 0;
     
-
+    includeEyeMovementsAndPhotocurrentGraphs = false;
+    
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
     
-    
+    % Init condition index
     condIndex = 0;
+    
+    % Original Banks computation
+    condIndex = condIndex+1;
+    examinedCond(condIndex).conditionLabel = 'Banks mosaic and optics, MLPT (3mm)';
+    examinedCond(condIndex).mosaicName = 'originalBanks';
+    examinedCond(condIndex).opticsModel = 'Geisler';
+    examinedCond(condIndex).inferenceEngine = 'mlpt';
+    examinedCond(condIndex).signal = 'isomerizations';
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = ~true;
+    examinedCond(condIndex).frameRate = 10;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 40;
     
     % Original Banks computation
     condIndex = condIndex+1;
@@ -30,7 +44,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, MLPT';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
-    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).opticsModel = 'ThibosDefaultSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'mlpt';
     examinedCond(condIndex).signal = 'isomerizations';
     examinedCond(condIndex).emPathType = 'frozen0';
@@ -41,9 +55,9 @@ function run_Paper1FinalConditionsUsing2mmPupil
     
     % Our best estimate of mosaic + optics, SVMpool inference engine
     condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template (cos-profile)';
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
-    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).opticsModel = 'ThibosDefaultSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
     examinedCond(condIndex).signal = 'isomerizations';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
@@ -55,10 +69,11 @@ function run_Paper1FinalConditionsUsing2mmPupil
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
     
     % Our best estimate of mosaic + optics + eye movements, SVMpool inference engine
+    if (includeEyeMovementsAndPhotocurrentGraphs)
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM, SVM-Template (quadrature energy)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
-    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).opticsModel = 'ThibosDefaultSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
     examinedCond(condIndex).signal = 'isomerizations';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -68,13 +83,15 @@ function run_Paper1FinalConditionsUsing2mmPupil
     examinedCond(condIndex).frameRate = 20;
     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    end
     
     
     % Our best estimate of mosaic + optics + eye movements + photocurrents, SVMpool inference engine
+    if (includeEyeMovementsAndPhotocurrentGraphs)
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + pCurrent, SVM-Template (quadrature energy)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
-    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).opticsModel = 'ThibosDefaultSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
     examinedCond(condIndex).signal = 'photocurrents';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -84,7 +101,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     examinedCond(condIndex).frameRate = 20;
     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
-    
+    end
     
     % Go
     examinedLegends = {};
@@ -108,7 +125,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
         end
         
         % Update params
-        params = getRemainingDefaultParams(params, condIndex);  
+        params = getRemainingDefaultParams(params, condIndex, cond.conditionLabel);  
         
         examinedLegends{numel(examinedLegends) + 1} = examinedCond(condIndex).conditionLabel;
         [~,~, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
@@ -117,6 +134,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     if (makeSummaryFigure)
         variedParamName = 'VariousParams';
         theRatioLims = [0.03 1.5];
+        theRatioLims = [0.01 1.0];
         theRatioTicks = [0.05  0.1 0.2 0.5 1.0];
         formatLabel = 'ComparedToBanks87Photocurrents';  % 'ComparedToBanks87'
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
@@ -130,18 +148,24 @@ function run_Paper1FinalConditionsUsing2mmPupil
     end
 end
 
-function params = getRemainingDefaultParams(params, condIndex)
-
-    % All condsexained  with 2 mm pupil
-    params.pupilDiamMm = 2.0;
+function params = getRemainingDefaultParams(params, condIndex, conditionLabel)
             
     % Chromatic direction params
     params.coneContrastDirection = 'L+M+S';
-    if (condIndex == 1)
+    
+    if contains(conditionLabel,'Banks mosaic and optics, MLPT')
         params.cyclesPerDegreeExamined = [2 4 8 16 32 50];
     else
         params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
     end
+    
+    if (strcmp(conditionLabel, 'Banks mosaic and optics, MLPT (3mm)'))
+        params.pupilDiamMm = 3.0;
+    else
+        params.pupilDiamMm = 2.0;
+    end
+    
+    fprintf('>>>>>> \t %d pupil: %f\n', condIndex, params.pupilDiamMm);
     
                 
     % Simulation steps to perform

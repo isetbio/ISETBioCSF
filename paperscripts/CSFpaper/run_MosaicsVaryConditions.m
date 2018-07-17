@@ -6,7 +6,7 @@ function run_MosaicsVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
+    makeSummaryFigure = ~true;
     makeMosaicsFigure = true;
     
     % Mosaic to use
@@ -28,8 +28,8 @@ function run_MosaicsVaryConditions
     %idx = 1:3;
     %examinedMosaicModels = {examinedMosaicModels{idx}};
     
-    idx = 1:4;
-    examinedMosaicModels = {examinedMosaicModels{idx}};
+    %idx = 1:4;
+    %examinedMosaicModels = {examinedMosaicModels{idx}};
      
     % Tun the mosaic-vary condition using the Geisler optics
     opticsName = 'Geisler';
@@ -81,9 +81,7 @@ function run_MosaicsVaryConditions
         
         if (makeMosaicsFigure)
             sfIndex = 1;
-            if (strcmp(examinedMosaicLegends{mosaicIndex}, 'ecc-based LMS density'))
-                continue;
-            end
+            
             theCurrentMosaic = theMosaicTypes.theMosaics{sfIndex};
             theMosaicTypesAtSpecificSF{numel(theMosaicTypesAtSpecificSF) + 1} = theCurrentMosaic;
             theCurrentMosaic.displayInfo();
@@ -103,10 +101,10 @@ function run_MosaicsVaryConditions
             'theRatioTicks', theRatioTicks ...
             );
     end
-    
+
     if (makeMosaicsFigure)
         generateMosaicsFigure(theMosaicTypesAtSpecificSF, examinedMosaicLegends,  ...
-            'inGraphTexts', {' A ', ' B ', ' D '}, ...
+            'inGraphTexts', {' A ', ' B ', ' C ', ' D '}, ...
             'visualizedFOV', 0.35);
     end
 end
@@ -125,19 +123,19 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
     formatFigureForPaper(hFig, 'figureType', 'MOSAICS');
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-       'rowsNum', numel(theMosaics), ...
-       'colsNum', 1, ...
-       'heightMargin',  0.03, ...
-       'widthMargin',    0.001, ...
+       'rowsNum', 2, ...
+       'colsNum', 2, ...
+       'heightMargin',  0.01, ...
+       'widthMargin',    0.01, ...
        'leftMargin',     0.01, ...
-       'rightMargin',    0.001, ...
-       'bottomMargin',   0.07, ...
+       'rightMargin',    0.0001, ...
+       'bottomMargin',   0.06, ...
        'topMargin',      0.0001);
     
     for mosaicIndex = 1:numel(theMosaics)
         cm = theMosaics{mosaicIndex};
-        posRangeY = 0.5*visualizedFOV*cm.micronsPerDegree * 1e-6 * [-1 1];
-        posRangeX = 1.8*posRangeY;
+        posRangeY = 0.7*visualizedFOV*cm.micronsPerDegree * 1e-6 * [-1 1];
+        posRangeX = posRangeY;
         mosaicName = examinedMosaicLegends{mosaicIndex};
         
         if (contains(mosaicName, 'Banks'))
@@ -145,7 +143,19 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
         else
             apertureShape = 'disks';
         end
-        ax = subplot('Position', subplotPosVectors(mosaicIndex,1).v);
+           
+        switch (mosaicIndex)
+            case 1
+                subplotRow = 1; subplotCol = 1;
+            case 2
+                subplotRow = 1; subplotCol = 2;
+            case 3
+                subplotRow = 2; subplotCol = 1;
+            case 4
+                subplotRow = 2; subplotCol = 2;
+        end
+        
+        ax = subplot('Position', subplotPosVectors(subplotRow,subplotCol).v);
         cm.visualizeGrid(...
             'axesHandle', ax, ...
             'apertureShape', apertureShape, ...
@@ -156,7 +166,7 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
         
         set(ax, 'XLim', posRangeX, 'YLim', posRangeY);
         
-        inGraphTextPos = [-0.32 0.13]*cm.micronsPerDegree * 1e-6;
+        inGraphTextPos = [-0.25 0.21]*cm.micronsPerDegree * 1e-6;
         t = text(ax, inGraphTextPos(1), inGraphTextPos(2), inGraphTexts{mosaicIndex});
         
         formatFigureForPaper(hFig, ...
@@ -170,12 +180,21 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
         ticks = tickDegs*cm.micronsPerDegree * 1e-6;
         tickLabels = sprintf('%2.2f\n', tickDegs);
         set(ax, 'XTick', ticks, 'XTickLabel', tickLabels, 'YTick', ticks, 'YTickLabel', tickLabels);
-        if (mosaicIndex == numel(theMosaics))
-            xlabel(ax, 'retinal position (deg)', 'FontWeight', 'bold');
-        else
-            set(ax, 'XTickLabel', {});
+        
+        switch (mosaicIndex)
+            case 1
+                set(ax, 'XTickLabel', {});
+                set(ax, 'YTickLabel', {});
+            case 2
+                set(ax, 'XTickLabel', {});
+                set(ax, 'YTickLabel', {});
+            case 3
+                xlabel(ax, 'retinal position (deg)', 'FontWeight', 'bold');
+                set(ax, 'YTickLabel', {});
+            case 4
+                xlabel(ax, 'retinal position (deg)', 'FontWeight', 'bold');
+                set(ax, 'YTickLabel', {});
         end
-        ylabel(ax, 'deg');
     end
     
     exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', 'projects/IBIOColorDetect/paperfigs/CSFpaper/exports');

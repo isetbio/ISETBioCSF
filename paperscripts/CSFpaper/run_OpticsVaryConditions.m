@@ -6,10 +6,10 @@ function run_OpticsVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     % Whether to visualize the employed PSFs
-    makePSFfigure = ~true;
+    makePSFfigure = true;
     visualizedWavelengths = 550;
         
     % Mosaic to use
@@ -28,14 +28,14 @@ function run_OpticsVaryConditions
     };
     examinedOpticsModelLegends = {...
         'Geisler PSF' ...
-        'wvf-based PSF (best subject)' ...
-        'wvf-based PSF (subject i)' ...
-        'wvf-based PSF (subject j)' ...
-        'wvf-based PSF (subject k)' ...
-        'wvf-based PSF (subject l)' ...
+        'wvf-based PSF (subject 1)' ...
+        'wvf-based PSF (subject 2)' ...
+        'wvf-based PSF (subject 3)' ...
+        'wvf-based PSF (subject 4)' ...
+        'wvf-based PSF (subject 5)' ...
     };
 
-     idx = [1 2 3 5 6];
+     idx = [1 2 3 4 5 6];
      examinedOpticsModels = {examinedOpticsModels{idx}};
      examinedOpticsModelLegends = {examinedOpticsModelLegends{idx}};
 %     
@@ -55,7 +55,7 @@ function run_OpticsVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -67,7 +67,7 @@ function run_OpticsVaryConditions
     params.visualizeDisplay = ~true;
         
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
@@ -91,6 +91,7 @@ function run_OpticsVaryConditions
 %             );
         generateFigureForPaper(theFigData, examinedOpticsModelLegends, variedParamName, mosaicName, ...
             'figureType', 'CSF', ...
+            'inGraphText', ' G ', ...
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
@@ -128,17 +129,17 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
     for oiIndex = 1:numel(examinedOpticsModels)    
         switch (examinedOpticsModelLegends{oiIndex})
             case 'Geisler PSF'
-                prefix = 'Geisler';
-            case 'wvf-based PSF (best subject)'
-                prefix = 'best subj.';
-            case 'wvf-based PSF (subject i)'
-                prefix = 'subj. i';
-            case 'wvf-based PSF (subject j)'
-                prefix = 'subj. j';
-            case 'wvf-based PSF (subject k)'
-                prefix = 'subj. k';
-            case 'wvf-based PSF (subject l)'
-                prefix = 'subj. l';
+                prefix = ' A ';
+            case 'wvf-based PSF (subject 1)'
+                prefix = ' B ';
+            case 'wvf-based PSF (subject 2)'
+                prefix = ' C ';
+            case 'wvf-based PSF (subject 3)'
+                prefix = ' D ';
+            case 'wvf-based PSF (subject 4)'
+                prefix = ' E ';
+            case 'wvf-based PSF (subject 5)'
+                prefix = ' F ';
         end
         
         col = mod(oiIndex-1,2)+1;
@@ -195,14 +196,14 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
             xlabel('retinal position (arc min)', 'FontWeight', 'bold');
         end
             
-        inGraphTextPos = [-2.3 2.3];
-        t = text(gca, inGraphTextPos(1), inGraphTextPos(2), sprintf('%s (%2.0fnm)', prefix, visualizedWavelength));
+        inGraphTextPos = [-2.4 2.0];
+        t = text(gca, inGraphTextPos(1), inGraphTextPos(2), sprintf('%s', prefix));
         
         formatFigureForPaper(hFig, ...
                 'figureType', 'PSFS', ...
                 'theAxes', gca, ...
                 'theText', t, ...
-                'theTextFontSize', 20, ...
+                'theTextFontSize', 32, ...
                 'theFigureTitle', '');
     end
     
