@@ -17,8 +17,8 @@ function rankThibosSubjects()
     [mtfScoresMedianAcrossMethods, mtfScoresDifferentMethods] = computeMTFmatchScores(abs(d.subjectOTF), abs(d.meanSubjectOTF), mtfSpetralWeights);
     
     rankedScore = 'PSFscore';
-    rankedScore = 'medianMTFscore';
-    rankedScore = 'totalScore';
+    %rankedScore = 'medianMTFscore';
+    %rankedScore = 'totalScore';
     
     switch (rankedScore)
         case 'PSFscore'
@@ -107,7 +107,8 @@ function [mtfMedianScores, mtfScores] = computeMTFmatchScores(subjectMTFs, targe
     fprintf('Done !\n');
 end
 
-% Method to compute the PSF matching scores
+% Method to compute the PSF matching scores.
+% PSF score is computed by weigted average of the 
 function psfScores = computePSFmatchScore(PCAprojections, meanZcoeffProjection, spectralWeighting)
     fprintf('\nComputing PSF scores ...');
     nWaves = size(meanZcoeffProjection,1);
@@ -376,6 +377,35 @@ function plotRankedSubjects(rankingScores, otherScores, mtfScoresDiffMethods, we
     grid on; box on;
     NicePlot.exportFigToPDF(sprintf('scoresAllMethods.pdf'), hFig, 300);
     fprintf('Done !\n');
+    
+    hFig = figure(12); clf;
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1830 370]);
+    subplot('Position', [0.03 0.10 0.95 0.87]);
+    
+    plot(subjectIndices, rankingScores(idx),'bo-', 'LineWidth', 1.5, 'MarkerFaceColor', [0.5 0.8 1], 'MarkerSize', 10);
+    hold on;
+    plot(subjectIndices, otherScores(idx),  'ro-', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5, 0.5], 'MarkerSize', 10);
+    
+    kk = find(idx==98)
+    plot(kk*[1 1], [rankingScores(idx(kk)) otherScores(idx(kk))], 'ks-', 'MarkerSize', 18, 'LineWidth', 3);
+    
+    kk = find(idx==132);
+    plot(kk*[1 1], [rankingScores(idx(kk)) otherScores(idx(kk))], 'ks-', 'MarkerSize', 18, 'LineWidth', 3);
+    
+    kk = find(idx==54);
+    plot(kk*[1 1], [rankingScores(idx(kk)) otherScores(idx(kk))], 'ks-', 'MarkerSize', 18, 'LineWidth', 3);
+    
+    kk = find(idx==194);
+    plot(kk*[1 1], [rankingScores(idx(kk)) otherScores(idx(kk))], 'ks-', 'MarkerSize', 18, 'LineWidth', 3);
+    
+    kk = find(idx==21);
+    plot(kk*[1 1], [rankingScores(idx(kk)) otherScores(idx(kk))], 'ks-', 'MarkerSize', 18, 'LineWidth', 3);
+    
+    set(gca, 'XTick', ticks, 'XTickLabel', {}, 'YTick', 0:0.1:1, 'FontSize', 18);
+    hL = legend({'PSF score', 'MTF score'});
+    set(hL', 'FontSize', 14);
+    xlabel('subject index', 'FontWeight', 'bold');
+    ylabel('score', 'FontWeight', 'bold');
 end
 
 % Method to compute the PSF matching scores
@@ -406,7 +436,7 @@ function plotRankedSubjectData(subjectIndex, wavelengthsListToCompute, ...
     rankedSubjectPSF, meanZcoeffPSF)
 
     nWaves = size(subjectOTFSlicesX,3);
-    waveStride = 3;
+    waveStride = 6;
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', 3, ...
            'colsNum', floor(nWaves/waveStride), ...
@@ -418,7 +448,7 @@ function plotRankedSubjectData(subjectIndex, wavelengthsListToCompute, ...
            'topMargin',      0.03);
        
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1670 600], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 945 600], 'Color', [1 1 1]);
     
     idx = find(wavelengthsListToCompute==550);
     targetMod = mod(idx-1,waveStride);
