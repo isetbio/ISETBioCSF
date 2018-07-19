@@ -1,5 +1,8 @@
 function visualizeSceneAndOpticalImage(backgroundScene, modulatedScene, oiBackground, oiModulated, paramsList)
 
+    % Wether to separate plots into different figures
+    separatePlotsForImageAndProfile = true;
+    
     sceneLMS = sceneGet(modulatedScene, 'lms');
     sceneXYZ = sceneGet(modulatedScene, 'xyz');
     oiLMS = oiGet(oiModulated, 'lms');
@@ -26,56 +29,132 @@ function visualizeSceneAndOpticalImage(backgroundScene, modulatedScene, oiBackgr
     
     xtickLabels = {'-0.2', '', '-0.1', '', '0', '', '+0.1', '', '+0.2'};
     
-    hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 730 500], 'Color', [1 1 1]);
-    subplot('Position', [0.08 0.335 0.44 0.68]);
-    image(xSupport, ySupport, sceneSRGB);
-    axis 'image'
-    set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
-             'YLim', [ySupport(1) ySupport(end)], ...
-             'XTick', -2:0.05:2, 'YTick', -10.2:0.05:0.2, ...
-             'XTickLabel', {}, 'YTickLabel', {}, ...
-             'FontSize', 16);
-    grid 'on';
+
+    if (separatePlotsForImageAndProfile)
+        hFig1 = figure(1); clf;
+        set(hFig1, 'Position', [10 10 350 350], 'Color', [1 1 1]);
+        subplot('Position', [0.01 0.01 0.98 0.98]);
+        image(xSupport, ySupport, sceneSRGB);
+        axis 'image'
+        set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
+                 'YLim', [ySupport(1) ySupport(end)], ...
+                 'XTick', -2:0.05:2, 'YTick', -10.2:0.05:0.2, ...
+                 'XTickLabel', {}, 'YTickLabel', {}, ...
+                 'FontSize', 16);
+        grid 'on';
+        drawnow;
+        
+        hFig2 = figure(2); clf;
+        set(hFig2, 'Position', [10 10 350 350], 'Color', [1 1 1]);
+        subplot('Position', [0.01 0.01 0.98 0.98]);
+        image(oiXSupport, oiYSupport, oiSRGB)
+        axis 'image'
+        set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
+                 'YLim', [ySupport(1) ySupport(end)], ...
+                 'XTick', -1:0.05:1, 'YTick', -1:0.05:1, ...
+                 'XTickLabel', {}, 'YTickLabel', {}, ...
+                 'FontSize', 16);
+        grid 'on';
+        
+        hFig3 = figure(3); clf;
+        set(hFig3, 'Position', [10 10 545 330], 'Color', [1 1 1]);
+        subplot('Position', [0.13 0.195 0.86 0.78]);
+        plotContrasts(xSupport, sceneLMScontrast);
+        ytickLabels = {'-1', '', '-.5', '', '0', '', '+.5', '', '+1'};
+        set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
+            'XTick', -0.2:0.05:10.2, 'YLim', [-1 1], 'YTick', -1:0.25:1,  ...
+            'YTickLabel', ytickLabels, 'XTickLabel', xtickLabels, ...
+            'FontSize', 22);
+        grid 'on'; box 'on';
+        xlabel('space (deg)', 'FontWeight', 'bold');
+        ylabel('stimulus contrast', 'FontWeight', 'bold');
+        drawnow
+        
+        hFig4 = figure(4); clf;
+        set(hFig4, 'Position', [10 10 545 330], 'Color', [1 1 1]);
+        subplot('Position', [0.13 0.195 0.86 0.78]);
+        plotContrasts(oiXSupport, oiLMScontrast);
+        set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
+            'XTick', -0.2:0.05:10.2, 'YLim', [-1 1], 'YTick', -1:0.25:1,  ...
+            'YTickLabel', ytickLabels, 'XTickLabel', xtickLabels, ...
+            'FontSize', 22);
+        grid 'on'; box 'on';
+        xlabel('space (deg)', 'FontWeight', 'bold');
+        ylabel('retinal contrast', 'FontWeight', 'bold');
+        drawnow
+    else
+        hFig = figure(1); clf;
+        set(hFig, 'Position', [10 10 730 500], 'Color', [1 1 1]);
+        subplot('Position', [0.08 0.335 0.44 0.68]);
+        image(xSupport, ySupport, sceneSRGB);
+        axis 'image'
+        set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
+                 'YLim', [ySupport(1) ySupport(end)], ...
+                 'XTick', -2:0.05:2, 'YTick', -10.2:0.05:0.2, ...
+                 'XTickLabel', {}, 'YTickLabel', {}, ...
+                 'FontSize', 16);
+        grid 'on';
+
+        subplot('Position', [0.55 0.335 0.44 0.68]);
+        image(oiXSupport, oiYSupport, oiSRGB)
+        axis 'image'
+        set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
+                 'YLim', [ySupport(1) ySupport(end)], ...
+                 'XTick', -1:0.05:1, 'YTick', -1:0.05:1, ...
+                 'XTickLabel', {}, 'YTickLabel', {}, ...
+                 'FontSize', 16);
+        grid 'on';
+
+        subplot('Position', [0.08 0.095 0.44 0.24]);
+        plotContrasts(xSupport, sceneLMScontrast);
+        ytickLabels = {'-1.0', '', '-0.5', '', '0', '', '+0.5', '', '+1.0'};
+        set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
+            'XTick', -0.2:0.05:10.2, 'YLim', [-1 1], 'YTick', -1:0.25:1,  ...
+            'YTickLabel', ytickLabels, 'XTickLabel', xtickLabels, ...
+            'FontSize', 16);
+        grid 'on'; box 'on';
+        xlabel('space (deg)', 'FontWeight', 'bold');
+        ylabel('contrast', 'FontWeight', 'bold');
+
+        subplot('Position', [0.55 0.095 0.44 0.24]);
+        plotContrasts(oiXSupport, oiLMScontrast);
+        set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
+            'XTick', -0.2:0.05:0.2, 'YLim', [-1 1], ...
+            'YTick', -1:0.25:1, 'XTickLabel', xtickLabels, 'YTickLabel', {}, ...
+            'FontSize', 16);
+        grid 'on'; box 'on';
+        xlabel('space (deg)', 'FontWeight', 'bold');
+
+        drawnow;
+    end
     
-    subplot('Position', [0.55 0.335 0.44 0.68]);
-    image(oiXSupport, oiYSupport, oiSRGB)
-    axis 'image'
-    set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
-             'YLim', [ySupport(1) ySupport(end)], ...
-             'XTick', -1:0.05:1, 'YTick', -1:0.05:1, ...
-             'XTickLabel', {}, 'YTickLabel', {}, ...
-             'FontSize', 16);
-    grid 'on';
-    
-	subplot('Position', [0.08 0.095 0.44 0.24]);
-    plotContrasts(xSupport, sceneLMScontrast);
-    ytickLabels = {'-1.0', '', '-0.5', '', '0', '', '+0.5', '', '+1.0'};
-    set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
-        'XTick', -0.2:0.05:10.2, 'YLim', [-1 1], 'YTick', -1:0.25:1,  ...
-        'YTickLabel', ytickLabels, 'XTickLabel', xtickLabels, 'FontSize', 16);
-    grid 'on'; box 'on';
-    xlabel('space (deg)', 'FontWeight', 'bold');
-    ylabel('contrast', 'FontWeight', 'bold');
-    
-    subplot('Position', [0.55 0.095 0.44 0.24]);
-    plotContrasts(oiXSupport, oiLMScontrast);
-    set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
-        'XTick', -0.2:0.05:0.2, 'YLim', [-1 1], ...
-        'YTick', -1:0.25:1, 'XTickLabel', xtickLabels, 'YTickLabel', {}, 'FontSize', 16);
-    grid 'on'; box 'on';
-    xlabel('space (deg)', 'FontWeight', 'bold');
-    
-    drawnow;
     
     if (~isempty(paramsList))
         % Export to PDF
         theProgram = mfilename;
         rwObject = IBIOColorDetectReadWriteBasic;
         data = 0;
-        fileName = sprintf('SceneRGBandOpticalImageRGB');
-        rwObject.write(fileName, data, paramsList, theProgram, ...
+        if (separatePlotsForImageAndProfile)
+            fileNameForPDF = sprintf('SceneRGB');
+            rwObject.write(fileNameForPDF, data, paramsList, theProgram, ...
+               'type', 'NicePlotExportPNG', 'FigureHandle', hFig1, 'FigureType', 'png');
+           
+            fileNameForPDF = sprintf('SceneProfile');
+            rwObject.write(fileNameForPDF, data, paramsList, theProgram, ...
+               'type', 'NicePlotExportPDF', 'FigureHandle', hFig3, 'FigureType', 'pdf');
+           
+            fileNameForPDF = sprintf('OpticalImageRGB');
+            rwObject.write(fileNameForPDF, data, paramsList, theProgram, ...
+               'type', 'NicePlotExportPNG', 'FigureHandle', hFig2, 'FigureType', 'png');
+           
+            fileNameForPDF = sprintf('OpticalImageProfile');
+            rwObject.write(fileNameForPDF, data, paramsList, theProgram, ...
+               'type', 'NicePlotExportPDF', 'FigureHandle', hFig4, 'FigureType', 'pdf');
+        else
+            fileNameForPDF = sprintf('SceneRGBandOpticalImageRGB');
+            rwObject.write(fileNameForPDF, data, paramsList, theProgram, ...
                'type', 'NicePlotExportPNG', 'FigureHandle', hFig, 'FigureType', 'png');
+        end
     end
 end
 

@@ -66,15 +66,15 @@ function generateIsomerizationsImageFig(theConeMosaic, theIsomerizations)
     set(hFig, 'Position', [10 10 426 420], 'Color', [1 1 1]);
     ax = subplot('Position', [0.02 0.02 0.96 0.96]);
     activationLUT = gray(1024);
-    titleForColorBar = ''; %'R*/5 msec';
+    titleForColorBar = 'R*/5 msec';
     backgroundColor = [0 0 0];
-    
+    theConeMosaic.integrationTime
     theConeMosaic.renderActivationMap(ax, visualizedActivationPattern, ...
              'signalRange', signalRange, ...
              'visualizedConeAperture', 'geometricArea', ...
              'mapType', 'modulated disks', ...
-             'showColorBar', ~true, ...
-             'labelColorBarTicks', ~true, ...
+             'showColorBar', true, ...
+             'labelColorBarTicks', true, ...
              'titleForColorBar', titleForColorBar, ...
              'colorMap', activationLUT, ...
              'backgroundColor', backgroundColor);
@@ -116,6 +116,34 @@ function generateOpticalImageFig(theOI, xyRange, mosaicFOV)
     %ylabel('space (degs)');
     NicePlot.exportFigToPNG('../componentFigs/OpticalImageComponent.png', hFig, 300);
     
+    
+    
+    wave = oiGet(theOI, 'wave');
+    photons = oiGet(theOI, 'photons');
+    maxPhotons = max(photons(:));
+    minPhotons = min(photons(:));
+    visualizedWaves = [450 480 510 530 550 580 610 640 670];
+    for k = 1:numel(visualizedWaves)
+        [~,idx] = min(abs(wave-visualizedWaves(k)));
+        thePhotons = squeeze(photons(:,:,idx));
+        hFig = figure(2999+k); clf;
+        set(hFig, 'Position', [10 10 468 420], 'Color', [1 1 1]);
+        ax = subplot('Position', [0.02 0.02 0.96 0.96]);
+        imagesc(ax, xSupport, ySupport, (thePhotons-minPhotons)/(maxPhotons-minPhotons), [0 1]);
+        hold(ax, 'on');
+        x = 0.5*mosaicFOV * [-1 1 1 -1 -1];
+        y = 0.5*mosaicFOV * [-1 -1 1 1 -1];
+        plot(ax,x,y,'k-', 'LineWidth', 1.0);
+        hold(ax, 'off');
+        axis(ax, 'image'); axis(ax, 'xy');
+        set(ax, 'XLim', xyRange(1)/2*[-1 1], 'YLim', xyRange(2)/2*[-1 1], ...
+         'XTick', -15:tickInterval:15, 'YTick', -15:tickInterval:15, ...
+         'XTickLabels', {}, 'YTickLabels', {});
+        colormap(gray(1024));
+        NicePlot.exportFigToPNG(sprintf('../componentFigs/PhotonsOIComponent%d.png', wave(idx)), hFig, 300);
+    end
+    
+    
     micronsPerDegree = 300;
     visualizePSFfromOI(theOI, micronsPerDegree, ...
                 'colormapToUse', gray(1024), ...
@@ -123,6 +151,8 @@ function generateOpticalImageFig(theOI, xyRange, mosaicFOV)
                 'rows', 3, 'cols', 3, ...
                 'labelLastPSF', false, ...
                 'displayWavelengthInTitle', ~false);
+            
+   
 end
 
 
@@ -167,6 +197,33 @@ function theScene = generateSceneFig(rootPath, sceneFOV, visualizedSceneFraction
     %xlabel('space (degs)');
     %ylabel('space (degs)');
     NicePlot.exportFigToPNG('../componentFigs/SceneComponent.png', hFig, 300);
+    
+    
+    wave = sceneGet(theScene, 'wave');
+    photons = sceneGet(theScene, 'photons');
+    maxPhotons = max(photons(:));
+    minPhotons = min(photons(:));
+    visualizedWaves = [450 480 510 530 550 580 610 640 670];
+    for k = 1:numel(visualizedWaves)
+        [~,idx] = min(abs(wave-visualizedWaves(k)));
+        thePhotons = squeeze(photons(:,:,idx));
+        hFig = figure(1999+k); clf;
+        set(hFig, 'Position', [10 10 468 420], 'Color', [1 1 1]);
+        ax = subplot('Position', [0.02 0.02 0.96 0.96]);
+        imagesc(ax, xSupport, ySupport, (thePhotons-minPhotons)/(maxPhotons-minPhotons), [0 1]);
+        hold(ax, 'on');
+        x = 0.5*mosaicFOV * [-1 1 1 -1 -1];
+        y = 0.5*mosaicFOV * [-1 -1 1 1 -1];
+        plot(ax,x,y,'k-', 'LineWidth', 1.0);
+        hold(ax, 'off');
+        axis(ax, 'image'); axis(ax, 'xy');
+        set(ax, 'XLim', xyRange(1)/2*[-1 1], 'YLim', xyRange(2)/2*[-1 1], ...
+         'XTick', -15:tickInterval:15, 'YTick', -15:tickInterval:15, ...
+         'XTickLabels', {}, 'YTickLabels', {});
+        colormap(gray(1024));
+        NicePlot.exportFigToPNG(sprintf('../componentFigs/PhotonsSceneComponent%d.png', wave(idx)), hFig, 300);
+    end
+    
     
 end
 

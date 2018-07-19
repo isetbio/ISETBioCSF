@@ -19,12 +19,12 @@ function run_ConditionToVisualizeResponses
     params.lowContrast = 0.1; % was 0.01;
     params.highContrast =  1.0; % was 0.1;
     params.nContrastsPerDirection = 2;
-    params.nTrainingSamples = 1023
+    params.nTrainingSamples = 4;
     params.performanceTrialsUsed = [];
     params.cyclesPerDegreeExamined = [16];
     
     % Simulation steps to perform
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
@@ -35,7 +35,7 @@ function run_ConditionToVisualizeResponses
     params.visualizeSpatialScheme = true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
-    params.visualizeStimulusAndOpticalImage = ~true;
+    params.visualizeStimulusAndOpticalImage = true;
     params.visualizeSpatialPoolingScheme = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
     
