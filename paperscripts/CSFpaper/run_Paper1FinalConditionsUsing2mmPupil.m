@@ -57,7 +57,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     
     % Our best estimate of mosaic + optics, SVMpool inference engine
     condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealistic'; %'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
