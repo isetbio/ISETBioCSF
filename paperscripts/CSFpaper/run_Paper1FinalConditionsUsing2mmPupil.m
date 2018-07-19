@@ -30,7 +30,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     
     % Original Banks computation
     condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Banks mosaic/optics, MLPT. 3mm';
+    examinedCond(condIndex).conditionLabel = 'Banks mosaic/optics, MLPT, 3mm';
     examinedCond(condIndex).mosaicName = 'originalBanks';
     examinedCond(condIndex).opticsModel = 'Geisler';
     examinedCond(condIndex).inferenceEngine = 'mlpt';
