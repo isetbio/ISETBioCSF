@@ -236,9 +236,9 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
         'theText', t, ...
         'theTextFontSize', inGraphTextFontSize);
     
-    if (strcmp(fixedParamName, 'ComparedToBanks87Photocurrents'))
-        set(hL, 'Location', 'NorthOutside');
-    end
+    %if (strcmp(fixedParamName, 'ComparedToBanks87Photocurrents'))
+    %    set(hL, 'Location', 'NorthOutside');
+    %end
     
     exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', 'projects/IBIOColorDetect/paperfigs/CSFpaper/exports');
     figureName = fullfile(exportsDir, sprintf('%sVary%s.pdf', variedParamName, fixedParamName));
