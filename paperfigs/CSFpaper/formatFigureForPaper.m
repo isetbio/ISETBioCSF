@@ -273,7 +273,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 if (strcmp(figureType, 'MOSAICS'))
                     set(hFig, 'Color', [1 1 1], 'Position', [10 10 900 900]);
                 else
-                    set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
+                    set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 925]);
                 end
             else
                 if (strcmp(figureType, 'MOSAICS'))
