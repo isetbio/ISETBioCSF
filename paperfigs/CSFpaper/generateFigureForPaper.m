@@ -177,10 +177,10 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
     if (~isempty(inGraphText))
         if (isempty(inGraphTextPos))
             if (plotRatiosOfOtherConditionsToFirst)
-                inGraphTextPos(1) = 1.1;
+                inGraphTextPos(1) = 1.6;
                 inGraphTextPos(2) = 10000;
             else
-                inGraphTextPos(1) = 1.1;
+                inGraphTextPos(1) = 1.6;
                 inGraphTextPos(2) = 9500;
             end
         end
