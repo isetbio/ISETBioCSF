@@ -27,12 +27,12 @@ function run_OpticsVaryConditions
         'ThibosVeryDefocusedSubject3MMPupil' ...
     };
     examinedOpticsModelLegends = {...
-        'Geisler PSF' ...
-        'wvf-based PSF (subject 1)' ...
-        'wvf-based PSF (subject 2)' ...
-        'wvf-based PSF (subject 3)' ...
-        'wvf-based PSF (subject 4)' ...
-        'wvf-based PSF (subject 5)' ...
+        'Geisler PSF (A)' ...
+        'wvf-based PSF (B)' ...
+        'wvf-based PSF (C)' ...
+        'wvf-based PSF (D)' ...
+        'wvf-based PSF (E)' ...
+        'wvf-based PSF (F)' ...
     };
 
      idx = [1 2 3 4 5 6];
@@ -125,20 +125,20 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
             
     hFig = figure(2); clf;
     formatFigureForPaper(hFig, 'figureType', 'PSFS');
-
+        
     for oiIndex = 1:numel(examinedOpticsModels)    
         switch (examinedOpticsModelLegends{oiIndex})
-            case 'Geisler PSF'
+            case 'Geisler PSF (A)'
                 prefix = ' A ';
-            case 'wvf-based PSF (subject 1)'
+            case 'wvf-based PSF (B)' 
                 prefix = ' B ';
-            case 'wvf-based PSF (subject 2)'
+            case 'wvf-based PSF (C)'
                 prefix = ' C ';
-            case 'wvf-based PSF (subject 3)'
+            case 'wvf-based PSF (D)'
                 prefix = ' D ';
-            case 'wvf-based PSF (subject 4)'
+            case 'wvf-based PSF (E)'
                 prefix = ' E ';
-            case 'wvf-based PSF (subject 5)'
+            case 'wvf-based PSF (F)'
                 prefix = ' F ';
         end
         

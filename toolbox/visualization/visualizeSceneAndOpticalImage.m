@@ -57,27 +57,27 @@ function visualizeSceneAndOpticalImage(backgroundScene, modulatedScene, oiBackgr
         grid 'on';
         
         hFig3 = figure(3); clf;
-        set(hFig3, 'Position', [10 10 545 330], 'Color', [1 1 1]);
-        subplot('Position', [0.13 0.195 0.86 0.78]);
+        set(hFig3, 'Position', [10 10 600 345], 'Color', [1 1 1]);
+        subplot('Position', [0.15 0.235 0.84 0.71]);
         plotContrasts(xSupport, sceneLMScontrast);
         ytickLabels = {'-1', '', '-.5', '', '0', '', '+.5', '', '+1'};
         set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
             'XTick', -0.2:0.05:10.2, 'YLim', [-1 1], 'YTick', -1:0.25:1,  ...
             'YTickLabel', ytickLabels, 'XTickLabel', xtickLabels, ...
-            'FontSize', 22);
+            'FontSize', 28, 'LineWidth', 1.0);
         grid 'on'; box 'on';
         xlabel('space (deg)', 'FontWeight', 'bold');
         ylabel('stimulus contrast', 'FontWeight', 'bold');
         drawnow
         
         hFig4 = figure(4); clf;
-        set(hFig4, 'Position', [10 10 545 330], 'Color', [1 1 1]);
-        subplot('Position', [0.13 0.195 0.86 0.78]);
+        set(hFig4, 'Position', [10 10 600 345], 'Color', [1 1 1]);
+        subplot('Position', [0.15 0.235 0.84 0.71]);
         plotContrasts(oiXSupport, oiLMScontrast);
         set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
             'XTick', -0.2:0.05:10.2, 'YLim', [-1 1], 'YTick', -1:0.25:1,  ...
             'YTickLabel', ytickLabels, 'XTickLabel', xtickLabels, ...
-            'FontSize', 22);
+            'FontSize', 28, 'LineWidth', 1.0);
         grid 'on'; box 'on';
         xlabel('space (deg)', 'FontWeight', 'bold');
         ylabel('retinal contrast', 'FontWeight', 'bold');
