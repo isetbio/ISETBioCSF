@@ -12,12 +12,12 @@ function run_Paper1FinalConditions2vs3mmPupil
     % Init condition index
     condIndex = 0;
     
-    
+    if (1==2)
     % Our best estimate of mosaic + optics, MLPT inference engine
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, MLPT, 3mm';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
-    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).opticsModel = 'ThibosDefaultSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'mlpt';
     examinedCond(condIndex).signal = 'isomerizations';
     examinedCond(condIndex).emPathType = 'frozen0';
@@ -25,12 +25,13 @@ function run_Paper1FinalConditions2vs3mmPupil
     examinedCond(condIndex).frameRate = 10;
     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+    end
     
     % Our best estimate of mosaic + optics, SVMpool inference engine
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, MLPT, 2mm'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
-    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).opticsModel = 'ThibosDefaultSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'mlpt';
     examinedCond(condIndex).signal = 'isomerizations';
     examinedCond(condIndex).emPathType = 'frozen0';
@@ -70,8 +71,8 @@ function run_Paper1FinalConditions2vs3mmPupil
     if (makeSummaryFigure)
         variedParamName = 'Pupil';
         theRatioLims = [0.03 1.5];
-        theRatioLims = [0.02 2.0];
-        theRatioTicks = [0.05  0.1 0.2 0.5 1.0];
+        theRatioLims = [0.3 0.8];
+        theRatioTicks = [0.3:0.1:1];
         formatLabel = 'ComparedToBanks87Photocurrents';  % 'ComparedToBanks87'
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
@@ -119,7 +120,7 @@ function params = getRemainingDefaultParams(params, condIndex, conditionLabel)
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 end
