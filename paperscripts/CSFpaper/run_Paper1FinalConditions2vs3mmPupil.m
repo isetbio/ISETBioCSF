@@ -12,7 +12,7 @@ function run_Paper1FinalConditions2vs3mmPupil
     % Init condition index
     condIndex = 0;
     
-    if (1==2)
+
     % Our best estimate of mosaic + optics, MLPT inference engine
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, MLPT, 3mm';
@@ -25,7 +25,6 @@ function run_Paper1FinalConditions2vs3mmPupil
     examinedCond(condIndex).frameRate = 10;
     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
-    end
     
     % Our best estimate of mosaic + optics, SVMpool inference engine
     condIndex = condIndex+1;

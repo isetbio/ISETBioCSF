@@ -10,6 +10,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
     p.addParameter('theLegend', []);
     p.addParameter('theLegend2', []);
     p.addParameter('theText', []);
+    p.addParameter('theText2', []);
     p.addParameter('theTextFontSize', [], @isnumeric);
     p.addParameter('theFigureTitle', '', @ischar);
     
@@ -30,6 +31,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
     theLegend = p.Results.theLegend;
     theLegend2 = p.Results.theLegend2;
     theText = p.Results.theText;
+    theText2 = p.Results.theText2;
     theTextFontSize = p.Results.theTextFontSize;
     theFigureTitle = p.Results.theFigureTitle;
     
@@ -178,31 +180,32 @@ function varargout = formatFigureForPaper(hFig, varargin)
             
         case 'PSYCHOMETRIC_FUNCTIONS_2_CLASSIFIERS'
             if (isempty(theAxes)) 
-                set(hFig, 'Position', [10 10 1000 450], 'Color', [1 1 1]);
-                varargout{1} = subplot('Position', [0.06 0.13 0.44 0.78]);
-                varargout{2} = subplot('Position', [0.55 0.13 0.44 0.78]);     
+                set(hFig, 'Position', [10 10 890 450], 'Color', [1 1 1]);
+                varargout{1} = subplot('Position', [0.08 0.13 0.45 0.785]);
+                varargout{2} = subplot('Position', [0.545 0.13 0.45 0.785]);     
                 
             else
-                axis(theAxes, 'square');
+                %axis(theAxes, 'square');
                 axis(theAxes, 'xy');
                 set(theAxes, 'XScale', 'log', 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theAxes, 'on');
                 grid(theAxes, 'on');
                 xtickformat(theAxes, '%.3f'); ytickformat(theAxes, '%.2f');
                 
-                axis(theAxes2, 'square');
+                %axis(theAxes2, 'square');
                 axis(theAxes2, 'xy');
                 set(theAxes2, 'XScale', 'log', 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theAxes2, 'on');
                 grid(theAxes2, 'on');
                 xtickformat(theAxes2, '%.3f'); ytickformat(theAxes2, '%.2f');
+                set(theAxes2, 'YTickLabel', {});
                 
                 if (~isempty(theLegend))
-                    set(theLegend,  'Location', 'NorthWest');
+                    set(theLegend,  'Location', 'West');
                 end
             
                 if (~isempty(theLegend2))
-                    set(theLegend2,  'Location', 'NorthWest');
+                    set(theLegend2,  'Location', 'West');
                 end
                 
                 if (~isempty(theText))
@@ -210,6 +213,17 @@ function varargout = formatFigureForPaper(hFig, varargin)
                         theTextFontSize = 30;
                     end
                     set(theText, 'FontSize', theTextFontSize, ...
+                        'FontWeight', 'Bold', ...
+                        'BackgroundColor', [1 1 1], ...
+                        'EdgeColor', [ 0 0 0], ...
+                        'LineWidth', 1.0);
+                end
+                
+                if (~isempty(theText2))
+                    if (isempty(theTextFontSize))
+                        theTextFontSize = 30;
+                    end
+                    set(theText2, 'FontSize', theTextFontSize, ...
                         'FontWeight', 'Bold', ...
                         'BackgroundColor', [1 1 1], ...
                         'EdgeColor', [ 0 0 0], ...
