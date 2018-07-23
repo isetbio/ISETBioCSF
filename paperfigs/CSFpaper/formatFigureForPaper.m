@@ -181,8 +181,8 @@ function varargout = formatFigureForPaper(hFig, varargin)
         case 'PSYCHOMETRIC_FUNCTIONS_2_CLASSIFIERS'
             if (isempty(theAxes)) 
                 set(hFig, 'Position', [10 10 890 450], 'Color', [1 1 1]);
-                varargout{1} = subplot('Position', [0.08 0.13 0.45 0.785]);
-                varargout{2} = subplot('Position', [0.545 0.13 0.45 0.785]);     
+                varargout{1} = subplot('Position', [0.08 0.13 0.42 0.86]);
+                varargout{2} = subplot('Position', [0.56 0.13 0.42 0.86]);     
                 
             else
                 %axis(theAxes, 'square');

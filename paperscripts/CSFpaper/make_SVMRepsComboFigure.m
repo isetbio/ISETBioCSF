@@ -1,16 +1,16 @@
 function make_SVMRepsComboFigure
-% This is the script used to assess the generate a combo SVM-type reps effect figure
+% This is the script used to assess the generate panels of Figures 7 and 8
 %  
     % Which spatial frequency to analyze
-    thePanelLabels = {' D ', ' E '};         % Label for the two psychometric function panels
-    computationInstance = 32;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
+    thePanelLabels = {' B ', ' C '};         % Label for the two psychometric function panels
+    computationInstance = 8;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
     
     
     performanceClassifiersVisualized = {'svm', 'svmV1FilterBank', 'mlpt'};     % Choose between 'svm' and 'svmV1FilterBank'
     performanceClassifiersVisualizedLegends = {...
         'SVM-PCA', ...
         'SVM-Template'...
-        'MLPT'
+        'ideal observer'
       }; 
     poolingType = 'V1CosUnit' ;        % Choose between 'V1CosUnit' and 'V1QuadraturePair (only applicable if classifier = 'svmV1FilterBank')
         
@@ -68,15 +68,19 @@ function make_SVMRepsComboFigure
         case 4
             params.nTrainingSamples = 1024*8;
             trainingSamples = params.nTrainingSamples ./ (2.^[4 3 2 1]);
+            computationalInstanceLabel = '';
         case 8
             params.nTrainingSamples = 1024*32;
             trainingSamples = params.nTrainingSamples ./ (2.^[6 5 4 3 2 1]);
+            computationalInstanceLabel = ' A ';
         case 16
             params.nTrainingSamples = 1024*32;
             trainingSamples = params.nTrainingSamples ./ (2.^[6 5 4 3 2 1 0]);
+            computationalInstanceLabel = ' B ';
         case 32
             params.nTrainingSamples = 1024*64;
             trainingSamples = params.nTrainingSamples ./ (2.^[7 6 5 4 3 2 1 0]);
+            computationalInstanceLabel = ' C ';
         otherwise
             error('Training samples sequence not set for computationInstance:%d', computationInstance);
     end
@@ -171,7 +175,7 @@ function make_SVMRepsComboFigure
             csLims = [5 800];
             contrastLims =  [0.01 0.3]/3;
             ratioLims = [.1 .7];
-            showLegend = false;
+            showLegend = true;
         elseif (computationInstance == 8)
             csLims = [5 800];
             contrastLims =  [0.01 0.3]/6;
@@ -186,7 +190,7 @@ function make_SVMRepsComboFigure
     
         theData = generatePsychometricFunctionsPlot(targetSFPsychometricFunctions, ...
             targetSFPsychometricFunctions2, psychometricFunctionMLPT, ...
-            computationInstance, ...
+            computationalInstanceLabel, ...
             csLims, contrastLims, ratioLims, theTrials, legendsForPsychometricFunctions, ...
             performanceClassifiersVisualizedLegends, thePanelLabels, fixedParamName, showLegend);
         
@@ -208,7 +212,7 @@ end
 
 function theData = generatePsychometricFunctionsPlot(psychometricFunctions, ...
     psychometricFunctions2, psychometricFunctionMLPT, ...
-    computationInstance, ...
+    computationalInstanceLabel, ...
     csLims,  contrastLims, ratioLims, theTrials, trialLegends, ...
     classifierLegends, thePanelLabels, fixedParamName, showLegend)
 
@@ -271,12 +275,6 @@ function theData = generatePsychometricFunctionsPlot(psychometricFunctions, ...
     %title(theAxes2, sprintf('%s (%d c/deg)', classifierLegends{2}, computationInstance));
     
 
-    set(theAxes, 'XLim', contrastLims, 'XTick', [0.01 0.03 0.1 0.3], ...
-        'YLim', [0.4 1.01], 'XTick', [0.001 0.003 0.01 0.03 0.1 0.3]);
-    
-    set(theAxes2, 'XLim', contrastLims, 'XTick', [0.01 0.03 0.1 0.3], ...
-        'YLim', [0.4 1.01], 'XTick', [0.001 0.003 0.01 0.03 0.1 0.3]);
-    
     t = text(theAxes, contrastLims(1)*1.1, 0.955, thePanelLabels{1});
     t2 = text(theAxes2, contrastLims(1)*1.1, 0.955, thePanelLabels{2});
      
@@ -291,6 +289,14 @@ function theData = generatePsychometricFunctionsPlot(psychometricFunctions, ...
         'theLegend', hL, ...
         'theLegend2', hL2);
     
+    set(theAxes, 'XLim', contrastLims, ...
+        'YLim', [0.4 1.01], 'XTick', [0.001 0.003 0.01 0.03 0.1 0.3], ...
+        'XTickLabel', {'0.001', '0.003', '0.01', '0.03', '0.1', '0.3'});
+    
+    set(theAxes2, 'XLim', contrastLims, ...
+        'YLim', [0.4 1.01], 'XTick', [0.001 0.003 0.01 0.03 0.1 0.3], ...
+        'XTickLabel', {'0.001', '0.003', '0.01', '0.03', '0.1', '0.3'});
+    
     exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', 'projects/IBIOColorDetect/paperfigs/CSFpaper/exports');
     variedParamName = 'TrialsNumPsychometricFunction';
     fixedParamName = strrep(fixedParamName, '\mu', 'micro');
@@ -304,14 +310,14 @@ function theData = generatePsychometricFunctionsPlot(psychometricFunctions, ...
     theData{2} = struct('trialsNum', theTrials, 'contrastSensitivity', 1./theThresholds);
     theData{3} = struct('trialsNum', theTrials, 'contrastSensitivity', 1./theThresholds2);
     
-    classifierLegends = {'MLPT', classifierLegends{1}, classifierLegends{2}};
+    classifierLegends = {'ideal observer', classifierLegends{1}, classifierLegends{2}};
     theTrialsLims = [400 80000];
      
     hFig = generateCSFTrialsFigure(theData, classifierLegends, ...
        'plotRatiosOfOtherConditionsToFirst', true, ...
        'theTrialsLims', theTrialsLims, ...
        'theCSLims', csLims, ...
-       'inGraphText', ' A ', ...
+       'inGraphText', computationalInstanceLabel, ...
        'inGraphTextPos', [480 620], ...
        'theRatioLims', ratioLims, ...
        'theRatioTicks', [0.1 0.2 0.3 0.4 0.6], ...
@@ -385,7 +391,7 @@ function hFig = generateCSFTrialsFigure(theData, variedParamLegends, varargin)
     
     if (showLegend)
        % Add legend
-       hL = legend(theAxes, variedParamLegends, 'Location', 'SouthEast');
+       hL = legend(theAxes, variedParamLegends, 'Location', 'NorthEast');
     else
        hL = []; 
     end
