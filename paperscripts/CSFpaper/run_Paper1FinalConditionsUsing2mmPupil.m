@@ -17,7 +17,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
 
     % Original Banks computation
     condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Banks mosaic/optics, ideal observ.';
+    examinedCond(condIndex).conditionLabel = 'Banks mosaic/optics, ideal observer';
     examinedCond(condIndex).mosaicName = 'originalBanks';
     examinedCond(condIndex).opticsModel = 'Geisler';
     examinedCond(condIndex).inferenceEngine = 'mlpt';
@@ -45,7 +45,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     
     % Our best estimate of mosaic + optics, MLPT inference engine
     condIndex = condIndex+1;                                
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, ideal observ.';
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, ideal observer';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'mlpt';
