@@ -156,7 +156,7 @@ function params = getRemainingDefaultParams(params, condIndex, conditionLabel)
     % Chromatic direction params
     params.coneContrastDirection = 'L+M+S';
     
-    if contains(conditionLabel,'Banks mosaic/optics, MLPT')
+    if contains(conditionLabel,'Banks mosaic/optics')
         params.cyclesPerDegreeExamined = [2 4 8 16 32 50];
     else
         params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
