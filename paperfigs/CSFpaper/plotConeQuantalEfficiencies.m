@@ -18,22 +18,22 @@ function plotConeQuantalEfficiencies
         'format','PDF', ...
         'name', fullfile(localDir, 'ConeQuantalEfficiencies.pdf') ...
         );
-    renderXYplot(lambda, quantalEfficiencies', xLims, yLims, xTicks, yTicks, 'wavelength (nm)', 'transmittance', export);
+    renderXYplot(lambda, quantalEfficiencies', xLims, yLims, xTicks, yTicks, 'wavelength (nm)', 'quantal efficiency', export);
 end
 
 function renderXYplot(lambda,quantalEfficiencies, xLims, yLims, xTicks, yTicks, xLabel, yLabel, export)
     % Render figure
     hFig = figure(1); clf;
-    formatFigureForPaper(hFig, 'figureType', 'PIGMENT_TRANSMITTANCE');
+    formatFigureForPaper(hFig, 'figureType', 'PIGMENT_QUANTAL_EFFICIENCY');
     
 
     dy = 0.02*(yLims(2)-yLims(1));
     dx = 0.02*(xLims(2)-xLims(1));
-    colors = brewermap(3,'Set2');
+    colors = [1 0.5 0.5; 0.5 0.8 0.5; 0.3 0.5 1.0];
     markerEdgeColor = [0 0 0];
     
     % Lens transmittance on the top plot
-    subplot('Position', [0.12 0.12 0.86 0.88]);
+    subplot('Position', [0.13 0.12 0.85 0.88]);
     hold on
     for coneIndex = 1:3
         plot(lambda, squeeze(quantalEfficiencies(coneIndex,:)), '-o', 'Color', squeeze(colors(coneIndex,:)), 'LineWidth', 1.5, ...
@@ -41,7 +41,7 @@ function renderXYplot(lambda,quantalEfficiencies, xLims, yLims, xTicks, yTicks, 
     end
     set(gca, 'XLim', [xLims(1)-dx xLims(2)+dx], 'YLim', [yLims(1)-dy yLims(2)+dy],...
         'XTick', xTicks, 'YTick', yTicks, 'LineWidth', 0.75);
-    set(gca, 'FontSize', 14, 'TickLength',[0.02, 0.02]);
+    set(gca, 'TickLength',[0.02, 0.02]);
     xlabel(xLabel, 'FontWeight', 'bold');
     ylabel(yLabel, 'FontWeight', 'bold');
     grid on; box on;
@@ -49,7 +49,7 @@ function renderXYplot(lambda,quantalEfficiencies, xLims, yLims, xTicks, yTicks, 
     hL = legend({'L-cones', 'M-cones', 'S-cones'});
     
     t = text(410, 0.475, ' B ');
-    formatFigureForPaper(hFig, 'figureType', 'PIGMENT_TRANSMITTANCE', 'theAxes', gca, 'theLegend', hL, 'theText', t);
+    formatFigureForPaper(hFig, 'figureType', 'PIGMENT_QUANTAL_EFFICIENCY', 'theAxes', gca, 'theLegend', hL, 'theText', t);
     set(hL, 'Location', 'NorthEast');
     if strcmp(export.format, 'PDF')
         NicePlot.exportFigToPDF(export.name, hFig, 300);

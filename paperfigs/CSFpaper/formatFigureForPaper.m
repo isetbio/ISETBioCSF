@@ -41,7 +41,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 set(hFig, 'Position', [10 10 500 500], 'Color', [1 1 1]);
             else
                 axis(theAxes, 'square');
-                set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                set(theAxes, 'FontSize', 22, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theAxes, 'on');
                 grid(theAxes, 'on');
                 ytickformat(theAxes, '%.1f');
@@ -127,12 +127,12 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 
             end
             
-        case 'PIGMENT_TRANSMITTANCE'
+        case {'PIGMENT_QUANTAL_EFFICIENCY', 'PIGMENT_TRANSMITTANCE'}
             if (isempty(theAxes))
                 set(hFig, 'Position', [10 10 500 500], 'Color', [1 1 1]);
             else
                 axis(theAxes, 'square');
-                set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                set(theAxes, 'FontSize', 22, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theAxes, 'on');
                 grid(theAxes, 'on');
                 ytickformat(theAxes, '%.1f');
@@ -372,6 +372,9 @@ function varargout = formatFigureForPaper(hFig, varargin)
                     set(theAxes, 'XTickLabel', {});
                 end
             end
+            
+        otherwise
+            error('Unknown figure type: ''%s''.', figureType);
     end % switch
     
     if (~isempty(theFigureTitle))

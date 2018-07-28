@@ -39,7 +39,7 @@ function renderPlots(BanksMosaicAperture, HexMosaicAperture, export)
     fprintf('Hex mosaic MTF at %2.1f c/deg: %2.2f\n', HexMosaicMTF.support1D(idx), HexMosaicMTF.mtf1D(idx));
     
     % Lens transmittance on the top plot
-    subplot('Position', [0.12 0.12 0.85 0.87]);
+    subplot('Position', [0.13 0.12 0.85 0.87]);
     plot(BanksMosaicMTF.support1D, BanksMosaicMTF.mtf1D,  'b-', 'LineWidth', 1.5);
     hold on;
     plot(HexMosaicMTF.support1D, HexMosaicMTF.mtf1D,  'r-', 'LineWidth', 1.5);
@@ -48,7 +48,7 @@ function renderPlots(BanksMosaicAperture, HexMosaicAperture, export)
     yTicks = 0:0.2:1.0;
     set(gca, 'XScale', 'Log', 'XLim', [3 600], 'YLim', [0 1.01],...
          'XTick', sfTicks, 'YTick', yTicks, 'LineWidth', 0.75);
-    set(gca, 'FontSize', 14, 'TickLength',[0.02, 0.02]);
+    set(gca, 'TickLength',[0.02, 0.02]);
     xlabel('spatial frequency (c/deg)', 'FontWeight', 'bold');
     ylabel('cone aperture MTF', 'FontWeight', 'bold');
     grid on; box on;

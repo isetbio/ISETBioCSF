@@ -33,7 +33,7 @@ function renderXYplot(lambda,macularTransmittance, xLims, yLims, xTicks, yTicks,
     markerEdgeColor = [0 0 0];
     
     % Lens transmittance on the top plot
-    subplot('Position', [0.12 0.12 0.86 0.88]);
+    subplot('Position', [0.13 0.12 0.85 0.88]);
 %     plot(lambda, lensTransmittance, '-o', 'Color', squeeze(colors(1,:)), 'LineWidth', 1.5, ...
 %         'MarkerFaceColor', squeeze(colors(1,:)), 'MarkerEdgeColor', markerEdgeColor, 'MarkerSize', 9);
 %     hold on;
@@ -46,15 +46,14 @@ function renderXYplot(lambda,macularTransmittance, xLims, yLims, xTicks, yTicks,
     %plot(outline.x, outline.y, 'k-', 'LineWidth', 0.5);
     set(gca, 'XLim', [xLims(1)-dx xLims(2)+dx], 'YLim', [yLims(1)-dy yLims(2)+dy],...
         'XTick', xTicks, 'YTick', yTicks, 'LineWidth', 0.75);
-    set(gca, 'FontSize', 14, 'TickLength',[0.02, 0.02]);
+    set(gca, 'TickLength',[0.02, 0.02]);
     xlabel(xLabel, 'FontWeight', 'bold');
     ylabel(yLabel, 'FontWeight', 'bold');
     grid on; box on;
     axis 'square';
-    hL = legend({'lens', 'macular pigment', 'total'}, 'Location', 'SouthEast');
     
     t = text(410, 0.95, ' A ');
-    formatFigureForPaper(hFig, 'figureType', 'PIGMENT_TRANSMITTANCE', 'theAxes', gca, 'theLegend', hL, 'theText', t);
+    formatFigureForPaper(hFig, 'figureType', 'PIGMENT_TRANSMITTANCE', 'theAxes', gca,  'theText', t);
     
     if strcmp(export.format, 'PDF')
         NicePlot.exportFigToPDF(export.name, hFig, 300);
