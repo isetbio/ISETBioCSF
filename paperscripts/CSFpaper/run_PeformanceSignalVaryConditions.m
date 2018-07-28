@@ -13,6 +13,7 @@ function run_PeformanceSignalVaryConditions
     
     % Optics to use
     opticsName = 'ThibosAverageSubject3MMPupil';
+    opticsName = 'ThibosDefaultSubject3MMPupil';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
@@ -64,7 +65,7 @@ function run_PeformanceSignalVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
