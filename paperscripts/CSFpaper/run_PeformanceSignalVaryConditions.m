@@ -48,11 +48,11 @@ function run_PeformanceSignalVaryConditions
         'photocurrents' ...
     };
     
-examinedSignals = {examinedSignals{1}}
+examinedSignals = {examinedSignals{2}}
     % Simulation steps to perform
     params.computeMosaic = ~true; 
-    params.computeResponses = true;
-    params.computePhotocurrentResponseInstances = true;
+    params.computeResponses = ~true;
+    params.computePhotocurrentResponseInstances = ~true;
     
     params.visualizeMosaic = ~true;
     params.visualizeResponses = ~true;
