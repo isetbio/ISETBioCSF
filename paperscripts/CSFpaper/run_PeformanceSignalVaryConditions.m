@@ -6,7 +6,7 @@ function run_PeformanceSignalVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection';
@@ -48,7 +48,7 @@ function run_PeformanceSignalVaryConditions
         'photocurrents' ...
     };
     
-examinedSignals = {examinedSignals{2}}
+%examinedSignals = {examinedSignals{2}}
     % Simulation steps to perform
     params.computeMosaic = ~true; 
     params.computeResponses = ~true;
@@ -66,7 +66,7 @@ examinedSignals = {examinedSignals{2}}
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
