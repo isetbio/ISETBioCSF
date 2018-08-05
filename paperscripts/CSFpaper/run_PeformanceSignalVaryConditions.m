@@ -13,7 +13,7 @@ function run_PeformanceSignalVaryConditions
     
     % Optics to use
     opticsName = 'ThibosAverageSubject3MMPupil';
-    opticsName = 'ThibosDefaultSubject3MMPupil';
+    %opticsName = 'ThibosDefaultSubject3MMPupil';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
