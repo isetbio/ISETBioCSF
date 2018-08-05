@@ -94,7 +94,7 @@ function run_InferenceEngineVaryConditions
     ensembleFilterParamsStructs{6} = struct(...
         'spatialPositionsNum',  9, ...
         'cyclesPerRFs', [1.0 1.5 2.0 2.5], ...
-        'orientations', 15*[-1 0 1]);
+        'orientations', 7.5*[-1 0 1]);
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -146,9 +146,13 @@ function run_InferenceEngineVaryConditions
             else
                 error('Not handling case: ''%s''', examinedInferenceEngineLegends{engineIndex});
             end
-            params.spatialPoolingKernelParams.spatialPositionsNum = ensembleFilterParams.spatialPositionsNum;
-            params.spatialPoolingKernelParams.cyclesPerRFs = ensembleFilterParams.cyclesPerRFs;
-            params.spatialPoolingKernelParams.orientations = ensembleFilterParams.orientations;
+            
+            fNames = fieldnames(ensembleFilterParams);
+            for fNameIndex = 1:numel(fNames)
+                fName = fNames{fNameIndex};
+                params.spatialPoolingKernelParams.(fName) = ensembleFilterParams.(fName);
+            end
+
         end
         [~,~, theFigData{engineIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end

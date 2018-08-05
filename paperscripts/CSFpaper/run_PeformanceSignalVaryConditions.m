@@ -36,8 +36,17 @@ function run_PeformanceSignalVaryConditions
     params.centeredEMPaths = ~true;
     
     % Performance classifier
-    params.performanceClassifier = 'svmV1FilterBank';
+    %params.performanceClassifier = 'svmV1FilterBank';
+    params.performanceClassifier = 'svmV1FilterEnsemble';
     
+    if (strcmp(params.performanceClassifier,'svmV1FilterEnsemble'))
+        ensembleFilterParams = struct(...
+            'spatialPositionsNum',  9, ...
+            'cyclesPerRFs', [1.0 1.5 2.0 2.5], ...
+            'orientations', 7.5*[-1 0 1]);
+    end
+    
+    % Signals examined
     examinedSignals = {...
         'isomerizations' ...
         'photocurrents' ...
@@ -48,7 +57,7 @@ function run_PeformanceSignalVaryConditions
         'photocurrents' ...
     };
     
-%examinedSignals = {examinedSignals{2}}
+
     % Simulation steps to perform
     params.computeMosaic = ~true; 
     params.computeResponses = ~true;
@@ -66,13 +75,22 @@ function run_PeformanceSignalVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
     % Go
   	for signalIndex = 1:numel(examinedSignals)
         params.performanceSignal = examinedSignals{signalIndex};
+        
+        if (strcmp(params.performanceClassifier,'svmV1FilterEnsemble'))
+            fNames = fieldnames(ensembleFilterParams);
+            for fNameIndex = 1:numel(fNames)
+                fName = fNames{fNameIndex};
+                params.spatialPoolingKernelParams.(fName) = ensembleFilterParams.(fName);
+            end
+        end
+        
         [~,~, theFigData{signalIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end
     
