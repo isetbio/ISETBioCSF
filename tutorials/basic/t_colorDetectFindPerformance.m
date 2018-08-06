@@ -74,6 +74,8 @@ if (numberOfWorkers < parforWorkersNum)
     parforWorkersNum = numberOfWorkers;
 end
 
+
+parforWorkersNum = 1;
 fprintf('Classifying using %d workers\n', parforWorkersNum);
 
 %% Clear

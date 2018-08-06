@@ -25,7 +25,7 @@ function hFigs = visualizeTransformedEnsembleSignals(V1filterEnsemble, timeAxis,
 
 end
 
-function hFigs = visualizeEnsembleResponses(V1filterEnsemble, timeAxis, noStimResponseInstances, stimResponseInstances, responseRange, responseLevelsNum, plotType, signalSource, figName, figNo)
+function hFigs = visualizeEnsembleResponses(V1filterEnsemble, timeAxis, noStimResponseInstances, stimResponseInstances, responseRange, responseLevelsNum, plotType, signalSource, figureName, figNo)
 
     responseLevels = linspace(responseRange(1), responseRange(2), responseLevelsNum);
     responseInstancesNum = size(noStimResponseInstances,1);
