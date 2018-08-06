@@ -32,12 +32,12 @@ function run_PeformanceSignalVaryConditions
     params.responseExtinctionMilliseconds = 50;
     
     % Eye movement setup
-    params.emPathType = 'frozen0';
+    params.emPathType = 'random';
     params.centeredEMPaths = ~true;
     
     % Performance classifier
-    params.performanceClassifier = 'svmV1FilterBank';
-    %params.performanceClassifier = 'svmV1FilterEnsemble';
+    %params.performanceClassifier = 'svmV1FilterBank';
+    params.performanceClassifier = 'svmV1FilterEnsemble';
     
     if (strcmp(params.performanceClassifier,'svmV1FilterEnsemble'))
         ensembleFilterParams = struct(...
@@ -80,7 +80,6 @@ function run_PeformanceSignalVaryConditions
     params.deleteResponseInstances = ~true;
     
     % Go
-    %examinedSignals = {examinedSignals{1}};
   	for signalIndex = 1:numel(examinedSignals)
         params.performanceSignal = examinedSignals{signalIndex};
         
