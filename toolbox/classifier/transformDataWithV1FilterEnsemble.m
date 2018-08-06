@@ -87,7 +87,8 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
     noStimDataUnits = zeros(unitsNum, trialsNum, binsNum);
     stimDataUnits = zeros(unitsNum, trialsNum, binsNum);
     
-    parfor unitIndex = 1:unitsNum
+    parforWorkersNum = 6;
+    parfor (unitIndex = 1:unitsNum, parforWorkersNum)
         fprintf('computing activation for unit %d\n', unitIndex);
         cosFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData, V1filterEnsemble{unitIndex}.cosPhasePoolingWeights), spatialDimension));
         sinFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData, V1filterEnsemble{unitIndex}.sinPhasePoolingWeights), spatialDimension));
