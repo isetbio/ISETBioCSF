@@ -80,14 +80,25 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
     computeV1FilterEnsembleTransformation(V1filterEnsemble, noStimData, stimData, repsDimension, spatialDimension, temporalDimension, standardizeData, parforWorkersNum)
     
     unitsNum = numel(V1filterEnsemble);
-    
     trialsNum = size(noStimData,repsDimension);
     binsNum = size(noStimData,temporalDimension);
     
-    noStimDataUnits = zeros(unitsNum, trialsNum, binsNum);
-    stimDataUnits = zeros(unitsNum, trialsNum, binsNum);
+    % Open a parpool with parforWorkersNum
+    poolobj = gcp('nocreate');
+    previousPoolSize = 1;
+    if (~isempty(poolobj)) 
+        % there is a parpool open already.
+        % get that pool's # of workers and delete
+        previousPoolSize = poolobj.NumWorkers;
+        delete(poolobj);
+        fprintf('Previous parpool had %d workers. Deleting and staring one with %d workers\n', previousPoolSize, parforWorkersNum);
+    end
+    % Start a new parpool with desired workers num
+    poolobj = parpool(parforWorkersNum);
     
-    parfor (unitIndex = 1:unitsNum, parforWorkersNum)
+    % Transform the noStimData
+    noStimDataUnits = zeros(unitsNum, trialsNum, binsNum);
+    parfor unitIndex = 1:unitsNum
         cosFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData, V1filterEnsemble{unitIndex}.cosPhasePoolingWeights), spatialDimension));
         sinFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData, V1filterEnsemble{unitIndex}.sinPhasePoolingWeights), spatialDimension));
         if strcmp(V1filterEnsemble{unitIndex}.activationFunction, 'energy')
@@ -97,7 +108,14 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
         else
             error('Activation function (''%s''), must be either energy ot fullWaveRectifier\n', V1filterEnsemble{unitIndex}.activationFunction);
         end
-        
+    end
+    
+    % Put back in expected shape [trials spatial temporal]
+    noStimData = permute(noStimDataUnits, [2 1 3]);  
+    
+    % Transform the stimData
+    stimDataUnits = zeros(unitsNum, trialsNum, binsNum);
+    parfor unitIndex = 1:unitsNum
         cosFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData, V1filterEnsemble{unitIndex}.cosPhasePoolingWeights), spatialDimension));
         sinFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData, V1filterEnsemble{unitIndex}.sinPhasePoolingWeights), spatialDimension));
         if strcmp(V1filterEnsemble{unitIndex}.activationFunction, 'energy')
@@ -110,10 +128,17 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
     end
     
     % Put back in expected shape [trials spatial temporal]
-    noStimData = permute(noStimDataUnits, [2 1 3]); 
     stimData = permute(stimDataUnits, [2 1 3]); 
-
+    
     % no PCA
     noStimDataPCAapproximation = [];
     stimDataPCAapproximation =  [];
+    
+    % Restore previous parpool size
+    if (previousPoolSize > 1)
+        fprintf('Restoring previous parpool size\n');
+        delete(poolobj);
+        parpool(previousPoolSize);
+    end
+    
 end
