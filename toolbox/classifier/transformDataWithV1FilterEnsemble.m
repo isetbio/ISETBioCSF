@@ -97,38 +97,38 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
     poolobj = parpool(parforWorkersNum);
     
     % Transform the noStimData
-    noStimDataUnits = zeros(unitsNum, trialsNum, binsNum);
+    dataUnits = zeros(unitsNum, trialsNum, binsNum);
     parfor unitIndex = 1:unitsNum
         cosFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData, V1filterEnsemble{unitIndex}.cosPhasePoolingWeights), spatialDimension));
         sinFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData, V1filterEnsemble{unitIndex}.sinPhasePoolingWeights), spatialDimension));
         if strcmp(V1filterEnsemble{unitIndex}.activationFunction, 'energy')
-            noStimDataUnits(unitIndex,:,:) = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
+            dataUnits(unitIndex,:,:) = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
         elseif (strcmp(V1filterEnsemble{unitIndex}.activationFunction,'fullWaveRectifier'))
-            noStimDataUnits(unitIndex,:,:)  = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
+            dataUnits(unitIndex,:,:)  = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
         else
             error('Activation function (''%s''), must be either energy ot fullWaveRectifier\n', V1filterEnsemble{unitIndex}.activationFunction);
         end
     end
     
     % Put back in expected shape [trials spatial temporal]
-    noStimData = permute(noStimDataUnits, [2 1 3]);  
+    noStimData = permute(dataUnits, [2 1 3]);  
     
     % Transform the stimData
-    stimDataUnits = zeros(unitsNum, trialsNum, binsNum);
+    dataUnits = 0*dataUnits;
     parfor unitIndex = 1:unitsNum
         cosFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData, V1filterEnsemble{unitIndex}.cosPhasePoolingWeights), spatialDimension));
         sinFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData, V1filterEnsemble{unitIndex}.sinPhasePoolingWeights), spatialDimension));
         if strcmp(V1filterEnsemble{unitIndex}.activationFunction, 'energy')
-            stimDataUnits(unitIndex,:,:) = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
+            dataUnits(unitIndex,:,:) = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
         elseif (strcmp(V1filterEnsemble{unitIndex}.activationFunction,'fullWaveRectifier'))
-            stimDataUnits(unitIndex,:,:)  = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
+            dataUnits(unitIndex,:,:)  = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
         else
             error('Activation function (''%s''), must be either energy ot fullWaveRectifier\n', V1filterEnsemble{unitIndex}.activationFunction);
         end
     end
     
     % Put back in expected shape [trials spatial temporal]
-    stimData = permute(stimDataUnits, [2 1 3]); 
+    stimData = permute(dataUnits, [2 1 3]); 
     
     % no PCA
     noStimDataPCAapproximation = [];
