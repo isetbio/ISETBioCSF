@@ -68,7 +68,7 @@ p.addParameter('thresholdCriterionFraction',0.7071,@isnumeric);
 % RESPONSE COMPUTATION OPTIONS
 p.addParameter('ramPercentageEmployed', 1.0, @isnumeric); 
 p.addParameter('parforWorkersNum', 20, @isnumeric);
-p.addParameter('parforWorkersNumForClassification', 6, @isnumeric);
+p.addParameter('parforWorkersNumForClassification', 3, @isnumeric);
 
 % What to compute
 p.addParameter('computeOptics',true,@islogical);

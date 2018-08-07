@@ -19,6 +19,7 @@ p.addRequired('noStimData',@isstruct);
 p.addRequired('stimData',@isstruct);
 p.addRequired('thresholdParams',@isstruct);
 p.addParameter('visualizeKernelTransformedSignals', false, @islogical);
+p.addParameter('parforWorkersNum', 1, @isnumeric);
 p.addParameter('paramsList', {}, @iscell);
 p.addParameter('plotSvmBoundary',false,@islogical);
 p.addParameter('plotPCAAxis1',1,@isnumeric);
@@ -42,7 +43,7 @@ elseif (strcmp(thresholdParams.method, 'svmV1FilterEnsemble'))
     if ((~isfield(thresholdParams, 'spatialPoolingKernel')) || (isfield(thresholdParams, 'spatialPoolingKernel')) && (isempty(thresholdParams.spatialPoolingKernel)))
         error('thresholdParams must have a spatialPoolingKernel field when using the svmV1FilterEnsemble classifier\n');
     end
-    [noStimData, stimData] = transformDataWithV1FilterEnsemble(noStimData, stimData, thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals);
+    [noStimData, stimData] = transformDataWithV1FilterEnsemble(noStimData, stimData, thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals, p.Results.parforWorkersNum);
 elseif (strcmp(thresholdParams.method, 'svmSpaceTimeSeparable'))
     [noStimData, stimData] = transformDataWithSeparableSpaceTimeComponents(noStimData, stimData, thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals);
 elseif (strcmp(thresholdParams.method, 'svmGaussianRF')) || (strcmp(thresholdParams.method, 'mlptGaussianRF'))

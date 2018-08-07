@@ -49,7 +49,7 @@ p.addParameter('thresholdParams',[],@isemptyorstruct);
 p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
 p.addParameter('freezeNoise',false,@islogical);
 p.addParameter('compute',true,@islogical);
-p.addParameter('parforWorkersNum', 10, @isnumeric);
+p.addParameter('parforWorkersNum', 1, @isnumeric);
 p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
@@ -69,13 +69,12 @@ thresholdParams = p.Results.thresholdParams;
 
 % Check the parforWorkersNum
 parforWorkersNum = p.Results.parforWorkersNum;
-[numberOfWorkers, ~, ~] = determineSystemResources(p.Results.employStandardHostComputerResources);
-if (numberOfWorkers < parforWorkersNum)
-    parforWorkersNum = numberOfWorkers;
-end
+% [numberOfWorkers, ~, ~] = determineSystemResources(p.Results.employStandardHostComputerResources);
+% if (numberOfWorkers < parforWorkersNum)
+%     parforWorkersNum = numberOfWorkers;
+% end
 
 
-parforWorkersNum = 1;
 fprintf('Classifying using %d workers\n', parforWorkersNum);
 
 %% Clear
@@ -278,6 +277,7 @@ if (p.Results.compute)
         [usePercentCorrect(kk),useStdErr(kk),h, varianceExplained(kk,:)] = ...
             classifyForOneDirectionAndContrast(noStimData,stimData,thresholdParams, ...
             'paramsList', paramsList, ...
+            'parforWorkersNum', parforWorkersNum, ...
             'visualizeKernelTransformedSignals', p.Results.visualizeKernelTransformedSignals, ...
             'plotSvmBoundary', p.Results.generatePlots && p.Results.plotSvmBoundary, ...
             'plotPCAAxis1', p.Results.plotPCAAxis1, ...

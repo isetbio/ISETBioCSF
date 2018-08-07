@@ -1,4 +1,4 @@
-function [noStimData, stimData] = transformDataWithV1FilterEnsemble(noStimData, stimData, thresholdParams, paramsList, visualizeTheTransformedSignals)
+function [noStimData, stimData] = transformDataWithV1FilterEnsemble(noStimData, stimData, thresholdParams, paramsList, visualizeTheTransformedSignals, parforWorkersNum)
 % [noStimData, stimData] = transformDataWithV1FilterEnsemble(noStimData, stimData, thresholdParams)
 % Compute from the raw signal responses (isomerizations/photocurrents) the
 % energy response of a V1 quadrature pair filter bank
@@ -34,14 +34,14 @@ function [noStimData, stimData] = transformDataWithV1FilterEnsemble(noStimData, 
             noStimDataPCAapproximatedPhotocurrents, stimDataPCAapproximatedPhotocurrents] = computeV1FilterEnsembleTransformation(V1filterEnsemble, ...
             noStimData.responseInstanceArray.theMosaicPhotocurrents, ...
             stimData.responseInstanceArray.theMosaicPhotocurrents, ...
-            repsDimension, spatialDimension, temporalDimension, thresholdParams.STANDARDIZE);
+            repsDimension, spatialDimension, temporalDimension, thresholdParams.STANDARDIZE, parforWorkersNum);
     else
         [noStimData.responseInstanceArray.theMosaicIsomerizations, ...
             stimData.responseInstanceArray.theMosaicIsomerizations, ...
             noStimDataPCAapproximatedIsomerizations, stimDataPCAapproximatedIsomerizations] = computeV1FilterEnsembleTransformation(V1filterEnsemble, ...
             noStimData.responseInstanceArray.theMosaicIsomerizations, ...
             stimData.responseInstanceArray.theMosaicIsomerizations, ...
-            repsDimension, spatialDimension, temporalDimension, thresholdParams.STANDARDIZE);
+            repsDimension, spatialDimension, temporalDimension, thresholdParams.STANDARDIZE, parforWorkersNum);
     end
     
     % Visualize the transformed signals only if we are working on the full temporal response (i.e. no temporal PCA)
@@ -77,7 +77,7 @@ end
 
 
 function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproximation] = ...
-    computeV1FilterEnsembleTransformation(V1filterEnsemble, noStimData, stimData, repsDimension, spatialDimension, temporalDimension, standardizeData)
+    computeV1FilterEnsembleTransformation(V1filterEnsemble, noStimData, stimData, repsDimension, spatialDimension, temporalDimension, standardizeData, parforWorkersNum)
     
     unitsNum = numel(V1filterEnsemble);
     
@@ -87,9 +87,7 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
     noStimDataUnits = zeros(unitsNum, trialsNum, binsNum);
     stimDataUnits = zeros(unitsNum, trialsNum, binsNum);
     
-    parforWorkersNum = 6;
     parfor (unitIndex = 1:unitsNum, parforWorkersNum)
-        fprintf('computing activation for unit %d\n', unitIndex);
         cosFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData, V1filterEnsemble{unitIndex}.cosPhasePoolingWeights), spatialDimension));
         sinFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData, V1filterEnsemble{unitIndex}.sinPhasePoolingWeights), spatialDimension));
         if strcmp(V1filterEnsemble{unitIndex}.activationFunction, 'energy')
