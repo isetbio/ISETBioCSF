@@ -90,7 +90,6 @@ function run_PeformanceSignalVaryConditions
                 params.spatialPoolingKernelParams.(fName) = ensembleFilterParams.(fName);
             end
         end
-        
         [~,~, theFigData{signalIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end
     
