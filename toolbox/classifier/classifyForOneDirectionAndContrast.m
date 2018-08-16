@@ -7,6 +7,7 @@ function [usePercentCorrect,useStdErr,h, varargout] = classifyForOneDirectionAnd
 %   'paramsList' - the paramsList associated for this direction (used for exporting response figures to the right directory)
 %   'visualizeKernelTransformedSignals' - true/false (default false). Wether to plot the transformed responses.
 %   'plotSvmBoundary' - true/false (default false).  Plot classification boundary
+%   'parforWorkersNum' - Number of parfor workers to use. Currently, only for in transformDataWithV1FilterEnsemble()
 %   'plotPCAAxis1' - First PCA component to plot (default 1)
 %   'plotPCAAxis2' - Second PCA component to plot (default 2)
 %
@@ -35,19 +36,28 @@ tBegin = clock;
 
 %% Transform the raw cone responses into V1 filter bank responses
 if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
-    if ((~isfield(thresholdParams, 'spatialPoolingKernel')) || (isfield(thresholdParams, 'spatialPoolingKernel')) && (isempty(thresholdParams.spatialPoolingKernel)))
+    if ( (~isfield(thresholdParams, 'spatialPoolingKernel')) || ...
+         (isfield(thresholdParams, 'spatialPoolingKernel')) && (isempty(thresholdParams.spatialPoolingKernel)))
         error('thresholdParams must have a spatialPoolingKernel field when using the svmV1FilterBank classifier\n');
     end
-    [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals);
+    [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stimData, ...
+        thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals);
+    
 elseif (strcmp(thresholdParams.method, 'svmV1FilterEnsemble'))
-    if ((~isfield(thresholdParams, 'spatialPoolingKernel')) || (isfield(thresholdParams, 'spatialPoolingKernel')) && (isempty(thresholdParams.spatialPoolingKernel)))
+    if ( (~isfield(thresholdParams, 'spatialPoolingKernel')) || ...
+         (isfield(thresholdParams, 'spatialPoolingKernel')) && (isempty(thresholdParams.spatialPoolingKernel)))
         error('thresholdParams must have a spatialPoolingKernel field when using the svmV1FilterEnsemble classifier\n');
     end
-    [noStimData, stimData] = transformDataWithV1FilterEnsemble(noStimData, stimData, thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals, p.Results.parforWorkersNum);
+    [noStimData, stimData] = transformDataWithV1FilterEnsemble(noStimData, stimData, ...
+        thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals, p.Results.parforWorkersNum);
+    
 elseif (strcmp(thresholdParams.method, 'svmSpaceTimeSeparable'))
-    [noStimData, stimData] = transformDataWithSeparableSpaceTimeComponents(noStimData, stimData, thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals);
+    [noStimData, stimData] = transformDataWithSeparableSpaceTimeComponents(noStimData, stimData, ...
+        thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals);
+    
 elseif (strcmp(thresholdParams.method, 'svmGaussianRF')) || (strcmp(thresholdParams.method, 'mlptGaussianRF'))
-    [noStimData, stimData] = transformDataWithSpatialPoolingFilter(noStimData, stimData, thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals);
+    [noStimData, stimData] = transformDataWithSpatialPoolingFilter(noStimData, stimData, ...
+        thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals);
 end
 
 %% Put zero contrast response instances into data that we will pass to the SVM
