@@ -113,5 +113,15 @@ function params = getCSFpaperDefaultParams(mosaicName,  computationInstance)
         error('computational instance (%d) not found', computationalInstance);
     end
 
+    % Adjust params.parforWorkersNumForClassification depending on computer
+    [numberOfCores, ramSizeGBytes, ~] = determineSystemResources(false);
+    if (ramSizeGBytes > 200)
+        params.parforWorkersNumForClassification = min([numberOfCores 2*params.parforWorkersNumForClassification]);
+    elseif (ramSizeGBytes > 100)
+        params.parforWorkersNumForClassification = min([numberOfCores params.parforWorkersNumForClassification]);
+    else
+        params.parforWorkersNumForClassification = min([numberOfCores 1]);
+    end
+    
 end
 
