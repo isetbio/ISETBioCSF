@@ -79,36 +79,36 @@ function params = getCSFpaperDefaultParams(mosaicName,  computationInstance)
         % Second largest mosaic
         params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined =  [4];
-        params.parforWorkersNumForClassification = 4;
+        params.parforWorkersNumForClassification = 3;
     elseif (computationInstance  == 3)
         % All other sizes
         params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined =  [8 16 32 50 60];
-        params.parforWorkersNumForClassification = 8;
+        params.parforWorkersNumForClassification = 6;
     elseif (computationInstance  == 4)
         params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined = [4];
-        params.parforWorkersNumForClassification = 4;
+        params.parforWorkersNumForClassification = 3;
     elseif (computationInstance  == 8)
         params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined = [8];
-        params.parforWorkersNumForClassification = 8;
+        params.parforWorkersNumForClassification = 6;
     elseif (computationInstance  == 16)
         params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined = [16];
-        params.parforWorkersNumForClassification = 16;
+        params.parforWorkersNumForClassification = 10;
     elseif (computationInstance  == 32)
         params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined = [32];
-        params.parforWorkersNumForClassification = 20;
+        params.parforWorkersNumForClassification = 12;
     elseif (computationInstance  == 50)
         params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined = [50];
-        params.parforWorkersNumForClassification = 20;
+        params.parforWorkersNumForClassification = 12;
     elseif (computationInstance  == 60)
         params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined = [60];
-        params.parforWorkersNumForClassification = 20;
+        params.parforWorkersNumForClassification = 12;
     else
         error('computational instance (%d) not found', computationalInstance);
     end
