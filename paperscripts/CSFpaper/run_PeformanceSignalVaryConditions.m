@@ -3,10 +3,10 @@ function run_PeformanceSignalVaryConditions
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 0;
+    computationInstance = 8 ; % 16 32  50 60;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
+    makeSummaryFigure = ~true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection';
@@ -43,7 +43,7 @@ function run_PeformanceSignalVaryConditions
         ensembleFilterParams = struct(...
             'spatialPositionsNum',  9, ...
             'cyclesPerRFs', [1.0 1.5 2.0 2.5], ...
-            'orientations', 7.5*[-1 0 1]);
+            'orientations', 7.5*[0]);
     end
     
     % Signals examined
