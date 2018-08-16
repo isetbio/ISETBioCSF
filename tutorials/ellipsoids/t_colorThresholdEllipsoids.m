@@ -56,7 +56,7 @@ s = warning('off','MATLAB:delaunay:DupPtsDelaunayWarnId');
 % that figure looks pretty good, based on this assumption.
 conditionStr = 'HT,cc';
 theSf = 2;
-[A,Ainv,Q,theBgLMS] = PoirsonWandellEllipsoidParameters(conditionStr,theSf);
+[~,Ainv,Q,theBgLMS] = PoirsonWandellEllipsoidParameters(conditionStr,theSf);
 
 %% Generate and plot the ellipsoid in 3D
 %
