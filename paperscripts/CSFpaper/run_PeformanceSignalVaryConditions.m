@@ -79,6 +79,8 @@ function run_PeformanceSignalVaryConditions
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
+    examinedSignals = {examinedSignals{1}};
+    
     % Go
   	for signalIndex = 1:numel(examinedSignals)
         params.performanceSignal = examinedSignals{signalIndex};
