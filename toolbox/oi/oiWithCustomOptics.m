@@ -24,6 +24,11 @@ function [theCustomOI, Zcoeffs, theWVF] = oiWithCustomOptics(opticsModel, wavefr
         optics = opticsSet(optics, 'otfwave', wavelengthsListToCompute);
     end
     
+    if (strfind(opticsModel, 'DeltaFunction'))
+    	theCustomOI = ptb.oiSetPtbOptics(theOI,'opticsModel', 'DeltaFunction');
+        return;
+    end
+    
     if (strfind(opticsModel, 'AOoptics'))
         fprintf('Generating wavefront object for ''%s'' optics \n', opticsModel);
         [Zcoeffs_SampleMean, ~, ~] = wvfLoadThibosVirtualEyes(7.5);

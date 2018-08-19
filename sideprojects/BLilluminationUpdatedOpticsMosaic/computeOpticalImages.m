@@ -6,8 +6,14 @@ function computeOpticalImages
 %     generateOI(horizontalFOV, pupilDiamMM, visualizePSF);
 %     return;
     
-    sceneRootDir = '/Volumes/DropBoxDisk/Dropbox/Dropbox (Aguirre-Brainard Lab)/IBIO_data/BLIlluminationDiscrimination/SceneData';
-    oiRootDir = '/Volumes/DropBoxDisk/Dropbox/Dropbox (Aguirre-Brainard Lab)/IBIO_data/BLIlluminationDiscrimination/OpticalImageData';
+    %ibioDataDir = '/Volumes/DropBoxDisk/Dropbox/Dropbox (Aguirre-Brainard Lab)/IBIO_data';
+    ibioDataDir = '/Volumes/IthakasPassport/DropboxLab/AquirreBrainardLab/IBIO_data'
+
+    sceneRootDir = fullfile(ibioDataDir,'BLIlluminationDiscrimination/SceneData');
+    oiRootDir = fullfile(ibioDataDir, 'BLIlluminationDiscrimination/OpticalImageData');
+    
+    %opticsModel = 'ThibosDefaultSubject3MMPupil';
+    opticsModel = 'DeltaFunction';
     
     sceneNames = {...
         'Constant_CorrectSize_Blue'...
@@ -24,6 +30,9 @@ function computeOpticalImages
         };
     
     localDir = pwd;
+    if (~isdir(oiRootDir))
+        mkdir(oiRootDir);
+    end
     for sceneIndex = 1:numel(sceneNames)
         sceneName = sceneNames{sceneIndex};
         if (~isdir(fullfile(oiRootDir, sceneName)))
@@ -38,7 +47,7 @@ function computeOpticalImages
             % 5 mm for modeled experiment 2
             pupilDiamMM = 5;
         end
-        pupilDiamMM
+        
         for illumIndex = 1:numel(illuminationNames)
             illuminationName = illuminationNames{illumIndex};
             if (~isdir(fullfile(oiRootDir, sceneName, illuminationName)))
@@ -52,6 +61,7 @@ function computeOpticalImages
             oiDir = fullfile(oiRootDir, sceneName, illuminationName);
             
             listings = dir(sprintf('%s/*.mat', sceneDir));
+
             for k = 1:numel(listings)
                 if (contains(listings(k).name, '.mat'))  
                     % Source filename
@@ -64,11 +74,11 @@ function computeOpticalImages
                     clear 'scene';
                     horizontalFOV = sceneGet(theScene, 'hfov');
                     visualizePSF = false;
-                    theOI = generateOI(horizontalFOV, pupilDiamMM, visualizePSF);
+                    theOI = generateOI(opticsModel, horizontalFOV, pupilDiamMM, visualizePSF);
                     oi = oiCompute(theOI, theScene);
                     save(oiFileName, 'oi');
                     fprintf('Saved oi in %s\n', oiFileName);
-                    visualizeSceneAndOI = false;
+                    visualizeSceneAndOI = ~false;
                     if (visualizeSceneAndOI)
                         figure(10);
                         subplot(1,2,1)
@@ -84,14 +94,15 @@ function computeOpticalImages
     end % for sceneIndex
 end
 
-function theOI = generateOI(horizontalFOV, pupilDiamMM, visualizePSF)
+function theOI = generateOI(opticsModel, horizontalFOV, pupilDiamMM, visualizePSF)
 
     % Generate human optics
     oiParams = struct(...
-        'opticsModel', 'ThibosDefaultSubject3MMPupil', ...
+        'opticsModel', opticsModel, ...
         'wavefrontSpatialSamples', 261*2+1, ...
         'pupilDiamMm', pupilDiamMM, ...
         'umPerDegree', 300);
+    
     theOI = oiWithCustomOptics(oiParams.opticsModel, oiParams.wavefrontSpatialSamples, oiParams.pupilDiamMm, oiParams.umPerDegree);
 
     % Set the FOV
