@@ -3,7 +3,7 @@ function run_PeformanceSignalVaryConditions
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 8 ; % 16 32  50 60;
+    computationInstance = 3 ; % 16 32  50 60;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = ~true;
@@ -41,18 +41,18 @@ function run_PeformanceSignalVaryConditions
     
     if (strcmp(params.performanceClassifier,'svmV1FilterEnsemble'))
         
-%         ensembleFilterParams = struct(...
-%             'spatialPositionsNum',  9, ...
-%             'cyclesPerRFs', [1.0 1.5 2.0 2.5], ...
-%             'orientations', [0]);
-%         params.parforWorkersNumForClassification = 1 * params.parforWorkersNumForClassification;
-%         
         ensembleFilterParams = struct(...
             'spatialPositionsNum',  9, ...
-            'cyclesPerRFs', [2.5], ...
+            'cyclesPerRFs', [1.0 1.5 2.0 2.5], ...
             'orientations', [0]);
-        params.parforWorkersNumForClassification = 2 * params.parforWorkersNumForClassification;
+        params.parforWorkersNumForClassification = 1 * params.parforWorkersNumForClassification;
         
+%         ensembleFilterParams = struct(...
+%             'spatialPositionsNum',  9, ...
+%             'cyclesPerRFs', [2.5], ...
+%             'orientations', [0]);
+%         params.parforWorkersNumForClassification = 2 * params.parforWorkersNumForClassification;
+%         
     end
     
     % Signals examined
@@ -88,7 +88,7 @@ function run_PeformanceSignalVaryConditions
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
-    examinedSignals = {examinedSignals{1}};
+    examinedSignals = {examinedSignals{2}};
     
     % Go
   	for signalIndex = 1:numel(examinedSignals)
