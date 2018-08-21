@@ -6,17 +6,17 @@ function computeOpticalImages
 %     generateOI(horizontalFOV, pupilDiamMM, visualizePSF);
 %     return;
     
-    %ibioDataDir = '/Volumes/DropBoxDisk/Dropbox/Dropbox (Aguirre-Brainard Lab)/IBIO_data';
-    ibioDataDir = '/Volumes/IthakasPassport/DropboxLab/AquirreBrainardLab/IBIO_data'
+    ibioDataDir = '/Volumes/DropBoxDisk/Dropbox/Dropbox (Aguirre-Brainard Lab)/IBIO_data';
+    %ibioDataDir = '/Volumes/IthakasPassport/DropboxLab/AquirreBrainardLab/IBIO_data'
 
     sceneRootDir = fullfile(ibioDataDir,'BLIlluminationDiscrimination/SceneData');
-    oiRootDir = fullfile(ibioDataDir, 'BLIlluminationDiscrimination/OpticalImageData');
+    oiRootDir = fullfile(ibioDataDir, 'BLIlluminationDiscrimination/OpticalImageDataNoBlur');
     
     %opticsModel = 'ThibosDefaultSubject3MMPupil';
     opticsModel = 'DeltaFunction';
     
     sceneNames = {...
-        'Constant_CorrectSize_Blue'...
+        'Constant_CorrectSize'...
       %  'NM1_CorrectSize' ...		
       %  'NM2_CorrectSize' ...		
       %  'Neutral_CorrectSize' ...
