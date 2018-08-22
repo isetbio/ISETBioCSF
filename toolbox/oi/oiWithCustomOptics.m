@@ -26,6 +26,7 @@ function [theCustomOI, Zcoeffs, theWVF] = oiWithCustomOptics(opticsModel, wavefr
     
     if (strfind(opticsModel, 'DeltaFunction'))
     	theCustomOI = ptb.oiSetPtbOptics(theOI,'opticsModel', 'DeltaFunction');
+        Zcoeffs = []; theWVF = [];
         return;
     end
     
