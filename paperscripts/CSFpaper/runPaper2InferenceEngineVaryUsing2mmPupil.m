@@ -71,10 +71,15 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
                 fName = fNames{fNameIndex};
                 params.spatialPoolingKernelParams.(fName) = ensembleFilterParams.(fName);
             end
+            % Remove
+            params.parforWorkersNumForClassification = min([12 2*params.parforWorkersNumForClassification])
         end
         
         % Update params
-        params = getRemainingDefaultParams(params, condIndex, cond.conditionLabel);  
+        params = getRemainingDefaultParams(params, condIndex, cond.conditionLabel); 
+        % Remove
+        params.findPerformance = true
+        
         
         examinedLegends{numel(examinedLegends) + 1} = examinedCond(condIndex).conditionLabel;
         [~,~, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
@@ -135,7 +140,7 @@ function params = getRemainingDefaultParams(params, condIndex, conditionLabel)
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 end
