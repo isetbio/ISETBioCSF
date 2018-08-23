@@ -10,6 +10,7 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
     % Init condition index
     condIndex = 0;
     
+    if (1==2)
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-Template (quadrature)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
@@ -23,24 +24,8 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
     examinedCond(condIndex).frameRate = 20;
     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
-    
-    
-    condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations2, SVM-Template (quadrature)';
-    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
-    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
-    examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
-    examinedCond(condIndex).signal = 'isomerizations'; % 'photocurrents';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-    examinedCond(condIndex).emPathType = 'random';
-    examinedCond(condIndex).centeredEMPaths = true;
-    examinedCond(condIndex).frameRate = 10;
-    examinedCond(condIndex).responseStabilizationMilliseconds = 40;
-    examinedCond(condIndex).responseExtinctionMilliseconds = 40;
-    
+    end
 
-    if (1==2)
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-V1ensemble (quadrature)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
@@ -54,11 +39,11 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
     examinedCond(condIndex).frameRate = 20;
     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
-    end
+    
     
     ensembleFilterParams = struct(...
             'spatialPositionsNum',  9, ...
-            'cyclesPerRFs', [1.0 1.5 2.0 2.5], ...
+            'cyclesPerRFs', [2.5], ... % [1.0 1.5 2.0 2.5], ...
             'orientations', [0]);
    
     % Go
@@ -150,7 +135,7 @@ function params = getRemainingDefaultParams(params, condIndex, conditionLabel)
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 end
