@@ -41,9 +41,10 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
     
     
     % Displayed colors
+    
     if (plotFirstConditionInGray)
         colors(1,:) = [0.5 0.5 0.5];
-        if (numel(theFigData)>1)
+        if (numel(theFigData)>1) || (showSubjectData)
             colors(2:numel(theFigData),:) = brewermap(numel(theFigData)-1, 'Set1');
             if (showSubjectData)
                 colorsNum = numel(theFigData)+2;

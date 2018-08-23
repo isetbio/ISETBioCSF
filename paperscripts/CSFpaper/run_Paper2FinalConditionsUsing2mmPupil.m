@@ -136,7 +136,6 @@ function run_Paper2FinalConditionsUsing2mmPupil
     
     if (makeSummaryFigure)
         variedParamName = 'VariousParams';
-        theRatioLims = [0.03 1.5];
         theRatioLims = [0.02 2.0];
         theRatioTicks = [0.05  0.1 0.2 0.5 1.0];
         formatLabel = 'ComparedToBanks87Photocurrents';  % 'ComparedToBanks87'

@@ -316,7 +316,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
             csLims = [1.5 15000];
             sfTicks = [1 2 5 10 20 50 100];
             sfLims  = [1.5 80];
-            dx1 = 0.2; dx2 = 10; dy1 = 0.4; dy2 = 1000;
+            dx1 = 0.2; dx2 = 10; dy1 = 0.5; dy2 = 1000;
                 
             if (isempty(theAxes)) && (isempty(theLegend))
                 if (plotRatiosOfOtherConditionsToFirst)
