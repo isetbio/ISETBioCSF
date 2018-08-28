@@ -84,7 +84,7 @@ function params = getCSFpaperDefaultParams(mosaicName,  computationInstance)
         % All other sizes
         params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined =  [8 16 32 50 60];
-        params.parforWorkersNumForClassification = 6;
+        params.parforWorkersNumForClassification = 3;
     elseif (computationInstance  == 4)
         params.ramPercentageEmployed = 1.2;  
         params.cyclesPerDegreeExamined = [4];
