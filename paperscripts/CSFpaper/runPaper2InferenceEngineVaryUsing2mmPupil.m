@@ -2,7 +2,7 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
     
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 0 ;
+    computationInstance = 3 ;
 
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -10,7 +10,8 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
     % Init condition index
     condIndex = 0;
     
-    
+    if (1==2)
+        
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-Template (quadrature)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
@@ -43,7 +44,7 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
     
     examinedCond(condIndex).ensembleFilterParams = struct(...
             'spatialPositionsNum',  9, ...
-            'cyclesPerRFs', [2.5], ... % [1.0 1.5 2.0 2.5], ...
+            'cyclesPerRFs', [1.0 1.5 2.0 2.5], ...
             'orientations', [0]);
         
     
@@ -64,9 +65,32 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
     
     examinedCond(condIndex).ensembleFilterParams = struct(...
             'spatialPositionsNum',  9, ...
-            'cyclesPerRFs', [1.0 1.5 2.0 2.5], ...
+            'cyclesPerRFs', [2.5], ...
             'orientations', [0]);
    
+end
+
+    condIndex = condIndex+1;
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-V1ensemble-4 (quadrature)';
+    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).inferenceEngine = 'svmV1FilterEnsemble';
+    examinedCond(condIndex).signal = 'isomerizations'; % 'photocurrents';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).centeredEMPaths = true;
+    examinedCond(condIndex).frameRate = 20;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    
+    
+    examinedCond(condIndex).ensembleFilterParams = struct(...
+            'spatialPositionsNum',  11, ...
+            'cyclesPerRFs', [2.0], ...
+            'orientations', [0]);
+        
+        
     % Go
     examinedLegends = {};
     for condIndex = 1:numel(examinedCond)
@@ -97,7 +121,7 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
         % Update params
         params = getRemainingDefaultParams(params, condIndex, cond.conditionLabel); 
         % Remove
-        %params.findPerformance = true
+        params.findPerformance = true
         
         
         examinedLegends{numel(examinedLegends) + 1} = examinedCond(condIndex).conditionLabel;
@@ -127,11 +151,11 @@ function params = getRemainingDefaultParams(params, condIndex, conditionLabel)
     % Chromatic direction params
     params.coneContrastDirection = 'L+M+S';
     
-    if contains(conditionLabel,'Banks mosaic/optics')
-        params.cyclesPerDegreeExamined = [2 4 8 16 32 50];
-    else
-        params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
-    end
+%     if contains(conditionLabel,'Banks mosaic/optics')
+%         params.cyclesPerDegreeExamined = [2 4 8 16 32 50];
+%     else
+%         params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
+%     end
     
     if (strcmp(conditionLabel, 'Banks mosaic/optics, MLPT, 3mm'))
         params.pupilDiamMm = 3.0;
