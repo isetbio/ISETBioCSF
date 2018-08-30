@@ -2,7 +2,7 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
     
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 3 ;
+    computationInstance = 1 ;
 
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -68,7 +68,7 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
             'cyclesPerRFs', [2.5], ...
             'orientations', [0]);
    
-end
+
 
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-V1ensemble-4 (quadrature)';
@@ -89,7 +89,27 @@ end
             'spatialPositionsNum',  11, ...
             'cyclesPerRFs', [2.0], ...
             'orientations', [0]);
-        
+    end
+    
+        condIndex = condIndex+1;
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-V1ensemble-4 (quadrature)';
+    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).inferenceEngine = 'svmV1FilterEnsemble';
+    examinedCond(condIndex).signal = 'isomerizations'; % 'photocurrents';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).centeredEMPaths = true;
+    examinedCond(condIndex).frameRate = 20;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    
+    
+    examinedCond(condIndex).ensembleFilterParams = struct(...
+            'spatialPositionsNum',  7, ...
+            'cyclesPerRFs', [2.5], ...
+            'orientations', [0]);
         
     % Go
     examinedLegends = {};
