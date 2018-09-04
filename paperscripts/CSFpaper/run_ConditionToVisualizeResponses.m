@@ -24,10 +24,9 @@ function run_ConditionToVisualizeResponses
     params.cyclesPerDegreeExamined = [16];
     
     % Simulation steps to perform
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
-    
     
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeDisplay = ~true;
@@ -36,7 +35,7 @@ function run_ConditionToVisualizeResponses
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = true;
-    params.visualizeSpatialPoolingScheme = ~true;
+    params.visualizeSpatialPoolingScheme = true;
     params.visualizeMosaicWithFirstEMpath = ~true;
     
     params.visualizeKernelTransformedSignals = true;
@@ -45,8 +44,18 @@ function run_ConditionToVisualizeResponses
     params.deleteResponseInstances = ~true;
 
     params.performanceClassifier = 'svmV1FilterBank';
-    params.spatialPoolingKernelParams.type = 'V1CosUnit';
-    params.spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    params.performanceClassifier = 'svmV1FilterEnsemble';
+    params.parforWorkersNumForClassification = 1;
+    
+    if (strcmp(params.performanceClassifier,'svmV1FilterEnsemble'))
+        params.spatialPoolingKernelParams.spatialPositionsNum = 9;
+        params.spatialPoolingKernelParams.cyclesPerRFs =  [1.5 2.5];
+        params.spatialPoolingKernelParams.orientations =  [0];
+    else
+        params.spatialPoolingKernelParams.type = 'V1CosUnit';
+        params.spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    end
+
     
     % Go
     run_BanksPhotocurrentEyeMovementConditions(params);

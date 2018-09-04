@@ -102,7 +102,7 @@ function hFigs = visualizeEnsembleSpatialPoolingScheme(xaxis, yaxis, spatialModu
             'topMargin',      0.001);
         
             hFigs(ft2DIndex) = figure(1000+ft2DIndex); clf;
-            set(hFigs(ft2DIndex), 'Position', [10+ft2DIndex*100 10+ft2DIndex*50 1800 1300], 'Color', [1 1 1]);
+            set(hFigs(ft2DIndex), 'Position', [10+ft2DIndex*100 10+ft2DIndex*50 1650 1000], 'Color', [1 1 1]);
             %set(gcf,'renderer','opengl');
        end
        

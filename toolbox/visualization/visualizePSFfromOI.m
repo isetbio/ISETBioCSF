@@ -1,4 +1,4 @@
-function visualizePSFfromOI(theOI, micronsPerDegree, varargin)
+function hFig = visualizePSFfromOI(theOI, micronsPerDegree, varargin)
     p = inputParser;
     p.addParameter('visualizedWavelengths', [], @isnumeric);
     p.addParameter('rows', [], @isnumeric);
