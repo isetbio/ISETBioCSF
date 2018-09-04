@@ -144,19 +144,28 @@ end
 if (p.Results.generatePlots)
     for ii = 1:size(performanceData.testConeContrasts,2)    
         % Make the plot for this test direction
-        hFig = figure; hold on
-        set(gca,'FontSize',rParams.plotParams.axisFontSize);
-        errorbar(log10(testContrasts), thePerformance, theStandardError, 'ro', 'MarkerSize', rParams.plotParams.markerSize, 'MarkerFaceColor', [1.0 0.5 0.50]);
-        plot(log10(fitContrasts),fitFractionCorrect(:,ii),'r','LineWidth', 2.0);
-        plot(log10(thresholdContrasts(ii))*[1 1],[0 thresholdParams.criterionFraction],'b', 'LineWidth', 2.0);
-        axis 'square'
-        set(gca, 'YLim', [0 1.0],'XLim', log10([testContrasts(1) testContrasts(end)]), 'FontSize', 14);
-        xlabel('contrast', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
-        ylabel('percent correct', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
-        box off; grid on
-        title({sprintf('LMangle = %2.1f deg, LMthreshold (%0.4f%%,%0.4f%%)', atan2(testConeContrasts(2,ii), testConeContrasts(1,ii))/pi*180, ...
-            100*thresholdContrasts(ii)*testConeContrasts(1,ii), 100*thresholdContrasts(ii)*testConeContrasts(2,ii)) ; ''}, ...
-            'FontSize',rParams.plotParams.titleFontSize);
+        hFig = figure; 
+        clf;
+        set(hFig, 'Position', [10 10 560 600], 'Color', [1 1 1]);
+        subplot('Position', [0.09 0.11 0.92 0.75]);
+        plot(fitContrasts,fitFractionCorrect(:,ii),'r','LineWidth', 4.0);
+        hold on
+        errorbar(testContrasts, thePerformance, theStandardError, 'ro', ...
+            'MarkerSize', 18, 'MarkerFaceColor', [1.0 0.8 0.8], 'LineWidth', 1.5);
+        plot([testContrasts(1)*0.9 testContrasts(end)*1.1],[thresholdParams.criterionFraction thresholdParams.criterionFraction],'k--', 'LineWidth', 2);
+        plot(thresholdContrasts(ii)*[1 1],[0 thresholdParams.criterionFraction],'b', 'LineWidth', 3.0);
+        plot(thresholdContrasts(ii),0.40,'bv', 'LineWidth', 2.0, 'MarkerSize', 12, 'MarkerFaceColor', [0.6 0.6 1.0]);
+        yTicks = 0:0.1:1.0;
+        xTicks = -7:1:0;
+        xTickLabels = sprintf('10^{%d}\n', xTicks);
+        set(gca, 'YLim', [0.39 1.05], 'XLim', [testContrasts(1)*0.9 testContrasts(end)*1.1], 'XTick', 10.^xTicks, 'XTickLabel', xTickLabels);
+        set(gca, 'YTick', yTicks, 'YTickLabel', sprintf('%1.1f\n', yTicks)); 
+        set(gca, 'FontSize', 20, 'XScale', 'log', 'LineWidth', 1.0);
+        xlabel('contrast','FontWeight', 'bold');
+        ylabel('percent correct', 'FontWeight', 'bold');
+        box on; grid on; axis 'square'
+        title({sprintf('LMangle = %2.1f deg\nLMthreshold (%0.4f%%,%0.4f%%)', atan2(testConeContrasts(2,ii), testConeContrasts(1,ii))/pi*180, ...
+            100*thresholdContrasts(ii)*testConeContrasts(1,ii), 100*thresholdContrasts(ii)*testConeContrasts(2,ii)) ; ''});
         rwObject.write(sprintf('LMPsychoFunctions_%d',ii),hFig,paramsList,writeProgram,'Type','figure');
         
         psychometricFunctions{ii}.x = testContrasts;
