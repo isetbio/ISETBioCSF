@@ -343,6 +343,31 @@ function theScene = generateTheScene(rootPath,theDisplay, theMosaicFOV)
     filename = fullfile(rootPath,rgbSettingsFile);
     load(filename, 'sensorImageRGB');
     
+    figure();
+    subplot(3,1,1);
+    channel = sensorImageRGB;
+    channel(:,:,2) = 0;
+    channel(:,:,3) = 0;
+    imagesc(channel, [0 1]);
+    set(gca, 'XTick', [], 'YTick', []);
+    axis image
+    
+    subplot(3,1,2);
+    channel = sensorImageRGB;
+    channel(:,:,1) = 0;
+    channel(:,:,3) = 0;
+    imagesc(channel, [0 1]);
+    set(gca, 'XTick', [], 'YTick', []);
+    axis image
+    
+    subplot(3,1,3);
+    channel = sensorImageRGB;
+    channel(:,:,2) = 0;
+    channel(:,:,1) = 0;
+    imagesc(channel, [0 1]);
+    set(gca, 'XTick', [], 'YTick', []);
+    axis image
+    
     %% Convert to ISETbio scene
     meanLuminance = [];
     theScene = sceneFromFile(sensorImageRGB, 'rgb', meanLuminance, theDisplay);
