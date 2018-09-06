@@ -6,7 +6,7 @@ function run_EyeMovementVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
@@ -35,37 +35,44 @@ function run_EyeMovementVaryConditions
     condIndex = 0;
     
     
-%    condIndex = condIndex+1;  
-%     examinedCond(condIndex).emPathType = 'frozen0';
-%     examinedCond(condIndex).classifier = 'svm';
-%     examinedCond(condIndex).legend = 'no eye movements, SVM-PCA';
-%     examinedCond(condIndex).centeredEMpaths = true;
-%     examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
-%     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
-%     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
-%     examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+    condIndex = condIndex+1;  
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).classifier = 'svm';
+    examinedCond(condIndex).legend = 'no eye movements, SVM-PCA';
+    examinedCond(condIndex).centeredEMpaths = true;
+    examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    
+%     examinedCond(condIndex).frameRate = 10;  %(20 frames/sec, so 2 frames, each 50 msec long)
+%     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+%     examinedCond(condIndex).responseExtinctionMilliseconds = 40; 
+%     
+    examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
 
     
     condIndex = condIndex+1;
     examinedCond(condIndex).emPathType = 'random';
     examinedCond(condIndex).classifier = 'svm';
-    examinedCond(condIndex).legend = 'drifts+\mu-sacc, SVM';
+    examinedCond(condIndex).legend = 'fixational eye movements, SVM-PCA';
     examinedCond(condIndex).centeredEMpaths = ~true;
     examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
     examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
     
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).emPathType = 'random';
-%     examinedCond(condIndex).classifier = 'svmV1FilterBank';
-%     examinedCond(condIndex).legend = 'drifts+\mu-sacc, SVM-TemplateQ';
-%     examinedCond(condIndex).centeredEMpaths = ~true;
-%     examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
-%     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
-%     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
-%     examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+    if (1==2)
+    condIndex = condIndex+1;
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).classifier = 'svmV1FilterBank';
+    examinedCond(condIndex).legend = 'fixational eye movements, SVM-QTemplate';
+    examinedCond(condIndex).centeredEMpaths = ~true;
+    examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
 
+    end
     
      
 %     condIndex = condIndex+1;
