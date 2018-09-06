@@ -2,7 +2,7 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
     
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 1 ;
+    computationInstance = 0 ;
 
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -10,8 +10,8 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
     % Init condition index
     condIndex = 0;
     
-    if (1==2)
-        
+ 
+        if (1==1)
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-Template (quadrature)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
@@ -26,9 +26,9 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
     
-
+    
     condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-V1ensemble-1 (quadrature)';
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-V1ensemble-9x9 - 4';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterEnsemble';
@@ -49,7 +49,7 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
         
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-V1ensemble-4 (quadrature)';
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-V1ensemble-9x9 - 2.5';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterEnsemble';
@@ -71,7 +71,7 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
 
 
     condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-V1ensemble-4 (quadrature)';
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-V1ensemble-11x11-2.0';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterEnsemble';
@@ -89,10 +89,10 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
             'spatialPositionsNum',  11, ...
             'cyclesPerRFs', [2.0], ...
             'orientations', [0]);
-    end
-    
-        condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-V1ensemble-4 (quadrature)';
+   
+   
+    condIndex = condIndex+1;
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-V1ensemble-7x7-2.5';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterEnsemble';
@@ -110,8 +110,31 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
             'spatialPositionsNum',  7, ...
             'cyclesPerRFs', [2.5], ...
             'orientations', [0]);
-        
-    % Go
+   
+    end
+    
+  condIndex = condIndex+1;
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM + isomerizations, SVM-V1ensemble-7x7-1.5';
+    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).inferenceEngine = 'svmV1FilterEnsemble';
+    examinedCond(condIndex).signal = 'isomerizations'; % 'photocurrents';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).centeredEMPaths = true;
+    examinedCond(condIndex).frameRate = 20;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    
+    
+    examinedCond(condIndex).ensembleFilterParams = struct(...
+            'spatialPositionsNum',  7, ...
+            'cyclesPerRFs', [1.5], ...
+            'orientations', [0]);
+    % Goend
+    
+    
     examinedLegends = {};
     for condIndex = 1:numel(examinedCond)
         cond = examinedCond(condIndex);
@@ -141,7 +164,7 @@ function runPaper2InferenceEngineVaryUsing2mmPupil
         % Update params
         params = getRemainingDefaultParams(params, condIndex, cond.conditionLabel); 
         % Remove
-        params.findPerformance = true
+        params.findPerformance = ~true
         
         
         examinedLegends{numel(examinedLegends) + 1} = examinedCond(condIndex).conditionLabel;
