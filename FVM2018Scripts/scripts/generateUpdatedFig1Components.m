@@ -7,8 +7,7 @@ function generateUpdatedFig1Components
     
     theDisplay = generateTheDisplay();
     theMosaic = loadTheMosaic(rootPath, 16);
-    theScene = generateTheScene(rootPath, theDisplay, theMosaic.fov);
-    
+    [theScene, theRGBsettingsImage] = generateTheScene(rootPath, theDisplay, theMosaic.fov);
     
     hFig = generateDisplayFigComponent(theDisplay);
     NicePlot.exportFigToPDF('../updatedComponentFigs/DisplayComponent.pdf', hFig, 300);
@@ -16,6 +15,8 @@ function generateUpdatedFig1Components
     hFig = generateSceneFigComponent(theScene, theMosaic.fov, visualizedWavelengths);
     NicePlot.exportFigToPNG('../updatedComponentFigs/SceneComponent.png', hFig, 300);
     
+    hFig = generateRGBSettingsImageComponent(theRGBsettingsImage);
+    NicePlot.exportFigToPNG('../updatedComponentFigs/RGBSettingsComponent.png', hFig, 300);
  
     theOI = generateTheOpticalImage(theScene);
     theOI = oiCompute(theOI, theScene);
@@ -185,6 +186,35 @@ function hFig = generateOpticalImageFigComponent(theOI, mosaicFOV, visualizedWav
     end
 end
 
+function hFig = generateRGBSettingsImageComponent(RGBsettingsImage)
+    hFig = figure(3); clf;
+    set(hFig, 'Position', [10 10 400 500], 'Color', [1 1 1]);
+    xx = 1:size(RGBsettingsImage,2);
+    yy = 1:size(RGBsettingsImage,1);
+    renderedImagesNum = 3;
+    dx = 0.12/renderedImagesNum;
+    dy = 0.68/renderedImagesNum;
+    for k = 1:renderedImagesNum
+        imageData = RGBsettingsImage;
+        switch (k)
+            case 1
+                imageData(:,:,2) = 0;
+                imageData(:,:,3) = 0;
+            case 2
+                imageData(:,:,1) = 0;
+                imageData(:,:,3) = 0;
+            case 3
+                imageData(:,:,1) = 0;
+                imageData(:,:,2) = 0;
+        end
+        
+        ax = axes('Position', [0.01+(k-1)*dx 0.40-(k-1)*dy 0.9 0.65]);
+        imagesc(ax, xx, yy, imageData, [0 1]);
+        set(gca, 'XTick', [], 'YTick', []);
+        axis image
+    end
+end
+
 function hFig = generateSceneFigComponent(theScene, mosaicFOV, visualizedWavelengths)
 
     sceneSize = sceneGet(theScene, 'size');
@@ -336,37 +366,12 @@ function theMosaic = loadTheMosaic(rootPath, mosaicFOVDegs)
     theMosaic = theData;
 end
 
-function theScene = generateTheScene(rootPath,theDisplay, theMosaicFOV)
+function [theScene, sensorImageRGB] = generateTheScene(rootPath,theDisplay, theMosaicFOV)
 %   
     rgbSettingsFile = 'PilotC4M4-RGB.mat';  % matte
     rgbSettingsFile = 'PilotC1M4-RGB.mat';  % shiny
     filename = fullfile(rootPath,rgbSettingsFile);
     load(filename, 'sensorImageRGB');
-    
-    figure();
-    subplot(3,1,1);
-    channel = sensorImageRGB;
-    channel(:,:,2) = 0;
-    channel(:,:,3) = 0;
-    imagesc(channel, [0 1]);
-    set(gca, 'XTick', [], 'YTick', []);
-    axis image
-    
-    subplot(3,1,2);
-    channel = sensorImageRGB;
-    channel(:,:,1) = 0;
-    channel(:,:,3) = 0;
-    imagesc(channel, [0 1]);
-    set(gca, 'XTick', [], 'YTick', []);
-    axis image
-    
-    subplot(3,1,3);
-    channel = sensorImageRGB;
-    channel(:,:,2) = 0;
-    channel(:,:,1) = 0;
-    imagesc(channel, [0 1]);
-    set(gca, 'XTick', [], 'YTick', []);
-    axis image
     
     %% Convert to ISETbio scene
     meanLuminance = [];
