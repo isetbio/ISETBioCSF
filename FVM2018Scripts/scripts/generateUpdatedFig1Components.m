@@ -1,7 +1,11 @@
 function generateUpdatedFig1Components
-    [rootPath,~] = fileparts(which(mfilename));
-    rootPath = strrep(rootPath, 'scripts', 'isetbio_resources');
+    [rootPath0,~] = fileparts(which(mfilename));
+    cd(rootPath0);
+    rootPath = strrep(rootPath0, 'scripts', 'isetbio_resources');
     
+    hFig = runConditionToVisualizePsychometricCurve();
+    NicePlot.exportFigToPDF('../updatedComponentFigs/PsychometricCurveComponent.pdf', hFig, 300);
+
     visualizedWavelengths = [450 532 624 708];
     visualizedWavelengthsPSF = [450 480 532 550 624 708];
     

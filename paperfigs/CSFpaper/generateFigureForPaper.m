@@ -1,10 +1,12 @@
-function generateFigureForPaper(theFigData, variedParamLegends, variedParamName, fixedParamName, varargin)
+function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedParamName, fixedParamName, varargin)
 
     p = inputParser;
     p.addParameter('figureType', 'CSF', @ischar);
     p.addParameter('showBanksPaperIOAcurves', false, @islogical);
     p.addParameter('showSubjectData', false, @islogical);
+    p.addParameter('showLegend', true, @islogical);
     p.addParameter('plotFirstConditionInGray', true, @islogical);
+    p.addParameter('plotUsingLargeBlueDisks', false, @islogical);
     p.addParameter('plotRatiosOfOtherConditionsToFirst', false, @islogical);
     p.addParameter('theRatioLims', []);
     p.addParameter('theRatioTicks', []);
@@ -15,8 +17,10 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
     
     figureType = p.Results.figureType;
     showBanksPaperIOAcurves = p.Results.showBanksPaperIOAcurves;
+    showLegend = p.Results.showLegend;
     showSubjectData = p.Results.showSubjectData;
     plotFirstConditionInGray = p.Results.plotFirstConditionInGray;
+    plotUsingLargeBlueDisks = p.Results.plotUsingLargeBlueDisks;
     inGraphText = p.Results.inGraphText;
     inGraphTextPos = p.Results.inGraphTextPos;
     inGraphTextFontSize = p.Results.inGraphTextFontSize;
@@ -72,17 +76,31 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
         plot(theAxes,figData.BanksCSF('3.4 cd/m2').x,figData.BanksCSF('3.4 cd/m2').y,'-','Color', squeeze(colors(3,:)), 'LineWidth',2);
         
         for condIndex = 1:numel(theFigData)
-            plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o', 'Color', squeeze(colors(condIndex,:)), ...
-            'MarkerEdgeColor', squeeze(colors(condIndex,:)), ...
-            'MarkerFaceColor', min(1, squeeze(colors(condIndex,:)) + faceColor), ...
-            'MarkerSize',12,'LineWidth',2);
+            if (plotUsingLargeBlueDisks)
+                plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o', 'Color', [0.3 0.3 1.0], ...
+                    'MarkerEdgeColor', [0 0 1], ...
+                    'MarkerFaceColor', [0.5 0.5 1.0], ...
+                    'MarkerSize',16,'LineWidth',3);
+            else
+                plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o', 'Color', squeeze(colors(condIndex,:)), ...
+                    'MarkerEdgeColor', squeeze(colors(condIndex,:)), ...
+                    'MarkerFaceColor', min(1, squeeze(colors(condIndex,:)) + faceColor), ...
+                    'MarkerSize',12,'LineWidth',2);
+            end
         end
     else
         for condIndex = 1:numel(theFigData)
-            plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o-', 'Color', squeeze(colors(condIndex,:)), ...
-            'MarkerEdgeColor', max(0, squeeze(colors(condIndex,:))-faceColor), ...
-            'MarkerFaceColor', min(1, squeeze(colors(condIndex,:)) + faceColor), ...
-            'MarkerSize',12,'LineWidth',2);
+            if (plotUsingLargeBlueDisks)
+                plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o-', 'Color', [0.3 0.3 1.0], ...
+                    'MarkerEdgeColor', [0 0 1], ...
+                    'MarkerFaceColor', [0.5 0.5 1.0], ...
+                    'MarkerSize',16,'LineWidth',3);
+            else
+                plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o-', 'Color', squeeze(colors(condIndex,:)), ...
+                    'MarkerEdgeColor', max(0, squeeze(colors(condIndex,:))-faceColor), ...
+                    'MarkerFaceColor', min(1, squeeze(colors(condIndex,:)) + faceColor), ...
+                    'MarkerSize',12,'LineWidth',2);
+            end
         end
     end
     
@@ -172,7 +190,11 @@ function generateFigureForPaper(theFigData, variedParamLegends, variedParamName,
    end
     
     % Add legend
-    hL = legend(theAxes, variedParamLegends);
+    if (showLegend)
+        hL = legend(theAxes, variedParamLegends);
+    else
+        hL = [];
+    end
     
     % Add text
     if (~isempty(inGraphText))
