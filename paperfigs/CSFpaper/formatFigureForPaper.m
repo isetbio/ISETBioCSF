@@ -282,15 +282,17 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 xtickformat(theAxes, '%.2f'); ytickformat(theAxes, '%.2f');
             end
             
-        case {'MOSAICS', 'PSFS'}
+        case {'MOSAICS', 'MOSAICS2', 'PSFS'}
             if (isempty(theAxes))
                 if (strcmp(figureType, 'MOSAICS'))
                     set(hFig, 'Color', [1 1 1], 'Position', [10 10 900 900]);
+                elseif (strcmp(figureType, 'MOSAICS2'))
+                    set(hFig, 'Color', [1 1 1], 'Position', [10 10 900 500]);
                 else
                     set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 925]);
                 end
             else
-                if (strcmp(figureType, 'MOSAICS'))
+                if (strcmp(figureType, 'MOSAICS')) || (strcmp(figureType, 'MOSAICS2'))
                     axis(theAxes, 'equal');
                 else
                     axis(theAxes, 'square');

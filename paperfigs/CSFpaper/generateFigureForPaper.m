@@ -3,6 +3,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     p = inputParser;
     p.addParameter('figureType', 'CSF', @ischar);
     p.addParameter('showBanksPaperIOAcurves', false, @islogical);
+    p.addParameter('showOnly23CDM2IOAcurve', false, @islogical);
     p.addParameter('showSubjectData', false, @islogical);
     p.addParameter('showLegend', true, @islogical);
     p.addParameter('plotFirstConditionInGray', true, @islogical);
@@ -17,6 +18,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     
     figureType = p.Results.figureType;
     showBanksPaperIOAcurves = p.Results.showBanksPaperIOAcurves;
+    showOnly23CDM2IOAcurve = p.Results.showOnly23CDM2IOAcurve;
     showLegend = p.Results.showLegend;
     showSubjectData = p.Results.showSubjectData;
     plotFirstConditionInGray = p.Results.plotFirstConditionInGray;
@@ -71,9 +73,16 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
         %plot(theAxes,figData.C(:,1),figData.C(:,2)*banksFactor,'-','Color', squeeze(colors(2,:)), 'LineWidth',2);
         %plot(theAxes,figData.E(:,1),figData.E(:,2)*banksFactor,'-','Color', squeeze(colors(3,:)), 'LineWidth',2);
         
-        plot(theAxes,figData.BanksCSF('34 cd/m2').x,figData.BanksCSF('34 cd/m2').y,'-','Color', squeeze(colors(1,:)), 'LineWidth',2);
-        plot(theAxes,figData.BanksCSF('340 cd/m2').x,figData.BanksCSF('340 cd/m2').y,'-','Color', squeeze(colors(2,:)), 'LineWidth',2);
-        plot(theAxes,figData.BanksCSF('3.4 cd/m2').x,figData.BanksCSF('3.4 cd/m2').y,'-','Color', squeeze(colors(3,:)), 'LineWidth',2);
+        if (showOnly23CDM2IOAcurve)
+            plot(theAxes,figData.BanksCSF('34 cd/m2').x,figData.BanksCSF('34 cd/m2').y,'-','Color', squeeze(colors(1,:)), 'LineWidth',2);
+            nLegends = numel(variedParamLegends);
+            variedParamLegends{2:nLegends+1} = variedParamLegends{1:nLegends};
+            variedParamLegends{1} = 'Ideal Observer (Banks et al ''87)';
+        else
+            plot(theAxes,figData.BanksCSF('34 cd/m2').x,figData.BanksCSF('34 cd/m2').y,'-','Color', squeeze(colors(1,:)), 'LineWidth',2);
+            plot(theAxes,figData.BanksCSF('340 cd/m2').x,figData.BanksCSF('340 cd/m2').y,'-','Color', squeeze(colors(2,:)), 'LineWidth',2);
+            plot(theAxes,figData.BanksCSF('3.4 cd/m2').x,figData.BanksCSF('3.4 cd/m2').y,'-','Color', squeeze(colors(3,:)), 'LineWidth',2);
+        end
         
         for condIndex = 1:numel(theFigData)
             if (plotUsingLargeBlueDisks)
@@ -110,42 +119,12 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
         
         idealObserverData.SFs = figData.BanksCSF('34 cd/m2').x;
         idealObserverData.CSF = figData.BanksCSF('34 cd/m2').y;
-        msbSubjectRatios = [...
-            5.0910, 16.0268
-            7.0576,   18.3709
-            10.0095,   21.7148
-            14.1960,   17.7137
-            20.4416,   16.6040
-            28.5542,   16.0562
-            40.8058,    9.1792];
         
-        pjbSubjectRatios = [...
-            4.92,	17.57
-            6.93,	21.20
-            8.89,	31.81
-            13.86,	29.48
-            19.59,	21.29
-            27.87,	18.54];
-
-        msbSubjectSFs = squeeze(msbSubjectRatios(:,1));
-        msbSubjectRatios = squeeze(msbSubjectRatios(:,2));
+        msbSubjectSFs =  [ 4.88  6.65  9.8  13.7 19.7  28.0 40];
+        msbSubjectCSFs = [72.5  38.4   18.1 14.1  6.82 3.25 1.85];
         
-        pjbSubjectSFs = squeeze(pjbSubjectRatios(:,1));
-        pjbSubjectRatios = squeeze(pjbSubjectRatios(:,2));
-        
-        for dataPoint = 1:numel(msbSubjectSFs)
-            targetSF = msbSubjectSFs(dataPoint);
-            [~,idx] = min(abs(targetSF-idealObserverData.SFs));
-            %fprintf('matched SFs: target:%2.2f ideal observer match:%2.2f\n', targetSF, idealObserverData.SFs(idx));
-            msbSubjectCSFs(dataPoint) = idealObserverData.CSF(idx)./msbSubjectRatios(dataPoint);
-        end
-
-        for dataPoint = 1:numel(pjbSubjectRatios)
-            targetSF = pjbSubjectSFs(dataPoint);
-            [~,idx] = min(abs(targetSF-idealObserverData.SFs));
-            fprintf('matched SFs: target:%2.2f ideal observer match:%2.2f\n', targetSF, idealObserverData.SFs(idx));
-            pjbSubjectCSFs(dataPoint) = idealObserverData.CSF(idx)./pjbSubjectRatios(dataPoint);
-        end
+        pjbSubjectSFs =  [4.81 6.81 9.90 13.9 20.0 27.4];
+        pjbSubjectCSFs = [61.6 32.6 12.4 8.47 4.96 2.44];
         
         % Compute the mean of the subjectCSF
         [pjbSubjectSFsHiRes, pjbSubjectCSFsHiRes] = fitData(pjbSubjectSFs, pjbSubjectCSFs);
