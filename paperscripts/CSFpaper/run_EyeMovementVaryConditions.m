@@ -12,9 +12,15 @@ function run_EyeMovementVaryConditions
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
     
     % Optics to use
-    opticsName = 'ThibosAverageSubject3MMPupil';
+    opticsName = 'ThibosBestPSFSubject3MMPupil';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
+    defaultSpatialPoolingKernelParams = params.spatialPoolingKernelParams;
+    
+    % Make spatialpooling kernel params struct for SVM-Template
+    svmTemplateSpatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+    svmTemplateSpatialPoolingKernelParams.type = 'V1CosUnit';
+    svmTemplateSpatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
     
     % Adjust any params we want to change from their default values
     params.opticsModel = opticsName;
@@ -22,57 +28,98 @@ function run_EyeMovementVaryConditions
     % All conds  with 2 mm pupilto compare to Banks subject data
     params.pupilDiamMm = 2.0;
     
+    % Use 3 mm to get more of the high frequencies
+    params.pupilDiamMm = 3.0;
+    
     % Chromatic direction params
     params.coneContrastDirection = 'L+M+S';
-  
-    % Response duration params
-    params.frameRate = 20; %(2 frames)
-    params.responseStabilizationMilliseconds = 100;
-    params.responseExtinctionMilliseconds = 50;
     
-    defaultSpatialPoolingKernelParams = params.spatialPoolingKernelParams;
-    
+
     condIndex = 0;
     
-    
+    % THIS EXISTS ALREADY for a 3 MM PUPIL
     condIndex = condIndex+1;  
     examinedCond(condIndex).emPathType = 'frozen0';
-    examinedCond(condIndex).classifier = 'svm';
-    examinedCond(condIndex).legend = 'no eye movements, SVM-PCA';
+    examinedCond(condIndex).classifier = 'svmV1FilterBank';
+    examinedCond(condIndex).legend = 'no eye movements, SVM-Template';
+    examinedCond(condIndex).centeredEMpaths = true;
+    examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 21 frames, each 100 msec long)
+    examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+    examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
+    
+    
+%     condIndex = condIndex+1;  
+%     examinedCond(condIndex).emPathType = 'frozen0';
+%     examinedCond(condIndex).classifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).legend = 'no eye movements, SVM-QTemplate';
+%     examinedCond(condIndex).centeredEMpaths = true;
+%     examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
+%     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+%     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+%     examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+%     
+%     condIndex = condIndex+1;  
+%     examinedCond(condIndex).emPathType = 'frozen0';
+%     examinedCond(condIndex).classifier = 'svm';
+%     examinedCond(condIndex).legend = 'no eye movements, SVM-PCA - 2 frames';
+%     examinedCond(condIndex).centeredEMpaths = true;
+%     examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
+%     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+%     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+%     examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+    
+    
+
+    
+%     condIndex = condIndex+1;  
+%     examinedCond(condIndex).emPathType = 'frozen0';
+%     examinedCond(condIndex).classifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).legend = 'no eye movements, SVM-Template';
+%     examinedCond(condIndex).centeredEMpaths = true;
+%     examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
+%     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+%     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    
+    svmTemplateSpatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+    svmTemplateSpatialPoolingKernelParams.type = 'V1CosUnit';
+    svmTemplateSpatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
+
+    if (1==2)
+    condIndex = condIndex+1;  
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).classifier = 'svmV1FilterBank';
+    examinedCond(condIndex).legend = 'no eye movements, SVM-QTemplate';
     examinedCond(condIndex).centeredEMpaths = true;
     examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
-    
-%     examinedCond(condIndex).frameRate = 10;  %(20 frames/sec, so 2 frames, each 50 msec long)
-%     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
-%     examinedCond(condIndex).responseExtinctionMilliseconds = 40; 
-%     
     examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
-
-    
-    condIndex = condIndex+1;
-    examinedCond(condIndex).emPathType = 'random';
-    examinedCond(condIndex).classifier = 'svm';
-    examinedCond(condIndex).legend = 'fixational eye movements, SVM-PCA';
-    examinedCond(condIndex).centeredEMpaths = ~true;
-    examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
-    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
-    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
-    examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
-    
-    if (1==2)
-    condIndex = condIndex+1;
-    examinedCond(condIndex).emPathType = 'random';
-    examinedCond(condIndex).classifier = 'svmV1FilterBank';
-    examinedCond(condIndex).legend = 'fixational eye movements, SVM-QTemplate';
-    examinedCond(condIndex).centeredEMpaths = ~true;
-    examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
-    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
-    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
-    examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
-
     end
+    
+    
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).emPathType = 'random';
+%     examinedCond(condIndex).classifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).legend = 'fixational eye movements, SVM-Template';
+%     examinedCond(condIndex).centeredEMpaths = ~true;
+%     examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
+%     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+%     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+%     examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
+%     
+% 
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).emPathType = 'random';
+%     examinedCond(condIndex).classifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).legend = 'fixational eye movements, SVM-QTemplate';
+%     examinedCond(condIndex).centeredEMpaths = ~true;
+%     examinedCond(condIndex).frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
+%     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+%     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+%     examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+
     
      
 %     condIndex = condIndex+1;
@@ -160,7 +207,7 @@ function run_EyeMovementVaryConditions
         theRatioTicks = [0.1 0.2 0.5 1 2];
         generateFigureForPaper(theFigData, examinedEyeMovementTypeLegends, variedParamName, sprintf('%s_%s',mosaicName, opticsName), ...
             'figureType', 'CSF', ...
-            'inGraphText', ' B ', ...
+            'inGraphText', '', ...
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
