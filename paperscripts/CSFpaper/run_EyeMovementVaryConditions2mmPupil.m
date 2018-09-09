@@ -50,15 +50,15 @@ function run_EyeMovementVaryConditions2mmPupil
     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
     examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
     
-%     condIndex = condIndex+1;  
-%     examinedCond(condIndex).emPathType = 'random';
-%     examinedCond(condIndex).classifier = 'mlpt';
-%     examinedCond(condIndex).legend = 'no eye movements, MLPT';
-%     examinedCond(condIndex).centeredEMpaths = true;
-%     examinedCond(condIndex).frameRate = 20; %(10 frames/sec, so 21 frames, each 100 msec long)
-%     examinedCond(condIndex).responseStabilizationMilliseconds = 100;
-%     examinedCond(condIndex).responseExtinctionMilliseconds = 50;
-%     examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
+    condIndex = condIndex+1;  
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).classifier = 'mlpt';
+    examinedCond(condIndex).legend = 'no eye movements, MLPT';
+    examinedCond(condIndex).centeredEMpaths = true;
+    examinedCond(condIndex).frameRate = 20; %(10 frames/sec, so 21 frames, each 100 msec long)
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
 %    
     else 
     condIndex = condIndex+1;  
@@ -240,7 +240,7 @@ function run_EyeMovementVaryConditions2mmPupil
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     

@@ -210,13 +210,17 @@ function generatePsychometricFunctionsPlot(psychometricFunctions, csLims,  theTr
     
 
     csTicks = [2 5 6 7 8 9 10  20 30 40 50 60 70 80 90 100 110 120 130 140 150 200 500 1000 2000 5000 10000];
+    
+
+    if (~isempty(theTitle))
     theText = text(2000, csLims(2)*0.97, theTitle);
     set(theText, 'FontSize', 16, ...
                     'FontWeight', 'Normal', ...
                     'BackgroundColor', [1 1 1], ...
                     'EdgeColor', [ 0 0 0], ...
                     'LineWidth', 1.0);
-                
+    end
+    
     set(theAxes, 'XLim', [0.001 0.35], 'XTick', [0.01 0.03 0.1 0.3], ...
         'YLim', [0.4 1.0], 'XTick', [0.003 0.01 0.03 0.1 0.3]);
     

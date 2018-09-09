@@ -22,7 +22,7 @@ function run_Paper2FinalConditionsUsing2mmPupil
     % Init condition index
     condIndex = 0;
     
-    if (1==2)
+
     % Original Banks computation
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Banks mosaic/optics, ideal observer';
@@ -97,7 +97,6 @@ function run_Paper2FinalConditionsUsing2mmPupil
     examinedCond(condIndex).frameRate = frameRate;
     examinedCond(condIndex).responseStabilizationMilliseconds =  responseStabilizationMilliseconds;
     examinedCond(condIndex).responseExtinctionMilliseconds = responseExtinctionMilliseconds;
-end
 
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM, SVM-Template';
@@ -113,7 +112,19 @@ end
     examinedCond(condIndex).responseStabilizationMilliseconds =  responseStabilizationMilliseconds;
     examinedCond(condIndex).responseExtinctionMilliseconds = responseExtinctionMilliseconds;
         
-    end
+    condIndex = condIndex+1;
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM, SVM-Template (Q)';
+    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
+    examinedCond(condIndex).signal = 'photocurrents';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).centeredEMPaths = true;
+    examinedCond(condIndex).frameRate = frameRate;
+    examinedCond(condIndex).responseStabilizationMilliseconds =  responseStabilizationMilliseconds;
+    examinedCond(condIndex).responseExtinctionMilliseconds = responseExtinctionMilliseconds;
     
     
     if (1==2)
@@ -219,7 +230,7 @@ function params = getRemainingDefaultParams(params, condIndex, conditionLabel)
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 end
