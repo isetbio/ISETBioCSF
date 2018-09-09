@@ -34,7 +34,7 @@ function run_EyeMovementVaryConditions3MMPupil
     
 
     condIndex = 0;
-    classifier = 'svm'; % 'svm'; % 'svmV1FilterBank'; %'mlpt';
+    classifier = 'svmV1FilterBank'; % 'svm'; % 'svmV1FilterBank'; %'mlpt';
     
     if (strcmp(classifier, 'mlpt'))
             
@@ -82,25 +82,34 @@ function run_EyeMovementVaryConditions3MMPupil
         examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
 
     elseif (strcmp(classifier, 'svmV1FilterBank'))
-        condIndex = condIndex+1;  
-        examinedCond(condIndex).emPathType = 'frozen0';
-        examinedCond(condIndex).classifier = 'svmV1FilterBank';
-        examinedCond(condIndex).legend = 'no eye movements, SVM-Template';
-        examinedCond(condIndex).centeredEMpaths = true;
-        examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 21 frames, each 100 msec long)
-        examinedCond(condIndex).responseStabilizationMilliseconds = 40;
-        examinedCond(condIndex).responseExtinctionMilliseconds = 40;
-        examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
+        % Started this late Sunday, Sept 9, to see if there is a difference
+        % in photocurrents b/n template and templateQ for 3 mm and best PSF
+        % which extend further out in SFs
+%         condIndex = condIndex+1;  
+%         examinedCond(condIndex).signal = 'photocurrents';
+%         examinedCond(condIndex).emPathType = 'frozen0';
+%         examinedCond(condIndex).classifier = 'svmV1FilterBank';
+%         examinedCond(condIndex).legend = 'no eye movements, SVM-TemplateQ';
+%         examinedCond(condIndex).centeredEMpaths = true;
+%         examinedCond(condIndex).frameRate = 20; %(10 frames/sec, so 21 frames, each 100 msec long)
+%         examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+%         examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+%         examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+        
+ % Started this late Sunday, Sept 9, to see if there is a difference
+        % in photocurrents b/n template and templateQ for 3 mm and best PSF
+        % which extend further out in SFs
         
         condIndex = condIndex+1;  
+        examinedCond(condIndex).signal = 'photocurrents';
         examinedCond(condIndex).emPathType = 'random';
         examinedCond(condIndex).classifier = 'svmV1FilterBank';
-        examinedCond(condIndex).legend = 'fixational eye movements, SVM-Template';
+        examinedCond(condIndex).legend = 'fixational eye movements, SVM-TemplateQ';
         examinedCond(condIndex).centeredEMpaths = true;
-        examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 1 frames, each 100 msec long)
-        examinedCond(condIndex).responseStabilizationMilliseconds = 40;
-        examinedCond(condIndex).responseExtinctionMilliseconds = 40;
-        examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
+        examinedCond(condIndex).frameRate = 20; %(10 frames/sec, so 1 frames, each 100 msec long)
+        examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+        examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+        examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
     end
     
 
@@ -108,7 +117,7 @@ function run_EyeMovementVaryConditions3MMPupil
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     
     params.visualizeResponses = ~true;
@@ -122,7 +131,7 @@ function run_EyeMovementVaryConditions3MMPupil
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
@@ -131,6 +140,7 @@ function run_EyeMovementVaryConditions3MMPupil
     examinedEyeMovementTypeLegends = {};
     for condIndex = 1:numel(examinedCond)
         cond = examinedCond(condIndex);
+        params.performanceSignal = cond.signal;
         params.emPathType = cond.emPathType;
         params.centeredEMPaths = cond.centeredEMpaths;
         params.frameRate = cond.frameRate;
