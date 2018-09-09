@@ -28,21 +28,6 @@ function run_Paper2FinalConditionsUsing2mmPupil
     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
     
-    % Original Banks computation
-    if (1==2)
-    condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Banks mosaic/optics, MLPT, 3mm';
-    examinedCond(condIndex).mosaicName = 'originalBanks';
-    examinedCond(condIndex).opticsModel = 'Geisler';
-    examinedCond(condIndex).inferenceEngine = 'mlpt';
-    examinedCond(condIndex).signal = 'isomerizations';
-    examinedCond(condIndex).emPathType = 'frozen0';
-    examinedCond(condIndex).centeredEMPaths = ~true;
-    examinedCond(condIndex).frameRate = 10;
-    examinedCond(condIndex).responseStabilizationMilliseconds = 40;
-    examinedCond(condIndex).responseExtinctionMilliseconds = 40;
-    end
-    
     % Our best estimate of mosaic + optics, MLPT inference engine
     condIndex = condIndex+1;                                
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, ideal observer';
@@ -56,7 +41,22 @@ function run_Paper2FinalConditionsUsing2mmPupil
     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
     
-    % Our best estimate of mosaic + optics, SVMpool inference engine
+    % Our best estimate of mosaic + optics, SVM-PCA
+    condIndex = condIndex+1;
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-PCA'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
+    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).inferenceEngine = 'svm';
+    examinedCond(condIndex).signal = 'isomerizations';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = ~true;
+    examinedCond(condIndex).frameRate = 20;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    
+    % Our best estimate of mosaic + optics, SVM-Template
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
@@ -71,6 +71,8 @@ function run_Paper2FinalConditionsUsing2mmPupil
     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
     
+    if (1==2)
+        
     % Our best estimate of mosaic + optics + eye movements, SVMpool inference engine
     if (includeEyeMovementsAndPhotocurrentGraphs)
         condIndex = condIndex+1;
@@ -105,6 +107,8 @@ function run_Paper2FinalConditionsUsing2mmPupil
         examinedCond(condIndex).responseStabilizationMilliseconds = 100;
         examinedCond(condIndex).responseExtinctionMilliseconds = 50;
     end
+    end
+    
     
     % Go
     examinedLegends = {};
@@ -141,7 +145,8 @@ function run_Paper2FinalConditionsUsing2mmPupil
         formatLabel = 'ComparedToBanks87Photocurrents';  % 'ComparedToBanks87'
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
-            'showSubjectData', true, ...
+            'showSubjectData', (params.pupilDiamMm == 2), ...
+            'showLegend', false, ...
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
