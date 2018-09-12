@@ -6,7 +6,7 @@ function [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stim
 
 V1filterBank = thresholdParams.spatialPoolingKernel;
 if (~ismember(V1filterBank.activationFunction, {'linear', 'energy', 'fullWaveRectifier'}))
-    error('V1filterBank.activationFunction must be set to either ''linear'', ''energy'' or ''fullWaveRectifier''.\n')
+    error('V1filterBank.activationFunction must be set to either ''linear'', ''energy'', ''halfWaveRectifier''or ''fullWaveRectifier''.\n')
 end
 
 fprintf('Transforming data via projection to the spatial components of a V1-based filter (type: %s, activationFunction: %s)\n', V1filterBank.type, V1filterBank.activationFunction);
@@ -102,10 +102,12 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
             noStimData = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
         elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
             noStimData = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
+        elseif (strcmp(V1filterBank.activationFunction,'halfWaveRectifier'))
+            noStimData = max(0,cosFilterLinearActivation) + max(0,sinFilterLinearActivation);
         elseif (strcmp(V1filterBank.activationFunction,'linear'))
             noStimData = cosFilterLinearActivation + sinFilterLinearActivation;
         else
-            error('Activation function (''%s''), must be one of the following:{''energy'', ''linear'', or ''fullWaveRectifier''}\n', V1filterBank.activationFunction);
+            error('Activation function (''%s''), must be one of the following:{''energy'', ''linear'', ''halfWaveRectifier'', or ''fullWaveRectifier''}\n', V1filterBank.activationFunction);
         end
 
         cosFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData, V1filterBank.cosPhasePoolingWeights), spatialDimension));
@@ -114,10 +116,12 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
             stimData = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
         elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
             stimData = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
+        elseif (strcmp(V1filterBank.activationFunction,'halfWaveRectifier'))
+            stimData = max(0,cosFilterLinearActivation) + max(0,sinFilterLinearActivation);
         elseif (strcmp(V1filterBank.activationFunction,'linear'))
             stimData = cosFilterLinearActivation + sinFilterLinearActivation;
         else
-            error('Activation function (''%s''), must be one of the following:{''energy'', ''linear'', or ''fullWaveRectifier''}\n', V1filterBank.activationFunction);
+            error('Activation function (''%s''), must be one of the following:{''energy'', ''linear'', ''halfWaveRectifier'', or ''fullWaveRectifier''}\n', V1filterBank.activationFunction);
         end
     end
     
