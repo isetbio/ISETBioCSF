@@ -12,7 +12,7 @@ function run_InferenceEngineVaryConditions
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
     
     % Optics to use
-    opticsName = 'ThibosAverageSubject3MMPupil';
+    opticsName = 'ThibosBestPSFSubject3MMPupil';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
@@ -32,8 +32,8 @@ function run_InferenceEngineVaryConditions
     params.emPathType = 'frozen0';
     params.centeredEMpaths = ~true;
     
-    %params.emPathType = 'random';
-    %params.centeredEMpaths = true;
+%     params.emPathType = 'random';
+%     params.centeredEMpaths = true;
     
     examinedInferenceEngines = {...
         'mlpt' ...
@@ -50,8 +50,9 @@ function run_InferenceEngineVaryConditions
     examinedInferenceEngineLegends = {...
         'ideal observer' ...
         'SVM-PCA' ...
-        'SVM-Template' ...
-        'SVM-TemplateQ' ...
+        'SVM-Template-L' ...
+        'SVM-Template-NL' ...
+        'SVM-Template-Q' ...
         'SVM (QPhE) population (1)' ...
         'SVM (QPhE) population (2)' ...
         'SVM (QPhE) population (3)' ...
@@ -60,7 +61,7 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (6)' ...
     };
 
-    idx = 1:3;
+    idx = 1:5;
     visualizedConditions = idx;
     examinedInferenceEngines = {examinedInferenceEngines{visualizedConditions}};
     examinedInferenceEngineLegends = {examinedInferenceEngineLegends{visualizedConditions}};
@@ -122,10 +123,15 @@ function run_InferenceEngineVaryConditions
         params.performanceClassifier = examinedInferenceEngines{engineIndex};
         
         if (strcmp(params.performanceClassifier, 'svmV1FilterBank'))
-            if strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-Template')
+            if strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-Template-NL')
                 params.spatialPoolingKernelParams.type = 'V1CosUnit';
                 params.spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
-            elseif strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-TemplateQ')
+                
+            elseif strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-Template-L')
+                params.spatialPoolingKernelParams.type = 'V1CosUnit';
+                params.spatialPoolingKernelParams.activationFunction = 'linear';
+                
+            elseif strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-Template-Q')
                 params.spatialPoolingKernelParams.type = 'V1QuadraturePair';
                 params.spatialPoolingKernelParams.activationFunction = 'energy';
             end 
