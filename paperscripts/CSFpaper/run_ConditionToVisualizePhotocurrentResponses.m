@@ -18,7 +18,7 @@ function run_ConditionToVisualizePhotocurrentResponses
     params.coneContrastDirection = 'L+M+S';
     params.lowContrast = 0.1; % was 0.01;
     params.highContrast =  1.0; % was 0.1;
-    params.nContrastsPerDirection = 2;
+    params.nContrastsPerDirection = 5;
     params.nTrainingSamples = 4;
     params.performanceTrialsUsed = [];
     
@@ -28,31 +28,31 @@ function run_ConditionToVisualizePhotocurrentResponses
     params.responseExtinctionMilliseconds = 50;
     
     % Eye movement setup
-    params.emPathType =  'frozen0'; %'random';
-    params.centeredEMPaths = ~true;
+    params.emPathType =  'frozen0'; % 'random';
+    params.centeredEMPaths = true;
     
     % Simulation steps to perform
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
     params.computePhotocurrentResponseInstances = true;
     params.visualizeDisplay = ~true;
-    params.visualizeResponses = true;
+    params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
-    params.visualizeStimulusAndOpticalImage = true;
-    params.visualizeSpatialPoolingScheme = true;
-    params.visualizeMosaicWithFirstEMpath = true;
+    params.visualizeStimulusAndOpticalImage = ~true;
+    params.visualizeSpatialPoolingScheme = ~true;
+    params.visualizeMosaicWithFirstEMpath = ~true;
     
     params.visualizeKernelTransformedSignals = true;
-    params.findPerformance = ~true;
-    params.visualizePerformance = ~true;
+    params.findPerformance = true;
+    params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 
     params.performanceClassifier = 'svmV1FilterBank';
-    params.performanceClassifier = 'svmV1FilterEnsemble';
+    %params.performanceClassifier = 'svmV1FilterEnsemble';
     params.parforWorkersNumForClassification = 1;
     
     if (strcmp(params.performanceClassifier,'svmV1FilterEnsemble'))
@@ -61,7 +61,7 @@ function run_ConditionToVisualizePhotocurrentResponses
         params.spatialPoolingKernelParams.orientations =  [0];
     else
         params.spatialPoolingKernelParams.type = 'V1CosUnit';
-        params.spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+        params.spatialPoolingKernelParams.activationFunction = 'linear'; % 'fullWaveRectifier';
     end
 
     
