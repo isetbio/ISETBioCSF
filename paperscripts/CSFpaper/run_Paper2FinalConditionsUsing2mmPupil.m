@@ -22,7 +22,7 @@ function run_Paper2FinalConditionsUsing2mmPupil
     % Init condition index
     condIndex = 0;
     
-
+    if (1==0)
     % Original Banks computation
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Banks mosaic/optics, ideal observer';
@@ -57,14 +57,15 @@ function run_Paper2FinalConditionsUsing2mmPupil
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svm';
     examinedCond(condIndex).signal = 'isomerizations';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = '';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = '';
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = ~true;
     examinedCond(condIndex).frameRate = 10;
     examinedCond(condIndex).responseStabilizationMilliseconds =  40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
     
+    end
     
     
     % Our best estimate of mosaic + optics, SVM-Template
@@ -75,7 +76,7 @@ function run_Paper2FinalConditionsUsing2mmPupil
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
     examinedCond(condIndex).signal = 'isomerizations';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'halfWaveRectifier';
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = ~true;
     examinedCond(condIndex).frameRate = 10;
@@ -83,6 +84,7 @@ function run_Paper2FinalConditionsUsing2mmPupil
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
     
     
+    if (1==2)
         
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM, SVM-Template';
@@ -98,6 +100,7 @@ function run_Paper2FinalConditionsUsing2mmPupil
     examinedCond(condIndex).responseStabilizationMilliseconds =  responseStabilizationMilliseconds;
     examinedCond(condIndex).responseExtinctionMilliseconds = responseExtinctionMilliseconds;
 
+    
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM, SVM-Template';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
@@ -125,6 +128,8 @@ function run_Paper2FinalConditionsUsing2mmPupil
     examinedCond(condIndex).frameRate = frameRate;
     examinedCond(condIndex).responseStabilizationMilliseconds =  responseStabilizationMilliseconds;
     examinedCond(condIndex).responseExtinctionMilliseconds = responseExtinctionMilliseconds;
+    end
+    
     
     
     if (1==2)
@@ -230,7 +235,7 @@ function params = getRemainingDefaultParams(params, condIndex, conditionLabel)
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 end
