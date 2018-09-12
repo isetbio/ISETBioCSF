@@ -3,10 +3,10 @@ function run_PeformanceSignalVaryConditions
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 3 ; % 16 32  50 60;
+    computationInstance = 0 ; % 16 32  50 60;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection';
@@ -32,12 +32,12 @@ function run_PeformanceSignalVaryConditions
     params.responseExtinctionMilliseconds = 50;
     
     % Eye movement setup
-    params.emPathType = 'random';
+    params.emPathType = 'frozen0'; % 'random'; % 'frozen0'; % 
     params.centeredEMPaths = ~true;
     
     % Performance classifier
-    %params.performanceClassifier = 'svmV1FilterBank';
-    params.performanceClassifier = 'svmV1FilterEnsemble';
+    params.performanceClassifier = 'svmV1FilterBank';
+    %params.performanceClassifier = 'svmV1FilterEnsemble';
     
     if (strcmp(params.performanceClassifier,'svmV1FilterEnsemble'))
         
@@ -62,8 +62,8 @@ function run_PeformanceSignalVaryConditions
     };
     
     examinedSignalLabels = {...
-        'isomerizations' ...
-        'photocurrents' ...
+        'photopigment excitations' ...
+        'outer segment photocurrents' ...
     };
     
 
@@ -84,11 +84,11 @@ function run_PeformanceSignalVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
-    examinedSignals = {examinedSignals{2}};
+    examinedSignals = {examinedSignals{1:2}};
     
     % Go
   	for signalIndex = 1:numel(examinedSignals)
@@ -108,9 +108,9 @@ function run_PeformanceSignalVaryConditions
         variedParamName = 'PerformanceSignal';
         theRatioLims = [0.2 1];
         theRatioTicks = [0.2 0.3 0.4 0.5 0.7 1];
-        generateFigureForPaper(theFigData, examinedSignalLabels, variedParamName, sprintf('%s_%s',mosaicName, opticsName), ...
+        generateFigureForPaper(theFigData, examinedSignalLabels, variedParamName, sprintf('%s_%s_%sEM',mosaicName, opticsName, params.emPathType), ...
             'figureType', 'CSF', ...
-            'inGraphText', ' A ', ...
+            'inGraphText', '', ...
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
