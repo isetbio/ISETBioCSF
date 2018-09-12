@@ -19,7 +19,7 @@ function run_ConditionToVisualizePhotocurrentResponses
     params.lowContrast = 0.1; % was 0.01;
     params.highContrast =  1.0; % was 0.1;
     params.nContrastsPerDirection = 5;
-    params.nTrainingSamples = 4;
+    params.nTrainingSamples = 16;
     params.performanceTrialsUsed = [];
     
     % Response duration params
@@ -39,7 +39,7 @@ function run_ConditionToVisualizePhotocurrentResponses
     params.computePhotocurrentResponseInstances = true;
     params.visualizeDisplay = ~true;
     params.visualizeResponses = ~true;
-    params.visualizeSpatialScheme = true;
+    params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
