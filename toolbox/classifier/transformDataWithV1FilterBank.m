@@ -5,8 +5,8 @@ function [noStimData, stimData] = transformDataWithV1FilterBank(noStimData, stim
 %
 
 V1filterBank = thresholdParams.spatialPoolingKernel;
-if (~ismember(V1filterBank.activationFunction, {'linear', 'energy', 'fullWaveRectifier'}))
-    error('V1filterBank.activationFunction must be set to either ''linear'', ''energy'', ''halfWaveRectifier''or ''fullWaveRectifier''.\n')
+if (~ismember(V1filterBank.activationFunction, {'linear', 'energy', 'halfWaveRectifier', 'fullWaveRectifier'}))
+    error('V1filterBank.activationFunction must be set to either ''linear'', ''energy'', ''halfWaveRectifier'', or ''fullWaveRectifier''.\n')
 end
 
 fprintf('Transforming data via projection to the spatial components of a V1-based filter (type: %s, activationFunction: %s)\n', V1filterBank.type, V1filterBank.activationFunction);
