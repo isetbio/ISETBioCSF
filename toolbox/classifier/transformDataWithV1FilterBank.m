@@ -102,8 +102,10 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
             noStimData = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
         elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
             noStimData = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
+        elseif (strcmp(V1filterBank.activationFunction,'linear'))
+            noStimData = cosFilterLinearActivation + sinFilterLinearActivation;
         else
-            error('Activation function (''%s''), must be either energy ot fullWaveRectifier\n', V1filterBank.activationFunction);
+            error('Activation function (''%s''), must be one of the following:{''energy'', ''linear'', or ''fullWaveRectifier''}\n', V1filterBank.activationFunction);
         end
 
         cosFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData, V1filterBank.cosPhasePoolingWeights), spatialDimension));
@@ -112,8 +114,10 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
             stimData = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
         elseif (strcmp(V1filterBank.activationFunction,'fullWaveRectifier'))
             stimData = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
+        elseif (strcmp(V1filterBank.activationFunction,'linear'))
+            stimData = cosFilterLinearActivation + sinFilterLinearActivation;
         else
-            error('Activation function (''%s''), must be either energy ot fullWaveRectifier\n', V1filterBank.activationFunction); 
+            error('Activation function (''%s''), must be one of the following:{''energy'', ''linear'', or ''fullWaveRectifier''}\n', V1filterBank.activationFunction);
         end
     end
     
