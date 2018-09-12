@@ -21,7 +21,7 @@ function timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, no
        
     if (strcmp(plotType, 'density'))
         responseDistribution = compute2Dhistogram(comboResponses, responseLevels);
-        pcolor(ax1, timeAxisCombo, responseLevels(1:end-1), responseDistribution);
+        %pcolor(ax1, timeAxisCombo, responseLevels(1:end-1), responseDistribution);
         hold(ax1, 'on');
     elseif (strcmp(plotType, 'line'))
         hold(ax1, 'on');
@@ -29,13 +29,13 @@ function timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, no
             y = squeeze(comboResponses(instanceIndex, :));
             xflip = [timeAxisCombo(1 : end - 1) fliplr(timeAxisCombo)];
             yflip = [y(1 : end - 1) fliplr(y)];
-            patch(ax1, xflip, yflip, [0.1 0.1 0.1], 'EdgeAlpha', 0.1, 'FaceColor', 'none');
+            %patch(ax1, xflip, yflip, [0.1 0.1 0.1], 'EdgeAlpha', 0.1, 'FaceColor', 'none');
         end
     end
-    plot(ax1, timeAxisComboSecondResponseStart*[1 1], [responseLevels(1) responseLevels(end)], 'k-', 'LineWidth', 2.0);
+    %plot(ax1, timeAxisComboSecondResponseStart*[1 1], [responseLevels(1) responseLevels(end)], 'k-', 'LineWidth', 2.0);
     dy = (responseLevels(2)-responseLevels(1));
-    plot(ax1, timeAxisCombo, meanResponse-dy, 'k-', 'LineWidth', 5.0);
-    plot(ax1, timeAxisCombo, meanResponse-dy, 'g-', 'LineWidth', 3.0);
+    plot(ax1, timeAxisCombo, meanResponse-dy, 'k-', 'LineWidth', 3.0);
+    %plot(ax1, timeAxisCombo, meanResponse-dy, 'g-', 'LineWidth', 3.0);
     
     hold(ax1, 'off');
     grid(ax1, 'on'); box(ax1, 'on');
@@ -51,7 +51,7 @@ function timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, no
         set(ax1, 'XTickLabel', {}, 'YTickLabel', {});
     end
     set(ax1, 'XLim', [timeAxisLimits(1) timeAxisLimits(2)]);
-    set(ax1, 'YLim', [responseLevels(1) responseLevels(end-1)]); 
+    set(ax1, 'YLim', responseLevels(end-1)*[-1 1]); 
      
     maxProbability = max(responseDistribution(:));
     set(ax1, 'CLim', [0 maxProbability]);
@@ -63,12 +63,14 @@ function timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, no
         textOffset = (timeAxisCombo(end)-timeAxisCombo(1))/6;
         x = timeAxisCombo(tFirstHalfIndices(1)) + textOffset;
         y = 1.01*responseLevels(end);
+        if (1==2)
         t = text(ax1, x,y, 'null stimulus');
         t(1).FontSize = 18;
         x = timeAxisCombo(tSecondHalfIndices(1)) + textOffset;
         t = text(ax1, x, y, 'test stimulus');
         t(1).FontSize = 18;
         t(1).Color = 'r';
+        end
         
         meanResponseDistributionNullStimulus = mean(responseDistribution(:,tFirstHalfIndices),2);
         meanResponseDistributionTestStimulus = mean(responseDistribution(:,tSecondHalfIndices),2);
@@ -89,13 +91,15 @@ function timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, no
             max(meanResponseDistributionTestStimulus) ...
             ]);
         set(ax2, 'XLim', [0 maxAll]);
-        set(ax2, 'YLim', [responseLevels(1) responseLevels(end-1)]); 
+        set(ax2, 'YLim', responseLevels(end-1)*[-1 1]); % [responseLevels(1) responseLevels(end-1)]); 
         set(ax2, 'XTick', [0 maxAll], 'XTickLabel', {'0', sprintf('%2.2f', maxAll)}, 'YTickLabel', {});
         xlabel(ax2,'probability', 'FontWeight', 'bold');
     end
     
+    grid on; box on;
     colormap(brewermap(1024, '*Greys'));
     drawnow; 
+    pause
 end
 
 function responseDistribution = compute2Dhistogram(responses, responseLevels)
