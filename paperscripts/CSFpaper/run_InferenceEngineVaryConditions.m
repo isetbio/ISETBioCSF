@@ -22,7 +22,7 @@ function run_InferenceEngineVaryConditions
     % Chromatic direction params
     params.coneContrastDirection = 'L+M+S';
     params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
-    
+
     % Response duration params
     params.frameRate = 10; %(1 frames)
     params.responseStabilizationMilliseconds = 40;
@@ -38,8 +38,10 @@ function run_InferenceEngineVaryConditions
     examinedInferenceEngines = {...
         'mlpt' ...
         'svm' ...
-        'svmV1FilterBank' ...       % stimulus-matched
-        'svmV1FilterBank' ...       % energy
+        'svmV1FilterBank' ...       % stimulus-matched (linear)
+        'svmV1FilterBank' ...       % stimulus-matched (non-linear, HW)
+        'svmV1FilterBank' ...       % stimulus-matched (non-linear, FW)
+        'svmV1FilterBank' ...       % quadrature energy
         'svmV1FilterEnsemble' ...
         'svmV1FilterEnsemble' ...
         'svmV1FilterEnsemble' ...
@@ -51,7 +53,8 @@ function run_InferenceEngineVaryConditions
         'ideal observer' ...
         'SVM-PCA' ...
         'SVM-Template-L' ...
-        'SVM-Template-NL' ...
+        'SVM-Template-NL (HW)' ...
+        'SVM-Template-NL (FW)' ...
         'SVM-Template-Q' ...
         'SVM (QPhE) population (1)' ...
         'SVM (QPhE) population (2)' ...
@@ -61,7 +64,7 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (6)' ...
     };
 
-    idx = 1:5;
+    idx = 4:4;
     visualizedConditions = idx;
     examinedInferenceEngines = {examinedInferenceEngines{visualizedConditions}};
     examinedInferenceEngineLegends = {examinedInferenceEngineLegends{visualizedConditions}};
@@ -114,7 +117,7 @@ function run_InferenceEngineVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
@@ -123,9 +126,13 @@ function run_InferenceEngineVaryConditions
         params.performanceClassifier = examinedInferenceEngines{engineIndex};
         
         if (strcmp(params.performanceClassifier, 'svmV1FilterBank'))
-            if strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-Template-NL')
+            if strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-Template-NL (FW)')
                 params.spatialPoolingKernelParams.type = 'V1CosUnit';
                 params.spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+                
+            elseif strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-Template-NL (HW)')
+                params.spatialPoolingKernelParams.type = 'V1CosUnit';
+                params.spatialPoolingKernelParams.activationFunction = 'halfWaveRectifier';
                 
             elseif strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-Template-L')
                 params.spatialPoolingKernelParams.type = 'V1CosUnit';
@@ -165,8 +172,8 @@ function run_InferenceEngineVaryConditions
     
     if (makeSummaryFigure)
         variedParamName = 'InferenceEngine';
-        theRatioLims = [0.05 0.5];
-        theRatioTicks = [0.05  0.1 0.2 0.5];
+        theRatioLims = [0.05 1.0];
+        theRatioTicks = [0.05  0.1 0.2 0.5 1.0];
         generateFigureForPaper(theFigData, examinedInferenceEngineLegends, variedParamName, sprintf('%s_%s',mosaicName, opticsName), ...
             'figureType', 'CSF', ...
             'inGraphText', ' A ', ...
