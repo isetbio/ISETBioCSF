@@ -84,7 +84,9 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
             plot(theAxes,figData.BanksCSF('34 cd/m2').x,figData.BanksCSF('34 cd/m2').y,'--','Color', [0 0 0], 'LineWidth',3);
             nLegends = numel(variedParamLegends);
             if (nLegends > 0)
-                variedParamLegends{2:nLegends+1} = variedParamLegends{1:nLegends};
+                for kkk = nLegends:-1:1
+                  variedParamLegends{kkk+1} = variedParamLegends{kkk};
+                end
             end
             variedParamLegends{1} = 'Ideal Observer (Banks et al ''87)';
         else
