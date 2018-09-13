@@ -1,0 +1,36 @@
+function GenerateBanks87IdealObserverAndSubjectCSF
+
+    % Script to generate the slide with the Banks'87 ideal and human observer data
+    
+    % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
+    computationInstance = 0;
+    
+    % Whether to make a summary figure with CSF from all examined conditions
+    makeSummaryFigure = true;
+    
+    % ISETBio simulation using Banks conditions
+    
+    examinedLegends = {};
+    theFigData = {};
+    pupilDiamMm = 2.0;
+    
+    if (makeSummaryFigure)
+        variedParamName = 'Banks87';
+        theRatioLims = [0.02 2.0];
+        theRatioTicks = [0.05  0.1 0.2 0.5 1.0];
+        formatLabel = 'ReplotOf87Paper'; 
+        generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
+            'figureType', 'CSF', ...
+            'showSubjectData', true, ...
+            'showSubjectMeanData', false, ...
+            'showLegend', ~true, ...
+            'plotFirstConditionInGray', true, ...
+            'showBanksPaperIOAcurves', true, ...
+            'showOnly23CDM2IOAcurve', true, ...
+            'plotRatiosOfOtherConditionsToFirst', false, ...
+            'theRatioLims', theRatioLims, ...
+            'theRatioTicks', theRatioTicks ...
+            );
+    end
+    
+end

@@ -5,6 +5,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     p.addParameter('showBanksPaperIOAcurves', false, @islogical);
     p.addParameter('showOnly23CDM2IOAcurve', false, @islogical);
     p.addParameter('showSubjectData', false, @islogical);
+    p.addParameter('showSubjectMeanData', false, @islogical);
     p.addParameter('showLegend', true, @islogical);
     p.addParameter('plotFirstConditionInGray', true, @islogical);
     p.addParameter('plotUsingLargeBlueDisks', false, @islogical);
@@ -21,6 +22,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     showOnly23CDM2IOAcurve = p.Results.showOnly23CDM2IOAcurve;
     showLegend = p.Results.showLegend;
     showSubjectData = p.Results.showSubjectData;
+    showSubjectMeanData = p.Results.showSubjectMeanData;
     plotFirstConditionInGray = p.Results.plotFirstConditionInGray;
     plotUsingLargeBlueDisks = p.Results.plotUsingLargeBlueDisks;
     inGraphText = p.Results.inGraphText;
@@ -30,14 +32,16 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     theRatioLims = p.Results.theRatioLims;
     theRatioTicks = p.Results.theRatioTicks;
     
-    for condIndex = 1:numel(theFigData)
-        figData = theFigData{condIndex};
-        lumIndex = 1;
-        referenceContrast = figData.banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1);
-        cpd{condIndex} = figData.banksEtAlReplicate.cyclesPerDegree(lumIndex,:);
-        thresholdContrasts = [figData.banksEtAlReplicate.mlptThresholds(lumIndex,:).thresholdContrasts];
-        contrastSensitivity{condIndex} = 1./(thresholdContrasts*referenceContrast);
-    end % condIndex
+    if (~isempty(theFigData))
+        for condIndex = 1:numel(theFigData)
+            figData = theFigData{condIndex};
+            lumIndex = 1;
+            referenceContrast = figData.banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1);
+            cpd{condIndex} = figData.banksEtAlReplicate.cyclesPerDegree(lumIndex,:);
+            thresholdContrasts = [figData.banksEtAlReplicate.mlptThresholds(lumIndex,:).thresholdContrasts];
+            contrastSensitivity{condIndex} = 1./(thresholdContrasts*referenceContrast);
+        end % condIndex
+    end
     
     % Initialize figure
     hFig = figure(1); clf;
@@ -68,15 +72,20 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     hold(theAxes(1), 'on');
     
     if (showBanksPaperIOAcurves)
+        load('BanksCSF.mat', 'BanksCSF');
+        figData.BanksCSF = BanksCSF;
+        
         %banksFactor = 1;
         %plot(theAxes,figData.D(:,1),figData.D(:,2)*banksFactor,'-','Color', squeeze(colors(1,:)), 'LineWidth',2);
         %plot(theAxes,figData.C(:,1),figData.C(:,2)*banksFactor,'-','Color', squeeze(colors(2,:)), 'LineWidth',2);
         %plot(theAxes,figData.E(:,1),figData.E(:,2)*banksFactor,'-','Color', squeeze(colors(3,:)), 'LineWidth',2);
-        
+
         if (showOnly23CDM2IOAcurve)
-            plot(theAxes,figData.BanksCSF('34 cd/m2').x,figData.BanksCSF('34 cd/m2').y,'-','Color', squeeze(colors(1,:)), 'LineWidth',2);
+            plot(theAxes,figData.BanksCSF('34 cd/m2').x,figData.BanksCSF('34 cd/m2').y,'--','Color', [0 0 0], 'LineWidth',3);
             nLegends = numel(variedParamLegends);
-            variedParamLegends{2:nLegends+1} = variedParamLegends{1:nLegends};
+            if (nLegends > 0)
+                variedParamLegends{2:nLegends+1} = variedParamLegends{1:nLegends};
+            end
             variedParamLegends{1} = 'Ideal Observer (Banks et al ''87)';
         else
             plot(theAxes,figData.BanksCSF('34 cd/m2').x,figData.BanksCSF('34 cd/m2').y,'-','Color', squeeze(colors(1,:)), 'LineWidth',2);
@@ -84,34 +93,24 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
             plot(theAxes,figData.BanksCSF('3.4 cd/m2').x,figData.BanksCSF('3.4 cd/m2').y,'-','Color', squeeze(colors(3,:)), 'LineWidth',2);
         end
         
-        for condIndex = 1:numel(theFigData)
-            if (plotUsingLargeBlueDisks)
-                plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o', 'Color', [0.3 0.3 1.0], ...
-                    'MarkerEdgeColor', [0 0 1], ...
-                    'MarkerFaceColor', [0.5 0.5 1.0], ...
-                    'MarkerSize',16,'LineWidth',3);
-            else
-                plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o', 'Color', squeeze(colors(condIndex,:)), ...
-                    'MarkerEdgeColor', squeeze(colors(condIndex,:)), ...
-                    'MarkerFaceColor', min(1, squeeze(colors(condIndex,:)) + faceColor), ...
-                    'MarkerSize',12,'LineWidth',2);
-            end
-        end
-    else
-        for condIndex = 1:numel(theFigData)
-            if (plotUsingLargeBlueDisks)
-                plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o-', 'Color', [0.3 0.3 1.0], ...
-                    'MarkerEdgeColor', [0 0 1], ...
-                    'MarkerFaceColor', [0.5 0.5 1.0], ...
-                    'MarkerSize',16,'LineWidth',3);
-            else
-                plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o-', 'Color', squeeze(colors(condIndex,:)), ...
-                    'MarkerEdgeColor', max(0, squeeze(colors(condIndex,:))-faceColor), ...
-                    'MarkerFaceColor', min(1, squeeze(colors(condIndex,:)) + faceColor), ...
-                    'MarkerSize',12,'LineWidth',2);
-            end
+    end
+   
+    for condIndex = 1:numel(theFigData)
+        if (plotUsingLargeBlueDisks)
+            plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o-', 'Color', [0.3 0.3 1.0], ...
+                'MarkerEdgeColor', [0 0 1], ...
+                'MarkerFaceColor', [0.5 0.5 1.0], ...
+                'MarkerSize',16,'LineWidth',3);
+        else
+            squeeze(colors(condIndex,:))
+            edgeColor = max(0, squeeze(colors(condIndex,:))-faceColor);
+            plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o-', 'Color', edgeColor, ...
+                'MarkerEdgeColor', edgeColor, ...
+                'MarkerFaceColor', min(1, squeeze(colors(condIndex,:)) + faceColor), ...
+                'MarkerSize',14,'LineWidth',3);
         end
     end
+   
     
     if (showSubjectData)
         load('BanksCSF.mat', 'BanksCSF');
@@ -128,45 +127,51 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
         
         % Compute the mean of the subjectCSF
         [pjbSubjectSFsHiRes, pjbSubjectCSFsHiRes] = fitData(pjbSubjectSFs, pjbSubjectCSFs);
-        plot(pjbSubjectSFsHiRes, pjbSubjectCSFsHiRes, 'r-', 'LineWidth', 1.5);
-    
         [msbSubjectSFsHiRes, msbSubjectCSFsHiRes] = fitData(msbSubjectSFs, msbSubjectCSFs);
-        plot(msbSubjectSFsHiRes, msbSubjectCSFsHiRes, 'b-', 'LineWidth', 1.5);
+        
+        %plot(pjbSubjectSFsHiRes, pjbSubjectCSFsHiRes, 'r-', 'LineWidth', 1.5);
+        %plot(msbSubjectSFsHiRes, msbSubjectCSFsHiRes, 'b-', 'LineWidth', 1.5);
     
         meanSubjectCSF = 0.5*(msbSubjectCSFsHiRes+pjbSubjectCSFsHiRes);
     
-        subjectCPD = msbSubjectSFsHiRes;
-        refSensitivity = contrastSensitivity{1};
-        refCPD = cpd{1};
+        if (~isempty(theFigData))
+            subjectCPD = msbSubjectSFsHiRes;
+            refSensitivity = contrastSensitivity{1};
+            refCPD = cpd{1};
         
-        for k = 1:numel(refCPD)
-            idx = find(msbSubjectSFsHiRes == refCPD(k));
-            if (~isempty(idx))
-                meanSubjectRatios(k) = meanSubjectCSF(idx)./refSensitivity(k);
-            else
-                meanSubjectRatios(k) = nan;
+            for k = 1:numel(refCPD)
+                idx = find(msbSubjectSFsHiRes == refCPD(k));
+                if (~isempty(idx))
+                    meanSubjectRatios(k) = meanSubjectCSF(idx)./refSensitivity(k);
+                else
+                    meanSubjectRatios(k) = nan;
+                end
             end
         end
         
         % Add in the subject data
-        colorIndex = size(colors,1)-1;
-        plot(theAxes, msbSubjectSFs, msbSubjectCSFs, '^', 'Color', squeeze(colors(colorIndex,:)), ...
-            'MarkerEdgeColor', max(0, squeeze(colors(colorIndex,:))-faceColor), ...
-            'MarkerFaceColor', min(1, squeeze(colors(colorIndex,:)) + faceColor), ...
-            'MarkerSize',12,'LineWidth',2);
+        subjectColor = [0.5 0.5 0.5];
+        plot(theAxes, msbSubjectSFs, msbSubjectCSFs, '^', ...
+            'MarkerEdgeColor', subjectColor-0.3, ...
+            'MarkerFaceColor', subjectColor, ...
+            'MarkerSize',14,'LineWidth',2);
         
-        colorIndex = size(colors,1);
-        plot(theAxes, pjbSubjectSFs, pjbSubjectCSFs, '^', 'Color', squeeze(colors(colorIndex,:)), ...
-            'MarkerEdgeColor', max(0, squeeze(colors(colorIndex,:))-faceColor), ...
-            'MarkerFaceColor', min(1, squeeze(colors(colorIndex,:)) + faceColor), ...
-            'MarkerSize',12,'LineWidth',2);
+        subjectColor = [0.8 0.8 0.8];
+        plot(theAxes, pjbSubjectSFs, pjbSubjectCSFs, '^', ...
+            'MarkerEdgeColor', subjectColor-0.3, ...
+            'MarkerFaceColor', subjectColor, ...
+            'MarkerSize',14,'LineWidth',2);
         
-        plot(theAxes, msbSubjectSFsHiRes, meanSubjectCSF, 'k-', 'LineWidth', 2);
         
+        % Legends
         variedParamLegends{numel(variedParamLegends)+1} = 'Subject MSB (Banks et al ''87)';
         variedParamLegends{numel(variedParamLegends)+1} = 'Subject PJB (Banks et al ''87)';
-        variedParamLegends{numel(variedParamLegends)+1} = 'Mean of subjects PJB,MSB';
-   end
+        
+        if (showSubjectMeanData)
+            plot(theAxes, msbSubjectSFsHiRes, meanSubjectCSF, 'k-', 'LineWidth', 2);
+            variedParamLegends{numel(variedParamLegends)+1} = 'Mean of subjects PJB,MSB';
+        end
+    end % showSubjectData
     
     % Add legend
     if (showLegend)
