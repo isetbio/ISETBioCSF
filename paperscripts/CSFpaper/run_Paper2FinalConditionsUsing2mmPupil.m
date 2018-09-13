@@ -22,7 +22,7 @@ function run_Paper2FinalConditionsUsing2mmPupil
     % Init condition index
     condIndex = 0;
     
-    if (1==0)
+    
     % Original Banks computation
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Banks mosaic/optics, ideal observer';
@@ -65,10 +65,9 @@ function run_Paper2FinalConditionsUsing2mmPupil
     examinedCond(condIndex).responseStabilizationMilliseconds =  40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
     
-    end
     
     
-    % Our best estimate of mosaic + optics, SVM-Template
+    % Our best estimate of mosaic + optics, SVM-Template-HW
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
@@ -235,7 +234,7 @@ function params = getRemainingDefaultParams(params, condIndex, conditionLabel)
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 end
