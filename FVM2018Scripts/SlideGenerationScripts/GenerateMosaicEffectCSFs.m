@@ -10,7 +10,7 @@ function GenerateMosaicEffectCSFs
     %makeMosaicsFigure = true;
     
     computeResponses = false;
-    findPerformance = true;
+    findPerformance = false;
     
     % Mosaic to use
     examinedMosaicModels = {...

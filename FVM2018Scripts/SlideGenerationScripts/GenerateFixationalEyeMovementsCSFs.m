@@ -1,4 +1,4 @@
-function GenerateInferenceEngineCSF 
+function GenerateFixationalEyeMovementsCSFs
 
     % Script to generate the slide with the Banks'87 ideal and human observer data
     
@@ -17,10 +17,40 @@ function GenerateInferenceEngineCSF
 
     % ISETBio simulation using Banks conditions
     condIndex = condIndex+1;
-    examinedConds(condIndex).conditionLabel = 'Banks mosaic/optics, ideal observer';
+    examinedConds(condIndex).conditionLabel = 'Banks mosaic/optics, ideal observer, noEM';
     examinedConds(condIndex).mosaicName = 'originalBanks';
     examinedConds(condIndex).opticsModel = 'Geisler';
+    examinedConds(condIndex).signal = 'isomerizations';
     examinedConds(condIndex).inferenceEngine = 'mlpt';
+    examinedConds(condIndex).emPathType = 'frozen0';
+    examinedConds(condIndex).centeredEMPaths = ~true;
+    examinedConds(condIndex).frameRate = 10;
+    examinedConds(condIndex).responseStabilizationMilliseconds =  40;
+    examinedConds(condIndex).responseExtinctionMilliseconds = 40;
+    
+    
+    % Our best estimate of mosaic + optics, MLPT inference engine
+    condIndex = condIndex+1;                                
+    examinedConds(condIndex).conditionLabel = 'Realistic mosaic/optics, ideal observer, noEM';
+    examinedConds(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection';
+    examinedConds(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedConds(condIndex).signal = 'isomerizations';
+    examinedConds(condIndex).inferenceEngine = 'mlpt';
+    examinedConds(condIndex).emPathType = 'frozen0';
+    examinedConds(condIndex).centeredEMPaths = ~true;
+    examinedConds(condIndex).frameRate = 10;
+    examinedConds(condIndex).responseStabilizationMilliseconds =  40;
+    examinedConds(condIndex).responseExtinctionMilliseconds = 40;
+    
+    
+    % Our best estimate of mosaic + optics, MLPT inference engine
+    condIndex = condIndex+1;                                
+    examinedConds(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template-L, noEM';
+    examinedConds(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection';
+    examinedConds(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedConds(condIndex).inferenceEngine = 'svmV1FilterBank';
+    examinedConds(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+    examinedConds(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
     examinedConds(condIndex).signal = 'isomerizations';
     examinedConds(condIndex).emPathType = 'frozen0';
     examinedConds(condIndex).centeredEMPaths = ~true;
@@ -28,45 +58,49 @@ function GenerateInferenceEngineCSF
     examinedConds(condIndex).responseStabilizationMilliseconds =  40;
     examinedConds(condIndex).responseExtinctionMilliseconds = 40;
     
-    % Our best estimate of mosaic + optics, MLPT inference engine
+    if (1==2)
+    % Our best estimate of mosaic + optics, SVM-Template-linear inference engine
     condIndex = condIndex+1;                                
-    examinedConds(condIndex).conditionLabel = 'Realistic mosaic/optics, ideal observer';
-    examinedConds(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection';
-    examinedConds(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
-    examinedConds(condIndex).inferenceEngine = 'mlpt';
-    examinedConds(condIndex).signal = 'isomerizations';
-    examinedConds(condIndex).emPathType = 'frozen0';
-    examinedConds(condIndex).centeredEMPaths = ~true;
-    examinedConds(condIndex).frameRate = 10;
-    examinedConds(condIndex).responseStabilizationMilliseconds = 40;
-    examinedConds(condIndex).responseExtinctionMilliseconds = 40;
-    
-    
-    % Our best estimate of mosaic + optics,  SVM-Template-linear inference engine
-    condIndex = condIndex+1;                                
-    examinedConds(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template-L';
+    examinedConds(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template-L, fixEM';
     examinedConds(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
     examinedConds(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
-    examinedConds(condIndex).inferenceEngine = 'svmV1FilterBank';
     examinedConds(condIndex).signal = 'isomerizations';
+    examinedConds(condIndex).inferenceEngine = 'svmV1FilterBank';
     examinedConds(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedConds(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedConds(condIndex).emPathType = 'frozen0';
-    examinedConds(condIndex).centeredEMPaths = ~true;
-    examinedConds(condIndex).frameRate = 10;
-    examinedConds(condIndex).responseStabilizationMilliseconds = 40;
-    examinedConds(condIndex).responseExtinctionMilliseconds = 40;
+    examinedConds(condIndex).emPathType = 'random';
+    examinedConds(condIndex).centeredEMPaths = true;
+    examinedConds(condIndex).frameRate = 20;
+    examinedConds(condIndex).responseStabilizationMilliseconds = 100;
+    examinedConds(condIndex).responseExtinctionMilliseconds = 50;
+    end
     
+    
+    % Our best estimate of mosaic + optics, SVM-Template-quadrature engine
+    condIndex = condIndex+1;                                
+    examinedConds(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template-Q, fixEM';
+    examinedConds(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
+    examinedConds(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedConds(condIndex).signal = 'isomerizations';
+    examinedConds(condIndex).inferenceEngine = 'svmV1FilterBank';
+    examinedConds(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedConds(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedConds(condIndex).emPathType = 'random';
+    examinedConds(condIndex).centeredEMPaths = true;
+    examinedConds(condIndex).frameRate = 20;
+    examinedConds(condIndex).responseStabilizationMilliseconds = 100;
+    examinedConds(condIndex).responseExtinctionMilliseconds = 50;
+
     
     % Go
     [examinedLegends, theFigData, pupilDiamMm] = runConditions(...
         examinedConds, computationInstance, computeResponses, findPerformance);
     
     if (makeSummaryFigure)
-        variedParamName = 'InferenceEngine';
+        variedParamName = 'FixationalEyeMovements';
         theRatioLims = [0.02 2.0];
         theRatioTicks = [0.05  0.1 0.2 0.5 1.0];
-        formatLabel = 'NoEyeMovements'; 
+        formatLabel = '_InferenceEngineCombo'; 
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
             'showSubjectData', (pupilDiamMm == 2), ...
