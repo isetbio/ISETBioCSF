@@ -22,7 +22,7 @@ function run_Paper2FinalConditionsUsing2mmPupil
     % Init condition index
     condIndex = 0;
     
-    
+    if (1==2)
     % Original Banks computation
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Banks mosaic/optics, ideal observer';
@@ -48,8 +48,9 @@ function run_Paper2FinalConditionsUsing2mmPupil
     examinedCond(condIndex).frameRate = 10;
     examinedCond(condIndex).responseStabilizationMilliseconds =  40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+    end
     
-    
+    if (1==2)
     % Our best estimate of mosaic + optics, SVM-PCA
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-PCA'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
@@ -67,9 +68,10 @@ function run_Paper2FinalConditionsUsing2mmPupil
     
     
     
+    
     % Our best estimate of mosaic + optics, SVM-Template-HW
     condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics, SVM-Template (HW)'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
@@ -81,38 +83,39 @@ function run_Paper2FinalConditionsUsing2mmPupil
     examinedCond(condIndex).frameRate = 10;
     examinedCond(condIndex).responseStabilizationMilliseconds =  40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
-    
+    end
     
     if (1==2)
-        
     condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM, SVM-Template';
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM, SVM-Template (HW)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
     examinedCond(condIndex).signal = 'isomerizations';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'halfWaveRectifier';
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).centeredEMPaths = true;
+    examinedCond(condIndex).frameRate = frameRate;
+    examinedCond(condIndex).responseStabilizationMilliseconds =  responseStabilizationMilliseconds;
+    examinedCond(condIndex).responseExtinctionMilliseconds = responseExtinctionMilliseconds;
+    end
+    
+    if (1==2)
+    condIndex = condIndex+1;
+    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM, SVM-Template (Q)';
+    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
+    examinedCond(condIndex).signal = 'isomerizations';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
     examinedCond(condIndex).emPathType = 'random';
     examinedCond(condIndex).centeredEMPaths = true;
     examinedCond(condIndex).frameRate = frameRate;
     examinedCond(condIndex).responseStabilizationMilliseconds =  responseStabilizationMilliseconds;
     examinedCond(condIndex).responseExtinctionMilliseconds = responseExtinctionMilliseconds;
 
-    
-    condIndex = condIndex+1;
-    examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM, SVM-Template';
-    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
-    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
-    examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
-    examinedCond(condIndex).signal = 'photocurrents';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
-    examinedCond(condIndex).emPathType = 'random';
-    examinedCond(condIndex).centeredEMPaths = true;
-    examinedCond(condIndex).frameRate = frameRate;
-    examinedCond(condIndex).responseStabilizationMilliseconds =  responseStabilizationMilliseconds;
-    examinedCond(condIndex).responseExtinctionMilliseconds = responseExtinctionMilliseconds;
         
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Realistic mosaic/optics + fixationalEM, SVM-Template (Q)';
@@ -127,11 +130,11 @@ function run_Paper2FinalConditionsUsing2mmPupil
     examinedCond(condIndex).frameRate = frameRate;
     examinedCond(condIndex).responseStabilizationMilliseconds =  responseStabilizationMilliseconds;
     examinedCond(condIndex).responseExtinctionMilliseconds = responseExtinctionMilliseconds;
+    
     end
     
     
-    
-    if (1==2)
+    if (1==1)
     
     % Our best estimate of mosaic + optics + eye movements + photocurrents, SVMpool inference engine
     if (includeEyeMovementsAndPhotocurrentGraphs)
@@ -141,8 +144,8 @@ function run_Paper2FinalConditionsUsing2mmPupil
         examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
         examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
         examinedCond(condIndex).signal = 'photocurrents';
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'halfWaveRectifier';
         examinedCond(condIndex).emPathType = 'random';
         examinedCond(condIndex).centeredEMPaths = true;
         examinedCond(condIndex).frameRate = frameRate;
@@ -234,7 +237,7 @@ function params = getRemainingDefaultParams(params, condIndex, conditionLabel)
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 end
