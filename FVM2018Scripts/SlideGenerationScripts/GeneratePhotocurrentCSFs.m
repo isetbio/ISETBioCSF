@@ -81,8 +81,8 @@ function GeneratePhotocurrentCSFs
     examinedConds(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
     examinedConds(condIndex).signal = 'photocurrents';
     examinedConds(condIndex).inferenceEngine = 'svmV1FilterBank';
-    examinedConds(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-    examinedConds(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedConds(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair'; % 'V1CosUnit'; % 'V1QuadraturePair';
+    examinedConds(condIndex).spatialPoolingKernelParams.activationFunction =  'energy'; % 'halfWaveRectifier'; % 'energy';
     examinedConds(condIndex).emPathType = 'random';
     examinedConds(condIndex).centeredEMPaths = true;
     examinedConds(condIndex).frameRate = 20;
