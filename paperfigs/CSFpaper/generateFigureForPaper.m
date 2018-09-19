@@ -2,6 +2,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
 
     p = inputParser;
     p.addParameter('figureType', 'CSF', @ischar);
+    p.addParameter('figDataIndicesToDisplay', [], @isnumeric);
     p.addParameter('showBanksPaperIOAcurves', false, @islogical);
     p.addParameter('showOnly23CDM2IOAcurve', false, @islogical);
     p.addParameter('showSubjectData', false, @islogical);
@@ -18,6 +19,10 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     p.parse(varargin{:});
     
     figureType = p.Results.figureType;
+    figDataIndicesToDisplay = p.Results.figDataIndicesToDisplay;
+    if (isempty(figDataIndicesToDisplay))
+        figDataIndicesToDisplay = 1:numel(theFigData);
+    end
     showBanksPaperIOAcurves = p.Results.showBanksPaperIOAcurves;
     showOnly23CDM2IOAcurve = p.Results.showOnly23CDM2IOAcurve;
     showLegend = p.Results.showLegend;
@@ -98,18 +103,45 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     end
    
     for condIndex = 1:numel(theFigData)
+        
+        plotThisCSFAtFullContrast = any(ismember(figDataIndicesToDisplay, condIndex));
+        
+        if (plotThisCSFAtFullContrast)
+            saturationFactor = 0;
+        else
+            saturationFactor = 0.3;
+        end
+        
         if (plotUsingLargeBlueDisks)
-            plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o-', 'Color', [0.3 0.3 1.0], ...
-                'MarkerEdgeColor', [0 0 1], ...
-                'MarkerFaceColor', [0.5 0.5 1.0], ...
+            if (saturationFactor == 0)
+                color1 = [0.3 0.3 1.0];
+                color2 = [0 0 1];
+                color3 = [0.5 0.5 1.0];
+            else
+                color1 = [0.9 0.9 1.0];
+                color2 = [0.8 0.8 1];
+                color3 = [0.9 0.9 1.0];
+            end
+            plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o-', 'Color', color1, ...
+                'MarkerEdgeColor', color2, ...
+                'MarkerFaceColor', color3, ...
                 'MarkerSize',16,'LineWidth',3);
         else
-            squeeze(colors(condIndex,:))
-            edgeColor = max(0, squeeze(colors(condIndex,:))-faceColor);
+            if (saturationFactor == 0)
+                edgeColor = max(0, squeeze(colors(condIndex,:))-faceColor);
+                faceColor2 = min(1, squeeze(colors(condIndex,:)) + faceColor);
+                markerSize = 14;
+            else
+                edgeColor = max(0, squeeze(colors(condIndex,:))-faceColor);
+                faceColor2 = min(1, squeeze(colors(condIndex,:)) + faceColor);
+                edgeColor  = [0.7 0.7 0.7] + saturationFactor * edgeColor;
+                faceColor2 = [0.7 0.7 0.7] + saturationFactor * faceColor2;
+                markerSize = 12;
+            end
             plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o-', 'Color', edgeColor, ...
                 'MarkerEdgeColor', edgeColor, ...
-                'MarkerFaceColor', min(1, squeeze(colors(condIndex,:)) + faceColor), ...
-                'MarkerSize',14,'LineWidth',3);
+                'MarkerFaceColor', faceColor2, ...
+                'MarkerSize',markerSize,'LineWidth',3);
         end
     end
    
