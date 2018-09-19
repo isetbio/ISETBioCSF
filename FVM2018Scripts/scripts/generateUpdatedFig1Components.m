@@ -1,10 +1,11 @@
 function generateUpdatedFig1Components
     [rootPath0,~] = fileparts(which(mfilename));
     cd(rootPath0);
-    rootPath = strrep(rootPath0, 'scripts', 'isetbio_resources');
+    rootPath = strrep(rootPath0, 'scripts', 'resources');
+    videoOutDir = strrep(rootPath0, 'scripts', 'updatedComponentFigs');
     
     hFig = runConditionToVisualizePsychometricCurve();
-    NicePlot.exportFigToPDF('../updatedComponentFigs/PsychometricCurveComponent.pdf', hFig, 300);
+    NicePlot.exportFigToPDF(fullfile(videoOutDir,'PsychometricCurveComponent.pdf'), hFig, 300);
 
     visualizedWavelengths = [450 532 624 708];
     visualizedWavelengthsPSF = [450 480 532 550 624 708];
@@ -14,42 +15,44 @@ function generateUpdatedFig1Components
     [theScene, theRGBsettingsImage] = generateTheScene(rootPath, theDisplay, theMosaic.fov);
     
     hFig = generateDisplayFigComponent(theDisplay);
-    NicePlot.exportFigToPDF('../updatedComponentFigs/DisplayComponent.pdf', hFig, 300);
+    NicePlot.exportFigToPDF(fullfile(videoOutDir,'/DisplayComponent.pdf'), hFig, 300);
     
     hFig = generateSceneFigComponent(theScene, theMosaic.fov, visualizedWavelengths);
-    NicePlot.exportFigToPNG('../updatedComponentFigs/SceneComponent.png', hFig, 300);
+    NicePlot.exportFigToPNG(fullfile(videoOutDir,'SceneComponent.png'), hFig, 300);
     
     hFig = generateRGBSettingsImageComponent(theRGBsettingsImage);
-    NicePlot.exportFigToPNG('../updatedComponentFigs/RGBSettingsComponent.png', hFig, 300);
+    NicePlot.exportFigToPNG(fullfile(videoOutDir,'RGBSettingsComponent.png'), hFig, 300);
  
     theOI = generateTheOpticalImage(theScene);
     theOI = oiCompute(theOI, theScene);
     
     hFig = generateOpticalImageFigComponent(theOI, theMosaic.fov, visualizedWavelengths);
-    NicePlot.exportFigToPNG('../updatedComponentFigs/OpticalImageComponent.png', hFig, 300);
+    NicePlot.exportFigToPNG(fullfile(videoOutDir,'OpticalImageComponent.png'), hFig, 300);
     
     hFig = generatePSFFigComponent(theOI, visualizedWavelengthsPSF);
-    NicePlot.exportFigToPNG('../updatedComponentFigs/PSFsComponent.png', hFig, 300);
+    NicePlot.exportFigToPNG(fullfile(videoOutDir, 'PSFsComponent.png'), hFig, 300);
     
-    fixationalEyeMovementsNum = 50;
-    theMosaic.integrationTime = 2/1000;
-    nTrials = 5;
-    theEMPath = generateTheEMPath(theMosaic, fixationalEyeMovementsNum, nTrials);
+    emPathLengthSecs = 0.1;
+    theMosaic.integrationTime = 0.25/1000;
+    fixationalEyeMovementsNum = round(emPathLengthSecs/theMosaic.integrationTime);
+    nTrials = 2;
+    theEMPath = generateTheEMPath(theMosaic, fixationalEyeMovementsNum, nTrials, videoOutDir);
+    pause
     
     [theIsomerizations, thePhotocurrents, LMSfilters] = ...
         theMosaic.compute(theOI, 'currentFlag',true, 'emPath', theEMPath);
     
     hFig = generatePhotocurrentFilters(theMosaic, LMSfilters);
-    NicePlot.exportFigToPNG('../updatedComponentFigs/PhotocurrentFilters.png', hFig, 300);
+    NicePlot.exportFigToPNG(fullfile(videoOutDir,'PhotocurrentFilters.png'), hFig, 300);
     
     hFig = generateMosaicFigComponent(theMosaic);
-    NicePlot.exportFigToPNG('../updatedComponentFigs/MosaicComponent.png', hFig, 300);
+    NicePlot.exportFigToPNG(fullfile(videoOutDir,'MosaicComponent.png'), hFig, 300);
     
     hFig = generateResponseFigComponent(theMosaic, theIsomerizations, 'isomerizations');
-    NicePlot.exportFigToPNG('../updatedComponentFigs/IsomerizationsComponent.png', hFig, 300);
+    NicePlot.exportFigToPNG(fullfile(videoOutDir,'IsomerizationsComponent.png'), hFig, 300);
     
     hFig = generateResponseFigComponent(theMosaic, thePhotocurrents, 'photocurrents');
-    NicePlot.exportFigToPNG('../updatedComponentFigs/PhotocurrentsComponent.png', hFig, 300);
+    NicePlot.exportFigToPNG(fullfile(videoOutDir,'PhotocurrentsComponent.png'), hFig, 300);
 end
 
 function hFig = generatePhotocurrentFilters(theMosaic, LMSfilters)
@@ -327,7 +330,7 @@ function hFig = generateDisplayFigComponent(display)
     
 end
 
-function theEMPath = generateTheEMPath(theMosaic, eyeMovementsNum, nTrials)
+function theEMPath = generateTheEMPath(theMosaic, eyeMovementsNum, nTrials, videoOutDir)
     fixEMobj = fixationalEM();
     fixEMobj.computeForConeMosaic(theMosaic, eyeMovementsNum, ...
         'nTrials', nTrials, ...
@@ -339,8 +342,8 @@ function theEMPath = generateTheEMPath(theMosaic, eyeMovementsNum, nTrials)
             fixEMobj, theMosaic, ...
             'visualizedFOVdegs', 0.8*theMosaic.fov(1), ...
             'showMovingMosaicOnSeparateSubFig', true, ...
-            'displaycrosshairs', true, ...
-            'videoFileName', fullfile('../updatedComponentFigs', 'fixationalEMVideo.mp4'));
+            'displaycrosshairs', ~true, ...
+            'videoFileName', fullfile(videoOutDir, 'fixationalEMVideoNoCrossHairs.mp4'));
     end
         
 end

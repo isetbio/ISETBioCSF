@@ -6,8 +6,8 @@ function GenerateRealisticMosaicAndOpticsCSF
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
-    makePSFfigure = true;
+    makeSummaryFigure = true;
+    makePSFfigure = ~true;
     
     computeResponses = false;
     findPerformance = false;
