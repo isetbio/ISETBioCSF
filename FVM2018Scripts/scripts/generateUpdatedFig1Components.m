@@ -32,12 +32,12 @@ function generateUpdatedFig1Components
     hFig = generatePSFFigComponent(theOI, visualizedWavelengthsPSF);
     NicePlot.exportFigToPNG(fullfile(videoOutDir, 'PSFsComponent.png'), hFig, 300);
     
-    emPathLengthSecs = 0.1;
-    theMosaic.integrationTime = 0.25/1000;
+    emPathLengthSecs = 0.2;
+    theMosaic.integrationTime = 5/1000;
     fixationalEyeMovementsNum = round(emPathLengthSecs/theMosaic.integrationTime);
-    nTrials = 2;
+    nTrials = 1;
     theEMPath = generateTheEMPath(theMosaic, fixationalEyeMovementsNum, nTrials, videoOutDir);
-    pause
+ 
     
     [theIsomerizations, thePhotocurrents, LMSfilters] = ...
         theMosaic.compute(theOI, 'currentFlag',true, 'emPath', theEMPath);
@@ -48,10 +48,11 @@ function generateUpdatedFig1Components
     hFig = generateMosaicFigComponent(theMosaic);
     NicePlot.exportFigToPNG(fullfile(videoOutDir,'MosaicComponent.png'), hFig, 300);
     
-    hFig = generateResponseFigComponent(theMosaic, theIsomerizations, 'isomerizations');
+    makeGif = true;
+    hFig = generateResponseFigComponent(theMosaic, theIsomerizations, 'isomerizations', videoOutDir, makeGif);
     NicePlot.exportFigToPNG(fullfile(videoOutDir,'IsomerizationsComponent.png'), hFig, 300);
     
-    hFig = generateResponseFigComponent(theMosaic, thePhotocurrents, 'photocurrents');
+    hFig = generateResponseFigComponent(theMosaic, thePhotocurrents, 'photocurrents', videoOutDir, makeGif);
     NicePlot.exportFigToPNG(fullfile(videoOutDir,'PhotocurrentsComponent.png'), hFig, 300);
 end
 
@@ -98,7 +99,7 @@ function hFig = generatePSFFigComponent(theOI, visualizedWavelengths)
                 'displayWavelengthInTitle', ~false);
 end
 
-function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPattern, signalName)
+function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPattern, signalName, videoOutDir, makeGif)
 
     % Get data for first trial
     nTrials = size(visualizedActivationPattern,1);
@@ -114,27 +115,74 @@ function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPatt
     end
     signalRange = round(prctile(v(:), [5 95]));
 
+
     
     % Plot
     hFig = figure(5); clf
-    set(hFig, 'Position', [10 10 426 420], 'Color', [1 1 1]);
-    ax = subplot('Position', [0.02 0.02 0.96 0.96]);
+
+    if (makeGif)
+        set(hFig, 'Position', [10 10 128 128], 'Color', [1 1 1]);
+        ax = subplot('Position', [0.00 0.00 1.0 1.0]);
+        gifFineName = fullfile(videoOutDir,sprintf('%sVideo.gif',signalName));
+        showColorBar = false;
+        labelColorBarTicks = false;
+    else
+        set(hFig, 'Position', [10 10 400 420], 'Color', [1 1 1]);
+        ax = subplot('Position', [0.02 0.02 0.96 0.96]);
+    
+        mp4FileName = fullfile(videoOutDir,sprintf('%sVideo.mp4',signalName));
+        videoOBJ = VideoWriter(mp4FileName, 'MPEG-4'); % H264 format
+        videoOBJ.FrameRate = 30;
+        videoOBJ.Quality = 100;
+        videoOBJ.open();
+        
+        showColorBar = true;
+        labelColorBarTicks = true;
+    end
+    
     activationLUT = gray(1024);
     titleForColorBar = ''; %'R*/5 msec';
     backgroundColor = [0 0 0];
     
-    videoOBJ = VideoWriter(sprintf('../updatedComponentFigs/%sVideo.mp4',signalName), 'MPEG-4'); % H264 format
-    videoOBJ.FrameRate = 30;
-    videoOBJ.Quality = 100;
-    videoOBJ.open();
+    sampledHexMosaicXaxis = squeeze(theMosaic.patternSupport(1, :, 1));
+    sampledHexMosaicYaxis = squeeze(theMosaic.patternSupport(:, 1, 2));
+    xFullRange = max(sampledHexMosaicXaxis(:));
+    yFullRange = max(sampledHexMosaicYaxis(:));
+    
+    
+    
+    frameIndex = 0;
     for iTrial = 1:nTrials
     for emIndex = 1:emNum
+        frameIndex = frameIndex + 1;
+        
+        if (makeGif)
+            ff = emIndex - emNum/2;
+            sigma = emNum/6;
+            if (emIndex < emNum/2)
+                fraction = exp(-0.5*(ff/sigma)^2);
+            else
+                fraction = 1;
+            end
+            fraction = 0.4 + fraction;
+            if (fraction > 1)
+                fraction = 1;
+            end
+            xRange = xFullRange * fraction*[-1 1]/1e-6;
+            yRange = yFullRange * fraction*[-1 1]/1e-6;
+        else
+            xRange = [];
+            yRange = [];
+        end
+    
         theMosaic.renderActivationMap(ax, squeeze(visualizedActivationPattern(iTrial,:,:,emIndex)), ...
              'signalRange', signalRange, ...
              'visualizedConeAperture', 'geometricArea', ...
              'mapType', 'modulated disks', ...
-             'showColorBar', true, ...
-             'labelColorBarTicks', true, ...
+             'showColorBar', showColorBar, ...
+             'labelColorBarTicks', labelColorBarTicks, ...
+             'xRange', xRange, ...
+             'yRange', yRange, ...
              'showXLabel', false, ...
              'showYLabel', false, ...
              'titleForColorBar', titleForColorBar, ...
@@ -142,15 +190,45 @@ function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPatt
              'backgroundColor', backgroundColor);
         ylabel(ax, '');
         axis(ax, 'ij');
+        xlim(ax, xRange*1e-6);
+        ylim(ax, yRange*1e-6);
+    
         set(ax,'XTickLabels', {});
         set(ax,'YTickLabels', {});
         
-        drawnow
-        % Add video frame
-        videoOBJ.writeVideo(getframe(hFig));
+        drawnow;
+        % Capture frame
+        frame = getframe(hFig);
+        
+        if (makeGif)
+            im = frame2im(frame); 
+            [imind,cm] = rgb2ind(im,256);
+            % Write to the GIF File 
+              if frameIndex == 1 
+                  imwrite(imind,cm,gifFineName,'gif', ...
+                      'Loopcount',inf, ...
+                      'DelayTime', 50/1000, ...
+                      'BackgroundColor', 0); 
+              else 
+                  imwrite(imind,cm,gifFineName,'gif', ...
+                      'WriteMode','append', ...
+                      'DelayTime', 50/1000, ...
+                      'BackgroundColor', 0); 
+              end 
+        else
+            % Add video frame
+            videoOBJ.writeVideo(frame);
+        end
     end
     end
-    videoOBJ.close();
+    
+    if (makeGif)
+        % view it
+        web(gifFineName);
+    else
+        videoOBJ.close();
+    end
+    
 end
 
 function hFig = generateOpticalImageFigComponent(theOI, mosaicFOV, visualizedWavelengths)
