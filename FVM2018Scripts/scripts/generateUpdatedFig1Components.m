@@ -426,9 +426,8 @@ function theEMPath = generateTheEMPath(theMosaic, eyeMovementsNum, nTrials, vide
         
 end
 
-
 function theOI = generateTheOpticalImage(theScene)
-    opticsModel = 'ThibosDefaultSubject3MMPupil'; 
+    opticsModel = 'ThibosDefaultSubject3MMPupil';  % 'Geisler'; % '
     pupilDiamMm = 3.0;
     
     oiParams = struct(...
@@ -436,13 +435,20 @@ function theOI = generateTheOpticalImage(theScene)
                 'wavefrontSpatialSamples', 301, ...
                 'pupilDiamMm', pupilDiamMm, ...
                 'umPerDegree', 300);
-    theOI = oiWithCustomOptics(oiParams.opticsModel, oiParams.wavefrontSpatialSamples, oiParams.pupilDiamMm, oiParams.umPerDegree);   
+            
+    if (strcmp(opticsModel, 'Geisler'))
+        theOI = oiCreate('wvf human', oiParams.pupilDiamMm,[],[], oiParams.umPerDegree);
+        theOI = ptb.oiSetPtbOptics(theOI,'opticsModel',oiParams.opticsModel);
+    else
+        theOI = oiWithCustomOptics(oiParams.opticsModel, oiParams.wavefrontSpatialSamples, oiParams.pupilDiamMm, oiParams.umPerDegree);   
+    end
     
     % Set the fNumber
     focalLength = oiGet(theOI,'distance');
     desiredFNumber = focalLength/(oiParams.pupilDiamMm/1000);
     theOI  = oiSet(theOI ,'optics fnumber',desiredFNumber);
 end
+
 
 function theMosaic = loadTheMosaic(rootPath, mosaicFOVDegs)
     mosaicFile = sprintf('coneMosaic%dCPD.mat', mosaicFOVDegs);

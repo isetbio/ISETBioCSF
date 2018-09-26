@@ -99,7 +99,6 @@ function timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, no
     grid on; box on;
     colormap(brewermap(1024, '*Greys'));
     drawnow; 
-    pause
 end
 
 function responseDistribution = compute2Dhistogram(responses, responseLevels)
