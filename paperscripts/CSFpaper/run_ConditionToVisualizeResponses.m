@@ -23,6 +23,26 @@ function run_ConditionToVisualizeResponses
     params.performanceTrialsUsed = [];
     params.cyclesPerDegreeExamined = [16];
     
+    params.emPathType = 'random';
+    params.centeredEMpaths = true;
+    params.frameRate = 10; %(10 frames/sec, so 21 frames, each 100 msec long)
+    params.responseStabilizationMilliseconds = 40;
+    params.responseExtinctionMilliseconds = 40;
+    
+    params.performanceClassifier = 'svmV1FilterBank';
+    %params.performanceClassifier = 'svmV1FilterEnsemble';
+    params.parforWorkersNumForClassification = 1;
+    
+    
+    if (strcmp(params.performanceClassifier,'svmV1FilterEnsemble'))
+        params.spatialPoolingKernelParams.spatialPositionsNum = 9;
+        params.spatialPoolingKernelParams.cyclesPerRFs =  [1.5 2.5];
+        params.spatialPoolingKernelParams.orientations =  [0];
+    else
+        %params.spatialPoolingKernelParams.type = 'V1CosUnit';
+        %params.spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    end
+    
     % Simulation steps to perform
     params.computeResponses = ~true;
     params.computeMosaic = ~true; 
@@ -30,31 +50,20 @@ function run_ConditionToVisualizeResponses
     
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeDisplay = ~true;
-    params.visualizeResponses = true;
+    params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = true;
     params.visualizeSpatialPoolingScheme = true;
-    params.visualizeMosaicWithFirstEMpath = ~true;
+    params.visualizeMosaicWithFirstEMpath = true;
     
     params.visualizeKernelTransformedSignals = true;
-    params.findPerformance = ~true;
-    params.visualizePerformance = ~true;
+    params.findPerformance = true;
+    params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 
-    params.performanceClassifier = 'svmV1FilterBank';
-    params.performanceClassifier = 'svmV1FilterEnsemble';
-    params.parforWorkersNumForClassification = 1;
     
-    if (strcmp(params.performanceClassifier,'svmV1FilterEnsemble'))
-        params.spatialPoolingKernelParams.spatialPositionsNum = 9;
-        params.spatialPoolingKernelParams.cyclesPerRFs =  [1.5 2.5];
-        params.spatialPoolingKernelParams.orientations =  [0];
-    else
-        params.spatialPoolingKernelParams.type = 'V1CosUnit';
-        params.spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
-    end
 
     
     % Go
