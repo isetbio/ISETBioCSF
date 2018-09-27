@@ -7,6 +7,7 @@ function computeOpticalImages
 %     return;
     
     ibioDataDir = '/Volumes/DropBoxDisk/Dropbox/Dropbox (Aguirre-Brainard Lab)/IBIO_data';
+    %ibioDataDir = '/Volumes/SamsungT3/Dropbox/AguirreBrainardLabsDropbox/IBIO_data';
     %ibioDataDir = '/Volumes/IthakasPassport/DropboxLab/AquirreBrainardLab/IBIO_data'
 
     sceneRootDir = fullfile(ibioDataDir,'BLIlluminationDiscrimination/SceneData');
@@ -28,6 +29,7 @@ function computeOpticalImages
         'Standard' ...		
         'YellowIllumination' ...
         };
+    %illuminationNames = {illuminationNames{4}};
     
     localDir = pwd;
     if (~isdir(oiRootDir))
@@ -73,12 +75,20 @@ function computeOpticalImages
                     theScene = scene;
                     clear 'scene';
                     horizontalFOV = sceneGet(theScene, 'hfov');
+                    meanLuminance = sceneGet(theScene, 'mean luminance');
+                    fprintf('Mean luminance of scene %s is %f\n', sceneFileName, meanLuminance);
+                    
                     visualizePSF = false;
                     theOI = generateOI(opticsModel, horizontalFOV, pupilDiamMM, visualizePSF);
                     oi = oiCompute(theOI, theScene);
                     save(oiFileName, 'oi');
                     fprintf('Saved oi in %s\n', oiFileName);
                     visualizeSceneAndOI = ~false;
+                    computeMosaicIsomerizations = true;
+                    if (computeMosaicIsomerizations)
+                        computeIsomerizations(oi, theScene);
+                    end
+                    
                     if (visualizeSceneAndOI)
                         figure(10);
                         subplot(1,2,1)
@@ -93,6 +103,19 @@ function computeOpticalImages
         end % illumIndex
     end % for sceneIndex
 end
+
+function computeIsomerizations(theOI, theScene)
+
+    meanIlluminance = oiGet(theOI, 'mean illuminance')
+    pause
+    illuminance = oiGet(theOI, 'illuminance');
+
+    load('theBLIllumHexMosaic1.10degs.mat', 'theHexMosaic')
+    [absorptions, current, interpFilters, meanCur] = theHexMosaic.compute(theOI);
+    size(absorptions)
+    save('data.mat', 'theHexMosaic', 'theScene', 'theOI', 'absorptions');
+end
+
 
 function theOI = generateOI(opticsModel, horizontalFOV, pupilDiamMM, visualizePSF)
 
