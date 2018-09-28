@@ -17,10 +17,26 @@ function run_EyeMovementVaryConditions3MMPupil
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     defaultSpatialPoolingKernelParams = params.spatialPoolingKernelParams;
     
-    % Make spatialpooling kernel params struct for SVM-Template
-    svmTemplateSpatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
-    svmTemplateSpatialPoolingKernelParams.type = 'V1CosUnit';
-    svmTemplateSpatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    % Make spatialpooling kernel params struct for SVM-Template with linear activation functiom
+    svmTemplateLinearSpatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+    svmTemplateLinearSpatialPoolingKernelParams.type = 'V1CosUnit';
+    svmTemplateLinearSpatialPoolingKernelParams.activationFunction = 'linear';
+    
+    % Make spatialpooling kernel params struct for SVM-Template with HW
+    % rectifier activation function
+    svmTemplateHalfWaveRectSpatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+    svmTemplateHalfWaveRectSpatialPoolingKernelParams.type = 'V1CosUnit';
+    svmTemplateHalfWaveRectSpatialPoolingKernelParams.activationFunction = 'halfWaveRectifier';
+    
+    % Make spatialpooling kernel params struct for SVM-Template with FW
+    % rectifier activation function
+    svmTemplateFullWaveRectSpatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+    svmTemplateFullWaveRectSpatialPoolingKernelParams.type = 'V1CosUnit';
+    svmTemplateFullWaveRectSpatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    
+    
+    % Define signal to visualize
+    signal = 'isomerizations';
     
     % Adjust any params we want to change from their default values
     params.opticsModel = opticsName;
@@ -34,57 +50,58 @@ function run_EyeMovementVaryConditions3MMPupil
     
 
     condIndex = 0;
-    classifier = 'svmV1FilterBank'; % 'svm'; % 'svmV1FilterBank'; %'mlpt';
+    classifier = 'svmTemplateLinear'; 'svmTemplateQuadrature'; %  %'mlpt'; 'svm'; 'svmTemplateLinear'; 'svmTemplateHalfWaveRectifier'; 'svmTemplateFullWaveRectifier'; 'svmTemplateQuadrature'
     
     if (strcmp(classifier, 'mlpt'))
             
-        condIndex = condIndex+1;  
+        condIndex = condIndex+1;
+        examinedCond(condIndex).signal = signal;
         examinedCond(condIndex).emPathType = 'frozen0';
-        examinedCond(condIndex).classifier = 'mlpt';
+        examinedCond(condIndex).classifier = classifier;
         examinedCond(condIndex).legend = 'no eye movements, ideal observer';
         examinedCond(condIndex).centeredEMpaths = true;
         examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 21 frames, each 100 msec long)
         examinedCond(condIndex).responseStabilizationMilliseconds = 40;
         examinedCond(condIndex).responseExtinctionMilliseconds = 40;
-        examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
+        examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
 
-        condIndex = condIndex+1;  
+        condIndex = condIndex+1;
+        examinedCond(condIndex).signal = signal;
         examinedCond(condIndex).emPathType = 'random';
-        examinedCond(condIndex).classifier = 'mlpt';
+        examinedCond(condIndex).classifier = classifier;
         examinedCond(condIndex).legend = 'fixational eye movements, ideal observer';
         examinedCond(condIndex).centeredEMpaths = true;
         examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 21 frames, each 100 msec long)
         examinedCond(condIndex).responseStabilizationMilliseconds = 40;
         examinedCond(condIndex).responseExtinctionMilliseconds = 40;
-        examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
+        examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
    
     elseif (strcmp(classifier, 'svm'))
 
         condIndex = condIndex+1;  
+        examinedCond(condIndex).signal = signal;
         examinedCond(condIndex).emPathType = 'frozen0';
-        examinedCond(condIndex).classifier = 'svm';
+        examinedCond(condIndex).classifier = classifier;
         examinedCond(condIndex).legend = 'no eye movements, SVM-PCA';
         examinedCond(condIndex).centeredEMpaths = true;
         examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 21 frames, each 100 msec long)
         examinedCond(condIndex).responseStabilizationMilliseconds = 40;
         examinedCond(condIndex).responseExtinctionMilliseconds = 40;
-        examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
+        examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
 
 
         condIndex = condIndex+1;  
+        examinedCond(condIndex).signal = signal;
         examinedCond(condIndex).emPathType = 'random';
-        examinedCond(condIndex).classifier = 'svm';
+        examinedCond(condIndex).classifier = classifier;
         examinedCond(condIndex).legend = 'fixational eye movements, SVM-PCA';
         examinedCond(condIndex).centeredEMpaths = true;
         examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 1 frames, each 100 msec long)
         examinedCond(condIndex).responseStabilizationMilliseconds = 40;
         examinedCond(condIndex).responseExtinctionMilliseconds = 40;
-        examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
+        examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
 
-    elseif (strcmp(classifier, 'svmV1FilterBank'))
-        % Started this late Sunday, Sept 9, to see if there is a difference
-        % in photocurrents b/n template and templateQ for 3 mm and best PSF
-        % which extend further out in SFs
+    elseif (strcmp(classifier, 'svmTemplateLinear'))
 %         condIndex = condIndex+1;  
 %         examinedCond(condIndex).signal = 'photocurrents';
 %         examinedCond(condIndex).emPathType = 'frozen0';
@@ -96,19 +113,110 @@ function run_EyeMovementVaryConditions3MMPupil
 %         examinedCond(condIndex).responseExtinctionMilliseconds = 50;
 %         examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
         
- % Started this late Sunday, Sept 9, to see if there is a difference
-        % in photocurrents b/n template and templateQ for 3 mm and best PSF
-        % which extend further out in SFs
+
+%         condIndex = condIndex+1;  
+%         examinedCond(condIndex).signal = 'photocurrents';
+%         examinedCond(condIndex).emPathType = 'random';
+%         examinedCond(condIndex).classifier = 'svmV1FilterBank';
+%         examinedCond(condIndex).legend = 'fixational eye movements, SVM-TemplateQ';
+%         examinedCond(condIndex).centeredEMpaths = true;
+%         examinedCond(condIndex).frameRate = 20; %(10 frames/sec, so 1 frames, each 100 msec long)
+%         examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+%         examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+%         examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+
+        % SVM-Template with linear activation function
         
         condIndex = condIndex+1;  
-        examinedCond(condIndex).signal = 'photocurrents';
+        examinedCond(condIndex).signal = signal;
+        examinedCond(condIndex).emPathType = 'frozen0';
+        examinedCond(condIndex).classifier = 'svmV1FilterBank';
+        examinedCond(condIndex).legend = 'zero eye movements, SVM-Template-L';
+        examinedCond(condIndex).centeredEMpaths = true;
+        examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 1 frames, each 100 msec long)
+        examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+        examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+        examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateLinearSpatialPoolingKernelParams;
+        
+        condIndex = condIndex+1;  
+        examinedCond(condIndex).signal = signal;
         examinedCond(condIndex).emPathType = 'random';
         examinedCond(condIndex).classifier = 'svmV1FilterBank';
-        examinedCond(condIndex).legend = 'fixational eye movements, SVM-TemplateQ';
+        examinedCond(condIndex).legend = 'fixational eye movements, SVM-Template-L';
         examinedCond(condIndex).centeredEMpaths = true;
-        examinedCond(condIndex).frameRate = 20; %(10 frames/sec, so 1 frames, each 100 msec long)
-        examinedCond(condIndex).responseStabilizationMilliseconds = 100;
-        examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+        examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 1 frames, each 100 msec long)
+        examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+        examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+        examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateLinearSpatialPoolingKernelParams;
+        
+    elseif (strcmp(classifier, 'svmTemplateHalfWaveRectifier'))
+        
+        condIndex = condIndex+1;  
+        examinedCond(condIndex).signal = signal;
+        examinedCond(condIndex).emPathType = 'frozen0';
+        examinedCond(condIndex).classifier = 'svmV1FilterBank';
+        examinedCond(condIndex).legend = 'zero eye movements, SVM-Template-HW';
+        examinedCond(condIndex).centeredEMpaths = true;
+        examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 1 frames, each 100 msec long)
+        examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+        examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+        examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateHalfWaveRectSpatialPoolingKernelParams;
+        
+        condIndex = condIndex+1;  
+        examinedCond(condIndex).signal = signal;
+        examinedCond(condIndex).emPathType = 'random';
+        examinedCond(condIndex).classifier = 'svmV1FilterBank';
+        examinedCond(condIndex).legend = 'fixational eye movements, SVM-Template-HW';
+        examinedCond(condIndex).centeredEMpaths = true;
+        examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 1 frames, each 100 msec long)
+        examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+        examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+        examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateHalfWaveRectSpatialPoolingKernelParams;
+     
+   elseif (strcmp(classifier, 'svmTemplateFullWaveRectifier'))    
+        condIndex = condIndex+1;  
+        examinedCond(condIndex).signal = signal;
+        examinedCond(condIndex).emPathType = 'frozen0';
+        examinedCond(condIndex).classifier = 'svmV1FilterBank';
+        examinedCond(condIndex).legend = 'zero eye movements, SVM-Template-FW';
+        examinedCond(condIndex).centeredEMpaths = true;
+        examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 1 frames, each 100 msec long)
+        examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+        examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+        examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateFullWaveRectSpatialPoolingKernelParams;
+        
+        condIndex = condIndex+1;  
+        examinedCond(condIndex).signal = signal;
+        examinedCond(condIndex).emPathType = 'random';
+        examinedCond(condIndex).classifier = 'svmV1FilterBank';
+        examinedCond(condIndex).legend = 'fixational eye movements, SVM-Template-FW';
+        examinedCond(condIndex).centeredEMpaths = true;
+        examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 1 frames, each 100 msec long)
+        examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+        examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+        examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateFullWaveRectSpatialPoolingKernelParams;
+        
+    elseif (strcmp(classifier, 'svmTemplateQuadrature'))
+      condIndex = condIndex+1;  
+        examinedCond(condIndex).signal = signal;
+        examinedCond(condIndex).emPathType = 'frozen0';
+        examinedCond(condIndex).classifier = 'svmV1FilterBank';
+        examinedCond(condIndex).legend = 'zero movements, SVM-Template-Q';
+        examinedCond(condIndex).centeredEMpaths = true;
+        examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 1 frames, each 100 msec long)
+        examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+        examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+        examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+        
+        condIndex = condIndex+1;  
+        examinedCond(condIndex).signal = signal;
+        examinedCond(condIndex).emPathType = 'random';
+        examinedCond(condIndex).classifier = 'svmV1FilterBank';
+        examinedCond(condIndex).legend = 'fixational eye movements, SVM-Template-Q';
+        examinedCond(condIndex).centeredEMpaths = true;
+        examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 1 frames, each 100 msec long)
+        examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+        examinedCond(condIndex).responseExtinctionMilliseconds = 40;
         examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
     end
     
@@ -117,7 +225,7 @@ function run_EyeMovementVaryConditions3MMPupil
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     
     params.visualizeResponses = ~true;
@@ -131,7 +239,7 @@ function run_EyeMovementVaryConditions3MMPupil
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     

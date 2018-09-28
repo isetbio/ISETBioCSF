@@ -29,7 +29,14 @@ function run_LuminanceVaryConditions
         '3.4 cd/m^2 (2mm pupil)' ...
     };
 
-    idx = 1:3;
+    % Set this to true to only show the 34 cd/m2 data
+    compareToSubjectDataFor34CDM2 = ~true;
+    
+    if (compareToSubjectDataFor34CDM2)
+        idx = 1:1;
+    else
+        idx = 1:3;
+    end
     examinedLuminances = {examinedLuminances{idx}};
     examinedPupilSizeLegends = {examinedPupilSizeLegends{idx}};
     
@@ -78,8 +85,15 @@ function run_LuminanceVaryConditions
     
     if (makeSummaryFigure)
         variedParamName = 'Luminance';
-        theRatioLims = [0.1 10];
-        theRatioTicks = [0.1 0.3 1 3 10]; % round(100*logspace(log10(0.1), log10(10), 5))/100;
+        if (compareToSubjectDataFor34CDM2)
+            theRatioLims = [0.02 2.0];
+            theRatioTicks = [0.05  0.1 0.2 0.5 1.0];
+            showOnly23CDM2IOAcurve = true;
+        else
+            theRatioLims = [0.1 10];
+            theRatioTicks = [0.1 0.3 1 3 10]; 
+            showOnly23CDM2IOAcurve = false;
+        end
         
         load('BanksCSF.mat', 'BanksCSF');
         for k = 1:numel(theFigData)
@@ -88,11 +102,13 @@ function run_LuminanceVaryConditions
         
         generateFigureForPaper(theFigData, examinedPupilSizeLegends, variedParamName, sprintf('%s_%s',mosaicName, opticsName), ...
             'figureType', 'CSF', ...
-            'inGraphText', ' A ', ...
+            'inGraphText', '', ...
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
+            'showSubjectData', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ...
-            'showBanksPaperIOAcurves', true);
+            'showBanksPaperIOAcurves', true, ...
+            'showOnly23CDM2IOAcurve', showOnly23CDM2IOAcurve);
     end
 end

@@ -37,9 +37,6 @@ function run_EyeMovementVaryConditions
 
     condIndex = 0;
     
-    
-    if (1==2)
-    % FINDING PERFORMANCE ON IONEAN - Friday Sept 7 at 10:00 AM
     condIndex = condIndex+1;  
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).classifier = 'svmV1FilterBank';
@@ -49,18 +46,28 @@ function run_EyeMovementVaryConditions
     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
     examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
-    end
+
     
-    % RUNNING RESPONSE COMPUTE ON LEVIATHAN - Friday Sept 7 at 10:00 AM
     condIndex = condIndex+1;  
-    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).classifier = 'svmV1FilterBank';
-    examinedCond(condIndex).legend = 'fixational eye movements, SVM-Template';
+    examinedCond(condIndex).legend = 'no eye movements, SVM-QTemplate';
     examinedCond(condIndex).centeredEMpaths = true;
     examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 21 frames, each 100 msec long)
     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
-    examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
+    examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+    
+    
+%     condIndex = condIndex+1;  
+%     examinedCond(condIndex).emPathType = 'random';
+%     examinedCond(condIndex).classifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).legend = 'fixational eye movements, SVM-Template';
+%     examinedCond(condIndex).centeredEMpaths = true;
+%     examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 21 frames, each 100 msec long)
+%     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+%     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+%     examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
 
     
     
@@ -177,7 +184,7 @@ function run_EyeMovementVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     
     params.visualizeResponses = ~true;
@@ -191,7 +198,7 @@ function run_EyeMovementVaryConditions
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
@@ -220,6 +227,7 @@ function run_EyeMovementVaryConditions
             'figureType', 'CSF', ...
             'inGraphText', '', ...
             'plotFirstConditionInGray', true, ...
+            'showSubjectData', (params.pupilDiamMm == 2), ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks ...

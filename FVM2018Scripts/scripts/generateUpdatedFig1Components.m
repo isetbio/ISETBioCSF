@@ -4,8 +4,8 @@ function generateUpdatedFig1Components
     rootPath = strrep(rootPath0, 'scripts', 'resources');
     videoOutDir = strrep(rootPath0, 'scripts', 'updatedComponentFigs');
     
-    hFig = runConditionToVisualizePsychometricCurve();
-    NicePlot.exportFigToPDF(fullfile(videoOutDir,'PsychometricCurveComponent.pdf'), hFig, 300);
+    %hFig = runConditionToVisualizePsychometricCurve();
+    %NicePlot.exportFigToPDF(fullfile(videoOutDir,'PsychometricCurveComponent.pdf'), hFig, 300);
 
     visualizedWavelengths = [450 532 624 708];
     visualizedWavelengthsPSF = [450 480 532 550 624 708];
@@ -32,8 +32,8 @@ function generateUpdatedFig1Components
     hFig = generatePSFFigComponent(theOI, visualizedWavelengthsPSF);
     NicePlot.exportFigToPNG(fullfile(videoOutDir, 'PSFsComponent.png'), hFig, 300);
     
-    emPathLengthSecs = 0.2;
-    theMosaic.integrationTime = 5/1000;
+    emPathLengthSecs = 0.45;
+    theMosaic.integrationTime = 2.5/1000;
     fixationalEyeMovementsNum = round(emPathLengthSecs/theMosaic.integrationTime);
     nTrials = 1;
     theEMPath = generateTheEMPath(theMosaic, fixationalEyeMovementsNum, nTrials, videoOutDir);
@@ -121,11 +121,17 @@ function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPatt
     hFig = figure(5); clf
 
     if (makeGif)
-        set(hFig, 'Position', [10 10 128 128], 'Color', [1 1 1]);
+        gifSizePixels = 96;
+        minFigSize = 160;
+        marginPixels = (minFigSize - gifSizePixels)/2;
+        set(hFig, 'Position', [10 10 minFigSize/2 minFigSize/2], 'Color', [1 1 1], 'MenuBar', 'none', 'ToolBar', 'none', 'DockControls', 'off');
         ax = subplot('Position', [0.00 0.00 1.0 1.0]);
         gifFineName = fullfile(videoOutDir,sprintf('%sVideo.gif',signalName));
         showColorBar = false;
         labelColorBarTicks = false;
+        backgroundColor = [0.2 0.2 0.2];
+        blurGif = true;
+        
     else
         set(hFig, 'Position', [10 10 400 420], 'Color', [1 1 1]);
         ax = subplot('Position', [0.02 0.02 0.96 0.96]);
@@ -138,11 +144,12 @@ function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPatt
         
         showColorBar = true;
         labelColorBarTicks = true;
+        backgroundColor = [0 0 0];
     end
     
     activationLUT = gray(1024);
     titleForColorBar = ''; %'R*/5 msec';
-    backgroundColor = [0 0 0];
+    
     
     sampledHexMosaicXaxis = squeeze(theMosaic.patternSupport(1, :, 1));
     sampledHexMosaicYaxis = squeeze(theMosaic.patternSupport(:, 1, 2));
@@ -155,19 +162,21 @@ function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPatt
     for iTrial = 1:nTrials
     for emIndex = 1:emNum
         frameIndex = frameIndex + 1;
-        
+        peakFrame = emNum/2;
         if (makeGif)
-            ff = emIndex - emNum/2;
-            sigma = emNum/6;
-            if (emIndex < emNum/2)
-                fraction = exp(-0.5*(ff/sigma)^2);
-            else
-                fraction = 1;
+            ff = emIndex - peakFrame;
+            sigma = peakFrame/3;
+            fractionGauss = 2*exp(-0.5*(ff/sigma)^2);
+            if (fractionGauss > 1)
+                fractionGauss = 1;
             end
-            fraction = 0.4 + fraction;
-            if (fraction > 1)
-                fraction = 1;
+            minFraction = 0.55;
+            maxFraction = 1.1;
+            fraction = minFraction + fractionGauss;
+            if (fraction > maxFraction)
+                fraction = maxFraction;
             end
+
             xRange = xFullRange * fraction*[-1 1]/1e-6;
             yRange = yFullRange * fraction*[-1 1]/1e-6;
         else
@@ -199,21 +208,41 @@ function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPatt
         drawnow;
         % Capture frame
         frame = getframe(hFig);
-        
+
         if (makeGif)
+            
+            % Smooth with the smoothing kernel
+            data = frame.cdata;
+            rFactor = fractionGauss;
+            gaussSigmaPixels = 0.9-0.2*rFactor^0.5; % 0.6*(2.0*rFactor^0.5);
+            frame.cdata = data(marginPixels+(1:gifSizePixels), marginPixels+(1:gifSizePixels),:);
+            data = frame.cdata;
+            
+            if (blurGif)
+                 dataGray = squeeze(sum(data,3))/3;
+   
+                 dataGray = imgaussfilt(dataGray, gaussSigmaPixels);
+                 maxNow = prctile(dataGray(:), 98-3*rFactor^1.0);
+                 dataGray = 256 * dataGray / maxNow;
+                 dataGray(dataGray>256) = 256;
+ 
+                 for plane = 1:3
+                     data(:,:,plane) = uint8(dataGray);
+                 end
+                 frame.cdata = data;
+            end
+             
             im = frame2im(frame); 
-            [imind,cm] = rgb2ind(im,256);
+            [imind,cm] = rgb2ind(im,256, 'nodither');
             % Write to the GIF File 
               if frameIndex == 1 
                   imwrite(imind,cm,gifFineName,'gif', ...
                       'Loopcount',inf, ...
-                      'DelayTime', 50/1000, ...
-                      'BackgroundColor', 0); 
+                      'DelayTime', 0/1000); 
               else 
                   imwrite(imind,cm,gifFineName,'gif', ...
                       'WriteMode','append', ...
-                      'DelayTime', 50/1000, ...
-                      'BackgroundColor', 0); 
+                      'DelayTime', 0/1000); 
               end 
         else
             % Add video frame
@@ -410,10 +439,22 @@ end
 
 function theEMPath = generateTheEMPath(theMosaic, eyeMovementsNum, nTrials, videoOutDir)
     fixEMobj = fixationalEM();
+    randomSeed = 7;  % 857;
     fixEMobj.computeForConeMosaic(theMosaic, eyeMovementsNum, ...
         'nTrials', nTrials, ...
-        'rSeed', 857);
+        'rSeed', randomSeed );
     theEMPath = fixEMobj.emPos;
+
+    centerPath = true;
+    if (centerPath)
+        xMedian = median(squeeze(theEMPath(1,:,1)));
+        yMedian = median(squeeze(theEMPath(1,:,2)));
+        theEMPath(:,:,1) = theEMPath(:,:,1) - xMedian;
+        theEMPath(:,:,2) = theEMPath(:,:,2) - yMedian;
+        % We cannot set the emPos, so the visualization below shows the 
+        % uncentered path
+        %fixEMobj.emPos = theEMPath;
+    end
     
     if (1==1)
     fixEMobj.generateEMandMosaicComboVideo(...
@@ -468,10 +509,12 @@ function [theScene, sensorImageRGB] = generateTheScene(rootPath,theDisplay, theM
     meanLuminance = [];
     theScene = sceneFromFile(sensorImageRGB, 'rgb', meanLuminance, theDisplay);
         
-    meanLuminance = sceneGet(theScene, 'mean luminance');
-    
+    meanLuminance = sceneGet(theScene, 'mean luminance')
+    theScene = sceneAdjustLuminance(theScene, 100)
+    meanLuminance = sceneGet(theScene, 'mean luminance')
+    pause
     % Scale the scene to be a little larger than the mosaic
-    theScene = sceneSet(theScene, 'h fov', theMosaicFOV(1)*2.0);
+    theScene = sceneSet(theScene, 'h fov', theMosaicFOV(1)*0.9);
 end
 
 function theDisplay = generateTheDisplay()

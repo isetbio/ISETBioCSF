@@ -59,7 +59,7 @@ function run_MosaicsVaryConditionsFor2MMPupil
         params.computeMosaic = ~true; 
         params.visualizeMosaic = ~true;
 
-        params.computeResponses = true;
+        params.computeResponses = ~true;
         params.computePhotocurrentResponseInstances = ~true;
         params.visualizeMosaic = makeMosaicsFigure;
         params.visualizeResponses = ~true;
@@ -89,13 +89,18 @@ function run_MosaicsVaryConditionsFor2MMPupil
     
     if (makeSummaryFigure)
         variedParamName = 'Mosaic';
-        theRatioLims = [0.02 1.0];
-        theRatioTicks = [0.02 0.05 0.1 0.2 0.5 1.0 2.0];
+        if (params.pupilDiamMm == 2)
+            theRatioLims = [0.02 1.0];
+            theRatioTicks = [0.02 0.05 0.1 0.2 0.5 1.0 2.0];
+        else
+            theRatioLims = [0.3 1.0];
+            theRatioTicks = [0.3 0.5 0.7 1.0];
+        end
         generateFigureForPaper(theFigData, examinedMosaicLegends, variedParamName, opticsName, ...
             'figureType', 'CSF', ...
             'inGraphText', '', ...
             'plotFirstConditionInGray', true, ...
-            'showSubjectData', true, ...
+            'showSubjectData', (params.pupilDiamMm == 2), ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks ...
@@ -104,8 +109,8 @@ function run_MosaicsVaryConditionsFor2MMPupil
 
     if (makeMosaicsFigure)
         generateMosaicsFigure(theMosaicTypesAtSpecificSF, examinedMosaicLegends,  ...
-            'inGraphTexts', {}, ... % {' A ', ' B ', ' C ', ' D '}, ...
-            'visualizedFOV', 0.55);
+            'inGraphTexts', {}, ...
+            'visualizedFOV', 0.5/2);
     end
 end
 

@@ -12,16 +12,17 @@ function run_EyeMovementVaryConditions2mmPupil
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
     
     % Optics to use
-    opticsName = 'ThibosBestPSFSubject3MMPupil';
     opticsName = 'ThibosAverageSubject3MMPupil';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     defaultSpatialPoolingKernelParams = params.spatialPoolingKernelParams;
     
-    % Make spatialpooling kernel params struct for SVM-Template
-    svmTemplateSpatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
-    svmTemplateSpatialPoolingKernelParams.type = 'V1CosUnit';
-    svmTemplateSpatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    % Make spatialpooling kernel params struct for SVM-Template with HW
+    % rectifier activation function
+    svmTemplateHalfWaveRectSpatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+    svmTemplateHalfWaveRectSpatialPoolingKernelParams.type = 'V1CosUnit';
+    svmTemplateHalfWaveRectSpatialPoolingKernelParams.activationFunction = 'halfWaveRectifier';
+    
     
     % Adjust any params we want to change from their default values
     params.opticsModel = opticsName;

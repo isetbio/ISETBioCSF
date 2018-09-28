@@ -3,7 +3,9 @@ function make_SVMRepsComboFigure
 %  
     % Which spatial frequency to analyze
     thePanelLabels = {' B ', ' C '};         % Label for the two psychometric function panels
-    computationInstance = 8;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
+    thePanelLabels = {'', ''}; 
+    
+    computationInstance = 32;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
     
     
     performanceClassifiersVisualized = {'svm', 'svmV1FilterBank', 'mlpt'};     % Choose between 'svm' and 'svmV1FilterBank'
@@ -84,6 +86,8 @@ function make_SVMRepsComboFigure
         otherwise
             error('Training samples sequence not set for computationInstance:%d', computationInstance);
     end
+    
+    computationalInstanceLabel = '';
     
     for k = 1:numel(trainingSamples)
         performanceTrialsUsed = trainingSamples(k);

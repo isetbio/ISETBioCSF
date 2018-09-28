@@ -18,8 +18,8 @@ function run_ConditionToVisualizePhotocurrentResponses
     params.coneContrastDirection = 'L+M+S';
     params.lowContrast = 0.1; % was 0.01;
     params.highContrast =  1.0; % was 0.1;
-    params.nContrastsPerDirection = 5;
-    params.nTrainingSamples = 16;
+    params.nContrastsPerDirection = 2;
+    params.nTrainingSamples = 4;
     params.performanceTrialsUsed = [];
     
     % Response duration params
@@ -28,7 +28,7 @@ function run_ConditionToVisualizePhotocurrentResponses
     params.responseExtinctionMilliseconds = 50;
     
     % Eye movement setup
-    params.emPathType =  'frozen0'; % 'random';
+    params.emPathType =  'random';
     params.centeredEMPaths = true;
     
     % Simulation steps to perform
@@ -38,7 +38,7 @@ function run_ConditionToVisualizePhotocurrentResponses
     
     params.computePhotocurrentResponseInstances = true;
     params.visualizeDisplay = ~true;
-    params.visualizeResponses = ~true;
+    params.visualizeResponses = true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
@@ -47,7 +47,7 @@ function run_ConditionToVisualizePhotocurrentResponses
     params.visualizeMosaicWithFirstEMpath = ~true;
     
     params.visualizeKernelTransformedSignals = true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 
