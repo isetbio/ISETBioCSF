@@ -12,17 +12,22 @@ function testOI
     gaborOI = oiCreate();
     
     if (1==1)
-    padStruct = struct('sizeDegs', [], 'value', 'mean photons');
-    padStruct.sizeDegs = 1;
+    padStruct = struct('sizeDegs', 1, 'value', 'mean photons');
+    padStruct = struct('value', 'zero photons');
+    %padStruct = struct('sizeDegs', 1);
+    %padStruct.value = 'zero photons';
     gaborOI = oiSet(gaborOI, 'pad', padStruct);
     end
     
     gaborOI = oiCompute(gaborOI, gaborScene);
     
     
-    figNo = 3; 
+    figNo = 1; 
     visualizeLuminance(gaborScene, 10); figNo = figNo + 1;
     visualizeLuminance(gaborOI, 0.1); figNo = figNo + 1;
+    
+    figNo = 3; 
+    visualizeLuminance(gaborOI, nan); figNo = figNo + 1;
     
 end
 
@@ -30,14 +35,19 @@ function visualizeLuminance(obj, modulation)
 
     if (strcmp(obj.type, 'scene'))
         lumMap = sceneGet(obj, 'luminance');
-        lumMap = lumMap - sceneGet(obj, 'mean luminance');
+        if (~isnan(modulation))
+            lumMap = lumMap - sceneGet(obj, 'mean luminance');
+        end
         spatialSupport = sceneGet(obj, 'spatial support');
         FOV = sceneGet(obj, 'horizontalFOV');
     else
         lumMap = oiGet(obj, 'illuminance');
-        lumMap = lumMap - oiGet(obj, 'mean illuminance');
+        if (~isnan(modulation))
+            lumMap = lumMap - oiGet(obj, 'mean illuminance');
+        end
         FOV = oiGet(obj, 'hfov');
         spatialSupport = oiGet(obj, 'spatial support');
+        lumMap(1:5,1:5)
     end
     
     [xSupport, ySupport] = getXYspatialSupports(spatialSupport, FOV);
@@ -46,8 +56,13 @@ function visualizeLuminance(obj, modulation)
     imagesc(xSupport, ySupport, lumMap);
     axis 'image'
     xlabel('degs');
-    set(gca, 'CLim', modulation*[-1 1])
-    colormap(gray(512))
+    if (~isnan(modulation))
+        set(gca, 'CLim', modulation*[-1 1]);
+    else
+        set(gca, 'CLim', [min(lumMap(:)) max(lumMap(:))]);
+    end
+    colormap(gray(512));
+    colorbar;
     drawnow;
 end
 
