@@ -5,15 +5,24 @@ function testOI
     rParams.colorModulationParams.coneContrasts = [0.5 0.5 0.5];
     rParams.spatialParams.row = 256;
     rParams.spatialParams.col = 256;
-    rParams.spatialParams.fieldOfViewDegs = 0.2;
+    rParams.spatialParams.fieldOfViewDegs = 0.3;
     rParams.spatialParams.cyclesPerDegree = 16;
     
     gaborScene = colorSceneCreate(rParams.spatialParams,rParams.backgroundParams,rParams.colorModulationParams,rParams.oiParams);
     gaborOI = oiCreate();
+    
+    if (1==1)
+    padStruct = struct('sizeDegs', [], 'value', 'mean photons');
+    padStruct.sizeDegs = 1;
+    gaborOI = oiSet(gaborOI, 'pad', padStruct);
+    end
+    
     gaborOI = oiCompute(gaborOI, gaborScene);
     
-    visualizeLuminance(gaborScene, 10);
-    visualizeLuminance(gaborOI, 0.1);
+    
+    figNo = 3; 
+    visualizeLuminance(gaborScene, 10); figNo = figNo + 1;
+    visualizeLuminance(gaborOI, 0.1); figNo = figNo + 1;
     
 end
 
@@ -21,7 +30,7 @@ function visualizeLuminance(obj, modulation)
 
     if (strcmp(obj.type, 'scene'))
         lumMap = sceneGet(obj, 'luminance');
-        lumMap = lumMap- sceneGet(obj, 'mean luminance');
+        lumMap = lumMap - sceneGet(obj, 'mean luminance');
         spatialSupport = sceneGet(obj, 'spatial support');
         FOV = sceneGet(obj, 'horizontalFOV');
     else
