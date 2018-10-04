@@ -21,6 +21,9 @@ function params = getCSFpaperDefaultParams(mosaicName,  computationInstance)
     % Stimulus size
     params.imagePixels = 512;           % stimuli will be 512x512 pixels
     
+    % Grating orientation
+    params.stimulusOrientationDegs = 0;
+    
     % Conrast axis sampling
     params.lowContrast = 0.00001*3;
     params.highContrast =  1.0;

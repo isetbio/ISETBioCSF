@@ -23,7 +23,7 @@ function run_ConditionToVisualizeSceneAndOpticalImages
     params.nTrainingSamples = 8;
     params.performanceTrialsUsed = [];
     params.cyclesPerDegreeExamined = [16];
-    
+    params.stimulusOrientationDegs = 45;
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
