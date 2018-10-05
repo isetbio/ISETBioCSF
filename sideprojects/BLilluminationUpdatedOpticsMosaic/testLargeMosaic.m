@@ -1,6 +1,7 @@
 function testLargeMosaic
 
     ibioDataDir = '/Volumes/DropBoxDisk/Dropbox/Dropbox (Aguirre-Brainard Lab)/IBIO_data';
+    ibioDataDir = '/media/dropbox_disk/dropboxlab/IBIO_data';
     %ibioDataDir = '/Volumes/SamsungT3/Dropbox/AguirreBrainardLabsDropbox/IBIO_data';
     %ibioDataDir = '/Volumes/IthakasPassport/DropboxLab/AquirreBrainardLab/IBIO_data'
 
@@ -53,7 +54,7 @@ function testLargeMosaic
         end % illumIndex
     end % sceneIndex
     
-    resamplingFactor = 5;
+    resamplingFactor = 4;
     integrationTime = 50/1000;
     
     if (1==2)
@@ -64,7 +65,7 @@ function testLargeMosaic
     
     cReg.compute(oi);
     pause
-    end
+   
     
     cEccBased = coneMosaicHex(resamplingFactor, ...
         'fovDegs', [oiGet(oi,'hfov') oiGet(oi, 'vfov')], ...
@@ -75,4 +76,15 @@ function testLargeMosaic
     fprintf('Cones num: %d\n', numel(find(cEccBased.pattern > 1)));
     
     save('largeMosaic.mat', 'cEccBased');
+    end
+    
+    load('largeMosaic.mat', 'cEccBased');
+    tic
+    
+    figure(111); clf;
+     ax = subplot('Position', [0.05, 0.05, 0.94, 0.94]);
+    isomerizations =cEccBased.compute(oi);
+    toc
+    cEccBased.renderActivationMap(ax, isomerizations)
+    cEccBased.displayInfo();
 end
