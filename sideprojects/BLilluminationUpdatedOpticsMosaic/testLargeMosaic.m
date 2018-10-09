@@ -80,7 +80,9 @@ function testLargeMosaic
     figure(111);
     ax = subplot('Position', [0.05 0.05 0.94 0.94]);
     cEccBased.visualizeGrid('axesHandle', ax);
-    set(gca, 'YLim', [-1 1], 'XLim', [-12 0]);
+    set(ax, 'YLim', [-1 1], 'XLim', [-12 0]);
+    drawnow;
+    
     pause
     
     tic
