@@ -3,29 +3,33 @@ function run_GratingOrientationVaryConditions
 % the typical subject PSF
 %  
     % How to split the computation
-    % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 0;
+    % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all but 2 largest)
+    computationInstance = 3;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = ~true;
-    
-        
+     
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
     % Optics to use
-    params.opticsModel = 'ThibosAverageSubject3MMPupil';
+    params.opticsModel = 'ThibosDefaultSubject3MMPupil';
     
+    % Optical image padding. If the FOV of the scene is less than
+    % opticalImagePadSizeDegs, we will pad the oi so that its size
+    % is equal to opticalImagePadSizeDegs.
+    params.opticalImagePadSizeDegs = 0.5;
+    
+    % Grating orientations to examine
     examinedOrientations = [45 90 135];
     examinedOrientationLegends = {...
         '45 deg' ...
         '90 deg' ...
         '135 deg' ...
     };
-
+ 
     params.coneContrastDirection = 'L+M+S';
-    params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
     
     % Response duration params
     params.frameRate = 10; %(1 frames)

@@ -34,7 +34,7 @@ function params = getCSFpaperDefaultParams(mosaicName,  computationInstance)
     params.blur = true;                 % employ optics
     params.apertureBlur = true;         % employ cone aperture blur
     params.wavefrontSpatialSamples = 261*2+1;           % This gives us an OTF sampling of 1.003 c/deg
-    params.minimumOpticalImagefieldOfViewDegs = 1.0;    % optical image will be at least 1 deg
+    params.opticalImagePadSizeDegs = [];
     params.pupilDiamMm = 3.0;                           % 3 is more appropriate for a 100 cd/m2 mean scene luminance
     
     

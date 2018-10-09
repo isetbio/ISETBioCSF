@@ -33,3 +33,4 @@ oiParams.pupilDiamMm = 3;
 oiParams.umPerDegree = 300;
 oiParams.wavefrontSpatialSamples = 201;
 oiParams.opticsModel = 'WvfHuman';
+oiParams.opticalImagePadSizeDegs = [];

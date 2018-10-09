@@ -540,6 +540,7 @@ if (p.Results.compute)
         
         % Parfor over blocks of trials
         parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum) 
+        %for trialBlock = 1:nParforTrialBlocks
             % Get the parallel pool worker ID
             t = getCurrentTask();
             

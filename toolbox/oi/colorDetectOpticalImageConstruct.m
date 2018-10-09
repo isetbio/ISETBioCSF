@@ -50,8 +50,11 @@ switch (oiParams.opticsModel)
         error('Unknown opticsModel string passed: ''%s''.', oiParams.opticsModel);
 end
 
-% Set the FOV
-theOI = oiSet(theOI,'h fov',oiParams.fieldOfViewDegs);
+% Set the padding for the optical image
+if (isfield(oiParams, 'opticalImagePadSizeDegs')) && (~isempty(oiParams.opticalImagePadSizeDegs))
+    %warnmsg(sprintf('Will apply custom oi padding with size: %2.2f degrees\n', oiParams.opticalImagePadSizeDegs));
+    theOI = oiSet(theOI, 'pad', struct('sizeDegs', oiParams.opticalImagePadSizeDegs, 'value', 'mean photons'));
+end
 
 % Set the fNumber
 focalLength = oiGet(theOI,'distance');

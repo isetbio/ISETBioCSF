@@ -18,7 +18,7 @@ p.addParameter('pupilDiamMm',2,@isnumeric);
 p.addParameter('blur',true,@islogical);
 p.addParameter('opticsModel','WvfHuman',@ischar);
 p.addParameter('wavefrontSpatialSamples', 201, @isnumeric);      %% * * * NEW * * * 
-p.addParameter('minimumOpticalImagefieldOfViewDegs', 1.0, @isnumeric);  %% * * * NEW * * * 
+p.addParameter('opticalImagePadSizeDegs', [], @isnumeric);  %% * * * NEW * * * 
 
 % Mosaic params
 p.addParameter('integrationTime', 5.0/1000, @isnumeric);
@@ -113,7 +113,6 @@ p.parse(varargin{:});
 % Take a snapshot of the current IBIOColorDetect deployment
 IBIOColorDetectConfig = tbUseProject('IBIOColorDetect');
 IBIOColorDetectSnapshot = tbDeploymentSnapshot(IBIOColorDetectConfig);
-
 
 % Following does not work, so we will write the stuct out ourselves
 %tbWriteConfig(IBIOColorDetectShapshot, 'configPath', 'IBIOColorDetect_snapshot.json');
@@ -451,13 +450,22 @@ end
 
 
 % Method to update the optical image params
-function rParams = updateOpticalImageParams(rParams, userParams, fieldOfVieDegs)
+function rParams = updateOpticalImageParams(rParams, userParams, fieldOfViewDegs)
+
+    if (~isempty(userParams.opticalImagePadSizeDegs)) && (userParams.opticalImagePadSizeDegs > fieldOfViewDegs) 
+        padSizeDegs = userParams.opticalImagePadSizeDegs;
+        fprintf(2,'scene FOV (%f) is smaller than opticalImagePadSizeDeg (%f). Will pad\n', fieldOfViewDegs, padSizeDegs);
+    else
+        padSizeDegs = [];
+    end
+    
     rParams.oiParams = modifyStructParams(rParams.oiParams, ...
         	'blur', userParams.blur, ...
             'pupilDiamMm', userParams.pupilDiamMm, ...
             'wavefrontSpatialSamples', userParams.wavefrontSpatialSamples, ...
             'opticsModel', userParams.opticsModel,...
-            'fieldOfViewDegs', max([userParams.minimumOpticalImagefieldOfViewDegs fieldOfVieDegs]) ...
+            'fieldOfViewDegs', fieldOfViewDegs, ...
+            'opticalImagePadSizeDegs', padSizeDegs ...
         );
 end
 
