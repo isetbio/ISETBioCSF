@@ -70,7 +70,7 @@ function testLargeMosaic
     else
         load('largeMosaic.mat', 'cEccBased');
         cEccBased.eccBasedConeQuantalEfficiency = true;
-        save('largeMosaic.mat', 'cEccBased');
+        %save('largeMosaic.mat', 'cEccBased');
     end
     
     
@@ -80,7 +80,7 @@ function testLargeMosaic
     figure(111);
     ax = subplot('Position', [0.05 0.05 0.94 0.94]);
     cEccBased.visualizeGrid('axesHandle', ax);
-    set(ax, 'YLim', [-1 1], 'XLim', [-12 0]);
+    set(ax, 'YLim', [-1 1]*cEccBased.micronsPerDegree*1e-6, 'XLim', [-12 0]*cEccBased.micronsPerDegree*1e-6);
     drawnow;
     
     pause
