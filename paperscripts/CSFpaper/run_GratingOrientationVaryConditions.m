@@ -14,7 +14,7 @@ function run_GratingOrientationVaryConditions
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
     % Optics to use
-    params.opticsModel = 'ThibosDefaultSubject3MMPupil';
+    params.opticsModel = 'ThibosAverageSubject3MMPupil';
     
     % Optical image padding. If the FOV of the scene is less than
     % opticalImagePadSizeDegs, we will pad the oi so that its size
@@ -29,7 +29,7 @@ function run_GratingOrientationVaryConditions
         '90 deg' ...
         '135 deg' ...
     };
- examinedOrientations = examinedOrientations(2:4)
+    examinedOrientations = examinedOrientations(2:4)
     
     params.coneContrastDirection = 'L+M+S';
     
