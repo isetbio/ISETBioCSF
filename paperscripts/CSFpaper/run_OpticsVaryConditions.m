@@ -3,13 +3,13 @@ function run_OpticsVaryConditions
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 0;
+    computationInstance = 3;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
+    makeSummaryFigure = ~true;
     
     % Whether to visualize the employed PSFs
-    makePSFfigure = true;
+    makePSFfigure = ~true;
     visualizedWavelengths = 550;
         
     % Mosaic to use
@@ -20,6 +20,7 @@ function run_OpticsVaryConditions
     % Optics models we tested
     examinedOpticsModels = {...
         'Geisler' ...
+        'MarimontWandell' ...
         'ThibosBestPSFSubject3MMPupil' ...
         'ThibosDefaultSubject3MMPupil' ...
         'ThibosAverageSubject3MMPupil' ...
@@ -28,19 +29,21 @@ function run_OpticsVaryConditions
     };
     examinedOpticsModelLegends = {...
         'Geisler PSF (A)' ...
-        'Subject 1 PSF (B)' ...
-        'Subject 2 PSF (C)' ...
-        'Subject 3 PSF (D)' ...
-        'Subject 4 PSF (E)' ...
-        'Subject 5 PSF (F)' ...
+        'Marimont-Wandell (B)' ...
+        'Subject 1 PSF (C)' ...
+        'Subject 2 PSF (D)' ...
+        'Subject 3 PSF (E)' ...
+        'Subject 4 PSF (F)' ...
+        'Subject 5 PSF (G)' ...
     };
 
-     idx = [1 2 3 4 5 6];
+     idx = [2:2];
      examinedOpticsModels = {examinedOpticsModels{idx}};
      examinedOpticsModelLegends = {examinedOpticsModelLegends{idx}};
 %     
     params.coneContrastDirection = 'L+M+S';
-    params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
+    params.cyclesPerDegreeExamined % = [2 4 8 16 32 50 60];
+    
     
     % Response duration params
     params.frameRate = 10; %(1 frames)
@@ -55,7 +58,7 @@ function run_OpticsVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -67,7 +70,7 @@ function run_OpticsVaryConditions
     params.visualizeDisplay = ~true;
         
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
@@ -113,9 +116,11 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
     psfRange = 2.5;
     showTranslation = false;
     
+    rowsNum = 3;
+    colsNum = 3;
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-                'rowsNum', 3, ...
-                'colsNum', 2, ...
+                'rowsNum', rowsNum, ...
+                'colsNum', colsNum, ...
                 'heightMargin', 0.015, ...
                 'widthMargin', 0.02, ...
                 'leftMargin', 0.01, ...
@@ -125,36 +130,45 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
             
     hFig = figure(2); clf;
     formatFigureForPaper(hFig, 'figureType', 'PSFS');
-        
+    set(hFig, 'Position', [10 10 880 920])
     for oiIndex = 1:numel(examinedOpticsModels)    
         switch (examinedOpticsModelLegends{oiIndex})
             case 'Geisler PSF (A)'
                 prefix = ' A ';
-            case 'Subject 1 PSF (B)' 
+            case 'Marimont-Wandell (B)'
                 prefix = ' B ';
-            case 'Subject 2 PSF (c)'
+            case 'Subject 1 PSF (C)' 
                 prefix = ' C ';
-            case 'Subject 3 PSF (D)'
+            case 'Subject 2 PSF (D)'
                 prefix = ' D ';
-            case 'Subject 4 PSF (E)'
+            case 'Subject 3 PSF (E)'
                 prefix = ' E ';
-            case 'Subject 5 PSF (F)'
+            case 'Subject 4 PSF (F)'
                 prefix = ' F ';
+            case 'Subject 5 PSF (G)'
+                prefix = ' G ';
         end
         
-        col = mod(oiIndex-1,2)+1;
-        row = floor((oiIndex-1)/2)+1;
+        col = mod(oiIndex-1,colsNum)+1;
+        row = floor((oiIndex-1)/colsNum)+1;
         
-        if (strcmp(examinedOpticsModels{oiIndex}, 'Geisler'))
-            pupilDiamMm = 3;
-            umPerDegree = 300;
-            theOI = oiCreate('wvf human', pupilDiamMm,[],[], umPerDegree);
-            theCustomOI = ptb.oiSetPtbOptics(theOI,'opticsModel','Geisler');
-        else
-            [theCustomOI, ~,~] = oiWithCustomOptics(examinedOpticsModels{oiIndex}, ...
-             wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree, ...
-                'centeringWavelength', 550, ...  %  center PSF at 550
-                'showTranslation',showTranslation);
+        switch (examinedOpticsModels{oiIndex})
+            case 'Geisler'
+                pupilDiamMm = 3;
+                umPerDegree = 300;
+                theOI = oiCreate('wvf human', pupilDiamMm,[],[], umPerDegree);
+                theCustomOI = ptb.oiSetPtbOptics(theOI,'opticsModel','Geisler');
+                
+            case 'MarimontWandell'
+                pupilDiamMm = 3;
+                umPerDegree = 300;
+                theCustomOI = oiCreate('human', pupilDiamMm,[],[], umPerDegree);
+            
+            otherwise
+                [theCustomOI, ~,~] = oiWithCustomOptics(examinedOpticsModels{oiIndex}, ...
+                 wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree, ...
+                    'centeringWavelength', 550, ...  %  center PSF at 550
+                    'showTranslation',showTranslation);
         end
         
         optics = oiGet(theCustomOI, 'optics');
@@ -181,7 +195,7 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
             
         pos = subplotPosVectors(row,col).v;   
         subplot('Position', pos);
-        contourLevels = 0:0.1:1.0;
+        contourLevels = 0:0.05:0.95;
         contourf(xMinutes, yMinutes,wavePSF/max(wavePSF(:)), contourLevels);
         hold on;
         plot([0 0], [xMinutes(1) xMinutes(end)], 'r-', 'LineWidth', 1.0);
@@ -190,12 +204,13 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
         set(gca, 'XLim', psfRange*1.05*[-1 1], 'YLim', psfRange*1.05*[-1 1], 'FontSize', 14);
         set(gca, 'XTick', -10:1:10, 'YTick', -10:1:10);
         set(gca, 'YTickLabel', {});
-        if (row < 3)
-            set(gca, 'XTickLabel', {});
-        else
-            xlabel('retinal position (arc min)', 'FontWeight', 'bold');
-        end
-            
+%         if (row < 3)
+%             set(gca, 'XTickLabel', {});
+%         else
+%             xlabel('retinal position (arc min)', 'FontWeight', 'bold');
+%         end
+        xlabel('retinal position (arc min)', 'FontWeight', 'bold');
+        
         inGraphTextPos = [-2.4 2.0];
         t = text(gca, inGraphTextPos(1), inGraphTextPos(2), sprintf('%s', prefix));
         

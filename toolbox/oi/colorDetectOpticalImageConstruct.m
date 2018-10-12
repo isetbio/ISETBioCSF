@@ -37,6 +37,9 @@ switch (oiParams.opticsModel)
 
     case {'None', 'none'}
         theOI = ptb.oiSetPtbOptics(theOI,'opticsModel', 'DeltaFunction');
+    
+    case {'MarimontWandell'}
+        theOI = oiCreate('human');
         
     case {'wvfHuman', aCustomWvfModel}
         fprintf('Computing custom OTF optics\n')

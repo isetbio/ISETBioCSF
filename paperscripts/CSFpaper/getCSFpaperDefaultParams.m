@@ -45,7 +45,7 @@ function params = getCSFpaperDefaultParams(mosaicName,  computationInstance)
     params.freezeNoise = true;
     
     % Use all trials in the classifier (Specify [] to use all available trials)
-    params.performanceTrialsUsed = params.nTrainingSamples;
+    params.performanceTrialsUsed = [];
     
     %'mlpt', 'svm' or 'svmV1FilterBank';
     params.performanceClassifier = 'mlpt';
