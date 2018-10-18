@@ -282,13 +282,15 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 xtickformat(theAxes, '%.2f'); ytickformat(theAxes, '%.2f');
             end
             
-        case {'MOSAICS', 'MOSAICS2', 'PSFS', 'PSFS2'}
+        case {'MOSAICS', 'MOSAICS2', 'PSFS', 'PSFS2', 'OTFS'}
             if (isempty(theAxes))
                 if (strcmp(figureType, 'MOSAICS'))
                     set(hFig, 'Color', [1 1 1], 'Position', [10 10 900 900]);
                 elseif (strcmp(figureType, 'MOSAICS2'))
                     set(hFig, 'Color', [1 1 1], 'Position', [10 10 900 500]);
                 elseif (strcmp(figureType, 'PSFS'))
+                    set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 925]);
+                elseif (strcmp(figureType, 'OTFS'))
                     set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 925]);
                 elseif (strcmp(figureType, 'PSFS2'))
                     set(hFig, 'Color', [1 1 1], 'Position', [10 10 450 830]);
@@ -299,7 +301,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 else
                     axis(theAxes, 'square');
                 end
-                set(theAxes, 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                set(theAxes, 'FontSize', 22, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theAxes, 'on');
                 grid(theAxes, 'on');
             end
@@ -338,12 +340,12 @@ function varargout = formatFigureForPaper(hFig, varargin)
                     'XLim', [sfLims(1)-dx1 sfLims(2)+dx2], 'YLim', [csLims(1)-dy1 csLims(2)+dy2]);
                 box(theAxes, 'on'); grid(theAxes, 'on');
                 set(theAxes, 'FontSize', 22, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
-                xlabel(theAxes,'\it spatial frequency (c/deg)', 'Interpreter','tex', 'FontWeight', 'bold', 'FontSize', 22);
-                ylabel(theAxes,'\it contrast sensitivity', 'Interpreter','tex', 'FontWeight', 'bold', 'FontSize', 22);
+                xlabel(theAxes,'\it spatial frequency (c/deg)', 'Interpreter','tex', 'FontWeight', 'normal', 'FontSize', 24);
+                ylabel(theAxes,'\it contrast sensitivity', 'Interpreter','tex', 'FontWeight', 'normal', 'FontSize', 24);
             end
             
             if (~isempty(theLegend))
-                set(theLegend, 'FontSize', 20);
+                set(theLegend, 'FontSize', 20, 'Location', 'NorthEast');
             end
             
             if (~isempty(theText))
@@ -371,8 +373,8 @@ function varargout = formatFigureForPaper(hFig, varargin)
                     ytickformat(theRatioAxes,'%.2f')
                     box(theRatioAxes, 'on'); grid(theRatioAxes, 'on');
                     set(theRatioAxes, 'FontSize', 22, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
-                    xlabel(theRatioAxes,'spatial frequency (c/deg)', 'FontWeight', 'bold', 'FontSize', 20);
-                    ylabel(theRatioAxes,'sensitivity ratio', 'FontWeight', 'bold', 'FontSize', 20);
+                    xlabel(theRatioAxes,'\it spatial frequency (c/deg)', 'FontWeight', 'normal', 'FontSize', 24);
+                    ylabel(theRatioAxes,'\it sensitivity ratio', 'FontWeight', 'normal', 'FontSize', 24);
                     set(theAxes, 'XTickLabel', {});
                 end
             end

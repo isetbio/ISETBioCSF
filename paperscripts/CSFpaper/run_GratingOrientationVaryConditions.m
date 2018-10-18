@@ -4,10 +4,10 @@ function run_GratingOrientationVaryConditions
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all but 2 largest)
-    computationInstance = 2;
+    computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
      
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
@@ -21,15 +21,21 @@ function run_GratingOrientationVaryConditions
     % is equal to opticalImagePadSizeDegs.
     params.opticalImagePadSizeDegs = 0.5;
     
+    params.cyclesPerDegreeExamined = [4 8 16 32 50 60];
+    
     % Grating orientations to examine
-    examinedOrientations = [0 45 90 135];
+    delta = 22.5
+    examinedOrientations = [0 delta 45 45+delta 90 90+delta 135 135+delta];
     examinedOrientationLegends = {...
-        '0 deg' ...
+        ' 0 deg' ...
+        '22 deg' ...
         '45 deg' ...
+        '67 deg' ...
         '90 deg' ...
+        '112 deg' ...
         '135 deg' ...
+        '157 deg' ...
     };
-    examinedOrientations = examinedOrientations(2:4)
     
     params.coneContrastDirection = 'L+M+S';
     
@@ -46,7 +52,7 @@ function run_GratingOrientationVaryConditions
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -58,7 +64,7 @@ function run_GratingOrientationVaryConditions
     params.visualizeDisplay = ~true;
         
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     

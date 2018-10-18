@@ -219,10 +219,10 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
         if (isempty(inGraphTextPos))
             if (plotRatiosOfOtherConditionsToFirst)
                 inGraphTextPos(1) = 1.6;
-                inGraphTextPos(2) = 10000;
+                inGraphTextPos(2) = 7000;
             else
                 inGraphTextPos(1) = 1.6;
-                inGraphTextPos(2) = 9500;
+                inGraphTextPos(2) = 7000;
             end
         end
         t = text(theAxes, inGraphTextPos(1), inGraphTextPos(2), inGraphText);
@@ -237,6 +237,11 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
         refCPD = cpd{1};
         refSensitivity = contrastSensitivity{1};
         for condIndex = 2:numel(theFigData)
+            
+            saturationFactor = 0;
+            edgeColor = max(0, squeeze(colors(condIndex,:))-faceColor);
+            faceColor2 = min(1, squeeze(colors(condIndex,:)) + faceColor);
+                
             condCPD = cpd{condIndex};
             condSensitivity = contrastSensitivity{condIndex};
             ratios = zeros(1,numel(refCPD));
@@ -247,10 +252,10 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
                 end
             end
             plot(theRatioAxes, refCPD, ratios, ...
-                'ko-', 'Color', squeeze(colors(condIndex,:)), ...
-                'MarkerEdgeColor', squeeze(colors(condIndex,:)), ...
-                'MarkerFaceColor', min(1, squeeze(colors(condIndex,:)) + faceColor), ...
-                'MarkerSize',12,'LineWidth',2);
+                'ko-', 'Color', edgeColor, ...
+                'MarkerEdgeColor', edgeColor, ...
+                'MarkerFaceColor', faceColor2, ...
+                'MarkerSize',14,'LineWidth',3);
         end
         
         if (showSubjectData)
@@ -258,7 +263,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
                 'k-', 'Color', [0 0 0], ...
                 'MarkerEdgeColor', [0 0 0], ...
                 'MarkerFaceColor', [0.5 0.5 0.5], ...
-                'MarkerSize',12,'LineWidth',2);
+                'MarkerSize',14,'LineWidth',3);
         end
         
         hold(theRatioAxes, 'off');

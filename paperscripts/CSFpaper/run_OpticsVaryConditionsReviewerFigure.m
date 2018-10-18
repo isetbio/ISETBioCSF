@@ -1,4 +1,4 @@
-function run_OpticsVaryConditions
+function run_OpticsVaryConditionsReviewerFigure
 % This is the script used to assess the impact of different optics models on the CSF
 %  
     % How to split the computation
@@ -20,6 +20,7 @@ function run_OpticsVaryConditions
     % Optics models we tested
     examinedOpticsModels = {...
         'Geisler' ...
+        'MarimontWandell' ...
         'ThibosBestPSFSubject3MMPupil' ...
         'ThibosDefaultSubject3MMPupil' ...
         'ThibosAverageSubject3MMPupil' ...
@@ -28,19 +29,26 @@ function run_OpticsVaryConditions
     };
     examinedOpticsModelLegends = {...
         'Geisler PSF (A)' ...
-        'Subject 1 PSF (B)' ...
-        'Subject 2 PSF (C)' ...
-        'Subject 3 PSF (D)' ...
-        'Subject 4 PSF (E)' ...
-        'Subject 5 PSF (F)' ...
+        'Marimont-Wandell (B)' ...
+        'Subject 1 PSF (C)' ...
+        'Subject 2 PSF (D)' ...
+        'Subject 3 PSF (E)' ...
+        'Subject 4 PSF (F)' ...
+        'Subject 5 PSF (G)' ...
     };
 
-    idx = [1:6];
-    examinedOpticsModels = {examinedOpticsModels{idx}};
-    examinedOpticsModelLegends = {examinedOpticsModelLegends{idx}};
-     
+     idx = [1:7];
+     examinedOpticsModels = {examinedOpticsModels{idx}};
+     examinedOpticsModelLegends = {examinedOpticsModelLegends{idx}};
+%     
     params.coneContrastDirection = 'L+M+S';
-
+%    params.cyclesPerDegreeExamined = [60] %% = [2 4 8 16 32 50 60];
+    
+%     params.lowContrast = 0.1; % was 0.01;
+%     params.highContrast =  1.0; % was 0.1;
+%     params.nContrastsPerDirection = 2;
+%     params.nTrainingSamples = 4;
+    
     % Response duration params
     params.frameRate = 10; %(1 frames)
     params.responseStabilizationMilliseconds = 40;
@@ -90,7 +98,7 @@ function run_OpticsVaryConditions
 %             );
         generateFigureForPaper(theFigData, examinedOpticsModelLegends, variedParamName, mosaicName, ...
             'figureType', 'CSF', ...
-            'inGraphText', ' G ', ...
+            'inGraphText', 'R2', ...
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
@@ -113,7 +121,7 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
     showTranslation = false;
     
     rowsNum = 3;
-    colsNum = 2;
+    colsNum = 3;
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
                 'rowsNum', rowsNum, ...
                 'colsNum', colsNum, ...
@@ -124,23 +132,38 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
                 'bottomMargin', 0.05, ...
                 'topMargin', 0.001);
             
-    hFigPSF = figure(2); clf; 
+    hFigPSF = figure(2); clf;
+    hFigOTF = figure(3); clf;
+    
     formatFigureForPaper(hFigPSF, 'figureType', 'PSFS');
+    formatFigureForPaper(hFigOTF, 'figureType', 'OTFS');
+    
+    set(hFigPSF, 'Position', [10 10 880 1040])
+    set(hFigOTF, 'Position', [10 10 880 1040])
     
     for oiIndex = 1:numel(examinedOpticsModels)    
         switch (examinedOpticsModelLegends{oiIndex})
             case 'Geisler PSF (A)'
                 prefix = ' A ';
-            case 'Subject 1 PSF (B)' 
+                MTFcolor = [0.3 0.3 1.0]
+            case 'Marimont-Wandell (B)'
                 prefix = ' B ';
-            case 'Subject 2 PSF (C)'
+                MTFcolor = [1 0. 0.]
+            case 'Subject 1 PSF (C)' 
                 prefix = ' C ';
-            case 'Subject 3 PSF (F)'
+                MTFcolor = [0 0. 0.]
+            case 'Subject 2 PSF (D)'
                 prefix = ' D ';
-            case 'Subject 4 PSF (E)'
+                MTFcolor = [0 0. 0.]
+            case 'Subject 3 PSF (E)'
                 prefix = ' E ';
-            case 'Subject 5 PSF (F)'
+                MTFcolor = [0 0. 0.]
+            case 'Subject 4 PSF (F)'
                 prefix = ' F ';
+                MTFcolor = [0 0. 0.]
+            case 'Subject 5 PSF (G)'
+                prefix = ' G ';
+                MTFcolor = [0 0. 0.]
         end
         
         col = mod(oiIndex-1,colsNum)+1;
@@ -153,6 +176,11 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
                 theOI = oiCreate('wvf human', pupilDiamMm,[],[], umPerDegree);
                 theCustomOI = ptb.oiSetPtbOptics(theOI,'opticsModel','Geisler');
                 
+            case 'MarimontWandell'
+                pupilDiamMm = 3;
+                umPerDegree = 300;
+                theCustomOI = oiCreate('human', pupilDiamMm,[],[], umPerDegree);
+            
             otherwise
                 [theCustomOI, ~,~] = oiWithCustomOptics(examinedOpticsModels{oiIndex}, ...
                  wavefrontSpatialSamples, calcPupilDiameterMM, umPerDegree, ...
@@ -184,6 +212,7 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
         xMinutes = xMinutes(xx);
         yMinutes = yMinutes(yy);
             
+        figure(hFigPSF)
         pos = subplotPosVectors(row,col).v;   
         subplot('Position', pos);
         contourLevels = 0:0.05:0.95;
@@ -195,11 +224,12 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
         set(gca, 'XLim', psfRange*1.05*[-1 1], 'YLim', psfRange*1.05*[-1 1], 'FontSize', 14);
         set(gca, 'XTick', -10:1:10, 'YTick', -10:1:10);
         set(gca, 'YTickLabel', {});
-        if (row < 3)
-             %set(gca, 'XTickLabel', {});
-        else
-             xlabel('\it position (arc min)', 'FontWeight', 'normal', 'FontSize', 24);
-        end
+%         if (row < 3)
+%             set(gca, 'XTickLabel', {});
+%         else
+%             xlabel('retinal position (arc min)', 'FontWeight', 'bold');
+%         end
+        xlabel('retinal position (arc min)', 'FontWeight', 'bold');
         
         inGraphTextPos = [-2.4 2.0];
         t = text(gca, inGraphTextPos(1), inGraphTextPos(2), sprintf('%s', prefix));
@@ -210,7 +240,35 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
                 'theText', t, ...
                 'theTextFontSize', 32, ...
                 'theFigureTitle', '');
-               
+            
+        figure(hFigOTF)
+        waveOTF = fftshift(abs(waveOTF));
+        %pos = subplotPosVectors(row,col).v;   
+        %subplot('Position', pos);
+        hold on;
+        [~,midPoint] = min(abs(ySfCyclesDeg));
+        minSFdisplayed = 0.3;
+        xSfCyclesDeg(1) = minSFdisplayed;
+        plot(xSfCyclesDeg, squeeze(waveOTF(midPoint,:)), '-', 'LineWidth', 1.5, 'Color', MTFcolor);
+        
+        sf =  [2.5 5 10 15 20 25 30 40 50 60]
+        mtf = [0.8 0.67 0.46 0.36 0.285 0.22 0.2 0.16 0.1 0.07]
+        plot(sf, mtf, 'rs', 'MarkerSize', 12);
+        xlabel('spatial frequency (c/deg)', 'FontWeight', 'bold');
+        set(gca, 'XLim', [minSFdisplayed  100],  'XTick', [0.6 1 3 6 10 30 60 100], 'YTick', [0: 0.1: 1.0]);
+        set(gca, 'XScale', 'log', 'FontSize', 14, 'YTickLabel', [0:0.1:1.0]);
+        grid on;
+  
+        inGraphTextPos = [0.4 0.9];
+        t = text(gca, inGraphTextPos(1), inGraphTextPos(2), sprintf('%s', prefix));
+        
+        formatFigureForPaper(hFigOTF, ...
+                'figureType', 'OTFS', ...
+                'theAxes', gca, ...
+                'theText', t, ...
+                'theTextFontSize', 32, ...
+                'theFigureTitle', '');
+            
     end
     
     figure(hFigPSF)
