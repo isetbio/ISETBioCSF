@@ -24,7 +24,7 @@ function run_GratingOrientationVaryConditions
     params.cyclesPerDegreeExamined = [4 8 16 32 50 60];
     
     % Grating orientations to examine
-    delta = 22.5
+    delta = 22.5;
     examinedOrientations = [0 delta 45 45+delta 90 90+delta 135 135+delta];
     examinedOrientationLegends = {...
         ' 0 deg' ...
@@ -94,5 +94,52 @@ function run_GratingOrientationVaryConditions
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks ...
             );
+        
+        generateOrientationCSF(theFigData, examinedOrientations);
     end
+end
+
+function generateOrientationCSF(theFigData, examinedOrientations)
+    for orientationIndex = 1:numel(examinedOrientations)
+        figData = theFigData{orientationIndex};
+        lumIndex = 1;
+        referenceContrast = figData.banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1);
+        spatialFrequency = figData.banksEtAlReplicate.cyclesPerDegree(lumIndex,:);
+        thresholdContrasts = [figData.banksEtAlReplicate.mlptThresholds(lumIndex,:).thresholdContrasts];
+        contrastSensitivity(orientationIndex,:) = 1./(thresholdContrasts*referenceContrast);
+    end
+    
+    contrastSensitivity = log10(contrastSensitivity);
+    sfColor = brewermap(numel(spatialFrequency), '*Set1');
+    
+    figure(111); clf;
+    for sfIndex = 1:numel(spatialFrequency)
+        csf = contrastSensitivity(:, sfIndex);
+        %csf = csf / max(csf);
+        x = zeros(1,numel(examinedOrientations)*2+1);
+        y = x;
+        for oriIndex = 1:numel(examinedOrientations)
+            theta = examinedOrientations(oriIndex)/180*pi;
+            x(oriIndex) = cos(theta)*csf(oriIndex);
+            y(oriIndex) = sin(theta)*csf(oriIndex);
+            x(oriIndex+numel(examinedOrientations)) = -x(oriIndex);
+            y(oriIndex+numel(examinedOrientations)) = -y(oriIndex);
+        end
+        x(numel(examinedOrientations)*2+1) = x(1);
+        y(numel(examinedOrientations)*2+1) = y(1);
+        edgeColor = squeeze(sfColor(sfIndex,:))*0.5;
+        faceColor = squeeze(sfColor(sfIndex,:));
+        plot(x,y, 'ko-', 'Color', edgeColor, 'LineWidth', 1.5, 'MarkerSize', 12, 'MarkerFaceColor', faceColor);
+        if (sfIndex == 1)
+            hold on;
+            sfLegends{1} = sprintf('%2.0f c/deg', spatialFrequency(sfIndex));
+        else
+            sfLegends{numel(sfLegends)+1} = sprintf('%2.0f c/deg', spatialFrequency(sfIndex));
+        end
+    end
+    set(gca, 'XLim', [-3.5 3.5], 'YLim', [-3.5 3.5]);
+    set(gca, 'XTick', [-3.5:0.5:3.5], 'YTick', [-3.5:0.5:3.5]);
+    hL = legend(sfLegends);
+    axis 'square';
+    grid on
 end
