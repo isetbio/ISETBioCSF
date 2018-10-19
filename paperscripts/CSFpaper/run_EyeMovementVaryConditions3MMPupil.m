@@ -233,7 +233,7 @@ function run_EyeMovementVaryConditions3MMPupil
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
-    params.visualizeMosaicWithFirstEMpath = true;
+    params.visualizeMosaicWithFirstEMpath = ~true;
     params.visualizeSpatialPoolingScheme = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeDisplay = ~true;

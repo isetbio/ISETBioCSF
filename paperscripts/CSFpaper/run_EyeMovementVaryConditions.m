@@ -13,6 +13,7 @@ function run_EyeMovementVaryConditions
     
     % Optics to use
     opticsName = 'ThibosBestPSFSubject3MMPupil';
+    opticsName = 'ThibosAverageSubject3MMPupil';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     defaultSpatialPoolingKernelParams = params.spatialPoolingKernelParams;
@@ -29,7 +30,7 @@ function run_EyeMovementVaryConditions
     params.pupilDiamMm = 2.0;
     
     % Use 3 mm to get more of the high frequencies
-    params.pupilDiamMm = 3.0;
+    %params.pupilDiamMm = 3.0;
     
     % Chromatic direction params
     params.coneContrastDirection = 'L+M+S';
@@ -39,12 +40,43 @@ function run_EyeMovementVaryConditions
     
     condIndex = condIndex+1;  
     examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).classifier = 'mlpt';
+    examinedCond(condIndex).legend = 'no eye movements, MLPT';
+    examinedCond(condIndex).centeredEMpaths = true;
+    examinedCond(condIndex).frameRate = 20; %(10 frames/sec, so 21 frames, each 100 msec long)
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
+    
+    condIndex = condIndex+1;  
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).classifier = 'mlpt';
+    examinedCond(condIndex).legend = 'no eye movements, MLPT';
+    examinedCond(condIndex).centeredEMpaths = true;
+    examinedCond(condIndex).frameRate = 20; %(10 frames/sec, so 21 frames, each 100 msec long)
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
+   
+    else 
+    condIndex = condIndex+1;  
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).classifier = 'svm';
+    examinedCond(condIndex).legend = 'no eye movements, SVM-PCA';
+    examinedCond(condIndex).centeredEMpaths = true;
+    examinedCond(condIndex).frameRate = 20; %(10 frames/sec, so 21 frames, each 100 msec long)
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
+    
+    condIndex = condIndex+1;  
+    examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).classifier = 'svmV1FilterBank';
     examinedCond(condIndex).legend = 'no eye movements, SVM-Template';
     examinedCond(condIndex).centeredEMpaths = true;
-    examinedCond(condIndex).frameRate = 10; %(10 frames/sec, so 21 frames, each 100 msec long)
-    examinedCond(condIndex).responseStabilizationMilliseconds = 40;
-    examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+    examinedCond(condIndex).frameRate = 20; %(10 frames/sec, so 21 frames, each 100 msec long)
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
     examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
 
     
@@ -69,7 +101,16 @@ function run_EyeMovementVaryConditions
 %     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
 %     examinedCond(condIndex).spatialPoolingKernelParams = svmTemplateSpatialPoolingKernelParams;
 
-    
+    condIndex = condIndex+1;  
+    examinedCond(condIndex).emPathType = 'random';
+    examinedCond(condIndex).classifier = 'svmV1FilterBank';
+    examinedCond(condIndex).legend = 'fixational eye movements, SVM-QTemplate';
+    examinedCond(condIndex).centeredEMpaths = true;
+    examinedCond(condIndex).frameRate = 20; %(10 frames/sec, so 1 frames, each 100 msec long)
+    examinedCond(condIndex).responseStabilizationMilliseconds = 100;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 50;
+    examinedCond(condIndex).spatialPoolingKernelParams = defaultSpatialPoolingKernelParams;
+    end
     
 %     condIndex = condIndex+1;  
 %     examinedCond(condIndex).emPathType = 'frozen0';
@@ -192,7 +233,7 @@ function run_EyeMovementVaryConditions
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
-    params.visualizeMosaicWithFirstEMpath = ~true;
+    params.visualizeMosaicWithFirstEMpath = true;
     params.visualizeSpatialPoolingScheme = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeDisplay = ~true;
