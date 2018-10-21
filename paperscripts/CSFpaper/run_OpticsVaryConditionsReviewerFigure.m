@@ -3,7 +3,7 @@ function run_OpticsVaryConditionsReviewerFigure
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 0;
+    computationInstance = 3;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -37,13 +37,17 @@ function run_OpticsVaryConditionsReviewerFigure
         'Subject 5 PSF (G)' ...
     };
 
-     idx = [1:7];
+    %Navarro instead of Marimont-Wandell
+    examinedOpticsModels{2} = 'Navarro';
+    examinedOpticsModelLegends{2} = 'Navarro et.al ''93 (B)';
+    
+     idx = [2:2];
      examinedOpticsModels = {examinedOpticsModels{idx}};
      examinedOpticsModelLegends = {examinedOpticsModelLegends{idx}};
 %     
     params.coneContrastDirection = 'L+M+S';
-%    params.cyclesPerDegreeExamined = [60] %% = [2 4 8 16 32 50 60];
-    
+%     params.cyclesPerDegreeExamined = [60] %% = [2 4 8 16 32 50 60];
+%     
 %     params.lowContrast = 0.1; % was 0.01;
 %     params.highContrast =  1.0; % was 0.1;
 %     params.nContrastsPerDirection = 2;
@@ -62,7 +66,7 @@ function run_OpticsVaryConditionsReviewerFigure
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -74,7 +78,7 @@ function run_OpticsVaryConditionsReviewerFigure
     params.visualizeDisplay = ~true;
         
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
+    params.findPerformance = true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
@@ -149,6 +153,9 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
             case 'Marimont-Wandell (B)'
                 prefix = ' B ';
                 MTFcolor = [1 0. 0.]
+            case 'Navarro et.al ''93 (B)'
+                prefix = ' B ';
+                MTFcolor = [1 0. 0.]
             case 'Subject 1 PSF (C)' 
                 prefix = ' C ';
                 MTFcolor = [0 0. 0.]
@@ -175,6 +182,12 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
                 umPerDegree = 300;
                 theOI = oiCreate('wvf human', pupilDiamMm,[],[], umPerDegree);
                 theCustomOI = ptb.oiSetPtbOptics(theOI,'opticsModel','Geisler');
+            
+            case 'Navarro'
+                pupilDiamMm = 3;
+                umPerDegree = 300;
+                theOI = oiCreate('wvf human', pupilDiamMm,[],[], umPerDegree);
+                theCustomOI = ptb.oiSetPtbOptics(theOI,'opticsModel','Navarro');
                 
             case 'MarimontWandell'
                 pupilDiamMm = 3;
