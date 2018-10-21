@@ -3,11 +3,15 @@ function run_OpticsVaryConditionsMedianAperture
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 3;
+    computationInstance = 2;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = ~true;
-      
+    
+    % Whether to visualize the employed PSFs
+    makePSFfigure = true;
+    visualizedWavelengths = 550;
+        
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
