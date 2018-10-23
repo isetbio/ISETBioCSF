@@ -30,6 +30,7 @@ mosaicParams.type = 'Mosaic';
 
 mosaicParams.conePacking = 'rect';
 mosaicParams.eccBasedConeQuantalEfficiency = false;
+mosaicParams.eccBasedMacularPigment = false;
 mosaicParams.LMSRatio = [0.62 0.31 0.07];
 mosaicParams.innerSegmentSizeMicrons = 1.4;       
 mosaicParams.apertureBlur = false;                  

@@ -47,6 +47,7 @@ function params = getParamsForMosaicWithLabel(mosaicName)
             params.innerSegmentDiameter = 1.5797;                   % for a circular sensor; this corresponds to ISETBio's default 1.4 micron square pixel (isetbio still does square apertures)
             params.conePacking = 'hex';                             % ecc-based cone density
             params.eccBasedConeQuantalEfficiency = false;           % no correction of cone efficiency with eccentricity
+            params.eccBasedMacularPigment = false;
             params.LMSRatio = [0.67 0.33 0.0];
             params.mosaicRotationDegs = 0;
             params.sConeMinDistanceFactor = [];                     % no special treatment of S-cones
@@ -59,6 +60,7 @@ function params = getParamsForMosaicWithLabel(mosaicName)
             params.innerSegmentDiameter = 1.5797;                   % for a circular sensor; this corresponds to ISETBio's default 1.4 micron square pixel (isetbio still does square apertures)
             params.conePacking = 'hex';                             % ecc-based cone density
             params.eccBasedConeQuantalEfficiency = false;           % no correction of cone efficiency with eccentricity
+            params.eccBasedMacularPigment = false;
             params.LMSRatio = [0.62 0.31 0.07];
             params.mosaicRotationDegs = 0;
             params.sConeMinDistanceFactor = [];                     % no special treatment of S-cones
@@ -71,6 +73,7 @@ function params = getParamsForMosaicWithLabel(mosaicName)
             params.innerSegmentDiameter = 1.5797;                   % for a circular sensor; this corresponds to ISETBio's default 1.4 micron square pixel (isetbio still does square apertures)
             params.conePacking = 'hex';                             % ecc-based cone density
             params.eccBasedConeQuantalEfficiency = false;           % no correction of cone efficiency with eccentricity
+            params.eccBasedMacularPigment = false;
             params.LMSRatio = [0.60 0.30 0.10];                     % More S-cones because S-cones in the S-cone free region will be eliminated - Also needed to generate a different folder
             params.mosaicRotationDegs = 0;
             params.sConeMinDistanceFactor = 3;                      % no special treatment of S-cones
@@ -83,6 +86,7 @@ function params = getParamsForMosaicWithLabel(mosaicName)
             params.innerSegmentDiameter = 1.5797;                   % for a circular sensor; this corresponds to ISETBio's default 1.4 micron square pixel (isetbio still does square apertures)
             params.conePacking = 'hex';                             % ecc-based cone density
             params.eccBasedConeQuantalEfficiency = true;            % apply correction to cone efficiency with eccentricity
+            params.eccBasedMacularPigment = false;
             params.LMSRatio = [0.60 0.30 0.10];                     % More S-cones because S-cones in the S-cone free region will be eliminated - Also needed to generate a different folder
             params.mosaicRotationDegs = 0;
             params.sConeMinDistanceFactor = 3;                      % no special treatment of S-cones
@@ -90,7 +94,19 @@ function params = getParamsForMosaicWithLabel(mosaicName)
             params.latticeAdjustmentPositionalToleranceF = [];
             params.latticeAdjustmentDelaunayToleranceF = [];
             params.marginF = [];                                    % marginF set according to FOV
-        
+        case 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrectionAndMacularPigment'
+            params.coneSpacingMicrons = 2.0;
+            params.innerSegmentDiameter = 1.5797;                   % for a circular sensor; this corresponds to ISETBio's default 1.4 micron square pixel (isetbio still does square apertures)
+            params.conePacking = 'hex';                             % ecc-based cone density
+            params.eccBasedConeQuantalEfficiency = true;            % apply correction to cone efficiency with eccentricity
+            params.eccBasedMacularPigment = true;
+            params.LMSRatio = [0.60 0.30 0.10];                     % More S-cones because S-cones in the S-cone free region will be eliminated - Also needed to generate a different folder
+            params.mosaicRotationDegs = 0;
+            params.sConeMinDistanceFactor = 3;                      % no special treatment of S-cones
+            params.sConeFreeRadiusMicrons = 45;                     % no special treatment of S-cones
+            params.latticeAdjustmentPositionalToleranceF = [];
+            params.latticeAdjustmentDelaunayToleranceF = [];
+            params.marginF = []; 
         otherwise
             error('Unknown mosaic: ''%s''.', mosaicName);
     end
