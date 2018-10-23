@@ -15,14 +15,15 @@ function run_MosaicsVaryConditions
         'ISETbioHexEccBasedNoScones' ...
         'ISETbioHexEccBasedLMSrealistic' ...
         'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection' ...
+        'ISETbioHexEccBasedLMSrealisticEfficiencyCorrectionAndMacularPigment' ...
         };
- 
     
     examinedMosaicLegends = {...
         'constant LM density (Banks ''87)' ...
         'ecc-based LM density' ...
         'ecc-based LMS density' ...
         'ecc-based LMS density and efficiency' ...
+        'ecc-based LMS density, efficiency, macular pigment'
     };
 
     examinedMosaicLegends = {...
@@ -30,10 +31,11 @@ function run_MosaicsVaryConditions
         'ecc-dependent LM dens. (B)' ...
         'ecc-dependent LMS dens. (C)' ...
         'ecc-dependent LMS dens./efficiency (D)' ...
+        'ecc-dependent LMS dens./efficiency, MP (E)'
     };
 
-    %idx = 1:3;
-    %examinedMosaicModels = {examinedMosaicModels{idx}};
+    idx = 5:5;
+    examinedMosaicModels = {examinedMosaicModels{idx}};
     
     %idx = 1:4;
     %examinedMosaicModels = {examinedMosaicModels{idx}};
@@ -53,6 +55,11 @@ function run_MosaicsVaryConditions
         params.coneContrastDirection = 'L+M+S';
         params.cyclesPerDegreeExamined = [2 4 8 16 32 50];
     
+params.lowContrast = 1.0;
+params.highContrast =  1.0;
+params.nContrastsPerDirection =  1;
+params.nTrainingSamples = 4;
+    
         % Response duration params
         params.frameRate = 10; %(1 frames)
         params.responseStabilizationMilliseconds = 40;
@@ -66,7 +73,7 @@ function run_MosaicsVaryConditions
         params.computeMosaic = ~true; 
         params.visualizeMosaic = ~true;
 
-        params.computeResponses = ~true;
+        params.computeResponses = true;
         params.computePhotocurrentResponseInstances = ~true;
         params.visualizeMosaic = makeMosaicsFigure;
         params.visualizeResponses = ~true;
@@ -79,7 +86,7 @@ function run_MosaicsVaryConditions
         params.visualizeDisplay = ~true;
     
         params.visualizeKernelTransformedSignals = ~true;
-        params.findPerformance = ~true;
+        params.findPerformance = true;
         params.visualizePerformance = makeSummaryFigure;
         params.deleteResponseInstances = ~true;
 
