@@ -1,5 +1,6 @@
 function run_PeformanceSignalVaryConditions
-% This is the script used to assess the impact of different types of eye movements on the CSF
+% This is the script used to assess the impact of different types of eye
+% movements on the CSF  
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
