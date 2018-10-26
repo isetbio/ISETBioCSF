@@ -26,9 +26,9 @@ else
 end
 
 if (mosaicParams.eccBasedMacularPigment)
-    mosaicParams.macularPigmentCorrection = 'VariedMacPigment';
+    mosaicParams.macularPigmentCorrection = 'VariedMP';
 else
-    mosaicParams.macularPigmentCorrection = 'FovealMacPigment';
+    mosaicParams.macularPigmentCorrection = 'FovealMP';
 end
 
 % For rect mosaic, rotation has no effect
