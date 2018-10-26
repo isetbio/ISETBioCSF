@@ -6,8 +6,8 @@ cd(localDir)
 % Set random seed to obtain replicable results
 rng(1235);
 
-params.fovDegs = [0.5 0.5]; % FOV in degrees ([width height], default: 0.25x0.25
-makeNew = ~true;
+params.fovDegs = [0.25 0.25]; % FOV in degrees ([width height], default: 0.25x0.25
+makeNew = true;
 
 if (makeNew)
     % Set coneMosaicHex - specific params
@@ -54,8 +54,8 @@ hFig = figure(1); clf;
 set(hFig, 'Position', [10 10 1100 1100], 'Color', [1 1 1]);
 subplot('Position', [0.03 0.01 0.94 0.94]);
 
-
-iterations = [0:10 10:10:100 100:50:500 550:100:1350];
+lastIter = 890;
+iterations = [0:50 50:10:100 100:50:500 550:100:lastIter lastIter];
 radius = 1e-6*100;
 videoOBJ = VideoWriter(sprintf('MosaicConstruction.mp4'), 'MPEG-4'); % H264 format
     videoOBJ.FrameRate = 4;

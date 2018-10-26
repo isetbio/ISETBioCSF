@@ -10,7 +10,7 @@ cd(localDir)
 % Set random seed to obtain replicable results
 rng(1235);
 
-params.fovDegs = [1.15 1.15]; % [0.75 0.4]; % FOV in degrees ([width height], default: 0.25x0.25
+params.fovDegs = [0.75 0.75]; % [1.15 1.15]; % [0.75 0.4]; % FOV in degrees ([width height], default: 0.25x0.25
 
 saveLatticeAdjustmentProgression = true;                % set to true, only if interested to see how the mosaic lattice is iteratively adjusted when eccBasedConeDensity is true               
 
@@ -78,38 +78,20 @@ NicePlot.exportFigToPDF('HexMosaicDensity.pdf', hFig, 300);
     
 if (saveLatticeAdjustmentProgression)
     % Show how the lattice of an ecc-based cone density hex mosaic is iteratively adjusted
-    contourLevels = 1e3 * [75:25:250];
+    contourLevels = 1e3 * [140 150 180 210 230];
     hFig = theHexMosaic.plotMosaicProgression(...
         'contourLevels', contourLevels, ...
         'intermediateIterationsToDisplay', [10 100], ...
-        'displayedXrangeDegs', [], ...
-        'displayedYrangeDegs', 0.4 ...
+        'displayedXrangeDegs', 0.65, ...
+        'displayedYrangeDegs', 0.5 ...
         );
-
+    set(hFig, 'Position', [10 50 470 1295]);
     % Export to PDF
     cd(localDir)
     NicePlot.exportFigToPDF('HexMosaicConstruction.pdf', hFig, 300);
 
 
-    hFig = figure(1);
-    ax = subplot(hFg, 'Position', [0.1 0.1 0.9 0.9]);
-
-    for iteration = 1:10
-        plotMosaic(obj, ax, iteration);
-    end
 end
 
 end
 
-function plotMosaic(obj, ax)
-    % Get cone locs at desired iteration
-    if (iteration == 0)
-        obj.coneLocsHexGrid = obj.initialLattice;
-    else
-        obj.coneLocsHexGrid = squeeze(obj.latticeAdjustmentSteps(iteration,:,:));
-    end
-    
-    
-    obj.visualizeGrid('axesHandle', ax);
-    
-end
