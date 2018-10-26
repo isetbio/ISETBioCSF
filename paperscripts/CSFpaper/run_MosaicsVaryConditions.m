@@ -34,7 +34,7 @@ function run_MosaicsVaryConditions
         'ecc-dependent LMS dens./efficiency, MP'
     };
 
-    idx = 5:5;
+    idx = 4:4;
     examinedMosaicModels = {examinedMosaicModels{idx}};
      
     % Tun the mosaic-vary condition using the Geisler optics
@@ -47,10 +47,13 @@ function run_MosaicsVaryConditions
         mosaicName = examinedMosaicModels{mosaicIndex};
         params = getCSFpaperDefaultParams(mosaicName, computationInstance);
         
+        % Denote new mosaics with higher density
+        params.mosaicRotationDegs = 360;
+        
         params.opticsModel = opticsName;
        
         params.coneContrastDirection = 'L+M+S';
-        params.cyclesPerDegreeExamined = [8 16 32 50]; %[2 4 8 16 32 50];
+        params.cyclesPerDegreeExamined = [60]; % [4 8 16 32 50];
     
         % Response duration params
         params.frameRate = 10; %(1 frames)
@@ -62,10 +65,10 @@ function run_MosaicsVaryConditions
         params.centeredEMpaths = ~true;
 
         % Simulation steps to perform
-        params.computeMosaic = ~true; 
+        params.computeMosaic = true; 
         params.visualizeMosaic = ~true;
 
-        params.computeResponses = true;
+        params.computeResponses = ~true;
         params.computePhotocurrentResponseInstances = ~true;
         params.visualizeMosaic = makeMosaicsFigure;
         params.visualizeResponses = ~true;
@@ -78,7 +81,7 @@ function run_MosaicsVaryConditions
         params.visualizeDisplay = ~true;
     
         params.visualizeKernelTransformedSignals = ~true;
-        params.findPerformance = true;
+        params.findPerformance = ~true;
         params.visualizePerformance = makeSummaryFigure;
         params.deleteResponseInstances = ~true;
 
