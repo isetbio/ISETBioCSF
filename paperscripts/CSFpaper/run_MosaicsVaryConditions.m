@@ -6,7 +6,7 @@ function run_MosaicsVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = true;
+    makeSummaryFigure = ~true;
     makeMosaicsFigure = ~true;
     
     % Mosaic to use
@@ -53,7 +53,7 @@ function run_MosaicsVaryConditions
         params.opticsModel = opticsName;
        
         params.coneContrastDirection = 'L+M+S';
-        params.cyclesPerDegreeExamined = [60]; % [4 8 16 32 50];
+        params.cyclesPerDegreeExamined = [32 50 60];
     
         % Response duration params
         params.frameRate = 10; %(1 frames)
