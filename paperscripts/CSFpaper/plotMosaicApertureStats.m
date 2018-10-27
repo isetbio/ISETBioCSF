@@ -50,10 +50,13 @@ function plotMosaicApertureStats
         theCurrentMosaic = theMosaicTypes.theMosaics{sfIndex};
         theCurrentMosaic.displayInfo('plotApertureStats', true);
         theCurrentMosaic.displayInfo();
-        idx = find(theCurrentMosaic.pattern ==3);
-        theCurrentMosaic.pattern(idx) = 2;
-        theCurrentMosaic.reassignConeIdentities();
-        theCurrentMosaic.visualizeGrid('visualizedConeAperture', 'geometricArea', 'BackgroundColor', [0 0 0]);
-            
+        
+        theCurrentMosaic.visualizeGrid('visualizedConeAperture', 'geometricArea', ...
+            'overlayConeDensityContour', 'theoretical_and_measured', ...
+            'coneDensityContourLevels', (150:20:270)*1000, ...
+            'labelConeTypes', false, ...
+            'overlayContourLabels', true, ...
+            'BackgroundColor', [0.8 0.8 0.8]);
+        
     end
 end
