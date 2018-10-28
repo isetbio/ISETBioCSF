@@ -3,13 +3,13 @@ function run_OpticsVaryConditions
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 0;
+    computationInstance = 2;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
     
     % Whether to visualize the employed PSFs
-    makePSFfigure = true;
+    makePSFfigure = ~true;
     visualizedWavelengths = 550;
         
     % Mosaic to use
@@ -41,6 +41,9 @@ function run_OpticsVaryConditions
      
     params.coneContrastDirection = 'L+M+S';
 
+    % Denote new mosaics with higher density
+    params.mosaicRotationDegs = 360;
+        
     % Response duration params
     params.frameRate = 10; %(1 frames)
     params.responseStabilizationMilliseconds = 40;
