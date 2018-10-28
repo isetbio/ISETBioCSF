@@ -6,7 +6,7 @@ function run_MosaicsVaryConditions
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     makeMosaicsFigure = ~true;
     
     % Mosaic to use
@@ -34,7 +34,7 @@ function run_MosaicsVaryConditions
         'ecc-dependent LMS dens./efficiency, MP'
     };
 
-    idx = [4:4];
+    idx = [1 4];
     examinedMosaicModels = {examinedMosaicModels{idx}};
      
     % Tun the mosaic-vary condition using the Geisler optics
@@ -47,14 +47,13 @@ function run_MosaicsVaryConditions
         mosaicName = examinedMosaicModels{mosaicIndex};
         params = getCSFpaperDefaultParams(mosaicName, computationInstance);
         
-        if (strcmp(mosaicName, 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'))
         % Denote new mosaics with higher density
         params.mosaicRotationDegs = 360;
-        end
+        
         params.opticsModel = opticsName;
        
         params.coneContrastDirection = 'L+M+S';
-        params.cyclesPerDegreeExamined = [2]; %[4 8 16 32 50];
+        params.cyclesPerDegreeExamined = [4 8 16 32 50];
     
         % Response duration params
         params.frameRate = 10; %(1 frames)
