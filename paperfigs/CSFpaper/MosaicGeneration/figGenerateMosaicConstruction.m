@@ -12,8 +12,6 @@ rng(1235);
 
 params.fovDegs = [0.6 0.6]; % [1.15 1.15]; % [0.75 0.4]; % FOV in degrees ([width height], default: 0.25x0.25
 
-saveLatticeAdjustmentProgression = true;                % set to true, only if interested to see how the mosaic lattice is iteratively adjusted when eccBasedConeDensity is true               
-
 makeNew = ~true;
 if (makeNew)
     % Set coneMosaicHex - specific params
@@ -44,7 +42,7 @@ if (makeNew)
         'latticeAdjustmentDelaunayToleranceF', params.latticeAdjustmentDelaunayToleranceF, ...     
         'marginF', params.marginF, ...
         'maxGridAdjustmentIterations', params.maxGridAdjustmentIterations, ...
-        'saveLatticeAdjustmentProgression', saveLatticeAdjustmentProgression ...  
+        'saveLatticeAdjustmentProgression', true ...  
     );
     % Save the mosaic
     save(sprintf('theHexMosaic%2.2fdegs.mat',max(params.fovDegs)), 'theHexMosaic', '-v7.3');
@@ -55,9 +53,6 @@ else
     load(sprintf('theHexMosaic%2.2fdegs.mat',max(params.fovDegs)));
     fprintf('Done\n');
 end
-
-visualizeIterativeGridAdjustment(theHexMosaic);
-
 
 % Display mosaic info(
 theHexMosaic.displayInfo();
@@ -73,7 +68,20 @@ NicePlot.exportFigToPDF('HexMosaic.pdf', hFig, 300);
 
 
 contourLevels = 1e3 * [140 160 180 210 240 270];
+    
+% Show how the lattice of an ecc-based cone density hex mosaic is iteratively adjusted
+hFig = theHexMosaic.plotMosaicProgression(...
+    'contourLevels', contourLevels, ...
+    'intermediateIterationsToDisplay', [10 100], ...
+    'displayedXrangeDegs', 0.55, ...
+    'displayedYrangeDegs', 0.45 ...
+    );
 
+% Export to PDF
+cd(localDir)
+NicePlot.exportFigToPDF('HexMosaicConstructionPartA.pdf', hFig, 300);
+
+% Show the whole mosaic
 hFig = theHexMosaic.visualizeGrid('visualizedConeAperture', 'geometricArea', ...
     'apertureShape', 'disks', ...
     'labelConeTypes', false, ...
@@ -83,84 +91,111 @@ hFig = theHexMosaic.visualizeGrid('visualizedConeAperture', 'geometricArea', ...
     'generateNewFigure', true);
 cd(localDir)
 NicePlot.exportFigToPDF('HexMosaicDensity.pdf', hFig, 300);
-    
-if (saveLatticeAdjustmentProgression)
-    % Show how the lattice of an ecc-based cone density hex mosaic is iteratively adjusted
-    
-    hFig = theHexMosaic.plotMosaicProgression(...
-        'contourLevels', contourLevels, ...
-        'intermediateIterationsToDisplay', [10 100], ...
-        'displayedXrangeDegs', 0.55, ...
-        'displayedYrangeDegs', 0.45 ...
-        );
 
-    % Export to PDF
-    cd(localDir)
-    NicePlot.exportFigToPDF('HexMosaicConstruction.pdf', hFig, 300);
-end
+
+% Show cone separation changes as the mosaic lattice converges
+neigboringConesNum = 6;
+hFig = visualizeConeSeparationProgression(theHexMosaic, ...
+    'sampledXPositionsMicrons', [0.5 10 20 40 60 80], ...
+    'neigboringConesNum', neigboringConesNum);
+cd(localDir)
+NicePlot.exportFigToPDF('HexMosaicConstructionPartB.pdf', hFig, 300);
+
 end
 
-function visualizeIterativeGridAdjustment(theHexMosaic)
+function hFig = visualizeConeSeparationProgression(obj, varargin)
 
-    xDistances = [0.5 5 10 15 20 30 40 60 80];
-    for idx = 1:numel(xDistances)
-        trackedConePositions(idx,:) = [xDistances(idx) 0]*1e-6;  
-    end
+    p = inputParser;
+    p.addParameter('sampledXPositionsMicrons', [0.5 5 10 20 40 80], ...
+        @isnumeric);
+    p.addParameter('figureLayout', [6 1], @isnumeric);
+    p.addParameter('neigboringConesNum', 5, @isnumeric);
+    p.parse(varargin{:});
     
-    [meanDist, minDist, maxDist, initialConePositions] = plotSeparationForTargetCones(theHexMosaic,  trackedConePositions);
+    sampledXPositionsMicrons = p.Results.sampledXPositionsMicrons;
+    figureLayout = p.Results.figureLayout;
+    neigboringConesNum = p.Results.neigboringConesNum;
     
-    rowsNum = 3;
-    colsNum = 3;
+    hFig = figure(2);
+    clf;
+    set(hFig, 'Color', [1 1 1], 'Position', [10 400 500 1125]);
+
+    rowsNum = figureLayout(1);
+    colsNum = figureLayout(2);
+    
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', rowsNum , ...
            'colsNum', colsNum , ...
-           'heightMargin', 0.05, ...
-           'widthMargin', 0.03, ...
-           'leftMargin', 0.05, ...
-           'rightMargin', 0.02, ...
-           'bottomMargin', 0.06, ...
-           'topMargin', 0.02);
+           'heightMargin', 0.015, ...
+           'widthMargin', 0.00, ...
+           'leftMargin', 0.13, ...
+           'rightMargin', 0.04, ...
+           'bottomMargin', 0.05, ...
+           'topMargin', 0.00);
        
-    hFig = figure(2); clf;
-    set(hFig, 'Position', [10 10 1200 1100], 'Color', [1 1 1]);
-    ecc = xDistances*1e-6;
-    [squareSpacings,innerSegmentDiameters,~] = coneSizeReadData('eccentricity', ecc, 'angle', ecc*0);
+    for idx = 1:numel(sampledXPositionsMicrons)
+        trackedConePositionsMeters(idx,:) = [sampledXPositionsMicrons(idx) 0]*1e-6;  
+    end
+    
+    [meanDist, minDist, maxDist, initialConePositions] = ...
+       computeSeparationForTargetCones(obj,  trackedConePositionsMeters, neigboringConesNum);
+    
+    
+    eccMeters = sampledXPositionsMicrons*1e-6;
+    [squareSpacings, innerSegmentDiameters,~] = ...
+        coneSizeReadData('eccentricity', eccMeters, 'angle', eccMeters*0);
     
     innerSegmentDiameters = diameterForCircularApertureFromWidthForSquareAperture(innerSegmentDiameters);
     theoreticalConeSpacings = squareSpacings;
     
     iterations = 1:size(meanDist,2);
-    for idx = 1:numel(xDistances)
-        r = floor((idx-1)/3)+1;
-        c = mod(idx-1,3)+1;
-        subplot('Position', subplotPosVectors(r,c).v)
-        plot(iterations, meanDist(idx,:)*1e6, 'ko-', 'LineWidth', 1.5); hold on;
-        plot(iterations, minDist(idx,:)*1e6, 'ro-',  'LineWidth', 1.5);
-        plot(iterations, maxDist(idx,:)*1e6, 'bo-',  'LineWidth', 1.5);
-        plot(iterations, innerSegmentDiameters(idx)*1e6 + zeros(size(iterations)), 'k-', 'LineWidth', 1.5);
+    cMap = brewermap(7,'*Accent');
+    cMap = cMap([2 4 3],:);
+    
+    markerSize = 7;
+    for idx = 1:numel(sampledXPositionsMicrons)
+        r = floor((idx-1)/colsNum)+1;
+        c = mod(idx-1,colsNum)+1;
+        subplot('Position', subplotPosVectors(r,c).v);
+        color = [1 0.3 0.6]; % squeeze(cMap(1,:)); 
+        edgeColor = color*0.7;
+        plot(iterations, minDist(idx,:)*1e6, 'ro-',  'MarkerSize', markerSize, 'Color', edgeColor, 'MarkerEdgeColor', edgeColor, 'MarkerFaceColor', color, 'LineWidth', 1.5); hold on;
+        color = [0.9 0.8 0.3]; % squeeze(cMap(2,:)); 
+        edgeColor = color*0.7;
+        plot(iterations, meanDist(idx,:)*1e6, 'yo-', 'MarkerSize', markerSize, 'Color', edgeColor, 'MarkerEdgeColor', edgeColor, 'MarkerFaceColor', color,  'LineWidth', 1.5); 
+        color = [0.1 0.5 1.0]; % color = squeeze(cMap(3,:)); 
+        edgeColor = color*0.7;
+        plot(iterations, maxDist(idx,:)*1e6, 'bo-',  'MarkerSize', markerSize, 'Color', edgeColor, 'MarkerEdgeColor', edgeColor, 'MarkerFaceColor', color,  'LineWidth', 1.5);
+        %plot(iterations, innerSegmentDiameters(idx)*1e6 + zeros(size(iterations)), 'k-', 'LineWidth', 1.5);
         plot(iterations, theoreticalConeSpacings(idx)*1e6 + zeros(size(iterations)), 'k--', 'LineWidth', 1.5);
-        set(gca, 'XLim', [1 size(meanDist,2)], 'XScale', 'log', 'YLim', [1.5 4.0]);
-        set(gca, 'XTick', [1 3 10 30 100 300 1000], 'YTick', [1:0.5:6], 'FontSize', 18);
-        grid on
+        set(gca, 'XLim', [1 size(meanDist,2)], 'XScale', 'log', 'YLim', [1.3 4.2]);
+        set(gca, 'XTick', [1 3 10 30 100 300 1000], 'YTick', [1:.5:6], 'YTickLabel', sprintf(' %2.1f\n',[1:.5:6]), 'FontSize', 18, 'LineWidth', 1.0);
+        grid off
+        box off
         if (idx == 1)
-        legend({'mean (6 neighbors)', 'min', 'max (6 neighbors)', 'inner segment diameter', 'Curcio ''90 spacing'});
+            hL = legend(...
+                {'min', ...
+                sprintf('mean (n=%1.0f neighbors)', neigboringConesNum), ...
+                sprintf('max (n=%1.0f neighbors)',neigboringConesNum), ...
+                'Curcio ''90'}, 'Location', 'NorthWest');
+            hL.NumColumns = 1;
         end
-        if (r==3)
-            xlabel('\it iteration', 'FontSize', 20);
+        if (r==rowsNum)
+            xlabel('\it iteration no.', 'FontSize', 24);
         else
             set(gca, 'XTickLabel', {});
         end
-        if (c == 1)
-            ylabel('\it cone spacing (microns)','FontSize', 20)
+        if (c == 1) && (r==rowsNum)
+            ylabel('\it spacing (microns)','FontSize', 24)
         else
-            set(gca, 'YTickLabel', {});
         end
-        title(sprintf('cone eccentricity: %2.0f microns', xDistances(idx)));
+        text(70, 3.7, sprintf('eccentricity: %2.0f microns', sampledXPositionsMicrons(idx)), ...
+            'FontSize', 14);
     end
     
 end
 
-function [meanDist,  minDist, maxDist, initialConePositions] = plotSeparationForTargetCones(obj, trackedConePositions)
+function [meanDist,  minDist, maxDist, initialConePositions] = computeSeparationForTargetCones(obj, trackedConePositions, neigboringConesNum)
 
     conePositions  = squeeze(obj.latticeAdjustmentSteps(1, :, :));
     for idx = 1:size(trackedConePositions,1)
@@ -177,9 +212,7 @@ function [meanDist,  minDist, maxDist, initialConePositions] = plotSeparationFor
             trackedConePositions(idx,:) = currentPositions(trackedConeIndex(idx),:);
             currentPositionsTmp(trackedConeIndex(idx),:) = nan;
             
-            
-            % Find the mean distances of the target cone to its 6 neighboring cones
-            neigboringConesNum = 6;
+            % Find the mean distances of the target cone to its neighboring cones
             nearestConeDistancesInMeters = pdist2(currentPositionsTmp, ...
             trackedConePositions(idx,:), ...
             'Euclidean', 'Smallest', neigboringConesNum);
@@ -192,5 +225,7 @@ function [meanDist,  minDist, maxDist, initialConePositions] = plotSeparationFor
     end
  
 end
+
+
 
 
