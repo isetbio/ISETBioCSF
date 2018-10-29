@@ -78,9 +78,6 @@ hFig = theHexMosaic.visualizeGrid('visualizedConeAperture', 'geometricArea', ...
 cd(localDir)
 NicePlot.exportFigToPDF('HexMosaicDensity.pdf', hFig, 300);
 
-  
-hFig = visualizeLocalForceProgression(theHexMosaic);
-
 
 % Show how the lattice of an ecc-based cone density hex mosaic is iteratively adjusted
 hFig = theHexMosaic.plotMosaicProgression(...
@@ -97,33 +94,38 @@ NicePlot.exportFigToPDF('HexMosaicConstructionPartA.pdf', hFig, 300);
 
 
 % Show cone separation changes as the mosaic lattice converges
-neigboringConesNum = 6;
+neigboringConesNum = 5;
 hFig = visualizeConeSeparationProgression(theHexMosaic, ...
     'sampledXPositionsMicrons', [0.5 10 20 40 60 80], ...
     'neigboringConesNum', neigboringConesNum);
 % Export to PDF
 cd(localDir)
 NicePlot.exportFigToPDF('HexMosaicConstructionPartC.pdf', hFig, 300);
+
+
+selectedIterationsForFigs = [1 2 5 10 50 600];
+targetConePositions = [...
+    1 0; ...
+    10 0; ...
+    28 0 ...
+];
+
+maxYDeltaConeDistanceDisplayed = 5.0;   
+visualizedConeXrange = [min(targetConePositions(:,1))-3 max(targetConePositions(:,1))+4];
+visualizedConeYrange = maxYDeltaConeDistanceDisplayed*[-1 1];
+
+    
+visualizeLocalForceProgression(theHexMosaic, ...
+    targetConePositions, selectedIterationsForFigs, ...
+    visualizedConeXrange, visualizedConeYrange);
 end
 
 
-function hFig = visualizeLocalForceProgression(obj, varargin)
-    hFig = figure(2);
-    clf;
-    set(hFig, 'Color', [1 1 1], 'Position', [10 400 500 1125]);
-
-    rowsNum = 6;
-    colsNum = 1;
+function visualizeLocalForceProgression(obj, targetConePositions, ...
+    selectedIterationsForFigs, visualizedConeXrange, visualizedConeYrange)
     
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-           'rowsNum', rowsNum , ...
-           'colsNum', colsNum , ...
-           'heightMargin', 0.015, ...
-           'widthMargin', 0.00, ...
-           'leftMargin', 0.13, ...
-           'rightMargin', 0.04, ...
-           'bottomMargin', 0.05, ...
-           'topMargin', 0.00);
+    hFig = figure(10); clf;
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 590 220]);
    
     params.latticeAdjustmentPositionalToleranceF = 0.0013/8;
     params.latticeAdjustmentDelaunayToleranceF = 0.0013/8;
@@ -146,12 +148,12 @@ function hFig = visualizeLocalForceProgression(obj, varargin)
     
     iteration = 2;
     initialConePositions  = squeeze(obj.latticeAdjustmentSteps(iteration, :, :))*1e6;
-    conePositions = smoothGridLocalFunction(hFig, params, grid, initialConePositions);
+    smoothGridLocalFunction(hFig, params, grid, initialConePositions, targetConePositions, visualizedConeXrange, visualizedConeYrange, selectedIterationsForFigs);
        
 end
 
 
-function conePositions = smoothGridLocalFunction(hFig, params, gridParams,conePositions)
+function smoothGridLocalFunction(hFig, params, gridParams,conePositions, targetConePositions, visualizedConeXrange, visualizedConeYrange, selectedIterationsForFigs)
 
     positionalDiffTolerance = params.latticeAdjustmentPositionalToleranceF ...
         * gridParams.lambdaMin;
@@ -163,7 +165,6 @@ function conePositions = smoothGridLocalFunction(hFig, params, gridParams,conePo
 
     % Initialize convergence
     oldConePositions = inf;
-    forceMagnitudes = [];
 
     % Turn off Delaunay triangularization warning
     warning('off', 'MATLAB:qhullmx:InternalWarning');
@@ -175,44 +176,32 @@ function conePositions = smoothGridLocalFunction(hFig, params, gridParams,conePo
     % (conePositions) reach equlibrium.
     notConverged = true;
     iteration = 0;
-    minDistance = [];
-    maxDistance = [];
-    meanDistance = [];
-    minDistanceForEachCone = [];
-    maxYDeltaConeDistanceDisplayed = 5.0;
+
     
+    target1ConePosition = targetConePositions(1,:);  
+    target2ConePosition = targetConePositions(2,:);  
+    target3ConePosition = targetConePositions(3,:); 
     
-    target1ConePosition = [5 0];  
     [~, target1ConeIndex] = min(sum((bsxfun(@minus, conePositions, target1ConePosition)).^2, 2));
     target1ConePosition = conePositions(target1ConeIndex,:);
-    %target1ConeIndex = nan;
-    
-    target2ConePosition = [35 0];  
+
     [~, target2ConeIndex] = min(sum((bsxfun(@minus, conePositions, target2ConePosition)).^2, 2));
     target2ConePosition = conePositions(target2ConeIndex,:);
     
-    target3ConePosition = [50 0];  
     [~, target3ConeIndex] = min(sum((bsxfun(@minus, conePositions, target3ConePosition)).^2, 2));
     target3ConePosition = conePositions(target3ConeIndex,:);
-    
-    
-    visualizedConeXrange = [min([target1ConePosition(1) target3ConePosition(1)])-2 max([target1ConePosition(1) target3ConePosition(1)])+2];
-    visualizedConeYrange = 0.5*(target1ConePosition(2)+target3ConePosition(2)) + maxYDeltaConeDistanceDisplayed*[-1 1];
-
 
     videoOBJ = VideoWriter('MosaicGeneration.mp4', 'MPEG-4'); % H264 format
     videoOBJ.FrameRate = 30;
     videoOBJ.Quality = 100;
     videoOBJ.open();
     
-    hFig = figure(10); clf;
-    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1000 270]);
-    
-    ax = subplot('Position', [0.05 0.1 0.93 0.90]);
-    set(ax, 'XLim', [-1 55], 'YLim', [-5 5], 'Color', [1 1 1], 'FontSize', 18);
+    xTicks = 0:5:45;
+    ax = subplot('Position', [0.01 0.25 0.98 0.74]);
+    set(ax, 'XLim', visualizedConeXrange, 'YLim', visualizedConeYrange, 'Color', [1 1 1], 'FontSize', 18);
     axis 'equal'
-    set(ax, 'XLim', [1 55], 'YLim', [-5 5]);
-    ylabel('\it space (microns)', 'FontSize', 24);
+    set(ax, 'XLim', visualizedConeXrange, 'YTick', [-5:5:5], 'YTickLabel', {}, ...
+        'XTick', xTicks, 'YLim', visualizedConeYrange);
     xlabel('\it space (microns)', 'FontSize', 24);
     box on;
     
@@ -318,20 +307,26 @@ function conePositions = smoothGridLocalFunction(hFig, params, gridParams,conePo
         % force at all fixed cone positions must be 0
         % netForceVectors(1:size(fixedConesPositions, 1), :) = 0;
         
-        % Save force magnitudes
-        % forceMagnitudes(iteration, :) = ...
-        %    sqrt(sum(netForceVectors .^ 2, 2)) / gridParams.lambdaMin;
-        
-        
-        
         renderFrame(ax, iteration, conePositions, visualizedConeXrange, visualizedConeYrange, ...
             target1ConeIndex, target2ConeIndex, target3ConeIndex,...
             springIndices, springForceXYcomponentVectors, desiredSpringLengthsAbsolute, ...
             springForceTimesDisplacementXYcomponents, springCenters, springLengths, netForceVectors);
         
+        set(gca, 'XTickLabel', xTicks);
+        xlabel('\it space (microns)', 'FontSize', 24);
+            
         videoOBJ.writeVideo(getframe(hFig));
         
+        if (iteration == selectedIterationsForFigs(end))
+        else
+            set(gca, 'XTickLabel', {});
+            xlabel('');
+        end
         
+        if (ismember(iteration, selectedIterationsForFigs))
+            NicePlot.exportFigToPDF(sprintf('ForcesAtIteration_%d.pdf', iteration), hFig, 300);
+        end
+
         
         % update cone positions according to netForceVectors
         conePositions = conePositions + deltaT * netForceVectors;
@@ -400,17 +395,17 @@ function renderFrame(ax, iteration, conePositions, visualizedConeXrange, visuali
         end
         
         % Plot the cones
-        plot(conePositions(:,1), conePositions(:,2), 'ko', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerSize', 26);
+        plot(conePositions(:,1), conePositions(:,2), 'ko', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerSize', 16);
        
         % Outline the targered cones
         if (~isnan(target1ConeIndex))
-            plot(conePositions(target1ConeIndex,1), conePositions(target1ConeIndex,2), 'ko', 'MarkerFaceColor', [0.8 0.8 0.3], 'MarkerSize', 26);
+            plot(conePositions(target1ConeIndex,1), conePositions(target1ConeIndex,2), 'ko', 'MarkerFaceColor', [0.8 0.8 0.3], 'MarkerSize', 16);
         end
         if (~isnan(target2ConeIndex))
-            plot(conePositions(target2ConeIndex,1), conePositions(target2ConeIndex,2), 'ko', 'MarkerFaceColor', [0.8 0.8 0.3], 'MarkerSize', 26);
+            plot(conePositions(target2ConeIndex,1), conePositions(target2ConeIndex,2), 'ko', 'MarkerFaceColor', [0.8 0.8 0.3], 'MarkerSize', 16);
         end
         if (~isnan(target3ConeIndex))
-            plot(conePositions(target3ConeIndex,1), conePositions(target3ConeIndex,2), 'ko', 'MarkerFaceColor', [0.8 0.8 0.3], 'MarkerSize', 26);
+            plot(conePositions(target3ConeIndex,1), conePositions(target3ConeIndex,2), 'ko', 'MarkerFaceColor', [0.8 0.8 0.3], 'MarkerSize', 16);
         end
         
         % Plot the forces on the targeted cones
@@ -446,8 +441,11 @@ function renderFrame(ax, iteration, conePositions, visualizedConeXrange, visuali
         if (~isnan(target3ConeIndex))
             plotNetForceVectors(target3ConePosition, netForceVectors(target3ConeIndex, :));
         end
-        title(sprintf('iteration: %2.0f', iteration));
+        set(gca, 'LineWidth', 1.0, 'GridColor', [0.2 0.2 1.0], 'GridAlpha', 0.75);
+        %title(sprintf('iteration: %2.0f', iteration));
         hold off;
+        grid off
+        
         drawnow;
 end
 
@@ -466,7 +464,7 @@ function hFig = visualizeConeSeparationProgression(obj, varargin)
     
     hFig = figure(3);
     clf;
-    set(hFig, 'Color', [1 1 1], 'Position', [10 400 750 300]);
+    set(hFig, 'Color', [1 1 1], 'Position', [10 400 430 1125]);
 
     rowsNum = figureLayout(1);
     colsNum = figureLayout(2);
@@ -474,11 +472,11 @@ function hFig = visualizeConeSeparationProgression(obj, varargin)
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
            'rowsNum', rowsNum , ...
            'colsNum', colsNum , ...
-           'heightMargin', 0.01, ...
+           'heightMargin', 0.015, ...
            'widthMargin', 0.00, ...
-           'leftMargin', 0.03, ...
-           'rightMargin', 0.02, ...
-           'bottomMargin', 0.04, ...
+           'leftMargin', 0.16, ...
+           'rightMargin', 0.05, ...
+           'bottomMargin', 0.05, ...
            'topMargin', 0.00);
        
     for idx = 1:numel(sampledXPositionsMicrons)
@@ -505,21 +503,21 @@ function hFig = visualizeConeSeparationProgression(obj, varargin)
         r = floor((idx-1)/colsNum)+1;
         c = mod(idx-1,colsNum)+1;
         subplot('Position', subplotPosVectors(r,c).v);
-        color = [1 0.3 0.6]; % squeeze(cMap(1,:)); 
-        edgeColor = color*0.7;
+        color = [0.4 0.6 1.0]; % squeeze(cMap(1,:)); 
+        edgeColor = [0 0.3 1.0];
         plot(iterations, minDist(idx,:)*1e6, 'ro-',  'MarkerSize', markerSize, 'Color', edgeColor, 'MarkerEdgeColor', edgeColor, 'MarkerFaceColor', color, 'LineWidth', 1.5); hold on;
-        color = [0.9 0.8 0.3]; % squeeze(cMap(2,:)); 
+        color = [0.8 0.8 0.8]; % squeeze(cMap(2,:)); 
         edgeColor = color*0.7;
         plot(iterations, meanDist(idx,:)*1e6, 'yo-', 'MarkerSize', markerSize, 'Color', edgeColor, 'MarkerEdgeColor', edgeColor, 'MarkerFaceColor', color,  'LineWidth', 1.5); 
-        color = [0.1 0.5 1.0]; % color = squeeze(cMap(3,:)); 
-        edgeColor = color*0.7;
+        color = [1.0 0.5 0.5]; % color = squeeze(cMap(3,:)); 
+        edgeColor = [1 0 0];
         plot(iterations, maxDist(idx,:)*1e6, 'bo-',  'MarkerSize', markerSize, 'Color', edgeColor, 'MarkerEdgeColor', edgeColor, 'MarkerFaceColor', color,  'LineWidth', 1.5);
         %plot(iterations, innerSegmentDiameters(idx)*1e6 + zeros(size(iterations)), 'k-', 'LineWidth', 1.5);
         plot(iterations, theoreticalConeSpacings(idx)*1e6 + zeros(size(iterations)), 'k--', 'LineWidth', 1.5);
-        set(gca, 'XLim', [1 size(meanDist,2)], 'XScale', 'log', 'YLim', [1.3 4.2]);
-        set(gca, 'XTick', [1 3 10 30 100 300 1000], 'YTick', [1:.5:6], 'YTickLabel', sprintf(' %2.1f\n',[1:.5:6]), 'FontSize', 18, 'LineWidth', 1.0);
-        grid off
-        box off
+        set(gca, 'XLim', [1 size(meanDist,2)], 'XScale', 'log', 'YLim', [1.3 3.6]);
+        set(gca, 'XTick', [1 3 10 30 100 300 1000], 'YTick', [1.5:0.5:3.5], 'YTickLabel', {'', '2.0', '', '3.0', ''}, 'FontSize', 18, 'LineWidth', 1.0);
+        grid on
+        box on
         if (idx == 1)
             hL = legend(...
                 {'min', ...
@@ -537,8 +535,8 @@ function hFig = visualizeConeSeparationProgression(obj, varargin)
             ylabel('\it spacing (microns)','FontSize', 24)
         else
         end
-        text(70, 3.7, sprintf('eccentricity: %2.0f microns', sampledXPositionsMicrons(idx)), ...
-            'FontSize', 14);
+        text(190, 3.3, sprintf('%2.0f microns', sampledXPositionsMicrons(idx)), ...
+            'FontSize', 16);
     end
     
 end
@@ -605,7 +603,7 @@ function plotSprings(targetConePosition, targetConeSpringIndices, springForceXYc
         else
             dd = targetConePosition-[x2 y2];
         end
-        plot([x1 x2]+dd(1), [y1 y2]+dd(2), '-', 'Color', [0.8 0.8 0.8], 'LineWidth', 2.0);
+        plot([x1 x2]+dd(1), [y1 y2]+dd(2), '-', 'Color', [0.7 0.7 0.7], 'LineWidth', 2.0);
     end
 end
 
@@ -636,13 +634,13 @@ function plotSpringForces(targetConePosition, targetConeSpringIndices, springFor
         else
             dd = targetConePosition-[x2 y2];
         end
-        plot([x1 x2]+dd(1), [y1 y2]+dd(2), 'co-', 'MarkerSize', 14, 'MarkerFaceColor', [0.1 0.8 1], 'LineWidth', 1.5);
+        plot([x1 x2]+dd(1), [y1 y2]+dd(2), 'bo-', 'MarkerSize', 8, 'MarkerFaceColor', [0.1 0.8 1], 'LineWidth', 1.5);
 
         % Plot the repulsive force vectors
         plot(...
             springCenters(springIndex,1)+0.35*[-springForceXYcomponentVectors(springIndex,1) springForceXYcomponentVectors(springIndex,1)], ...
             springCenters(springIndex,2)+0.35*[-springForceXYcomponentVectors(springIndex,2) springForceXYcomponentVectors(springIndex,2)], ...
-            'r-', 'LineWidth', 6.0);
+            'r-', 'LineWidth', 4.0);
     end
 end
 

@@ -7,8 +7,11 @@ function examineGridMethod
     params.latticeAdjustmentSteps = [];
     
     conePositions = s.conePositions;
+    size(conePositions)
     gridParams = s.gridParams;
-
+    gridParams
+    params
+    pause
     
     size(conePositions)
     hFig = figure(1);
@@ -37,7 +40,6 @@ end
 
 
 function conePositions = smoothGrid(hFig, obj, gridParams,conePositions)
-
 
     positionalDiffTolerance = obj.latticeAdjustmentPositionalToleranceF ...
         * gridParams.lambdaMin;
@@ -96,85 +98,85 @@ function conePositions = smoothGrid(hFig, obj, gridParams,conePositions)
         iteration = iteration + 1;
         [~, distanceToClosestNeighbor(iteration,:)] = findMinDistance(conePositions);
         
-        figure(hFig); clf;
-        subplot('Position', subplotPosVectors(1,1).v);
-        plot(conePositions(:,1), conePositions(:,2), 'ko', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerSize', 9);
-        hold on;
-        if (~isnan(target1ConeIndex))
-            plot(conePositions(target1ConeIndex,1), conePositions(target1ConeIndex,2), 'ro', 'MarkerFaceColor', [0.9 0.5 0.5], 'MarkerSize', 9);
-        end
-        if (~isnan(target2ConeIndex))
-            plot(conePositions(target2ConeIndex,1), conePositions(target2ConeIndex,2), 'go', 'MarkerFaceColor', [0.5 0.9 0.5], 'MarkerSize', 9);
-        end
-        set(gca, 'XLim', 40*[-1 1], 'YLim', 40*[-1 1], 'Color', [0 0 0], 'FontSize', 18);
-        axis 'square'
-        xlabel('space (microns)');
-        ylabel('space (microns)');
+%         figure(hFig); clf;
+%         subplot('Position', subplotPosVectors(1,1).v);
+%         plot(conePositions(:,1), conePositions(:,2), 'ko', 'MarkerFaceColor', [0.8 0.8 0.8], 'MarkerSize', 9);
+%         hold on;
+%         if (~isnan(target1ConeIndex))
+%             plot(conePositions(target1ConeIndex,1), conePositions(target1ConeIndex,2), 'ro', 'MarkerFaceColor', [0.9 0.5 0.5], 'MarkerSize', 9);
+%         end
+%         if (~isnan(target2ConeIndex))
+%             plot(conePositions(target2ConeIndex,1), conePositions(target2ConeIndex,2), 'go', 'MarkerFaceColor', [0.5 0.9 0.5], 'MarkerSize', 9);
+%         end
+%         set(gca, 'XLim', 40*[-1 1], 'YLim', 40*[-1 1], 'Color', [0 0 0], 'FontSize', 18);
+%         axis 'square'
+%         xlabel('space (microns)');
+%         ylabel('space (microns)');
         
-        subplot('Position', subplotPosVectors(1,2).v);
-        visualizedConeXrange = 0.5*(target1ConePosition(1)+target2ConePosition(1)) + maxDeltaConeDistanceDisplayed*[-1 1];
-        visualizedConeYrange = 0.5*(target1ConePosition(2)+target2ConePosition(2)) + maxDeltaConeDistanceDisplayed*[-1 1];
-        set(gca, 'XLim', visualizedConeXrange, ...
-                 'YLim', visualizedConeYrange, 'Color', [0 0 0], 'FontSize', 18);
-        axis 'square'
-        xlabel('space (microns)');
+%         subplot('Position', subplotPosVectors(1,2).v);
+%         visualizedConeXrange = 0.5*(target1ConePosition(1)+target2ConePosition(1)) + maxDeltaConeDistanceDisplayed*[-1 1];
+%         visualizedConeYrange = 0.5*(target1ConePosition(2)+target2ConePosition(2)) + maxDeltaConeDistanceDisplayed*[-1 1];
+%         set(gca, 'XLim', visualizedConeXrange, ...
+%                  'YLim', visualizedConeYrange, 'Color', [0 0 0], 'FontSize', 18);
+%         axis 'square'
+%         xlabel('space (microns)');
+%         
+%         subplot('Position', subplotPosVectors(2,1).v);
+%         plot(1:size(distanceToClosestNeighbor,2), squeeze(distanceToClosestNeighbor(iteration,:)), 'ko', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 5);
+%         set(gca, 'XLim', [1 size(distanceToClosestNeighbor,2)], 'YLim', [0 5], 'YTick', [0:5]);
+%         set(gca, 'FontSize', 18);
+%         xlabel('cone index');
+%         ylabel('distance to closest neighbor (microns)');
+%         
+%         grid on;
+%         axis 'square'
         
-        subplot('Position', subplotPosVectors(2,1).v);
-        plot(1:size(distanceToClosestNeighbor,2), squeeze(distanceToClosestNeighbor(iteration,:)), 'ko', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', 5);
-        set(gca, 'XLim', [1 size(distanceToClosestNeighbor,2)], 'YLim', [0 5], 'YTick', [0:5]);
-        set(gca, 'FontSize', 18);
-        xlabel('cone index');
-        ylabel('distance to closest neighbor (microns)');
-        
-        grid on;
-        axis 'square'
-        
-        subplot('Position', subplotPosVectors(2,2).v);
-        minDistance(iteration) = min(squeeze(distanceToClosestNeighbor(iteration,:)));
-        maxDistance(iteration) = max(squeeze(distanceToClosestNeighbor(iteration,:)));
-        meanDistance(iteration) = mean(squeeze(distanceToClosestNeighbor(iteration,:)));
-        fprintf('[%d]: Min distance b/n all points: %2.2f\n', iteration, minDistance(iteration));
-        if (iteration < 30)
-            markerSize = 12;
-        elseif (iteration < 50)
-            markerSize = 11;
-        elseif (iteration < 100)
-            markerSize = 10;
-        elseif (iteration < 200)
-            markerSize = 9;
-        elseif (iteration < 400)
-            markerSize = 8;
-        elseif (iteration < 800)
-            markerSize = 6;
-        else
-            markerSize = 4;
-        end
-        plot(1:iteration, minDistance, 'ro-', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', markerSize, 'LineWidth', 1.5);
-        hold on;
-        plot(1:iteration, maxDistance, 'bo-',  'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', markerSize, 'LineWidth', 1.5);
-        plot(1:iteration, meanDistance, 'ko-',  'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', markerSize, 'LineWidth', 1.5);
-        hold off;
-        set(gca, 'XTick', [0:20:1000], 'YLim', [0 5], 'YTick', [0:5], 'XLim', [0 max([10 iteration])]);
-        if (iteration <= 10)
-            set(gca, 'XTick', [0:1:10]);
-        elseif (iteration <= 50)
-            set(gca, 'XTick', [0:5:50]);
-        elseif (iteration <= 100)
-            set(gca, 'XTick', [0:10:100]);
-        elseif (iteration <= 500)
-            set(gca, 'XTick', [0:50:500]);
-        elseif (iteration <= 1000)
-            set(gca, 'XTick', [0:100:iteration]);
-        else
-             set(gca, 'XTick', [0:250:iteration]);
-        end
-        
-        set(gca, 'FontSize', 18);
-        grid on;
-        legend({'min', 'max', 'mean'});
-        xlabel('iteration #');
-        ylabel('distance to closest neighbor (microns)');
-        axis 'square'
+%         subplot('Position', subplotPosVectors(2,2).v);
+%         minDistance(iteration) = min(squeeze(distanceToClosestNeighbor(iteration,:)));
+%         maxDistance(iteration) = max(squeeze(distanceToClosestNeighbor(iteration,:)));
+%         meanDistance(iteration) = mean(squeeze(distanceToClosestNeighbor(iteration,:)));
+%         fprintf('[%d]: Min distance b/n all points: %2.2f\n', iteration, minDistance(iteration));
+%         if (iteration < 30)
+%             markerSize = 12;
+%         elseif (iteration < 50)
+%             markerSize = 11;
+%         elseif (iteration < 100)
+%             markerSize = 10;
+%         elseif (iteration < 200)
+%             markerSize = 9;
+%         elseif (iteration < 400)
+%             markerSize = 8;
+%         elseif (iteration < 800)
+%             markerSize = 6;
+%         else
+%             markerSize = 4;
+%         end
+%         plot(1:iteration, minDistance, 'ro-', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', markerSize, 'LineWidth', 1.5);
+%         hold on;
+%         plot(1:iteration, maxDistance, 'bo-',  'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', markerSize, 'LineWidth', 1.5);
+%         plot(1:iteration, meanDistance, 'ko-',  'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerSize', markerSize, 'LineWidth', 1.5);
+%         hold off;
+%         set(gca, 'XTick', [0:20:1000], 'YLim', [0 5], 'YTick', [0:5], 'XLim', [0 max([10 iteration])]);
+%         if (iteration <= 10)
+%             set(gca, 'XTick', [0:1:10]);
+%         elseif (iteration <= 50)
+%             set(gca, 'XTick', [0:5:50]);
+%         elseif (iteration <= 100)
+%             set(gca, 'XTick', [0:10:100]);
+%         elseif (iteration <= 500)
+%             set(gca, 'XTick', [0:50:500]);
+%         elseif (iteration <= 1000)
+%             set(gca, 'XTick', [0:100:iteration]);
+%         else
+%              set(gca, 'XTick', [0:250:iteration]);
+%         end
+%         
+%         set(gca, 'FontSize', 18);
+%         grid on;
+%         legend({'min', 'max', 'mean'});
+%         xlabel('iteration #');
+%         ylabel('distance to closest neighbor (microns)');
+%         axis 'square'
         
 
         % compute cone positional diffs
