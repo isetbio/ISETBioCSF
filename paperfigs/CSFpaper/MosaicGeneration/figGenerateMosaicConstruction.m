@@ -1,8 +1,5 @@
 function figGenerateMosaicConstruction()
 
-%% Initialize
-ieInit; clear; close all;
-
 % cd to wherver this script resides
 [localDir,~] = fileparts(which(mfilename()));
 cd(localDir)
@@ -12,8 +9,8 @@ rng(1235);
 
 params.fovDegs = [0.6 0.6]; % [1.15 1.15]; % [0.75 0.4]; % FOV in degrees ([width height], default: 0.25x0.25
 
-makeNew = ~true;
-if (makeNew)
+makeNewMosaic = ~true;
+if (makeNewMosaic)
     % Set coneMosaicHex - specific params
     params.resamplingFactor = 9;                            % 9 is good;how fine to sample the hex mosaic positions with an underlying rect mosaic                         
     params.eccBasedConeDensity = true;                      % if true, generate a mosaic where cone spacing varies with eccentricity (Curcio model)
@@ -125,7 +122,7 @@ function visualizeLocalForceProgression(obj, targetConePositions, ...
     selectedIterationsForFigs, visualizedConeXrange, visualizedConeYrange)
     
     hFig = figure(10); clf;
-    set(hFig, 'Color', [1 1 1], 'Position', [10 10 590 220]);
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 590 224]);
    
     params.latticeAdjustmentPositionalToleranceF = 0.0013/8;
     params.latticeAdjustmentDelaunayToleranceF = 0.0013/8;
@@ -197,7 +194,7 @@ function smoothGridLocalFunction(hFig, params, gridParams,conePositions, targetC
     videoOBJ.open();
     
     xTicks = 0:5:45;
-    ax = subplot('Position', [0.01 0.25 0.98 0.74]);
+    ax = subplot('Position', [0.01 0.26 0.98 0.72]);
     set(ax, 'XLim', visualizedConeXrange, 'YLim', visualizedConeYrange, 'Color', [1 1 1], 'FontSize', 18);
     axis 'equal'
     set(ax, 'XLim', visualizedConeXrange, 'YTick', [-5:5:5], 'YTickLabel', {}, ...
@@ -442,7 +439,9 @@ function renderFrame(ax, iteration, conePositions, visualizedConeXrange, visuali
             plotNetForceVectors(target3ConePosition, netForceVectors(target3ConeIndex, :));
         end
         set(gca, 'LineWidth', 1.0, 'GridColor', [0.2 0.2 1.0], 'GridAlpha', 0.75);
-        %title(sprintf('iteration: %2.0f', iteration));
+        t = text(30,4,sprintf('%03.0f', iteration), 'FontSize', 16);
+        t.BackgroundColor = 0.9*[1 1 1];
+        t.EdgeColor = 0.3*[1 1 1];
         hold off;
         grid off
         
@@ -506,14 +505,14 @@ function hFig = visualizeConeSeparationProgression(obj, varargin)
         color = [0.4 0.6 1.0]; % squeeze(cMap(1,:)); 
         edgeColor = [0 0.3 1.0];
         plot(iterations, minDist(idx,:)*1e6, 'ro-',  'MarkerSize', markerSize, 'Color', edgeColor, 'MarkerEdgeColor', edgeColor, 'MarkerFaceColor', color, 'LineWidth', 1.5); hold on;
-        color = [0.8 0.8 0.8]; % squeeze(cMap(2,:)); 
+        color = [0.65 0.65 0.65]; % squeeze(cMap(2,:)); 
         edgeColor = color*0.7;
         plot(iterations, meanDist(idx,:)*1e6, 'yo-', 'MarkerSize', markerSize, 'Color', edgeColor, 'MarkerEdgeColor', edgeColor, 'MarkerFaceColor', color,  'LineWidth', 1.5); 
         color = [1.0 0.5 0.5]; % color = squeeze(cMap(3,:)); 
         edgeColor = [1 0 0];
         plot(iterations, maxDist(idx,:)*1e6, 'bo-',  'MarkerSize', markerSize, 'Color', edgeColor, 'MarkerEdgeColor', edgeColor, 'MarkerFaceColor', color,  'LineWidth', 1.5);
         %plot(iterations, innerSegmentDiameters(idx)*1e6 + zeros(size(iterations)), 'k-', 'LineWidth', 1.5);
-        plot(iterations, theoreticalConeSpacings(idx)*1e6 + zeros(size(iterations)), 'k--', 'LineWidth', 1.5);
+        plot(iterations, theoreticalConeSpacings(idx)*1e6 + zeros(size(iterations)), 'k--', 'LineWidth', 2.0);
         set(gca, 'XLim', [1 size(meanDist,2)], 'XScale', 'log', 'YLim', [1.3 3.6]);
         set(gca, 'XTick', [1 3 10 30 100 300 1000], 'YTick', [1.5:0.5:3.5], 'YTickLabel', {'', '2.0', '', '3.0', ''}, 'FontSize', 18, 'LineWidth', 1.0);
         grid on
@@ -525,6 +524,7 @@ function hFig = visualizeConeSeparationProgression(obj, varargin)
                 sprintf('max (n=%1.0f neighbors)',neigboringConesNum), ...
                 'Curcio ''90'}, 'Location', 'NorthWest');
             hL.NumColumns = 1;
+            hL.Color = 0.9*[1 1 1];
         end
         if (r==rowsNum)
             xlabel('\it iteration no.', 'FontSize', 24);
@@ -535,8 +535,10 @@ function hFig = visualizeConeSeparationProgression(obj, varargin)
             ylabel('\it spacing (microns)','FontSize', 24)
         else
         end
-        text(190, 3.3, sprintf('%2.0f microns', sampledXPositionsMicrons(idx)), ...
+        t = text(160, 3.35, sprintf('ecc: %2.0f um', sampledXPositionsMicrons(idx)), ...
             'FontSize', 16);
+        t.BackgroundColor = 0.9*[1 1 1];
+        t.EdgeColor = 0.3*[1 1 1];
     end
     
 end
