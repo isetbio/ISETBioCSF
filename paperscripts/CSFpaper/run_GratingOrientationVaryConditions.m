@@ -110,36 +110,47 @@ function generateOrientationCSF(theFigData, examinedOrientations)
     end
     
     contrastSensitivity = log10(contrastSensitivity);
-    sfColor = brewermap(numel(spatialFrequency), '*Set1');
     
-    figure(111); clf;
+    sfColor = brewermap(numel(spatialFrequency), 'Greys');
+
+    
+    hFig = figure(111); clf;
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 590 590]);
+    sfLegends = {};
     for sfIndex = 1:numel(spatialFrequency)
         csf = contrastSensitivity(:, sfIndex);
         %csf = csf / max(csf);
-        x = zeros(1,numel(examinedOrientations)*2+1);
-        y = x;
         for oriIndex = 1:numel(examinedOrientations)
-            theta = examinedOrientations(oriIndex)/180*pi;
-            x(oriIndex) = cos(theta)*csf(oriIndex);
-            y(oriIndex) = sin(theta)*csf(oriIndex);
-            x(oriIndex+numel(examinedOrientations)) = -x(oriIndex);
-            y(oriIndex+numel(examinedOrientations)) = -y(oriIndex);
+            thetaRadians(oriIndex) = examinedOrientations(oriIndex)/180*pi;
+            rho(oriIndex) = csf(oriIndex);
+            thetaRadians(oriIndex+numel(examinedOrientations)) = thetaRadians(oriIndex) + pi;
+            rho(oriIndex+numel(examinedOrientations))  = rho(oriIndex);
         end
-        x(numel(examinedOrientations)*2+1) = x(1);
-        y(numel(examinedOrientations)*2+1) = y(1);
-        edgeColor = squeeze(sfColor(sfIndex,:))*0.5;
+        sfLegends{numel(sfLegends)+1} = sprintf('%2.0f c/deg', spatialFrequency(sfIndex));
+        thetaRadians(numel(examinedOrientations)*2+1) = thetaRadians(1);
+        rho(numel(examinedOrientations)*2+1) = rho(1);
+        
+        edgeColor = [0 0 0]; % squeeze(sfColor(sfIndex,:))*0.5;
         faceColor = squeeze(sfColor(sfIndex,:));
-        plot(x,y, 'ko-', 'Color', edgeColor, 'LineWidth', 1.5, 'MarkerSize', 12, 'MarkerFaceColor', faceColor);
-        if (sfIndex == 1)
-            hold on;
-            sfLegends{1} = sprintf('%2.0f c/deg', spatialFrequency(sfIndex));
-        else
-            sfLegends{numel(sfLegends)+1} = sprintf('%2.0f c/deg', spatialFrequency(sfIndex));
-        end
+        polarplot(thetaRadians,rho, 'ko-', 'MarkerSize', 12, 'LineWidth', 2.0, ...
+            'Color', edgeColor, 'MarkerEdgeColor', edgeColor, 'MarkerFaceColor', faceColor);
+        hold on;
+        
     end
-    set(gca, 'XLim', [-3.5 3.5], 'YLim', [-3.5 3.5]);
-    set(gca, 'XTick', [-3.5:0.5:3.5], 'YTick', [-3.5:0.5:3.5]);
+    rlim([0.1 3])
+    set(gca, 'LineWidth', 1.0, 'FontSize', 18, 'ThetaTick', [], 'RTick', []);
+    
     hL = legend(sfLegends);
-    axis 'square';
-    grid on
+    %hL.FontSize = 18;
+    grid on;
+    box off;
+    
+    
+    
+    drawnow;
+        
+    exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', 'projects/IBIOColorDetect/paperfigs/CSFpaper/exports');
+    figureName = fullfile(exportsDir, 'CircularCSF.pdf');
+    NicePlot.exportFigToPDF(figureName, hFig, 300);
+    
 end

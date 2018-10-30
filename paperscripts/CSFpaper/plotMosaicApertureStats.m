@@ -23,7 +23,7 @@ function plotMosaicApertureStats
     params.centeredEMpaths = ~true;
 
     params.mosaicRotationDegs = 360
-    params.cyclesPerDegreeExamined = [32 50 60];
+    params.cyclesPerDegreeExamined = [4 8 16 32 50 60];
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 

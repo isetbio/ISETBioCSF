@@ -3,14 +3,10 @@ function run_OpticsVaryConditionsMedianAperture
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 2;
+    computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
-    
-    % Whether to visualize the employed PSFs
-    makePSFfigure = true;
-    visualizedWavelengths = 550;
+    makeSummaryFigure = true;
         
     % Mosaic to use
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; % 'ISETbioHexEccBasedLMSrealistic';
@@ -25,9 +21,9 @@ function run_OpticsVaryConditionsMedianAperture
         'mean aperture 2 deg' ...
     };
     examinedApertureSizeLegends = {...
-        'minimum aperture (A)' ...
-        'mean aperture (B)' ...
-        'mean aperture 2 deg (C)'
+        'minimum aperture (default, 2 um)' ...
+        'mean aperture (for each mosaic)' ...
+        'mean aperture (for the 2 deg mosaic)'
     };
 
     % We differentiate the conditions by the number of trials because there
@@ -38,7 +34,7 @@ function run_OpticsVaryConditionsMedianAperture
         1020
     ];
     
-    idx = [2:3];
+    idx = [1:3];
     examinedApertureSizes = {examinedApertureSizes{idx}};
     examinedApertureSizeLegends = {examinedApertureSizeLegends{idx}};
     examinedTrialsNum = examinedTrialsNum(idx);
@@ -51,6 +47,8 @@ function run_OpticsVaryConditionsMedianAperture
     %params.cyclesPerDegreeExamined = [4 8 16 32 50 60];
     
     params.coneContrastDirection = 'L+M+S';
+    
+    params.cyclesPerDegreeExamined = [4 8 16 32 50 60];
     
     % Response duration params
     params.frameRate = 10; %(1 frames)
@@ -65,7 +63,7 @@ function run_OpticsVaryConditionsMedianAperture
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeResponses = ~true;
     params.visualizeSpatialScheme = ~true;
@@ -77,7 +75,7 @@ function run_OpticsVaryConditionsMedianAperture
     params.visualizeDisplay = ~true;
         
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = true;
+    params.findPerformance = ~true;
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     

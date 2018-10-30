@@ -100,15 +100,15 @@ cd(localDir)
 NicePlot.exportFigToPDF('HexMosaicConstructionPartC.pdf', hFig, 300);
 
 
-selectedIterationsForFigs = [1 2 5 10 50 600];
+selectedIterationsForFigs = [1 2 5 10 100 600 1055];
 targetConePositions = [...
-    1 0; ...
-    10 0; ...
+    5 0; ...
+    16 0; ...
     28 0 ...
 ];
 
 maxYDeltaConeDistanceDisplayed = 5.0;   
-visualizedConeXrange = [min(targetConePositions(:,1))-3 max(targetConePositions(:,1))+4];
+visualizedConeXrange = [-1 32];
 visualizedConeYrange = maxYDeltaConeDistanceDisplayed*[-1 1];
 
     
@@ -439,7 +439,7 @@ function renderFrame(ax, iteration, conePositions, visualizedConeXrange, visuali
             plotNetForceVectors(target3ConePosition, netForceVectors(target3ConeIndex, :));
         end
         set(gca, 'LineWidth', 1.0, 'GridColor', [0.2 0.2 1.0], 'GridAlpha', 0.75);
-        t = text(30,4,sprintf('%03.0f', iteration), 'FontSize', 16);
+        t = text(29,4,sprintf('%04.0f', iteration), 'FontSize', 16);
         t.BackgroundColor = 0.9*[1 1 1];
         t.EdgeColor = 0.3*[1 1 1];
         hold off;
