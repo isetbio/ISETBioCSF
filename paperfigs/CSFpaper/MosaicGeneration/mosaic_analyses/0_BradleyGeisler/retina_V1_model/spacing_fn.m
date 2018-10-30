@@ -4,7 +4,7 @@ function out = spacing_fn(xx,yy)
 %cell is at (xx,yy) degrees relative to the fovea. The data used are from Drasdo et al (2007).
 
 %Foveal spacing
-s0 = 1/110;
+s0 = 1/136;
 
 %Eccentricities at which the spacing is half that of the fovea. en=nasal, et=temporal, es=superior, and ei=inferior
 %visual field.
