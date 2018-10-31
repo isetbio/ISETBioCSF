@@ -7,24 +7,18 @@ function compareLattices
     qDistBradley = computeQuality(coneLocsDegsBradley);
     
     hFig = figure(1); clf;
-    set(hFig, 'Position', [10 10 1032 1065], 'Color', [1 1 1])
-    markerSize = 3;
-    subplot(2,2,1)
-    plotCones(coneLocsDegsISETBio, maxEcc, 'ISETBio', [0 0 0], markerSize);
+    set(hFig, 'Position', [10 10 1500 600], 'Color', [1 1 1])
     
-    subplot(2,2,2);
-    plotCones(coneLocsDegsBradley, maxEcc, 'Bradley', [0 0 0], markerSize);
-    
-    subplot(2,2,3);
+    subplot(1,2,1);
     plotQuality(qDistISETBio, 'ISETBio');
 
-    subplot(2,2,4);
-    plotQuality(qDistBradley, 'Bradley');
+    subplot(1,2,2);
+    plotQuality(qDistBradley, 'Bradley et. al (2014)');
     NicePlot.exportFigToPDF('quality.pdf', hFig, 300);
     
     x = [-1 -0.5 0 0.5 1]*0.8*maxEcc;
     deltaDegs = 0.04;
-    hFig = plotFourierAnalysis(coneLocsDegsISETBio, coneLocsDegsBradley, 'ISETBio', 'Bradley', maxEcc, x,x, deltaDegs)
+    hFig = plotFourierAnalysis(coneLocsDegsISETBio, coneLocsDegsBradley, 'ISETBio', 'Bradley et. al (2014)', maxEcc, x,x, deltaDegs);
     NicePlot.exportFigToPDF('Fourier.pdf', hFig, 300);
 end
 
@@ -38,9 +32,9 @@ function hFig = plotFourierAnalysis(coneLocsA, coneLocsB, mosaicNameA, mosaicNam
     
     markerSize = 6;
     hFig = figure(2); clf;
-    set(hFig, 'Position', [10 10 1285 1112], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 1500 1300], 'Color', [1 1 1]);
     subplot(10,11, [1 2 3 4 5  12 13 14 15 16  23 24 25 26 27  34 35 36 37 38  45 46 47 48 49]);
-    plotCones(coneLocsA, maxEcc, mosaicNameA, [0 0 0], markerSize); hold on;
+    plotCones(coneLocsA, maxEcc, mosaicNameA, [0.8 0.8 0.8], markerSize); hold on;
     subsetIndex = 0;
     for l = 1:numel(yy)
             yo = -yy(l);
@@ -49,13 +43,14 @@ function hFig = plotFourierAnalysis(coneLocsA, coneLocsB, mosaicNameA, mosaicNam
             idx = find(sqrt((xA-xo).^2 + (yA-yo).^2)<= deltaDegs);
             subsetIndex =  subsetIndex + 1;
             coneLocsSubsetA{subsetIndex} = coneLocsA(idx,:);
-            color = [1 0 0];
+            color = [1 1 1];
             plotCones(coneLocsSubsetA{subsetIndex}, maxEcc, mosaicNameA, color, markerSize);
         end
     end
+    set(gca, 'Color', [0 0 0]);
     
     subplot(10,11, [7 8 9 10 11  18 19 20 21 22  29 30 31 32 33  40 41 42 43 44  51 52 53 54 55]);
-    plotCones(coneLocsB, maxEcc, mosaicNameB, [0 0 0], markerSize); hold on;
+    plotCones(coneLocsB, maxEcc, mosaicNameB, [0.8 0.8 0.8], markerSize); hold on;
     subsetIndex = 0;
     for l = 1:numel(yy)
             yo = -yy(l);
@@ -64,10 +59,11 @@ function hFig = plotFourierAnalysis(coneLocsA, coneLocsB, mosaicNameA, mosaicNam
             idx = find(sqrt((xB-xo).^2 + (yB-yo).^2)<= deltaDegs);
             subsetIndex =  subsetIndex + 1;
             coneLocsSubsetB{subsetIndex} = coneLocsB(idx,:);
-            color = [1 0 0];
+            color = [1 1 1];
             plotCones(coneLocsSubsetB{subsetIndex}, maxEcc, mosaicNameB, color, markerSize);
         end
     end
+    set(gca, 'Color', [0 0 0]);
     
     colormap(gray(1024));
     
@@ -117,16 +113,17 @@ function plotQuality(qDist, mosaicName)
     qLims = [0.5 1.005]; qBins = [0.3:0.01:1.0];
     [counts,centers] = hist(qDist, qBins);
     bar(centers,counts,1)
-    set(gca, 'XLim', qLims, 'YLim', [0 3500], 'XTick', [0.1:0.1:1.0], 'YTick', [0:1000:5000], 'FontSize', 14);
+    set(gca, 'XLim', qLims, 'YLim', [0 3500], 'XTick', [0.1:0.1:1.0], 'YTick', [0:1000:5000], 'FontSize', 18);
     axis 'square'; grid on
-    xlabel('q');
-    ylabel('count');
+    xlabel('hex-index $\left(\displaystyle 2 r_{ins} / r_{cir} \right)$', 'Interpreter', 'latex', 'FontSize', 24);
+    ylabel('count', 'FontSize', 24);
 end
 
 function plotCones(coneLocs, maxEcc, mosaicName, color, markerSize)
     plot(coneLocs(:,1), coneLocs(:,2), 'o', ...
-        'MarkerFaceColor', [0.8 0.8 0.8], ...
-        'MarkerEdgeColor', color, ...
+        'MarkerFaceColor', color, ...
+        'LineWidth', 0.5, ...
+        'MarkerEdgeColor', color/2, ...
         'MarkerSize', markerSize);
     set(gca, 'XLim', maxEcc*[-1 1], 'YLim', maxEcc*[-1 1], ...
         'XTick', [0.5:0.1:0.5], 'YTick', [0.5:0.1:0.5], 'FontSize', 18); 
