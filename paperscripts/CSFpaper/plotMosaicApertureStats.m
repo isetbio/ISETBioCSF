@@ -7,7 +7,14 @@ function plotMosaicApertureStats
     opticsName = 'ThibosBestPSFSubject3MMPupil';
      
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection';
+    %mosaicName = 'ISETbioHexEccBasedLMSrealistic';
+    
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
+    
+    
+    %params.LMSRatio = [0.67 0.33 0];
+    params.LMSRatio = [0.60 0.30 0.10];
+    
     
     params.opticsModel = opticsName;
        
@@ -17,13 +24,19 @@ function plotMosaicApertureStats
     params.frameRate = 10; %(1 frames)
     params.responseStabilizationMilliseconds = 40;
     params.responseExtinctionMilliseconds = 40;
-
+    
+    
+    
     % Eye movement params
     params.emPathType = 'frozen0';
     params.centeredEMpaths = ~true;
 
-    params.mosaicRotationDegs = 360
-    params.cyclesPerDegreeExamined = [4 8 16 32 50 60];
+    if (strcmp(mosaicName,'originalBanks'))
+        params.mosaicRotationDegs = 30;
+    else
+        params.mosaicRotationDegs = 360;
+    end
+    params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
     
     % Simulation steps to perform
     params.computeMosaic = ~true; 
@@ -55,13 +68,18 @@ function plotMosaicApertureStats
         theCurrentMosaic = theMosaicTypes.theMosaics{sfIndex};
         %theCurrentMosaic.displayInfo('plotApertureStats', true);
         
-        theCurrentMosaic.visualizeGrid('generateNewFigure', true, ...
-            'visualizedConeAperture', 'geometricArea', ...
-            'overlayConeDensityContour', 'theoretical_and_measured', ...
-            'coneDensityContourLevels', coneDensityLevels, ...
-            'labelConeTypes', false, ...
-            'overlayContourLabels', true, ...
-            'BackgroundColor', [0.8 0.8 0.8]);
+        [innerSegmentCoverage(sfIndex), geometricCoverage(sfIndex)] = theCurrentMosaic.retinalCoverage();
+        
+%         theCurrentMosaic.visualizeGrid('generateNewFigure', true, ...
+%             'visualizedConeAperture', 'geometricArea', ...
+%             'overlayConeDensityContour', 'theoretical_and_measured', ...
+%             'coneDensityContourLevels', coneDensityLevels, ...
+%             'labelConeTypes', false, ...
+%             'overlayContourLabels', true, ...
+%             'BackgroundColor', [0.8 0.8 0.8]);
         
     end
+    
+    figure(1)
+    plot(params.cyclesPerDegreeExamined, innerSegmentCoverage, 'rs');
 end

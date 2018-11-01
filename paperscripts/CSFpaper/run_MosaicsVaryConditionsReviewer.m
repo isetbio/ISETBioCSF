@@ -1,44 +1,29 @@
-function run_MosaicsVaryConditions
+function run_MosaicsVaryConditionsReviewer
 % This is the script used to assess the impact of different mosaic models on the CSF
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 3;
+    computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
     makeMosaicsFigure = ~true;
-    makeCoverageFigure = false;
     
     % Mosaic to use
     examinedMosaicModels = {...
-        'originalBanks' ...
-        'ISETbioHexEccBasedNoScones' ...
-        'ISETbioHexEccBasedLMSrealistic' ...
         'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection' ...
-        'ISETbioHexEccBasedLMSrealisticEfficiencyCorrectionAndMacularPigment' ...
+        'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection' ...
         };
     
-    examinedMosaicLegends = {...
-        'constant LM density (Banks ''87)' ...
-        'ecc-based LM density' ...
-        'ecc-based LMS density' ...
-        'ecc-based LMS density and efficiency' ...
-        'ecc-based LMS density, efficiency, macular pigment'
-    };
 
     examinedMosaicLegends = {...
-        'const. LM dens. (Banks ''87) (A)' ...
-        'ecc-based LM dens. (B)' ...
-        'ecc-based LMS dens. (C)' ...
-        'ecc-based LMS dens.,q.eff. (D)' ...
-        'ecc-based LMS dens.,q.eff., MP'
+        '250,000 cones/mm2' ...
+        '288,675 cones/mm2' ...
     };
 
-    idx = [2 3];
+    idx = [1 2];
     examinedMosaicModels = {examinedMosaicModels{idx}};
-    examinedMosaicLegends = {examinedMosaicLegends{idx}};
-    
+     
     % Tun the mosaic-vary condition using the Geisler optics
     opticsName = 'Geisler';
       
@@ -49,15 +34,14 @@ function run_MosaicsVaryConditions
         mosaicName = examinedMosaicModels{mosaicIndex};
         params = getCSFpaperDefaultParams(mosaicName, computationInstance);
         
-        if (strcmp(mosaicName, 'originalBanks'))
-            params.mosaicRotationDegs = 30;
-        else
+        if (strcmp(examinedMosaicLegends{mosaicIndex}, '288,675 cones/mm2'))
             % Denote new mosaics with higher density
             params.mosaicRotationDegs = 360;
         end
         params.opticsModel = opticsName;
        
         params.coneContrastDirection = 'L+M+S';
+        params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
     
         % Response duration params
         params.frameRate = 10; %(1 frames)
@@ -72,7 +56,7 @@ function run_MosaicsVaryConditions
         params.computeMosaic = ~true; 
         params.visualizeMosaic = ~true;
 
-        params.computeResponses = true;
+        params.computeResponses = ~true;
         params.computePhotocurrentResponseInstances = ~true;
         params.visualizeMosaic = makeMosaicsFigure;
         params.visualizeResponses = ~true;
@@ -85,7 +69,7 @@ function run_MosaicsVaryConditions
         params.visualizeDisplay = ~true;
     
         params.visualizeKernelTransformedSignals = ~true;
-        params.findPerformance = true;
+        params.findPerformance = ~true;
         params.visualizePerformance = makeSummaryFigure;
         params.deleteResponseInstances = ~true;
 
@@ -93,12 +77,10 @@ function run_MosaicsVaryConditions
             run_BanksPhotocurrentEyeMovementConditions(params);
         
         if (makeMosaicsFigure)
-            if (makeCoverageFigure)
-                for sfIndex = 1:numel(params.cyclesPerDegreeExamined)
-                    theCurrentMosaic = theMosaicTypes.theMosaics{sfIndex};
-                    [innerSegmentCoverage(mosaicIndex,sfIndex), geometricCoverage(mosaicIndex,sfIndex)] = ...
-                        theCurrentMosaic.retinalCoverage();
-                end
+            for sfIndex = 1:numel(params.cyclesPerDegreeExamined)
+                theCurrentMosaic = theMosaicTypes.theMosaics{sfIndex};
+                [innerSegmentCoverage(mosaicIndex,sfIndex), geometricCoverage(mosaicIndex,sfIndex)] = ...
+                    theCurrentMosaic.retinalCoverage();
             end
             sfIndex = 1;
             theCurrentMosaic = theMosaicTypes.theMosaics{sfIndex};
@@ -108,9 +90,9 @@ function run_MosaicsVaryConditions
     end
     
     if (makeSummaryFigure)
-        variedParamName = 'Mosaic';
-        theRatioLims = [0.3 1.2];
-        theRatioTicks = [0.3 0.5 0.7 1.0 2.0];
+        variedParamName = 'MosaicVaryingConeDensity';
+        theRatioLims = [0.75 1.45];
+        theRatioTicks = 0.8 : 0.1 : 1.4;
         generateFigureForPaper(theFigData, examinedMosaicLegends, variedParamName, opticsName, ...
             'figureType', 'CSF', ...
             'inGraphText', ' E ', ...
@@ -122,47 +104,43 @@ function run_MosaicsVaryConditions
     end
 
     if (makeMosaicsFigure)
-        
-        
-        if (makeCoverageFigure)
-            hFig = figure(99); clf;
-            set(hFig, 'Color', [1 1 1]);
-            faceColors = [0.5 0.5 0.5; 1 0.5 0.5];
-            edgeColors = [0 0 0; 1 0 0];
-            for mosaicIndex = 1:numel(examinedMosaicModels)
-                coverage = squeeze(innerSegmentCoverage(mosaicIndex,:));
-                normalizedCoverage = coverage / max(coverage);
-                subplot(1,2,1)
-                hold on;
-                plot(params.cyclesPerDegreeExamined, coverage, ...
-                    'ko-', 'MarkerSize', 14, ...
-                    'MarkerFaceColor', squeeze(faceColors(mosaicIndex,:)),...
-                    'MarkerEdgeColor', squeeze(edgeColors(mosaicIndex,:)));
-                subplot(1,2,2)
-                hold on;
-                plot(params.cyclesPerDegreeExamined, normalizedCoverage, ...
-                    'ko-', 'MarkerSize', 14, ...
-                    'MarkerFaceColor', squeeze(faceColors(mosaicIndex,:)),...
-                    'MarkerEdgeColor', squeeze(edgeColors(mosaicIndex,:)));
-
-            end % mosaicIdex
+        hFig = figure(99); clf;
+        set(hFig, 'Color', [1 1 1]);
+        faceColors = [0.5 0.5 0.5; 1 0.5 0.5];
+        edgeColors = [0 0 0; 1 0 0];
+        for mosaicIndex = 1:numel(examinedMosaicModels)
+            coverage = squeeze(innerSegmentCoverage(mosaicIndex,:));
+            normalizedCoverage = coverage / max(coverage);
             subplot(1,2,1)
-            set(gca, 'FontSize', 18, 'XLim', [0.5 90], 'YLim', [0 1]);
-            hL = legend(examinedMosaicLegends);
-            grid on;
-            box on;
-            xlabel('\it spatial frequency (c/deg)');
-            ylabel('\it coverage factor');
-
+            hold on;
+            plot(params.cyclesPerDegreeExamined, coverage, ...
+                'ko-', 'MarkerSize', 14, ...
+                'MarkerFaceColor', squeeze(faceColors(mosaicIndex,:)),...
+                'MarkerEdgeColor', squeeze(edgeColors(mosaicIndex,:)));
             subplot(1,2,2)
-            set(gca, 'FontSize', 18, 'XLim', [0.5 90], 'YLim', [0.7 1]);
-            hL = legend(examinedMosaicLegends);
-            grid on;
-            box on;
-            xlabel('\it spatial frequency (c/deg)');
-            ylabel('\it normalized coverage factor');
-            drawnow
-        end
+            hold on;
+            plot(params.cyclesPerDegreeExamined, normalizedCoverage, ...
+                'ko-', 'MarkerSize', 14, ...
+                'MarkerFaceColor', squeeze(faceColors(mosaicIndex,:)),...
+                'MarkerEdgeColor', squeeze(edgeColors(mosaicIndex,:)));
+            
+        end % mosaicIdex
+        subplot(1,2,1)
+        set(gca, 'FontSize', 18, 'XLim', [0.5 90], 'YLim', [0 1]);
+        hL = legend(examinedMosaicLegends);
+        grid on;
+        box on;
+        xlabel('\it spatial frequency (c/deg)');
+        ylabel('\it coverage factor');
+        
+        subplot(1,2,2)
+        set(gca, 'FontSize', 18, 'XLim', [0.5 90], 'YLim', [0.7 1]);
+        hL = legend(examinedMosaicLegends);
+        grid on;
+        box on;
+        xlabel('\it spatial frequency (c/deg)');
+        ylabel('\it normalized coverage factor');
+        drawnow
         
         generateMosaicsFigure(theMosaicTypesAtSpecificSF, examinedMosaicLegends,  ...
             'inGraphTexts', {' A ', ' B ', ' C ', ' D '}, ...

@@ -219,10 +219,10 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
         if (isempty(inGraphTextPos))
             if (plotRatiosOfOtherConditionsToFirst)
                 inGraphTextPos(1) = 1.6;
-                inGraphTextPos(2) = 7000;
+                inGraphTextPos(2) = 10000;
             else
                 inGraphTextPos(1) = 1.6;
-                inGraphTextPos(2) = 7000;
+                inGraphTextPos(2) = 10000;
             end
         end
         t = text(theAxes, inGraphTextPos(1), inGraphTextPos(2), inGraphText);
