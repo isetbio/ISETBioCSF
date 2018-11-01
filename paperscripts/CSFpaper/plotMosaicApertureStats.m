@@ -6,14 +6,14 @@ function plotMosaicApertureStats
     
     opticsName = 'ThibosBestPSFSubject3MMPupil';
      
-    mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection';
-    %mosaicName = 'ISETbioHexEccBasedLMSrealistic';
+    %mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection';
+    mosaicName = 'ISETbioHexEccBasedLMSrealistic';
     
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
     
-    %params.LMSRatio = [0.67 0.33 0];
-    params.LMSRatio = [0.60 0.30 0.10];
+    params.LMSRatio = [0.67 0.33 0];
+    %params.LMSRatio = [0.60 0.30 0.10];
     
     
     params.opticsModel = opticsName;
