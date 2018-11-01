@@ -35,7 +35,7 @@ function run_MosaicsVaryConditions
         'ecc-based LMS dens.,q.eff., MP'
     };
 
-    idx = [2 3];
+    idx = [2 3 5];
     examinedMosaicModels = {examinedMosaicModels{idx}};
     examinedMosaicLegends = {examinedMosaicLegends{idx}};
     
