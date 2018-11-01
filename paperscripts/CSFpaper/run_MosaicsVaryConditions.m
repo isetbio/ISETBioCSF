@@ -3,7 +3,7 @@ function run_MosaicsVaryConditions
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 3;
+    computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -59,6 +59,8 @@ function run_MosaicsVaryConditions
        
         params.coneContrastDirection = 'L+M+S';
     
+        params.cyclesPerDegreeExamined = [8 16 32 50 60]; %  %% = [2 4 8 16 32 50 60]
+        
         % Response duration params
         params.frameRate = 10; %(1 frames)
         params.responseStabilizationMilliseconds = 40;
