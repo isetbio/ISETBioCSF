@@ -32,12 +32,14 @@ function generateUpdatedFig1Components
     hFig = generatePSFFigComponent(theOI, visualizedWavelengthsPSF);
     NicePlot.exportFigToPNG(fullfile(videoOutDir, 'PSFsComponent.png'), hFig, 300);
     
-    emPathLengthSecs = 0.45;
-    theMosaic.integrationTime = 2.5/1000;
+    emPathLengthSecs = 0.145;
+    theMosaic.integrationTime = 5/1000;
     fixationalEyeMovementsNum = round(emPathLengthSecs/theMosaic.integrationTime);
     nTrials = 1;
     theEMPath = generateTheEMPath(theMosaic, fixationalEyeMovementsNum, nTrials, videoOutDir);
- 
+    %
+    % Return to origin
+    theEMPath(nTrials,fixationalEyeMovementsNum,:) = 0*theEMPath(nTrials,fixationalEyeMovementsNum,:);
     
     [theIsomerizations, thePhotocurrents, LMSfilters] = ...
         theMosaic.compute(theOI, 'currentFlag',true, 'emPath', theEMPath);
@@ -48,7 +50,7 @@ function generateUpdatedFig1Components
     hFig = generateMosaicFigComponent(theMosaic);
     NicePlot.exportFigToPNG(fullfile(videoOutDir,'MosaicComponent.png'), hFig, 300);
     
-    makeGif = true;
+    makeGif =~true;
     hFig = generateResponseFigComponent(theMosaic, theIsomerizations, 'isomerizations', videoOutDir, makeGif);
     NicePlot.exportFigToPNG(fullfile(videoOutDir,'IsomerizationsComponent.png'), hFig, 300);
     
@@ -83,6 +85,7 @@ function hFig = generateMosaicFigComponent(theMosaic)
         'visualizedConeAperture', 'geometricArea', ...
         'backgroundColor', [1 1 1]);
     set(ax,'XColor', 'none', 'YColor', 'none');
+    set(ax, 'YDir', 'reverse');
     set(ax,'XTickLabels', {});
     set(ax,'YTickLabels', {});
     
@@ -131,7 +134,6 @@ function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPatt
         labelColorBarTicks = false;
         backgroundColor = [0.2 0.2 0.2];
         blurGif = true;
-        
     else
         set(hFig, 'Position', [10 10 400 420], 'Color', [1 1 1]);
         ax = subplot('Position', [0.02 0.02 0.96 0.96]);
@@ -199,9 +201,13 @@ function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPatt
              'backgroundColor', backgroundColor);
         ylabel(ax, '');
         axis(ax, 'ij');
-        xlim(ax, xRange*1e-6);
-        ylim(ax, yRange*1e-6);
-    
+        if ~isempty(xRange)
+            xlim(ax, xRange*1e-6);
+        end
+        if ~isempty(yRange)
+            ylim(ax, yRange*1e-6);
+        end
+        
         set(ax,'XTickLabels', {});
         set(ax,'YTickLabels', {});
         
@@ -210,7 +216,6 @@ function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPatt
         frame = getframe(hFig);
 
         if (makeGif)
-            
             % Smooth with the smoothing kernel
             data = frame.cdata;
             rFactor = fractionGauss;
@@ -257,7 +262,7 @@ function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPatt
     else
         videoOBJ.close();
     end
-    
+         
 end
 
 function hFig = generateOpticalImageFigComponent(theOI, mosaicFOV, visualizedWavelengths)
@@ -509,12 +514,12 @@ function [theScene, sensorImageRGB] = generateTheScene(rootPath,theDisplay, theM
     meanLuminance = [];
     theScene = sceneFromFile(sensorImageRGB, 'rgb', meanLuminance, theDisplay);
         
+    meanLuminance = sceneGet(theScene, 'mean luminance');
+    theScene = sceneAdjustLuminance(theScene, 100);
     meanLuminance = sceneGet(theScene, 'mean luminance')
-    theScene = sceneAdjustLuminance(theScene, 100)
-    meanLuminance = sceneGet(theScene, 'mean luminance')
-    pause
     % Scale the scene to be a little larger than the mosaic
-    theScene = sceneSet(theScene, 'h fov', theMosaicFOV(1)*0.9);
+    size = sceneGet(theScene, 'size');
+    theScene = sceneSet(theScene, 'h fov', theMosaicFOV(1) * 1.5);
 end
 
 function theDisplay = generateTheDisplay()
