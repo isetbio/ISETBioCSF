@@ -59,7 +59,7 @@ function run_MosaicsVaryConditions
        
         params.coneContrastDirection = 'L+M+S';
     
-        params.cyclesPerDegreeExamined = [8 16 32 50 60]; %  %% = [2 4 8 16 32 50 60]
+        params.cyclesPerDegreeExamined = [4] %[8 16 32 50 60]; %  %% = [2 4 8 16 32 50 60]
         
         % Response duration params
         params.frameRate = 10; %(1 frames)
@@ -111,8 +111,8 @@ function run_MosaicsVaryConditions
     
     if (makeSummaryFigure)
         variedParamName = 'Mosaic';
-        theRatioLims = [0.3 1.2];
-        theRatioTicks = [0.3 0.5 0.7 1.0 2.0];
+        theRatioLims = [0.5 1.5];
+        theRatioTicks = [0.3 0.5 0.7 1.0 1.5 2.0];
         generateFigureForPaper(theFigData, examinedMosaicLegends, variedParamName, opticsName, ...
             'figureType', 'CSF', ...
             'inGraphText', ' E ', ...
