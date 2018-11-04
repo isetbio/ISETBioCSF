@@ -33,7 +33,7 @@ function renderXYplot(lambda,quantalEfficiencies, xLims, yLims, xTicks, yTicks, 
     markerEdgeColor = [0 0 0];
     
     % Lens transmittance on the top plot
-    subplot('Position', [0.13 0.12 0.85 0.88]);
+    ax = subplot('Position', [0.14 0.13 0.84 0.87]);
     hold on
     for coneIndex = 1:3
         plot(lambda, squeeze(quantalEfficiencies(coneIndex,:)), '-o', 'Color', squeeze(colors(coneIndex,:)), 'LineWidth', 1.5, ...
@@ -42,14 +42,16 @@ function renderXYplot(lambda,quantalEfficiencies, xLims, yLims, xTicks, yTicks, 
     set(gca, 'XLim', [xLims(1)-dx xLims(2)+dx], 'YLim', [yLims(1)-dy yLims(2)+dy],...
         'XTick', xTicks, 'YTick', yTicks, 'LineWidth', 0.75);
     set(gca, 'TickLength',[0.02, 0.02]);
-    xlabel(xLabel, 'FontWeight', 'bold');
-    ylabel(yLabel, 'FontWeight', 'bold');
+    
     grid on; box on;
     axis 'square';
     hL = legend({'L-cones', 'M-cones', 'S-cones'});
     
-    t = text(410, 0.475, ' B ');
+    t = text(400, 0.47, ' B ');
     formatFigureForPaper(hFig, 'figureType', 'PIGMENT_QUANTAL_EFFICIENCY', 'theAxes', gca, 'theLegend', hL, 'theText', t);
+    xlabel(ax,sprintf('\\it %s',xLabel), 'FontWeight', 'normal', 'FontSize', 28);
+    ylabel(ax,sprintf('\\it %s',yLabel), 'FontWeight', 'normal', 'FontSize', 28);
+    
     set(hL, 'Location', 'NorthEast');
     if strcmp(export.format, 'PDF')
         NicePlot.exportFigToPDF(export.name, hFig, 300);

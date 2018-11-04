@@ -16,8 +16,8 @@ function plotConeApertureMTF
     	'spatialSupport', spatialSupport-mean(spatialSupport));
     
     export = struct(...
-        'format','PNG', ...
-        'name', fullfile(localExportsDir, 'ConeApertureMTFs.png') ...
+        'format','PDF', ...
+        'name', fullfile(localExportsDir, 'ConeApertureMTFs.pdf') ...
         );
     renderPlots(BanksMosaicAperture, HexMosaicAperture, export);
 end
@@ -38,8 +38,7 @@ function renderPlots(BanksMosaicAperture, HexMosaicAperture, export)
     [~,idx] = min(abs(HexMosaicMTF.support1D-targetSF));
     fprintf('Hex mosaic MTF at %2.1f c/deg: %2.2f\n', HexMosaicMTF.support1D(idx), HexMosaicMTF.mtf1D(idx));
     
-    % Lens transmittance on the top plot
-    subplot('Position', [0.13 0.12 0.85 0.87]);
+    subplot('Position', [0.14 0.13 0.84 0.87]);
     plot(BanksMosaicMTF.support1D, BanksMosaicMTF.mtf1D,  'b-', 'LineWidth', 1.5);
     hold on;
     plot(HexMosaicMTF.support1D, HexMosaicMTF.mtf1D,  'r-', 'LineWidth', 1.5);
@@ -49,8 +48,9 @@ function renderPlots(BanksMosaicAperture, HexMosaicAperture, export)
     set(gca, 'XScale', 'Log', 'XLim', [3 600], 'YLim', [0 1.01],...
          'XTick', sfTicks, 'YTick', yTicks, 'LineWidth', 0.75);
     set(gca, 'TickLength',[0.02, 0.02]);
-    xlabel('spatial frequency (c/deg)', 'FontWeight', 'bold');
-    ylabel('cone aperture MTF', 'FontWeight', 'bold');
+    
+    
+    
     grid on; box on;
     axis 'square';
     hL = legend({'Banks ''87', 'ecc-varying'}, 'Location', 'NorthEast');
@@ -58,9 +58,15 @@ function renderPlots(BanksMosaicAperture, HexMosaicAperture, export)
     t = text(3.3, 0.93, ' C ');
     formatFigureForPaper(hFig, 'figureType', 'CONE_APERTURE', 'theAxes', gca, 'theLegend', hL, 'theText', t);
     
+    xlabel('\it spatial frequency (c/deg)', 'FontWeight', 'normal', 'FontSize', 28);
+    ylabel('\it cone aperture MTF', 'FontWeight', 'normal', 'FontSize', 28);
+    
+    
     plotAperture(0.15, 0.21, BanksMosaicAperture, 3.0/2, [0 0 1]);
     plotAperture(0.37, 0.21, HexMosaicAperture, 1.5797/2, [1 0 0]);
     
+    
+
     colormap(gray(1024));
     
     if strcmp(export.format, 'PDF')
