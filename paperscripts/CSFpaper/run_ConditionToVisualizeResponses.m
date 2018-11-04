@@ -29,18 +29,22 @@ function run_ConditionToVisualizeResponses
     params.responseStabilizationMilliseconds = 40;
     params.responseExtinctionMilliseconds = 40;
     
-    params.performanceClassifier = 'svmV1FilterBank';
-    %params.performanceClassifier = 'svmV1FilterEnsemble';
+    inferenceEngine = 'SVM-Template-Q';
     params.parforWorkersNumForClassification = 1;
     
-    
-    if (strcmp(params.performanceClassifier,'svmV1FilterEnsemble'))
+    if (strcmp(inferenceEngine,'SVM (QPhE) population)'))
+        params.performanceClassifier = 'svmV1FilterEnsemble';
         params.spatialPoolingKernelParams.spatialPositionsNum = 9;
         params.spatialPoolingKernelParams.cyclesPerRFs =  [1.5 2.5];
         params.spatialPoolingKernelParams.orientations =  [0];
-    else
-        %params.spatialPoolingKernelParams.type = 'V1CosUnit';
-        %params.spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';
+    elseif (strcmp(inferenceEngine,'SVM-Template-L'))
+        params.performanceClassifier = 'svmV1FilterBank';
+        params.spatialPoolingKernelParams.type = 'V1CosUnit';
+        params.spatialPoolingKernelParams.activationFunction = 'linear';
+    elseif (strcmp(inferenceEngine,'SVM-Template-Q'))
+        params.performanceClassifier = 'svmV1FilterBank';
+        params.spatialPoolingKernelParams.type = 'V1QuadraturePair';
+        params.spatialPoolingKernelParams.activationFunction = 'energy';
     end
     
     % Simulation steps to perform
@@ -63,7 +67,6 @@ function run_ConditionToVisualizeResponses
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 
-    
 
     
     % Go
