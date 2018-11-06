@@ -167,7 +167,7 @@ function params = getRemainingDefaultParams(params, condIndex, conditionLabel)
     else
         params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
     end
-    params.cyclesPerDegreeExamined = [16 32 50 60]
+    params.cyclesPerDegreeExamined = [8 16 32 50 60]
     
     if (strcmp(conditionLabel, 'Banks mosaic/optics, MLPT, 3mm'))
         params.pupilDiamMm = 3.0;
