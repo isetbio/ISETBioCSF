@@ -51,7 +51,7 @@ function timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, no
         set(ax1, 'XTickLabel', {}, 'YTickLabel', {});
     end
     set(ax1, 'XLim', [timeAxisLimits(1) timeAxisLimits(2)]);
-    set(ax1, 'YLim', responseLevels(end-1)*[-1 1]); 
+    set(ax1, 'YLim', [responseLevels(1) responseLevels(end)]); 
      
     maxProbability = max(responseDistribution(:));
     set(ax1, 'CLim', [0 maxProbability]);
@@ -91,7 +91,7 @@ function timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, no
             max(meanResponseDistributionTestStimulus) ...
             ]);
         set(ax2, 'XLim', [0 maxAll]);
-        set(ax2, 'YLim', responseLevels(end-1)*[-1 1]); % [responseLevels(1) responseLevels(end-1)]); 
+        set(ax2, 'YLim', [responseLevels(1) responseLevels(end)]); 
         set(ax2, 'XTick', [0 maxAll], 'XTickLabel', {'0', sprintf('%2.2f', maxAll)}, 'YTickLabel', {});
         xlabel(ax2,'probability', 'FontWeight', 'bold');
     end

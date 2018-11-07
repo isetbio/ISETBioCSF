@@ -604,9 +604,10 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
                 'showXLabel', false, ...
                 'showYLabel', false, ...
                 'backgroundColor', 0*[0.5 0.5 0.5]);
-                set(gca, 'XTick', (-0.2:0.05:0.2)*theMosaic.micronsPerDegree*1e-6, 'XTickLabel', xtickLabels, 'YTickLabel', {});
-                xlabel('space (deg)', 'FontWeight', 'bold');
+                set(gca, 'XTick', (-0.2:0.05:0.2)*theMosaic.micronsPerDegree*1e-6, ...
+                    'XTickLabel', xtickLabels, 'YTickLabel', {});
                 set(gca, 'FontSize', 28);
+                xlabel('\it space (deg)', 'FontWeight', 'normal', 'FontSize', 36);
             drawnow
 
             % Add video frame
@@ -640,8 +641,9 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
         'showYLabel', false, ...
         'backgroundColor', 0*[0.5 0.5 0.5]);
     set(gca, 'XTick', (-0.2:0.05:0.2)*theMosaic.micronsPerDegree*1e-6, 'XTickLabel', xtickLabels, 'YTickLabel', {});
-    xlabel('space (deg)', 'FontWeight', 'bold');
     set(gca, 'FontSize', 28);
+    xlabel('\it space (deg)', 'FontWeight', 'normal', 'FontSize', 36);
+   
     drawnow
 
     hFigTmp = figure(2+figNo); clf;
@@ -659,15 +661,16 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
         'showXLabel', false, ...
         'showYLabel', false, ...
         'backgroundColor', 0*[0.5 0.5 0.5]);
-    set(gca, 'XTick', (-0.2:0.05:0.2)*theMosaic.micronsPerDegree*1e-6, 'XTickLabel', xtickLabels, 'YTickLabel', {});
-    xlabel('space (deg)', 'FontWeight', 'bold');
+    set(gca, 'XTick', (-0.2:0.05:0.2)*theMosaic.micronsPerDegree*1e-6, ...
+        'XTickLabel', xtickLabels, 'YTickLabel', {});
     set(gca, 'FontSize', 28);
+    xlabel('\it space (deg)', 'FontWeight', 'normal', 'FontSize', 36);
     drawnow
 
     hFigTmp = figure(3+figNo); clf;
     hFig{numel(hFig)+1} = hFigTmp;
     set(hFigTmp, 'Position', [10 10 600 345], 'Color', [1 1 1]);
-    ax = subplot('Position', [0.15 0.235 0.84 0.71]);
+    ax = subplot('Position', [0.15 0.25 0.84 0.71]);
     generateConeLinePlot(ax, theMosaic, ...
         stimDataNoiseFreeSignalAtPeakTime, ...
         noStimDataNoiseFreeSignalAtPeakTime, ...
@@ -677,7 +680,7 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
     hFigTmp = figure(4+figNo); clf;
     hFig{numel(hFig)+1} = hFigTmp;
     set(hFigTmp, 'Position', [10 10 600 345], 'Color', [1 1 1]);
-    ax = subplot('Position', [0.15 0.235 0.84 0.71]);
+    ax = subplot('Position', [0.15 0.25 0.84 0.71]);
     generateConeLinePlot(ax, theMosaic, ...
         stimDataSignalInstanceAtPeakTime, ...
         noStimDataNoiseFreeSignalAtPeakTime, ...
@@ -772,14 +775,14 @@ function [timelinePlot, timelineArrowPlot] = generateXTConeLinePlot(ax, theMosai
         'FontSize', 28, 'XTick', -0.2:0.05:0.2, 'XTickLabel', xTickLabels, ...
         'YTick', timeTicks, 'YTickLabel', timeTickLabels, 'LineWidth', 1.0);
     if (~isempty(yLabelTitle))
-        ylabel(yLabelTitle, 'FontWeight', 'bold')
+        ylabel(sprintf('\\it %s',yLabelTitle), 'FontWeight', 'normal', 'FontSize', 36)
     else
         set(gca, 'YTickLabel', {});
     end
     colormap(gray(1024));
     grid 'on'; box 'on';
     if (~isempty(xLabelTitle))
-        xlabel(xLabelTitle, 'FontWeight', 'bold');
+        xlabel(sprintf('\\it %s',xLabelTitle), 'FontWeight', 'normal', 'FontSize', 36);
     end
     
     hcb = colorbar('northoutside');
@@ -857,12 +860,12 @@ function generateConeLinePlot(ax, theMosaic, activation, nullStimActivation, sig
         'FontSize', 28, 'XTick', -0.2:0.05:0.2, 'XTickLabel', xtickLabels, ...
         'YTick', yticks, 'LineWidth', 1.0);
     if (~isempty(yLabelTitle))
-        ylabel(yLabelTitle, 'FontWeight', 'bold')
+        ylabel(sprintf('\\it %s',yLabelTitle), 'FontWeight', 'normal', 'FontSize', 36)
     else
         set(gca, 'YTickLabel', {});
     end
     grid 'on'; box 'on';
-    xlabel('space (deg)', 'FontWeight', 'bold');
+    xlabel('\it space (deg)', 'FontWeight', 'normal', 'FontSize', 36);
 end
 
 function isomerizationsRange = determineVisualizedIsomerizationsRange(theMosaic, stimData, timeBinOfPeakIsomerizationResponse)

@@ -26,20 +26,24 @@ function visualizeSceneAndOpticalImage(backgroundScene, modulatedScene, oiBackgr
     [~,centerRow] = min(abs(oiYSupport));
     oiLMScontrast = squeeze(oiLMScontrast(centerRow,:,:));
 
+    halfSupport = max(xSupport(:));
     
-    if (max(xSupport(:)) < 0.1)
+    if (halfSupport < 0.1)
         xTicks = -0.1:0.025:0.1;
         xtickLabels = {'-0.1', '', '-0.05', '', '0', '', '+0.05', '', '+0.1'};
-    elseif (max(xSupport(:)) < 0.4)
+    elseif (halfSupport < 0.25)
+        xTicks = -0.2:0.05:0.2;
+        xtickLabels = {'-0.2', '', '-0.1', '', '0', '', '+0.1', '', '+0.2'};
+    elseif (halfSupport < 0.4)
         xTicks = -0.4:0.1:0.4;
         xtickLabels = {'-0.4', '', '-0.2', '', '0', '', '+0.2', '', '+0.4'};
-    elseif (max(xSupport(:)) < 1.0)
+    elseif (halfSupport < 1.0)
         xTicks = -1.0:0.25:1.0;
         xtickLabels = {'-1.0', '', '-0.5', '', '0', '', '+0.5', '', '+1.0'};
-    elseif (max(xSupport(:)) < 2.0)
+    elseif (halfSupport < 2.0)
         xTicks = -2.0:0.5:2.0;
         xtickLabels = {'-2.0', '', '-1.0', '', '0', '', '+1.0', '', '+2.0'};
-    elseif (max(xSupport(:)) < 4.0)
+    elseif (halfSupport < 4.0)
         xTicks = -4.0:1.0:4.0;
         xtickLabels = {'-4.0', '', '-2.0', '', '0', '', '+2.0', '', '+4.0'};
     else
@@ -66,8 +70,8 @@ function visualizeSceneAndOpticalImage(backgroundScene, modulatedScene, oiBackgr
         subplot('Position', [0.01 0.01 0.98 0.98]);
         image(oiXSupport, oiYSupport, oiSRGB)
         axis 'image'
-        set(gca, 'XLim', [oiXSupport(1) oiXSupport(end)], ...
-                 'YLim', [oiYSupport(1) oiYSupport(end)], ...
+        set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
+                 'YLim', [ySupport(1) ySupport(end)], ...
                  'XTick', xTicks, 'YTick', xTicks, ...
                  'XTickLabel', {}, 'YTickLabel', {}, ...
                  'FontSize', 16);
@@ -83,21 +87,21 @@ function visualizeSceneAndOpticalImage(backgroundScene, modulatedScene, oiBackgr
             'YTickLabel', ytickLabels, 'XTickLabel', xtickLabels, ...
             'FontSize', 28, 'LineWidth', 1.0);
         grid 'on'; box 'on';
-        xlabel('space (deg)', 'FontWeight', 'bold');
-        ylabel('stimulus contrast', 'FontWeight', 'bold');
+        xlabel('\it space (deg)', 'FontWeight', 'normal', 'FontSize', 36);
+        ylabel('\it stimulus contrast', 'FontWeight', 'normal', 'FontSize', 36);
         drawnow
         
         hFig4 = figure(4); clf;
         set(hFig4, 'Position', [10 10 600 345], 'Color', [1 1 1]);
-        subplot('Position', [0.15 0.235 0.84 0.71]);
+        subplot('Position', [0.15 0.25 0.84 0.71]);
         plotContrasts(oiXSupport, oiLMScontrast);
-        set(gca, 'XLim', [oiXSupport(1) oiXSupport(end)], ...
+        set(gca, 'XLim', [xSupport(1) xSupport(end)], ...
             'XTick', xTicks, 'YLim', [-1 1], 'YTick', -1:0.25:1,  ...
             'YTickLabel', ytickLabels, 'XTickLabel', xtickLabels, ...
             'FontSize', 28, 'LineWidth', 1.0);
         grid 'on'; box 'on';
-        xlabel('space (deg)', 'FontWeight', 'bold');
-        ylabel('retinal contrast', 'FontWeight', 'bold');
+        xlabel('\it space (deg)', 'FontWeight', 'normal', 'FontSize', 36);
+        ylabel('\it retinal contrast', 'FontWeight', 'normal', 'FontSize', 36);
         drawnow
     else
         hFig = figure(1); clf;

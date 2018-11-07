@@ -22,8 +22,9 @@ function run_ConditionToVisualizeResponses
     params.nTrainingSamples = 4;
     params.performanceTrialsUsed = [];
     params.cyclesPerDegreeExamined = [16];
+    params.mosaicRotationDegs = 0;
     
-    params.emPathType = 'random';
+    params.emPathType = 'frozen0';
     params.centeredEMpaths = true;
     params.frameRate = 10; %(10 frames/sec, so 21 frames, each 100 msec long)
     params.responseStabilizationMilliseconds = 40;
@@ -54,10 +55,10 @@ function run_ConditionToVisualizeResponses
     
     params.computePhotocurrentResponseInstances = ~true;
     params.visualizeDisplay = ~true;
-    params.visualizeResponses = ~true;
+    params.visualizeResponses = true;
     params.visualizeSpatialScheme = true;
     params.visualizeOIsequence = ~true;
-    params.visualizeOptics = ~true;
+    params.visualizeOptics =~true;
     params.visualizeStimulusAndOpticalImage = true;
     params.visualizeSpatialPoolingScheme = true;
     params.visualizeMosaicWithFirstEMpath = true;
@@ -67,8 +68,6 @@ function run_ConditionToVisualizeResponses
     params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
 
-
-    
     % Go
     run_BanksPhotocurrentEyeMovementConditions(params);
 end
