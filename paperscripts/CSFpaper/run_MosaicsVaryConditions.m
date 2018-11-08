@@ -21,21 +21,21 @@ function run_MosaicsVaryConditions
     
     examinedMosaicLegends = {...
         'constant LM density (Banks ''87)' ...
-        'ecc-based LM density' ...
-        'ecc-based LMS density' ...
-        'ecc-based LMS density and efficiency' ...
-        'ecc-based LMS density, efficiency, macular pigment'
+        'ecc-vary LM density' ...
+        'ecc-vary LMS density' ...
+        'ecc-vary LMS density and efficiency' ...
+        'ecc-vary LMS density, efficiency, macular pigment'
     };
 
     examinedMosaicLegends = {...
-        'const. LM dens. (Banks ''87) (A)' ...
-        'ecc-based LM dens. (B)' ...
-        'ecc-based LMS dens. (C)' ...
-        'ecc-based LMS dens.,q.eff. (D)' ...
-        'ecc-based LMS dens.,q.eff., MP'
+        'constant LM (Banks''87) (A)' ...
+        'ecc-vary LM (B)' ...
+        'ecc-vary LMS (C)' ...
+        'ecc-vary LMS eff. (D)' ...
+        'ecc-vary LMS eff. & MP'
     };
 
-    idx = [2 3 5];
+    idx = [1 2 3 4 5];
     examinedMosaicModels = {examinedMosaicModels{idx}};
     examinedMosaicLegends = {examinedMosaicLegends{idx}};
     
@@ -58,8 +58,7 @@ function run_MosaicsVaryConditions
         params.opticsModel = opticsName;
        
         params.coneContrastDirection = 'L+M+S';
-    
-        params.cyclesPerDegreeExamined = [4] %[8 16 32 50 60]; %  %% = [2 4 8 16 32 50 60]
+        params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
         
         % Response duration params
         params.frameRate = 10; %(1 frames)
@@ -74,7 +73,7 @@ function run_MosaicsVaryConditions
         params.computeMosaic = ~true; 
         params.visualizeMosaic = ~true;
 
-        params.computeResponses = true;
+        params.computeResponses = ~true;
         params.computePhotocurrentResponseInstances = ~true;
         params.visualizeMosaic = makeMosaicsFigure;
         params.visualizeResponses = ~true;
@@ -87,7 +86,7 @@ function run_MosaicsVaryConditions
         params.visualizeDisplay = ~true;
     
         params.visualizeKernelTransformedSignals = ~true;
-        params.findPerformance = true;
+        params.findPerformance = ~true;
         params.visualizePerformance = makeSummaryFigure;
         params.deleteResponseInstances = ~true;
 
@@ -111,11 +110,11 @@ function run_MosaicsVaryConditions
     
     if (makeSummaryFigure)
         variedParamName = 'Mosaic';
-        theRatioLims = [0.5 1.5];
+        theRatioLims = [0.35 1.1];
         theRatioTicks = [0.3 0.5 0.7 1.0 1.5 2.0];
         generateFigureForPaper(theFigData, examinedMosaicLegends, variedParamName, opticsName, ...
             'figureType', 'CSF', ...
-            'inGraphText', ' E ', ...
+            'inGraphText', '', ...
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
@@ -167,7 +166,7 @@ function run_MosaicsVaryConditions
         end
         
         generateMosaicsFigure(theMosaicTypesAtSpecificSF, examinedMosaicLegends,  ...
-            'inGraphTexts', {' A ', ' B ', ' C ', ' D '}, ...
+            'inGraphTexts', {'', '', '', ''}, ... % {' A ', ' B ', ' C ', ' D '}, ...
             'visualizedFOV', 0.35);
         
     end
@@ -193,12 +192,14 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
        'widthMargin',    0.01, ...
        'leftMargin',     0.01, ...
        'rightMargin',    0.0001, ...
-       'bottomMargin',   0.06, ...
+       'bottomMargin',   0.08, ...
        'topMargin',      0.0001);
     
+   backgroundColor = 0.25*[1 1 1];
+   
     for mosaicIndex = 1:numel(theMosaics)
         cm = theMosaics{mosaicIndex};
-        posRangeY = 0.7*visualizedFOV*cm.micronsPerDegree * 1e-6 * [-1 1];
+        posRangeY = 0.72*visualizedFOV*cm.micronsPerDegree * 1e-6 * [-1 1];
         posRangeX = posRangeY;
         mosaicName = examinedMosaicLegends{mosaicIndex};
         
@@ -220,7 +221,7 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
             'visualizedConeAperture', 'lightCollectingArea', ...
             'labelConeTypes', true, ...
             'overlayHexMesh', false, ...
-            'backgroundcolor', [0 0 0]);
+            'backgroundColor', backgroundColor);
         
         set(ax, 'XLim', posRangeX, 'YLim', posRangeY);
         
@@ -237,8 +238,11 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
         tickDegs = -0.5:0.1:0.5;
         ticks = tickDegs*cm.micronsPerDegree * 1e-6;
         tickLabels = sprintf('%2.2f\n', tickDegs);
+        xtickformat('%0.1f');
+        ytickformat('%0.1f');
         set(ax, 'XTick', ticks, 'XTickLabel', tickLabels, 'YTick', ticks, 'YTickLabel', tickLabels);
         
+                    
         switch (mosaicIndex)
             case 1
                 set(ax, 'XTickLabel', {});
@@ -247,10 +251,10 @@ function generateMosaicsFigure(theMosaics, examinedMosaicLegends,  varargin)
                 set(ax, 'XTickLabel', {});
                 set(ax, 'YTickLabel', {});
             case 3
-                xlabel(ax, 'retinal position (deg)', 'FontWeight', 'bold');
+                xlabel(ax, '\it retinal position (deg)', 'FontWeight', 'normal', 'FontSize', 24);
                 set(ax, 'YTickLabel', {});
             case 4
-                xlabel(ax, 'retinal position (deg)', 'FontWeight', 'bold');
+                xlabel(ax, '\it retinal position (deg)', 'FontWeight', 'normal', 'FontSize', 24);
                 set(ax, 'YTickLabel', {});
         end
     end

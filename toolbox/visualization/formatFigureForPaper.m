@@ -285,7 +285,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
         case {'MOSAICS', 'MOSAICS2', 'PSFS', 'PSFS2', 'OTFS'}
             if (isempty(theAxes))
                 if (strcmp(figureType, 'MOSAICS'))
-                    set(hFig, 'Color', [1 1 1], 'Position', [10 10 900 900]);
+                    set(hFig, 'Color', [1 1 1], 'Position', [10 10 840 900]);
                 elseif (strcmp(figureType, 'MOSAICS2'))
                     set(hFig, 'Color', [1 1 1], 'Position', [10 10 900 500]);
                 elseif (strcmp(figureType, 'PSFS'))
@@ -297,10 +297,13 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 end
             else
                 if (strcmp(figureType, 'MOSAICS')) || (strcmp(figureType, 'MOSAICS2'))
-                    axis(theAxes, 'equal');
+                    %axis(theAxes, 'equal');
+                    xtickformat('%0.1f');
+                    ytickformat('%0.1f');
                 else
                     axis(theAxes, 'square');
                 end
+                
                 set(theAxes, 'FontSize', 22, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theAxes, 'on');
                 grid(theAxes, 'on');
@@ -340,8 +343,8 @@ function varargout = formatFigureForPaper(hFig, varargin)
                     'XLim', [sfLims(1)-dx1 sfLims(2)+dx2], 'YLim', [csLims(1)-dy1 csLims(2)+dy2]);
                 box(theAxes, 'on'); grid(theAxes, 'on');
                 set(theAxes, 'FontSize', 22, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
-                xlabel(theAxes,'\it spatial frequency (c/deg)', 'Interpreter','tex', 'FontWeight', 'normal', 'FontSize', 24);
-                ylabel(theAxes,'\it contrast sensitivity', 'Interpreter','tex', 'FontWeight', 'normal', 'FontSize', 24);
+                xlabel(theAxes,'\it spatial frequency (c/deg)', 'FontWeight', 'normal', 'FontSize', 24);
+                ylabel(theAxes,'\it contrast sensitivity', 'FontWeight', 'normal', 'FontSize', 24);
             end
             
             if (~isempty(theLegend))

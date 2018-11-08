@@ -3,13 +3,13 @@ function run_OpticsVaryConditions
 %  
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
-    computationInstance = 2;
+    computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
     
     % Whether to visualize the employed PSFs
-    makePSFfigure = ~true;
+    makePSFfigure = true;
     visualizedWavelengths = 550;
         
     % Mosaic to use
@@ -93,7 +93,7 @@ function run_OpticsVaryConditions
 %             );
         generateFigureForPaper(theFigData, examinedOpticsModelLegends, variedParamName, mosaicName, ...
             'figureType', 'CSF', ...
-            'inGraphText', ' G ', ...
+            'inGraphText', '', ...
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
@@ -124,7 +124,7 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
                 'widthMargin', 0.02, ...
                 'leftMargin', 0.01, ...
                 'rightMargin', 0.001, ...
-                'bottomMargin', 0.05, ...
+                'bottomMargin', 0.08, ...
                 'topMargin', 0.001);
             
     hFigPSF = figure(2); clf; 
@@ -133,17 +133,17 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
     for oiIndex = 1:numel(examinedOpticsModels)    
         switch (examinedOpticsModelLegends{oiIndex})
             case 'Geisler PSF (A)'
-                prefix = ' A ';
+                prefix = '';
             case 'Subject 1 PSF (B)' 
-                prefix = ' B ';
+                prefix = '';
             case 'Subject 2 PSF (C)'
-                prefix = ' C ';
+                prefix = '';
             case 'Subject 3 PSF (F)'
-                prefix = ' D ';
+                prefix = '';
             case 'Subject 4 PSF (E)'
-                prefix = ' E ';
+                prefix = '';
             case 'Subject 5 PSF (F)'
-                prefix = ' F ';
+                prefix = '';
         end
         
         col = mod(oiIndex-1,colsNum)+1;
@@ -199,7 +199,7 @@ function generatePSFsFigure(examinedOpticsModels, examinedOpticsModelLegends, vi
         set(gca, 'XTick', -10:1:10, 'YTick', -10:1:10);
         set(gca, 'YTickLabel', {});
         if (row < 3)
-             %set(gca, 'XTickLabel', {});
+             set(gca, 'XTickLabel', {});
         else
              xlabel('\it position (arc min)', 'FontWeight', 'normal', 'FontSize', 24);
         end
