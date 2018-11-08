@@ -196,14 +196,14 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
             'MarkerFaceColor', subjectColor, ...
             'MarkerSize',14,'LineWidth',2);
         
-        
+
         % Legends
         variedParamLegends{numel(variedParamLegends)+1} = 'Subject MSB (Banks et al ''87)';
         variedParamLegends{numel(variedParamLegends)+1} = 'Subject PJB (Banks et al ''87)';
         
         if (showSubjectMeanData)
             plot(theAxes, msbSubjectSFsHiRes, meanSubjectCSF, 'k-', 'LineWidth', 2);
-            variedParamLegends{numel(variedParamLegends)+1} = 'Mean of subjects PJB,MSB';
+            %variedParamLegends{numel(variedParamLegends)+1} = 'Mean of subjects PJB,MSB';
         end
     end % showSubjectData
     
