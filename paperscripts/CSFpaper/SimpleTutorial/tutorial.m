@@ -57,8 +57,8 @@ figNo = figNo + 1;
 visualizeScene(realizedScene, maxPhotons, displayedWavelengths, figNo, 'realized scene');
 
 %% Compare the 2 scenes
-%figNo = figNo + 1;
-%visualizeSpectralSlices(scene, realizedScene, maxPhotons, displayedWavelengths, figNo);
+figNo = figNo + 1;
+visualizeSpectralSlices(scene, realizedScene, maxPhotons, displayedWavelengths, figNo);
 
 %% Visualize the PSF
 figNo = figNo + 1;
