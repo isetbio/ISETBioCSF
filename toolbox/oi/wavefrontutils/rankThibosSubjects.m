@@ -369,14 +369,18 @@ function plotRankedSubjects(rankingScores, otherScores, mtfScoresDiffMethods, we
     
     set(hL, 'FontSize', 14);
     ticks = subjectIndices;
-    set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, 'XTick', ticks, 'XTickLabel', sprintf('%d\n',subjectIndices(idx)), 'FontSize', 10);
-    set(gca,'TickLength',[0.002, 0.002])
+    set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, ...
+        'XTick', ticks, 'XTickLabel', sprintf('%d\n',subjectIndices(idx)), 'FontSize', 10);
+    %set(gca,'TickLength',[0.002, 0.002])
     xtickangle(60)
     xlabel('subject id', 'FontSize', 14);
     ylabel('scores', 'FontSize', 14);
     grid on; box on;
     NicePlot.exportFigToPDF(sprintf('scoresAllMethods.pdf'), hFig, 300);
     fprintf('Done !\n');
+    
+    
+    
     
     hFig = figure(12); clf;
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1830 370]);
@@ -401,11 +405,12 @@ function plotRankedSubjects(rankingScores, otherScores, mtfScoresDiffMethods, we
     kk = find(idx==21);
     plot(kk*[1 1], [rankingScores(idx(kk)) otherScores(idx(kk))], 'ks-', 'MarkerSize', 18, 'LineWidth', 3);
     
-    set(gca, 'XTick', ticks, 'XTickLabel', {}, 'YTick', 0:0.1:1, 'FontSize', 18);
+    set(gca, 'XTick', ticks, 'XTickLabel', {}, 'YTick', 0:0.1:1, 'FontSize', 26);
     hL = legend({'PSF score', 'MTF score'});
-    set(hL', 'FontSize', 14);
-    xlabel('subject index', 'FontWeight', 'bold');
-    ylabel('score', 'FontWeight', 'bold');
+    set(hL, 'FontSize', 18);
+    xlabel('\it subject index', 'FontWeight', 'normal');
+    ylabel('\it score', 'FontWeight', 'bold');
+    NicePlot.exportFigToPDF(sprintf('ThibosRankingFigure.pdf'), hFig, 300);
 end
 
 % Method to compute the PSF matching scores
