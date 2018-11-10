@@ -368,8 +368,8 @@ function plotRankedSubjects(rankingScores, otherScores, mtfScoresDiffMethods, we
     
     
     set(hL, 'FontSize', 14);
-    ticks = subjectIndices;
-    set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.1:1.0, ...
+    ticks = [1 20:20:200];
+    set(gca, 'XLim', [0 nSubjects+1], 'YLim', [0 1], 'YTick', 0:0.2:1.0, ...
         'XTick', ticks, 'XTickLabel', sprintf('%d\n',subjectIndices(idx)), 'FontSize', 10);
     %set(gca,'TickLength',[0.002, 0.002])
     xtickangle(60)
@@ -384,32 +384,34 @@ function plotRankedSubjects(rankingScores, otherScores, mtfScoresDiffMethods, we
     
     hFig = figure(12); clf;
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1830 370]);
-    subplot('Position', [0.03 0.10 0.95 0.87]);
+    subplot('Position', [0.04 0.2 0.94 0.75]);
     
-    plot(subjectIndices, rankingScores(idx),'bo-', 'LineWidth', 1.5, 'MarkerFaceColor', [0.5 0.8 1], 'MarkerSize', 10);
+    plot(subjectIndices, rankingScores(idx),'bo-', 'LineWidth', 1.5, 'MarkerFaceColor', [0.5 0.8 1], 'MarkerSize', 8);
     hold on;
-    plot(subjectIndices, otherScores(idx),  'ro-', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5, 0.5], 'MarkerSize', 10);
+    plot(subjectIndices, otherScores(idx),  'ro-', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5, 0.5], 'MarkerSize', 8);
     
-    kk = find(idx==98)
-    plot(kk*[1 1], [rankingScores(idx(kk)) otherScores(idx(kk))], 'ks-', 'MarkerSize', 18, 'LineWidth', 3);
+    csfPaperSubjectIndices = [98 132 54 194 21];
     
-    kk = find(idx==132);
-    plot(kk*[1 1], [rankingScores(idx(kk)) otherScores(idx(kk))], 'ks-', 'MarkerSize', 18, 'LineWidth', 3);
+    for subjectIndex = 1:numel(csfPaperSubjectIndices)
+        theIndex = csfPaperSubjectIndices(subjectIndex);
+        kk = find(idx==theIndex);
+        plot(kk*[1 1], [rankingScores(idx(kk)) otherScores(idx(kk))], 'ks-', 'MarkerSize', 22, 'MarkerFaceColor', [0.9 0.8 0.3], 'LineWidth', 1.5);
+    end
     
-    kk = find(idx==54);
-    plot(kk*[1 1], [rankingScores(idx(kk)) otherScores(idx(kk))], 'ks-', 'MarkerSize', 18, 'LineWidth', 3);
+    for subjectIndex = 1:numel(csfPaperSubjectIndices)
+        theIndex = csfPaperSubjectIndices(subjectIndex);
+        kk = find(idx==theIndex);
+        plot(kk*[1 1], rankingScores(idx(kk))*[1 1], 'bo', 'LineWidth', 1.5, 'MarkerFaceColor', [0.5 0.8 1], 'MarkerSize', 10);
+        plot(kk*[1 1], otherScores(idx(kk))*[1 1], 'ro', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5, 0.5], 'MarkerSize', 10);
+        
+    end
     
-    kk = find(idx==194);
-    plot(kk*[1 1], [rankingScores(idx(kk)) otherScores(idx(kk))], 'ks-', 'MarkerSize', 18, 'LineWidth', 3);
-    
-    kk = find(idx==21);
-    plot(kk*[1 1], [rankingScores(idx(kk)) otherScores(idx(kk))], 'ks-', 'MarkerSize', 18, 'LineWidth', 3);
-    
-    set(gca, 'XTick', ticks, 'XTickLabel', {}, 'YTick', 0:0.1:1, 'FontSize', 26);
+    set(gca, 'XTick', ticks, 'YTick', 0:0.2:1, 'FontSize', 26);
     hL = legend({'PSF score', 'MTF score'});
-    set(hL, 'FontSize', 18);
+    set(hL, 'FontSize', 20);
+    grid on
     xlabel('\it subject index', 'FontWeight', 'normal');
-    ylabel('\it score', 'FontWeight', 'bold');
+    ylabel('\it score', 'FontWeight', 'normal');
     NicePlot.exportFigToPDF(sprintf('ThibosRankingFigure.pdf'), hFig, 300);
 end
 
