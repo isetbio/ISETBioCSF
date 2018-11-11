@@ -1,45 +1,47 @@
-%% Set the viewing distance
-viewingDistanceMeters = 0.57;
+%% Tutorial listed in the CSF paper
+%% NPC, ISETBIO Team
+%%
+%% Generate a display for presenting stimuli and place it at a viewing distance of 57 cm
+presentationDisplay = displayCreate('LCD-Apple', 'viewing distance', 0.57);
 
-%% Step 1. Generate a display for presenting stimuli and place it at the desired viewing distance
-presentationDisplay = displayCreate('LCD-Apple', 'viewing distance', viewingDistanceMeters);
-
-%% Step 2. Specify stimulus params
+%% Specify a Gabor stimulus 
 stimParams = struct(...
-    'spatialFrequencyCyclesPerDeg', 10, ... 
-    'orientationDegs', 45, ...
-    'widthDegs', 0.4, ...
-    'contrast', 0.8, ...
-    'meanLuminanceCdPerM2', 40);
+    'spatialFrequencyCyclesPerDeg', 10, ... % 10 cycles/deg
+    'orientationDegs', 45, ...              % 45 degrees
+    'widthDegs', 0.4, ...                   % 0.x4 x 0.4 size
+    'contrast', 0.8,...                     % 0.8 Michelson contrast
+    'meanLuminanceCdPerM2', 40);            % 40 cd/m2 mean luminance
 
-%% Step 3. Generate a scene describing the stimulus
+%% Generate an ISETBio scene describing this stimulus
 scene = generateStimulusScene(stimParams, presentationDisplay);
 
-%% Step 4. Realize this scene into a particular display
+%% Realize this scene into the particular LCD display
 realizedScene = realizeSceneInDisplay(scene, presentationDisplay);
 
-%% Step 5. Generate human optics
+%% Generate wavefront-aberration derived human optics
 opticalImage = oiCreate('wvf human');
 
-%% Step 6. Compute retinal image
+%% Compute the retinal image
 opticalImage = oiCompute(opticalImage, realizedScene);
 
-%% Step 7. Generate hexagonal cone mosaic
-coneMosaic = coneMosaicHex(7, ...
-    'fovDegs', stimParams.widthDegs, ...
-    'eccBasedConeDensity', true, ...
-    'eccBasedConeQuantalEfficiency', true, ...
-    'maxGridAdjustmentIterations', 50);
+%% Generate a hexagonal cone mosaic with ecc-based cone quantal efficiency
+coneMosaic = coneMosaicHex(7, ...             % hex lattice sampling factor
+   'fovDegs', stimParams.widthDegs, ...       % match mosaic width to stimulus size
+   'eccBasedConeDensity', true, ...           % cone density varies with eccentricity
+   'eccBasedConeQuantalEfficiency', true, ... % cone quantal efficiency varies with eccentricity
+   'maxGridAdjustmentIterations', 50);        % terminate iterative lattice adjustment after 50 iterations
 
-%% Compute using a 10 ms integration time
-coneMosaic.integrationTime = 10/1000;
+%% Set a 5 ms integration window
+coneMosaic.integrationTime = 5/1000;
 
-%% Step 8. Compute cone excitations
-nInstances = 3;
+%% Compute cone excitations in response to the stimulus 
+nInstances = 3;   % generate 3 response instances
 coneExcitations = coneMosaic.compute(opticalImage, 'emPath', zeros(nInstances, 1, 2));
 
 %% Step 9. Display components
-displayedWavelengths = [450:25:725];
+% Decide which wavelengths to visualize
+displayedWavelengths = [450:25:725];         % wavelength bands to visualize
+% Get range of scene photons
 scenePhotons = sceneGet(scene, 'photons');
 realizedScenePhotons = sceneGet(realizedScene, 'photons');
 maxPhotons = max([ max(scenePhotons(:)) max(realizedScenePhotons(:))]);
