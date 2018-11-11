@@ -187,25 +187,25 @@ function varargout = formatFigureForPaper(hFig, varargin)
             else
                 %axis(theAxes, 'square');
                 axis(theAxes, 'xy');
-                set(theAxes, 'XScale', 'log', 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                set(theAxes, 'XScale', 'log', 'FontSize', 22, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theAxes, 'on');
                 grid(theAxes, 'on');
-                xtickformat(theAxes, '%.3f'); ytickformat(theAxes, '%.2f');
+                xtickformat(theAxes, '%.3f'); ytickformat(theAxes, '%.1f');
                 
                 %axis(theAxes2, 'square');
                 axis(theAxes2, 'xy');
                 set(theAxes2, 'XScale', 'log', 'FontSize', 22, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theAxes2, 'on');
                 grid(theAxes2, 'on');
-                xtickformat(theAxes2, '%.3f'); ytickformat(theAxes2, '%.2f');
+                xtickformat(theAxes2, '%.3f'); ytickformat(theAxes2, '%.1f');
                 set(theAxes2, 'YTickLabel', {});
                 
                 if (~isempty(theLegend))
-                    set(theLegend,  'Location', 'West');
+                    set(theLegend,  'Location', 'NorthWest');
                 end
             
                 if (~isempty(theLegend2))
-                    set(theLegend2,  'Location', 'West');
+                    set(theLegend2,  'Location', 'NorthWest');
                 end
                 
                 if (~isempty(theText))
