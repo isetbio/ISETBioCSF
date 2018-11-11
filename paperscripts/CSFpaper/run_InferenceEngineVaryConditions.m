@@ -23,6 +23,9 @@ function run_InferenceEngineVaryConditions
     params.coneContrastDirection = 'L+M+S';
     params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60];
 
+    % Use old mosaics (250K cones/mm2)
+    params.mosaicRotationDegs = 0;
+    
     % Response duration params
     params.frameRate = 10; %(1 frames)
     params.responseStabilizationMilliseconds = 40;
@@ -31,9 +34,6 @@ function run_InferenceEngineVaryConditions
     % Eye movement params
     params.emPathType = 'frozen0';
     params.centeredEMpaths = ~true;
-    
-    params.emPathType = 'random';
-    params.centeredEMpaths = true;
     
     examinedInferenceEngines = {...
         'mlpt' ...                  % ideal discriminator
@@ -52,10 +52,10 @@ function run_InferenceEngineVaryConditions
     examinedInferenceEngineLegends = {...
         'ideal observer' ...
         'SVM-PCA' ...
-        'SVM-Template-L' ...
+        'SVM-Template-Linear' ...
         'SVM-Template-NL (HW)' ...
         'SVM-Template-NL (FW)' ...
-        'SVM-Template-Q' ...
+        'SVM-Template-Energy' ...
         'SVM (QPhE) population (1)' ...
         'SVM (QPhE) population (2)' ...
         'SVM (QPhE) population (3)' ...
@@ -64,7 +64,7 @@ function run_InferenceEngineVaryConditions
         'SVM (QPhE) population (6)' ...
     };
 
-    idx = 1:6;
+    idx = [1 2 3 6];
     visualizedConditions = idx;
     examinedInferenceEngines = {examinedInferenceEngines{visualizedConditions}};
     examinedInferenceEngineLegends = {examinedInferenceEngineLegends{visualizedConditions}};
@@ -134,13 +134,15 @@ function run_InferenceEngineVaryConditions
                 params.spatialPoolingKernelParams.type = 'V1CosUnit';
                 params.spatialPoolingKernelParams.activationFunction = 'halfWaveRectifier';
                 
-            elseif strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-Template-L')
+            elseif strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-Template-Linear')
                 params.spatialPoolingKernelParams.type = 'V1CosUnit';
                 params.spatialPoolingKernelParams.activationFunction = 'linear';
                 
-            elseif strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-Template-Q')
+            elseif strcmp(examinedInferenceEngineLegends{engineIndex},  'SVM-Template-Energy')
                 params.spatialPoolingKernelParams.type = 'V1QuadraturePair';
                 params.spatialPoolingKernelParams.activationFunction = 'energy';
+            else
+                error('Unrecognized legend: ''%s''.', examinedInferenceEngineLegends{engineIndex});
             end 
             
         elseif strcmp(params.performanceClassifier, 'svmV1FilterEnsemble')

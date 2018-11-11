@@ -12,7 +12,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     % Init condition index
     condIndex = 0;
     
-
+    if (1==3)
     % Original Banks computation
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'Banks''87 ideal observer';
@@ -39,6 +39,24 @@ function run_Paper1FinalConditionsUsing2mmPupil
     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
 
+    end
+    
+    % Our best estimate of mosaic + optics, SVMpool inference engine
+    condIndex = condIndex+1;
+    examinedCond(condIndex).conditionLabel = 'ISETBio SVM-Template'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
+    examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrectionAndMacularPigment'; % 'ISETbioHexEccBasedLMSrealistic';
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+    examinedCond(condIndex).inferenceEngine = 'svmV1FilterBank';
+    examinedCond(condIndex).signal = 'isomerizations';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = ~true;
+    examinedCond(condIndex).frameRate = 10;
+    examinedCond(condIndex).responseStabilizationMilliseconds = 40;
+    examinedCond(condIndex).responseExtinctionMilliseconds = 40;
+
+        if (1==3)
     % Our best estimate of mosaic + optics, SVMpool inference engine
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'ISETBio SVM-Template'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
@@ -53,7 +71,8 @@ function run_Paper1FinalConditionsUsing2mmPupil
     examinedCond(condIndex).frameRate = 10;
     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
-
+        end
+        
     
     % Go
     examinedLegends = {};

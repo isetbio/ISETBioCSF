@@ -194,7 +194,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 
                 %axis(theAxes2, 'square');
                 axis(theAxes2, 'xy');
-                set(theAxes2, 'XScale', 'log', 'FontSize', 18, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
+                set(theAxes2, 'XScale', 'log', 'FontSize', 22, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
                 box(theAxes2, 'on');
                 grid(theAxes2, 'on');
                 xtickformat(theAxes2, '%.3f'); ytickformat(theAxes2, '%.2f');

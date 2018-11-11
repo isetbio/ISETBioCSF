@@ -31,6 +31,7 @@ function make_SVMRepsComboFigure
     params = getCSFpaperDefaultParams(mosaicName, computationInstance);
     
     params.opticsModel = opticsName;
+    params.mosaicRotationDegs = 0;
     
     % Chromatic direction params
     params.coneContrastDirection = 'L+M+S';
@@ -243,8 +244,8 @@ function theData = generatePsychometricFunctionsPlot(psychometricFunctions, ...
             'Color', [0 0 0], 'LineWidth', 1.5);
     end
     hold(theAxes, 'off');
-    xlabel(theAxes, 'contrast', 'FontWeight', 'Bold');
-    ylabel(theAxes, 'percent correct', 'FontWeight', 'Bold');
+    xlabel(theAxes, '\it contrast', 'FontWeight', 'Normal');
+    ylabel(theAxes, '\it percent correct', 'FontWeight', 'Normal');
     if (showLegend)
         hL = legend(theAxes, trialLegends, 'Interpreter', 'tex');
     else
@@ -268,7 +269,7 @@ function theData = generatePsychometricFunctionsPlot(psychometricFunctions, ...
             'Color', [0 0 0], 'LineWidth', 1.5);
     end
     hold(theAxes2, 'off');
-    xlabel(theAxes2, 'contrast', 'FontWeight', 'Bold');
+    xlabel(theAxes2, '\it contrast', 'FontWeight', 'Normal');
     %ylabel(theAxes2, 'percent correct', 'FontWeight', 'Bold');
     
     if (showLegend)
