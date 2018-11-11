@@ -11,7 +11,7 @@ function make_SVMRepsComboFigure
     performanceClassifiersVisualized = {'svm', 'svmV1FilterBank', 'mlpt'};     % Choose between 'svm' and 'svmV1FilterBank'
     performanceClassifiersVisualizedLegends = {...
         'SVM-PCA', ...
-        'SVM-Template'...
+        'SVM-Template-Energy'...
         'ideal observer'
       }; 
     poolingType = 'V1CosUnit' ;        % Choose between 'V1CosUnit' and 'V1QuadraturePair (only applicable if classifier = 'svmV1FilterBank')
@@ -460,6 +460,6 @@ function hFig = generateCSFTrialsFigure(theData, variedParamLegends, varargin)
     set(theRatioAxes, 'XTick', [300 1000 3000 10000 30000 100000],  ...
         'XLim', theTrialsLims);
     
-    xlabel(theRatioAxes, 'number of trials', 'FontWeight', 'bold', 'FontSize', 20);
+    xlabel(theRatioAxes, '\it number of trials', 'FontWeight', 'normal', 'FontSize', 24);
     
 end
