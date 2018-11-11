@@ -28,9 +28,10 @@ function visualizePSF(opticalImage, displayedWavelengths, figNo)
         [~,idx] = min(abs(displayedWavelengths(k)-psfWavelengths));
         imagesc(psfSupportArcMin, psfSupportArcMin, squeeze(psf(:,:,idx))); hold on;
         plot([0 0], psfRangeArcMin, 'g-'); plot(psfRangeArcMin, [0 0],'g-'); axis 'xy';  axis 'image';
-        set(gca, 'XLim', psfRangeArcMin, 'YLim', psfRangeArcMin, 'XTick', [-20:5:20], 'YTick', [-20:5:20]);
+        set(gca, 'XLim', psfRangeArcMin, 'YLim', psfRangeArcMin, 'XTick', [-20:5:20], 'YTick', [-20:5:20], 'FontSize', 14);
         if (k == 1)
-            ylabel('retinal space (microns)');
+            xlabel('retinal space (arc min.)');
+            ylabel('retinal space (arc min.)');
         else
             set(gca, 'XTick', [], 'YTick', []);
         end

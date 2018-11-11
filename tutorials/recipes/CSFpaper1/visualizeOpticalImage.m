@@ -14,7 +14,7 @@ function visualizeOpticalImage(opticalImage, displayedWavelengths, figNo)
     photons = oiGet(opticalImage, 'photons');
     rgbImage = oiGet(opticalImage, 'rgb image');
     hFig = figure(figNo); clf;
-    set(hFig, 'Position', [10 10 1000 900], 'Color', [1 1 1], 'Name', 'Retinal Image');
+    set(hFig, 'Position', [10 10 1300 1024], 'Color', [1 1 1], 'Name', 'Retinal Image');
     subplot(3,4,1);
     image(spatialSupportXDegs,spatialSupportYDegs, rgbImage); axis 'xy';  axis 'image'
     set(gca, 'XTick', [-1:0.1:11], 'YTick', [-1:0.1:1]);
@@ -30,9 +30,9 @@ function visualizeOpticalImage(opticalImage, displayedWavelengths, figNo)
         [~,idx] = min(abs(displayedWavelengths(k)-oiWavelengths));
         photonsAtWavelengthBand = squeeze(photons(:,:,idx));
         imagesc(spatialSupportXDegs,spatialSupportYDegs, squeeze(photons(:,:,idx)), photonRange); 
-        set(gca, 'XTick', [], 'YTick', []);
+        set(gca, 'XTick', [], 'YTick', [], 'FontSize', 14);
         axis 'xy'; axis 'image'
-        title(sprintf('%d nm\n%2.3f E15 photons/sec', oiWavelengths(idx), mean(photonsAtWavelengthBand(:))*1E-15));
+        title(sprintf('%d nm\n%2.3fE15 photons/sample/sec', oiWavelengths(idx), mean(photonsAtWavelengthBand(:))*1E-15));
     end
     colormap(gray);
     drawnow;

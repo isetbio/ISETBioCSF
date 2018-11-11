@@ -24,11 +24,11 @@ function visualizeScene(scene, maxPhotons, displayedWavelengths, figNo, sceneNam
     rgbImage = sceneGet(scene, 'rgb image');
     
     hFig = figure(figNo); clf;
-    set(hFig, 'Name', sceneName, 'Position', [10 10 1000 900], 'Color', [1 1 1]);
+    set(hFig, 'Name', sceneName, 'Position', [10 10 1300 1024], 'Color', [1 1 1]);
     subplot(3,4,1);
     image(spatialSupportMilliMeters(1,:,1),spatialSupportMilliMeters(:,1,2), rgbImage); 
     axis 'xy'; axis 'image'
-    set(gca, 'XTick', [-10:0.5:10], 'YTick', [-10:0.5:10]);
+    set(gca, 'XTick', [-10:1:10], 'YTick', [-10:1:10]);
     xlabel('visual space (mm)'); ylabel('visual space (mm)');
     xtickformat('%0.2f'); ytickformat('%0.2f');
     set(gca, 'FontSize', 14);
@@ -45,8 +45,8 @@ function visualizeScene(scene, maxPhotons, displayedWavelengths, figNo, sceneNam
         imagesc(spatialSupportMilliMeters(1,:,1),spatialSupportMilliMeters(:,1,2), ...
             photonsAtWavelengthBand, photonRange); 
         axis 'xy';  axis 'image';
-        set(gca, 'XTick', [], 'YTick', []);
-        title(sprintf('%d nm, %2.3f\nE15 photons/sec', wavelengths(idx), mean(photonsAtWavelengthBand(:))*1E-15 ));
+        set(gca, 'XTick', [], 'YTick', [], 'FontSize', 14);
+        title(sprintf('%d nm\n%2.3fE15 photons/sample/sec', wavelengths(idx), mean(photonsAtWavelengthBand(:))*1E-15 ));
     end
      colormap(gray);
 end
