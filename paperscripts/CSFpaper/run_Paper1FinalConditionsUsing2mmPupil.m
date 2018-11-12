@@ -40,7 +40,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
 
     
-    % Our best estimate of mosaic + optics, SVMpool inference engine
+    % Our best estimate of mosaic + optics, SVM-Template-Linear inference engine
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'ISETBio SVM-Template-Linear'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrectionAndMacularPigment'; % 'ISETbioHexEccBasedLMSrealistic';
@@ -55,7 +55,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
     examinedCond(condIndex).responseStabilizationMilliseconds = 40;
     examinedCond(condIndex).responseExtinctionMilliseconds = 40;
 
-    % Our best estimate of mosaic + optics, SVMpool inference engine
+    % Our best estimate of mosaic + optics, SVM-Template-Energy inference engine
     condIndex = condIndex+1;
     examinedCond(condIndex).conditionLabel = 'ISETBio SVM-Template-Energy'; %'Realistic mosaic/optics, SVM-Template (cos-profile)';
     examinedCond(condIndex).mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrectionAndMacularPigment'; % 'ISETbioHexEccBasedLMSrealistic';

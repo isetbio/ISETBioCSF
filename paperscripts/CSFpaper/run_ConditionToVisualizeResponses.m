@@ -30,7 +30,7 @@ function run_ConditionToVisualizeResponses
     params.responseStabilizationMilliseconds = 40;
     params.responseExtinctionMilliseconds = 40;
     
-    inferenceEngine = 'SVM-Template-Q';
+    inferenceEngine = 'SVM-Template-Energy';
     params.parforWorkersNumForClassification = 1;
     
     if (strcmp(inferenceEngine,'SVM (QPhE) population)'))
@@ -38,18 +38,18 @@ function run_ConditionToVisualizeResponses
         params.spatialPoolingKernelParams.spatialPositionsNum = 9;
         params.spatialPoolingKernelParams.cyclesPerRFs =  [1.5 2.5];
         params.spatialPoolingKernelParams.orientations =  [0];
-    elseif (strcmp(inferenceEngine,'SVM-Template-L'))
+    elseif (strcmp(inferenceEngine,'SVM-Template-Linear'))
         params.performanceClassifier = 'svmV1FilterBank';
         params.spatialPoolingKernelParams.type = 'V1CosUnit';
         params.spatialPoolingKernelParams.activationFunction = 'linear';
-    elseif (strcmp(inferenceEngine,'SVM-Template-Q'))
+    elseif (strcmp(inferenceEngine,'SVM-Template--Energy'))
         params.performanceClassifier = 'svmV1FilterBank';
         params.spatialPoolingKernelParams.type = 'V1QuadraturePair';
         params.spatialPoolingKernelParams.activationFunction = 'energy';
     end
     
     % Simulation steps to perform
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
