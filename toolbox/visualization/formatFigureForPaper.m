@@ -13,7 +13,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
     p.addParameter('theText2', []);
     p.addParameter('theTextFontSize', [], @isnumeric);
     p.addParameter('theFigureTitle', '', @ischar);
-    
+    p.addParameter('theLegendPosition', [], @isnumeric);
     p.parse(varargin{:});
     
     varargout = {};
@@ -34,6 +34,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
     theText2 = p.Results.theText2;
     theTextFontSize = p.Results.theTextFontSize;
     theFigureTitle = p.Results.theFigureTitle;
+    theLegendPosition = p.Results.theLegendPosition;
     
     switch (figureType)
         case 'CONE_APERTURE'
@@ -348,7 +349,11 @@ function varargout = formatFigureForPaper(hFig, varargin)
             end
             
             if (~isempty(theLegend))
-                set(theLegend, 'FontSize', 20, 'Location', 'NorthEast');
+                if (~isempty(theLegendPosition))
+                    set(theLegend, 'FontSize', 18, 'Position', theLegendPosition, 'Units', 'normalized');
+                else
+                    set(theLegend, 'FontSize', 18, 'Location', 'NorthEast');
+                end
             end
             
             if (~isempty(theText))

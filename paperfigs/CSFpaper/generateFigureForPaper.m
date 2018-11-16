@@ -13,6 +13,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     p.addParameter('plotRatiosOfOtherConditionsToFirst', false, @islogical);
     p.addParameter('theRatioLims', []);
     p.addParameter('theRatioTicks', []);
+    p.addParameter('theLegendPosition', []);
     p.addParameter('inGraphText', '', @ischar);
     p.addParameter('inGraphTextPos', [], @isnumeric);
     p.addParameter('inGraphTextFontSize', [], @isnumeric);
@@ -36,6 +37,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     plotRatiosOfOtherConditionsToFirst = p.Results.plotRatiosOfOtherConditionsToFirst;
     theRatioLims = p.Results.theRatioLims;
     theRatioTicks = p.Results.theRatioTicks;
+    theLegendPosition = p.Results.theLegendPosition;
     
     if (~isempty(theFigData))
         for condIndex = 1:numel(theFigData)
@@ -279,6 +281,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
         'theRatioLims', theRatioLims, ...
         'theRatioTicks', theRatioTicks, ...
         'theLegend', hL, ...
+        'theLegendPosition', theLegendPosition, ...
         'theText', t, ...
         'theTextFontSize', inGraphTextFontSize);
     
