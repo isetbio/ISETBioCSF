@@ -224,6 +224,8 @@ function [hFig, peakConeIndex] = visualizeNoiseFreeXTandXYResponses(theMosaic, t
         isomerizationsRange(1) = isomerizationsRange(2)*0.50;
     end
 
+    isomerizationsRange(1) = 0;
+    
     % Round to nearest 200 R*/cone/sec
     isomerizationsRange = round(isomerizationsRange*200)/200;
     
@@ -883,7 +885,7 @@ function isomerizationsRange = determineVisualizedIsomerizationsRange(theMosaic,
     ];
 
     isomerizationsRange = noiseFreeIsomerizationsRange;
-    isomerizationsRange = prctile(stimData.responseInstanceArray.theMosaicIsomerizations(:), [5 95])
+    isomerizationsRange = prctile(stimData.responseInstanceArray.theMosaicIsomerizations(:), [0 95])
     
     % add to the range so the visualized range matches the low-end of the 
     % instancesIsomerizationsRange
@@ -913,7 +915,7 @@ function photocurrentsRange = determineVisualizedPhotocurrentsRange(theMosaic, s
 %     ];
 
     photocurrentsRange = noiseFreeRange;
-    photocurrentsRange = prctile(stimData.responseInstanceArray.theMosaicPhotocurrents(:), [5 95])
+    photocurrentsRange = prctile(stimData.responseInstanceArray.theMosaicPhotocurrents(:), [0 95])
     
 %     % add to the range so the visualized range matches the low-end of the 
 %     % instancesRange

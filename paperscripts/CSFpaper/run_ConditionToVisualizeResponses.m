@@ -49,7 +49,7 @@ function run_ConditionToVisualizeResponses
     end
     
     % Simulation steps to perform
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
