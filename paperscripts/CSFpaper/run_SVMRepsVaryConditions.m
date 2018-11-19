@@ -30,6 +30,8 @@ function run_SVMRepsVaryConditions
     params.responseStabilizationMilliseconds = 40;
     params.responseExtinctionMilliseconds = 40;
 
+    params.mosaicRotationDegs = 0;
+    
     % Eye movement params
     params.emPathType = 'frozen0';
     params.centeredEMpaths = ~true;

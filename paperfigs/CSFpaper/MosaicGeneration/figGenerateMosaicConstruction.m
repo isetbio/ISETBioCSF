@@ -144,13 +144,14 @@ function visualizeLocalForceProgression(obj, targetConePositions, ...
     grid.borderTolerance = 0.001 * obj.lambdaMin;
     
     iteration = 2;
-    initialConePositions  = squeeze(obj.latticeAdjustmentSteps(iteration, :, :))*1e6;
-    smoothGridLocalFunction(hFig, params, grid, initialConePositions, targetConePositions, visualizedConeXrange, visualizedConeYrange, selectedIterationsForFigs);
+    startingConePositions  = squeeze(obj.latticeAdjustmentSteps(iteration, :, :))*1e6;
+    initialConePositions = squeeze(obj.initialLattice)*1e6;
+    smoothGridLocalFunction(hFig, params, grid, initialConePositions, startingConePositions, targetConePositions, visualizedConeXrange, visualizedConeYrange, selectedIterationsForFigs);
        
 end
 
 
-function smoothGridLocalFunction(hFig, params, gridParams,conePositions, targetConePositions, visualizedConeXrange, visualizedConeYrange, selectedIterationsForFigs)
+function smoothGridLocalFunction(hFig, params, gridParams, initialConePositions, conePositions, targetConePositions, visualizedConeXrange, visualizedConeYrange, selectedIterationsForFigs)
 
     positionalDiffTolerance = params.latticeAdjustmentPositionalToleranceF ...
         * gridParams.lambdaMin;
@@ -172,7 +173,7 @@ function smoothGridLocalFunction(hFig, params, gridParams,conePositions, targetC
     % Iteratively adjust the cone positions until the forces between nodes
     % (conePositions) reach equlibrium.
     notConverged = true;
-    iteration = 0;
+    iteration = -1;
 
     
     target1ConePosition = targetConePositions(1,:);  
@@ -205,109 +206,127 @@ function smoothGridLocalFunction(hFig, params, gridParams,conePositions, targetC
     while (notConverged) && (iteration <= params.maxGridAdjustmentIterations)
         iteration = iteration + 1;
     
-        % compute cone positional diffs
-        positionalDiffs = sqrt(sum((conePositions-oldConePositions) .^ 2, 2));
-       
-        % check if there are any large movements
-        if (max(positionalDiffs) > positionalDiffTolerance)
-            % save old come positions
-            oldConePositions = conePositions;
-
-            % Perform new Delaunay triangulation to determine the updated
-            % topology of the truss. To save computing time, we
-            % re-triangulate only when we exceed the
-            % positionalDiffTolerance
-            triangleConeIndices = delaunayn(conePositions);
-
-            % Compute the centroids of all triangles
-            centroidPositions = (conePositions(...
-                triangleConeIndices(:, 1), :) + conePositions(...
-                triangleConeIndices(:, 2), :) + conePositions(...
-                triangleConeIndices(:, 3), :)) / 3;
-
-            % Remove centroids outside the desired region by applying the
-            % signed distance function
-            d = feval(gridParams.domainFunction, centroidPositions, ...
-                gridParams.center, gridParams.radius, ...
-                gridParams.ellipseAxes);
-            triangleConeIndices = triangleConeIndices(d < ...
-                gridParams.borderTolerance, :);
-
-            % Create a list of the unique springs (each spring connecting 2
-            % cones)
-            % triangleConeIndices is an [M x 3] matrix the m-th row
-            % contains indices to the 3 cones that define the triangle
-            springs = [triangleConeIndices(:, [1, 2]);
-                triangleConeIndices(:, [1, 3]);
-                triangleConeIndices(:, [2, 3])];
-            springs = unique(sort(springs, 2), 'rows');
-
-            % find all springs connected to this cone
-            for coneIndex = 1:conesNum
-                springIndices{coneIndex} = find(...
-                    (springs(:, 1) == coneIndex) | ...
-                    (springs(:, 2) == coneIndex));
-            end
+        if (iteration == 0)
+            springIndices = [];
+            springForceXYcomponentVectors = [];
+            desiredSpringLengthsAbsolute = [];
+            springForceTimesDisplacementXYcomponents = [];
+            springCenters = [];
+            springLengths = []; 
+            netForceVectors = [];
+        else
             
-        end % (max(positionalDiffs) > positionalDiffTolerance)
+            % compute cone positional diffs
+            positionalDiffs = sqrt(sum((conePositions-oldConePositions) .^ 2, 2));
+       
+            % check if there are any large movements
+            if (max(positionalDiffs) > positionalDiffTolerance)
+                % save old come positions
+                oldConePositions = conePositions;
+
+                % Perform new Delaunay triangulation to determine the updated
+                % topology of the truss. To save computing time, we
+                % re-triangulate only when we exceed the
+                % positionalDiffTolerance
+                triangleConeIndices = delaunayn(conePositions);
+
+                % Compute the centroids of all triangles
+                centroidPositions = (conePositions(...
+                    triangleConeIndices(:, 1), :) + conePositions(...
+                    triangleConeIndices(:, 2), :) + conePositions(...
+                    triangleConeIndices(:, 3), :)) / 3;
+
+                % Remove centroids outside the desired region by applying the
+                % signed distance function
+                d = feval(gridParams.domainFunction, centroidPositions, ...
+                    gridParams.center, gridParams.radius, ...
+                    gridParams.ellipseAxes);
+                triangleConeIndices = triangleConeIndices(d < ...
+                    gridParams.borderTolerance, :);
+
+                % Create a list of the unique springs (each spring connecting 2
+                % cones)
+                % triangleConeIndices is an [M x 3] matrix the m-th row
+                % contains indices to the 3 cones that define the triangle
+                springs = [triangleConeIndices(:, [1, 2]);
+                    triangleConeIndices(:, [1, 3]);
+                    triangleConeIndices(:, [2, 3])];
+                springs = unique(sort(springs, 2), 'rows');
+
+                % find all springs connected to this cone
+                for coneIndex = 1:conesNum
+                    springIndices{coneIndex} = find(...
+                        (springs(:, 1) == coneIndex) | ...
+                        (springs(:, 2) == coneIndex));
+                end
+
+            end % (max(positionalDiffs) > positionalDiffTolerance)
         
-        % Compute spring vectors
-        springVectors =  conePositions(springs(:, 1), :) - ...
-            conePositions(springs(:, 2), :);
-        % their centers
-        springCenters = (conePositions(springs(:, 1), :) + ...
-            conePositions(springs(:, 2), :)) / 2.0;
-        % and their lengths
-        springLengths = sqrt(sum(springVectors.^2, 2));
-        
-        
-        % Compute desired spring lengths. This is done by evaluating the
-        % passed coneDistance function at the spring centers.
-        desiredSpringLengthsAbsolute = feval(gridParams.coneSpacingFunction, ...
+            % Compute spring vectors
+            springVectors =  conePositions(springs(:, 1), :) - ...
+                conePositions(springs(:, 2), :);
+            % their centers
+            springCenters = (conePositions(springs(:, 1), :) + ...
+                conePositions(springs(:, 2), :)) / 2.0;
+            % and their lengths
+            springLengths = sqrt(sum(springVectors.^2, 2));
+
+
+            % Compute desired spring lengths. This is done by evaluating the
+            % passed coneDistance function at the spring centers.
+            desiredSpringLengthsAbsolute = feval(gridParams.coneSpacingFunction, ...
             springCenters);
 
-        % Normalize spring lengths
-        normalizingFactor = sqrt(sum(springLengths .^ 2) / ...
-            sum(desiredSpringLengthsAbsolute .^ 2));
-        desiredSpringLengths = desiredSpringLengthsAbsolute * normalizingFactor;
+            % Normalize spring lengths
+            normalizingFactor = sqrt(sum(springLengths .^ 2) / ...
+                sum(desiredSpringLengthsAbsolute .^ 2));
+            desiredSpringLengths = desiredSpringLengthsAbsolute * normalizingFactor;
 
-        % Compute spring forces, Force(springLengths, desiredSpringLengths)
-        % Force(springLengths, desiredSpringLengths) should be positive
-        % when springLengths is near the desiredSpringLengths, which can be
-        % achieved by choosing desiredSpringLengths slightly larger than
-        % the length we actually desire. Here, we set this to be 1.2
-        gain = 1.2;
-        springForces = max(gain * desiredSpringLengths - springLengths, 0);
+            % Compute spring forces, Force(springLengths, desiredSpringLengths)
+            % Force(springLengths, desiredSpringLengths) should be positive
+            % when springLengths is near the desiredSpringLengths, which can be
+            % achieved by choosing desiredSpringLengths slightly larger than
+            % the length we actually desire. Here, we set this to be 1.2
+            gain = 1.2;
+            springForces = max(gain * desiredSpringLengths - springLengths, 0);
 
-        % compute x, y-components of forces on each of the springs
-        springForceXYcomponentVectors = springForces ./ springLengths * ...
-            [1, 1] .* springVectors;
-        
-        springForceXYcomponents = abs(springForceXYcomponentVectors);
-        
-        springForceTimesDisplacementXYcomponents = springForceXYcomponents;
-        
-        % Compute net forces on each cone
-        netForceVectors = zeros(conesNum, 2);
-        for coneIndex = 1:conesNum
-            % compute net force from all connected springs
-            deltaPos = -bsxfun(@minus, springCenters(...
-                springIndices{coneIndex}, :), conePositions(coneIndex, :));
+            % compute x, y-components of forces on each of the springs
+            springForceXYcomponentVectors = springForces ./ springLengths * ...
+                [1, 1] .* springVectors;
 
-            springForceTimesDisplacementXYcomponents(springIndices{coneIndex}, :) = ...
-                sign(deltaPos) .* springForceXYcomponents(springIndices{coneIndex}, :);
-            
-            netForceVectors(coneIndex, :) = sum(sign(deltaPos) .* ...
-                springForceXYcomponents(springIndices{coneIndex}, :), 1);
+            springForceXYcomponents = abs(springForceXYcomponentVectors);
+
+            springForceTimesDisplacementXYcomponents = springForceXYcomponents;
+        
+            % Compute net forces on each cone
+            netForceVectors = zeros(conesNum, 2);
+            for coneIndex = 1:conesNum
+                % compute net force from all connected springs
+                deltaPos = -bsxfun(@minus, springCenters(...
+                    springIndices{coneIndex}, :), conePositions(coneIndex, :));
+
+                springForceTimesDisplacementXYcomponents(springIndices{coneIndex}, :) = ...
+                    sign(deltaPos) .* springForceXYcomponents(springIndices{coneIndex}, :);
+
+                netForceVectors(coneIndex, :) = sum(sign(deltaPos) .* ...
+                    springForceXYcomponents(springIndices{coneIndex}, :), 1);
+            end
+
+            % force at all fixed cone positions must be 0
+            % netForceVectors(1:size(fixedConesPositions, 1), :) = 0;
         end
         
-        % force at all fixed cone positions must be 0
-        % netForceVectors(1:size(fixedConesPositions, 1), :) = 0;
-        
-        renderFrame(ax, iteration, conePositions, visualizedConeXrange, visualizedConeYrange, ...
-            target1ConeIndex, target2ConeIndex, target3ConeIndex,...
-            springIndices, springForceXYcomponentVectors, desiredSpringLengthsAbsolute, ...
-            springForceTimesDisplacementXYcomponents, springCenters, springLengths, netForceVectors);
+        if (iteration == 0)
+            renderFrame(ax, iteration, initialConePositions, visualizedConeXrange, visualizedConeYrange, ...
+                target1ConeIndex, target2ConeIndex, target3ConeIndex,...
+                springIndices, springForceXYcomponentVectors, desiredSpringLengthsAbsolute, ...
+                springForceTimesDisplacementXYcomponents, springCenters, springLengths, netForceVectors);
+        else 
+            renderFrame(ax, iteration, conePositions, visualizedConeXrange, visualizedConeYrange, ...
+                target1ConeIndex, target2ConeIndex, target3ConeIndex,...
+                springIndices, springForceXYcomponentVectors, desiredSpringLengthsAbsolute, ...
+                springForceTimesDisplacementXYcomponents, springCenters, springLengths, netForceVectors);
+        end
         
         set(gca, 'XTickLabel', xTicks);
         xlabel('\it space (microns)', 'FontSize', 24);
@@ -320,47 +339,48 @@ function smoothGridLocalFunction(hFig, params, gridParams,conePositions, targetC
             xlabel('');
         end
         
-        if (ismember(iteration, selectedIterationsForFigs))
+        if (ismember(iteration, selectedIterationsForFigs)) || (iteration == 0)
             NicePlot.exportFigToPDF(sprintf('ForcesAtIteration_%d.pdf', iteration), hFig, 300);
         end
 
-        
-        % update cone positions according to netForceVectors
-        conePositions = conePositions + deltaT * netForceVectors;
-        
-        % Find any points that lie outside the domain boundary
-        d = feval(gridParams.domainFunction, conePositions, ...
-            gridParams.center, gridParams.radius, gridParams.ellipseAxes);
-        outsideBoundaryIndices = d > 0;
-        
-        % And project them back to the domain
-        if (~isempty(outsideBoundaryIndices))
-            % Compute numerical gradient along x-positions
-            dXgradient = (feval(gridParams.domainFunction, ...
-                [conePositions(outsideBoundaryIndices, 1) + deps, ...
-                conePositions(outsideBoundaryIndices, 2)], ...
-                gridParams.center, gridParams.radius, ...
-                gridParams.ellipseAxes) - d(outsideBoundaryIndices)) / ...
-                deps;
-            dYgradient = (feval(gridParams.domainFunction, ...
-                [conePositions(outsideBoundaryIndices, 1), ...
-                conePositions(outsideBoundaryIndices, 2)+deps], ...
-                gridParams.center, gridParams.radius, ...
-                gridParams.ellipseAxes) - d(outsideBoundaryIndices)) / ...
-                deps;
+        if (iteration > 0)
+            % update cone positions according to netForceVectors
+            conePositions = conePositions + deltaT * netForceVectors;
 
-            % Project these points back to boundary
-            conePositions(outsideBoundaryIndices, :) = ...
-                conePositions(outsideBoundaryIndices, :) - ...
-                [d(outsideBoundaryIndices) .* dXgradient, ...
-                d(outsideBoundaryIndices) .* dYgradient];
+            % Find any points that lie outside the domain boundary
+            d = feval(gridParams.domainFunction, conePositions, ...
+                gridParams.center, gridParams.radius, gridParams.ellipseAxes);
+            outsideBoundaryIndices = d > 0;
+
+            % And project them back to the domain
+            if (~isempty(outsideBoundaryIndices))
+                % Compute numerical gradient along x-positions
+                dXgradient = (feval(gridParams.domainFunction, ...
+                    [conePositions(outsideBoundaryIndices, 1) + deps, ...
+                    conePositions(outsideBoundaryIndices, 2)], ...
+                    gridParams.center, gridParams.radius, ...
+                    gridParams.ellipseAxes) - d(outsideBoundaryIndices)) / ...
+                    deps;
+                dYgradient = (feval(gridParams.domainFunction, ...
+                    [conePositions(outsideBoundaryIndices, 1), ...
+                    conePositions(outsideBoundaryIndices, 2)+deps], ...
+                    gridParams.center, gridParams.radius, ...
+                    gridParams.ellipseAxes) - d(outsideBoundaryIndices)) / ...
+                    deps;
+
+                % Project these points back to boundary
+                conePositions(outsideBoundaryIndices, :) = ...
+                    conePositions(outsideBoundaryIndices, :) - ...
+                    [d(outsideBoundaryIndices) .* dXgradient, ...
+                    d(outsideBoundaryIndices) .* dYgradient];
+            end
+
+            % Check if all interior nodes move less than dTolerance
+            movementAmplitudes = sqrt(sum(deltaT * netForceVectors(...
+                d < -gridParams.borderTolerance, :) .^2 , 2));
+            if max(movementAmplitudes) < dTolerance, notConverged = false; end
         end
-
-        % Check if all interior nodes move less than dTolerance
-        movementAmplitudes = sqrt(sum(deltaT * netForceVectors(...
-            d < -gridParams.borderTolerance, :) .^2 , 2));
-        if max(movementAmplitudes) < dTolerance, notConverged = false; end
-
+        
     end % while (notConverged)
     
 end
@@ -383,12 +403,14 @@ function renderFrame(ax, iteration, conePositions, visualizedConeXrange, visuali
         axes(ax);
         cla(ax);
         hold on;
-        for kkk = 1:numel(targetConeIndices)
-            targetConeIndex = targetConeIndices(kkk);
-            targetConePosition = conePositions(targetConeIndex,:);
-            targetConeSpringIndices = springIndices{targetConeIndex};
-            plotSprings(targetConePosition, targetConeSpringIndices, ...
-                springForceXYcomponentVectors, springCenters, springLengths);
+        if (~isempty(springIndices))
+            for kkk = 1:numel(targetConeIndices)
+                targetConeIndex = targetConeIndices(kkk);
+                targetConePosition = conePositions(targetConeIndex,:);
+                targetConeSpringIndices = springIndices{targetConeIndex};
+                plotSprings(targetConePosition, targetConeSpringIndices, ...
+                    springForceXYcomponentVectors, springCenters, springLengths);
+            end
         end
         
         % Plot the cones
@@ -405,39 +427,42 @@ function renderFrame(ax, iteration, conePositions, visualizedConeXrange, visuali
             plot(conePositions(target3ConeIndex,1), conePositions(target3ConeIndex,2), 'ko', 'MarkerFaceColor', [0.8 0.8 0.3], 'MarkerSize', 16);
         end
         
-        % Plot the forces on the targeted cones
-        if (~isnan(target1ConeIndex))
-            target1ConePosition = conePositions(target1ConeIndex,:);
-            target1ConeSpringIndices = springIndices{target1ConeIndex};
-            plotSpringForces(target1ConePosition, target1ConeSpringIndices, ...
-                springForceTimesDisplacementXYcomponents, springCenters, springLengths, desiredSpringLengthsAbsolute);
+        if (~isempty(springIndices))
+            % Plot the forces on the targeted cones
+            if (~isnan(target1ConeIndex))
+                target1ConePosition = conePositions(target1ConeIndex,:);
+                target1ConeSpringIndices = springIndices{target1ConeIndex};
+                plotSpringForces(target1ConePosition, target1ConeSpringIndices, ...
+                    springForceTimesDisplacementXYcomponents, springCenters, springLengths, desiredSpringLengthsAbsolute);
+            end
+
+            if (~isnan(target2ConeIndex))
+                target2ConePosition = conePositions(target2ConeIndex,:);
+                target2ConeSpringIndices = springIndices{target2ConeIndex};
+                plotSpringForces(target2ConePosition, target2ConeSpringIndices, ...
+                    springForceTimesDisplacementXYcomponents, springCenters, springLengths, desiredSpringLengthsAbsolute);
+            end
+
+            if (~isnan(target3ConeIndex))
+                target3ConePosition = conePositions(target3ConeIndex,:);
+                target3ConeSpringIndices = springIndices{target3ConeIndex};
+                plotSpringForces(target3ConePosition, target3ConeSpringIndices, ...
+                    springForceTimesDisplacementXYcomponents, springCenters, springLengths, desiredSpringLengthsAbsolute);
+            end
+        
+        
+            % Plot the net force vectors on the targeted cones
+            if (~isnan(target1ConeIndex))
+                plotNetForceVectors(target1ConePosition, netForceVectors(target1ConeIndex, :));
+            end
+            if (~isnan(target2ConeIndex))
+                plotNetForceVectors(target2ConePosition, netForceVectors(target2ConeIndex, :));
+            end
+            if (~isnan(target3ConeIndex))
+                plotNetForceVectors(target3ConePosition, netForceVectors(target3ConeIndex, :));
+            end
         end
         
-        if (~isnan(target2ConeIndex))
-            target2ConePosition = conePositions(target2ConeIndex,:);
-            target2ConeSpringIndices = springIndices{target2ConeIndex};
-            plotSpringForces(target2ConePosition, target2ConeSpringIndices, ...
-                springForceTimesDisplacementXYcomponents, springCenters, springLengths, desiredSpringLengthsAbsolute);
-        end
-        
-        if (~isnan(target3ConeIndex))
-            target3ConePosition = conePositions(target3ConeIndex,:);
-            target3ConeSpringIndices = springIndices{target3ConeIndex};
-            plotSpringForces(target3ConePosition, target3ConeSpringIndices, ...
-                springForceTimesDisplacementXYcomponents, springCenters, springLengths, desiredSpringLengthsAbsolute);
-        end
-        
-        
-        % Plot the net force vectors on the targeted cones
-        if (~isnan(target1ConeIndex))
-            plotNetForceVectors(target1ConePosition, netForceVectors(target1ConeIndex, :));
-        end
-        if (~isnan(target2ConeIndex))
-            plotNetForceVectors(target2ConePosition, netForceVectors(target2ConeIndex, :));
-        end
-        if (~isnan(target3ConeIndex))
-            plotNetForceVectors(target3ConePosition, netForceVectors(target3ConeIndex, :));
-        end
         set(gca, 'LineWidth', 1.0, 'GridColor', [0.2 0.2 1.0], 'GridAlpha', 0.75);
         t = text(29,4,sprintf('%04.0f', iteration), 'FontSize', 16);
         t.BackgroundColor = 0.9*[1 1 1];

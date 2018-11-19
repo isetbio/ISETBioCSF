@@ -13,7 +13,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
     p.addParameter('theText2', []);
     p.addParameter('theTextFontSize', [], @isnumeric);
     p.addParameter('theFigureTitle', '', @ischar);
-    p.addParameter('theLegendPosition', [], @isnumeric);
+    p.addParameter('theLegendPosition', [], @(x)(isnumeric(x)||ischar(x)));
     p.parse(varargin{:});
     
     varargout = {};
@@ -350,7 +350,11 @@ function varargout = formatFigureForPaper(hFig, varargin)
             
             if (~isempty(theLegend))
                 if (~isempty(theLegendPosition))
-                    set(theLegend, 'FontSize', 18, 'Position', theLegendPosition, 'Units', 'normalized');
+                    if (ischar(theLegendPosition))
+                        set(theLegend, 'FontSize', 18, 'Location', theLegendPosition);
+                    else
+                        set(theLegend, 'FontSize', 18, 'Position', theLegendPosition, 'Units', 'normalized');
+                    end
                 else
                     set(theLegend, 'FontSize', 18, 'Location', 'NorthEast');
                 end

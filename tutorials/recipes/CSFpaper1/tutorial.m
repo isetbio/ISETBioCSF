@@ -9,7 +9,7 @@ stimParams = struct(...
     'spatialFrequencyCyclesPerDeg', 10, ... % 10 cycles/deg
     'orientationDegs', 45, ...              % 45 degrees
     'widthDegs', 0.4, ...                   % 0.x4 x 0.4 size
-    'contrast', 0.8,...                     % 0.8 Michelson contrast
+    'contrast', 0.8,...                     % 80% Michelson contrast
     'meanLuminanceCdPerM2', 40);            % 40 cd/m2 mean luminance
 
 %% Generate an ISETBio scene describing this stimulus
@@ -29,10 +29,8 @@ coneMosaic = coneMosaicHex(7, ...             % hex lattice sampling factor
    'fovDegs', stimParams.widthDegs, ...       % match mosaic width to stimulus size
    'eccBasedConeDensity', true, ...           % cone density varies with eccentricity
    'eccBasedConeQuantalEfficiency', true, ... % cone quantal efficiency varies with eccentricity
+   'integrationTime', 10/1000, ...            % 10 msec integration time
    'maxGridAdjustmentIterations', 50);        % terminate iterative lattice adjustment after 50 iterations
-
-%% Set a 5 ms integration window
-coneMosaic.integrationTime = 5/1000;
 
 %% Compute cone excitations in response to the stimulus 
 nInstances = 3;   % generate 3 response instances

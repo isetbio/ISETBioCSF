@@ -5,7 +5,7 @@ function make_SVMRepsComboFigure
     thePanelLabels = {' B ', ' C '};         % Label for the two psychometric function panels
     thePanelLabels = {'', ''}; 
     
-    computationInstance = 32;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
+    computationInstance = 16;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
     
     
     performanceClassifiersVisualized = {'svm', 'svmV1FilterBank', 'mlpt'};     % Choose between 'svm' and 'svmV1FilterBank'
@@ -451,6 +451,7 @@ function hFig = generateCSFTrialsFigure(theData, variedParamLegends, varargin)
         'theRatioLims', theRatioLims, ...
         'theRatioTicks', theRatioTicks, ...
         'theLegend', hL, ...
+        'theLegendPosition', 'SouthWest', ...
         'theText', t, ...
         'theTextFontSize', inGraphTextFontSize);
     
