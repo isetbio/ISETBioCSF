@@ -47,7 +47,7 @@ function renderXYplot(lambda,quantalEfficiencies, xLims, yLims, xTicks, yTicks, 
     axis 'square';
     hL = legend({'L-cones', 'M-cones', 'S-cones'});
     
-    t = text(400, 0.47, ' B ');
+    t = text(400, 0.47, '');
     formatFigureForPaper(hFig, 'figureType', 'PIGMENT_QUANTAL_EFFICIENCY', 'theAxes', gca, 'theLegend', hL, 'theText', t);
     xlabel(ax,sprintf('\\it %s',xLabel), 'FontWeight', 'normal', 'FontSize', 28);
     ylabel(ax,sprintf('\\it %s',yLabel), 'FontWeight', 'normal', 'FontSize', 28);

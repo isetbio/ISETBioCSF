@@ -50,7 +50,7 @@ function renderXYplot(lambda,macularTransmittance, xLims, yLims, xTicks, yTicks,
     grid on; box on;
     axis 'square';
     
-    t = text(400, 0.94, ' A ');
+    t = text(400, 0.94, '');
     formatFigureForPaper(hFig, 'figureType', 'PIGMENT_TRANSMITTANCE', 'theAxes', gca,  'theText', t);
     
     xlabel(ax,sprintf('\\it %s',xLabel), 'FontWeight', 'normal', 'FontSize', 28);
