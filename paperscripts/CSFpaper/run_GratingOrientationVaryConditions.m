@@ -39,6 +39,8 @@ function run_GratingOrientationVaryConditions
     
     params.coneContrastDirection = 'L+M+S';
     
+    params.mosaicRotationDegs = 0;
+    
     % Response duration params
     params.frameRate = 10; %(1 frames)
     params.responseStabilizationMilliseconds = 40;
@@ -88,7 +90,7 @@ function run_GratingOrientationVaryConditions
 %             );
         generateFigureForPaper(theFigData, examinedOrientationLegends, variedParamName, mosaicName, ...
             'figureType', 'CSF', ...
-            'inGraphText', ' G ', ...
+            'inGraphText', '', ...
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
@@ -137,7 +139,7 @@ function generateOrientationCSF(theFigData, examinedOrientations)
         hold on;
         
     end
-    rlim([0.1 3])
+    rlim([0.1 3.5])
     set(gca, 'LineWidth', 1.0, 'FontSize', 18, 'ThetaTick', [], 'RTick', []);
     
     hL = legend(sfLegends);
