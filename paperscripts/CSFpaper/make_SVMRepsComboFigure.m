@@ -5,7 +5,7 @@ function make_SVMRepsComboFigure
     thePanelLabels = {' B ', ' C '};         % Label for the two psychometric function panels
     thePanelLabels = {'', ''}; 
     
-    computationInstance = 32;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
+    computationInstance = 8;  %  4 (4 c/deg) 8 (8 c/deg), 16 (16 c/deg) or 32 (32 c/deg)
     
     
     performanceClassifiersVisualized = {'svm', 'svmV1FilterBank', 'mlpt'};     % Choose between 'svm' and 'svmV1FilterBank'
@@ -241,11 +241,11 @@ function theData = generatePsychometricFunctionsPlot(psychometricFunctions, ...
         plot(theAxes, psyF.x, psyF.y, 'ko-', 'MarkerSize', 12, ...
             'MarkerFaceColor', squeeze(colors(cond,:)).^0.5, ...
             'MarkerEdgeColor', squeeze(colors(cond,:))*0.5, ...
-            'Color', [0 0 0], 'LineWidth', 1.5);
+            'Color', [0 0 0], 'LineWidth', 2);
     end
     hold(theAxes, 'off');
     xlabel(theAxes, '\it contrast', 'FontWeight', 'Normal');
-    ylabel(theAxes, '\it percent correct', 'FontWeight', 'Normal');
+    ylabel(theAxes, '\it P correct', 'FontWeight', 'Normal');
     if (showLegend)
         hL = legend(theAxes, trialLegends, 'Interpreter', 'tex');
     else
@@ -266,11 +266,11 @@ function theData = generatePsychometricFunctionsPlot(psychometricFunctions, ...
         plot(theAxes2, psyF.x, psyF.y, 'ko-', 'MarkerSize', 12, ...
             'MarkerFaceColor', squeeze(colors(cond,:)).^0.5, ...
             'MarkerEdgeColor', squeeze(colors(cond,:))*0.5, ...
-            'Color', [0 0 0], 'LineWidth', 1.5);
+            'Color', [0 0 0], 'LineWidth', 2);
     end
     hold(theAxes2, 'off');
     xlabel(theAxes2, '\it contrast', 'FontWeight', 'Normal');
-    %ylabel(theAxes2, 'percent correct', 'FontWeight', 'Bold');
+    %ylabel(theAxes2, 'P correct', 'FontWeight', 'Bold');
     
     if (showLegend)
         hL2 = legend(theAxes2, trialLegends);
