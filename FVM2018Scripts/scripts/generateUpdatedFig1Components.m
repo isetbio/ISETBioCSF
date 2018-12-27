@@ -14,29 +14,29 @@ function generateUpdatedFig1Components
     theMosaic = loadTheMosaic(rootPath, 16);
     [theScene, theRGBsettingsImage] = generateTheScene(rootPath, theDisplay, theMosaic.fov);
     
-    hFig = generateDisplayFigComponent(theDisplay);
-    NicePlot.exportFigToPDF(fullfile(videoOutDir,'/DisplayComponent.pdf'), hFig, 300);
+    %hFig = generateDisplayFigComponent(theDisplay);
+    %NicePlot.exportFigToPDF(fullfile(videoOutDir,'/DisplayComponent.pdf'), hFig, 300);
     
-    hFig = generateSceneFigComponent(theScene, theMosaic.fov, visualizedWavelengths);
-    NicePlot.exportFigToPNG(fullfile(videoOutDir,'SceneComponent.png'), hFig, 300);
+    %hFig = generateSceneFigComponent(theScene, theMosaic.fov, visualizedWavelengths);
+    %NicePlot.exportFigToPNG(fullfile(videoOutDir,'SceneComponent.png'), hFig, 300);
     
-    hFig = generateRGBSettingsImageComponent(theRGBsettingsImage);
-    NicePlot.exportFigToPNG(fullfile(videoOutDir,'RGBSettingsComponent.png'), hFig, 300);
+    %hFig = generateRGBSettingsImageComponent(theRGBsettingsImage);
+    %NicePlot.exportFigToPNG(fullfile(videoOutDir,'RGBSettingsComponent.png'), hFig, 300);
  
     theOI = generateTheOpticalImage(theScene);
     theOI = oiCompute(theOI, theScene);
     
-    hFig = generateOpticalImageFigComponent(theOI, theMosaic.fov, visualizedWavelengths);
-    NicePlot.exportFigToPNG(fullfile(videoOutDir,'OpticalImageComponent.png'), hFig, 300);
+    %hFig = generateOpticalImageFigComponent(theOI, theMosaic.fov, visualizedWavelengths);
+    %NicePlot.exportFigToPNG(fullfile(videoOutDir,'OpticalImageComponent.png'), hFig, 300);
     
-    hFig = generatePSFFigComponent(theOI, visualizedWavelengthsPSF);
-    NicePlot.exportFigToPNG(fullfile(videoOutDir, 'PSFsComponent.png'), hFig, 300);
+    %hFig = generatePSFFigComponent(theOI, visualizedWavelengthsPSF);
+    %NicePlot.exportFigToPNG(fullfile(videoOutDir, 'PSFsComponent.png'), hFig, 300);
     
-    emPathLengthSecs = 0.145;
+    emPathLengthSecs = 0.100;
     theMosaic.integrationTime = 5/1000;
     fixationalEyeMovementsNum = round(emPathLengthSecs/theMosaic.integrationTime);
     nTrials = 1;
-    theEMPath = generateTheEMPath(theMosaic, fixationalEyeMovementsNum, nTrials, videoOutDir);
+    theEMPath = 0*generateTheEMPath(theMosaic, fixationalEyeMovementsNum, nTrials, videoOutDir);
     %
     % Return to origin
     theEMPath(nTrials,fixationalEyeMovementsNum,:) = 0*theEMPath(nTrials,fixationalEyeMovementsNum,:);
@@ -44,18 +44,18 @@ function generateUpdatedFig1Components
     [theIsomerizations, thePhotocurrents, LMSfilters] = ...
         theMosaic.compute(theOI, 'currentFlag',true, 'emPath', theEMPath);
     
-    hFig = generatePhotocurrentFilters(theMosaic, LMSfilters);
-    NicePlot.exportFigToPNG(fullfile(videoOutDir,'PhotocurrentFilters.png'), hFig, 300);
+    %hFig = generatePhotocurrentFilters(theMosaic, LMSfilters);
+    %NicePlot.exportFigToPNG(fullfile(videoOutDir,'PhotocurrentFilters.png'), hFig, 300);
     
-    hFig = generateMosaicFigComponent(theMosaic);
-    NicePlot.exportFigToPNG(fullfile(videoOutDir,'MosaicComponent.png'), hFig, 300);
+    %hFig = generateMosaicFigComponent(theMosaic);
+    %NicePlot.exportFigToPNG(fullfile(videoOutDir,'MosaicComponent.png'), hFig, 300);
     
-    makeGif =~true;
+    makeGif = true;
     hFig = generateResponseFigComponent(theMosaic, theIsomerizations, 'isomerizations', videoOutDir, makeGif);
     NicePlot.exportFigToPNG(fullfile(videoOutDir,'IsomerizationsComponent.png'), hFig, 300);
     
-    hFig = generateResponseFigComponent(theMosaic, thePhotocurrents, 'photocurrents', videoOutDir, makeGif);
-    NicePlot.exportFigToPNG(fullfile(videoOutDir,'PhotocurrentsComponent.png'), hFig, 300);
+    %hFig = generateResponseFigComponent(theMosaic, thePhotocurrents, 'photocurrents', videoOutDir, makeGif);
+    %NicePlot.exportFigToPNG(fullfile(videoOutDir,'PhotocurrentsComponent.png'), hFig, 300);
 end
 
 function hFig = generatePhotocurrentFilters(theMosaic, LMSfilters)
@@ -172,8 +172,8 @@ function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPatt
             if (fractionGauss > 1)
                 fractionGauss = 1;
             end
-            minFraction = 0.55;
-            maxFraction = 1.1;
+            minFraction = 0.4;
+            maxFraction = 1.4;
             fraction = minFraction + fractionGauss;
             if (fraction > maxFraction)
                 fraction = maxFraction;
@@ -505,21 +505,41 @@ end
 
 function [theScene, sensorImageRGB] = generateTheScene(rootPath,theDisplay, theMosaicFOV)
 %   
-    rgbSettingsFile = 'PilotC4M4-RGB.mat';  % matte
-    rgbSettingsFile = 'PilotC1M4-RGB.mat';  % shiny
-    filename = fullfile(rootPath,rgbSettingsFile);
-    load(filename, 'sensorImageRGB');
+    sceneName = 'Gabor';
+    if strcmp(sceneName,'Blobbie')
+        rgbSettingsFile = 'PilotC4M4-RGB.mat';  % matte
+        rgbSettingsFile = 'PilotC1M4-RGB.mat';  % shiny
+        filename = fullfile(rootPath,rgbSettingsFile);
+        load(filename, 'sensorImageRGB');
+
+        %% Convert to ISETbio scene
+        meanLuminance = [];
+        theScene = sceneFromFile(sensorImageRGB, 'rgb', meanLuminance, theDisplay);
+
+        meanLuminance = sceneGet(theScene, 'mean luminance');
+    else
+        stimParams = struct(...
+            'spatialFrequencyCyclesPerDeg', 16, ... % 15 cycles/deg
+            'orientationDegs', 0, ...               % 45 degrees
+            'phaseDegs', 90, ...                    % spatial phase in degrees
+            'sizeDegs', 0.5, ...                    % 0.5 x 0.5 degrees
+            'sigmaDegs', 0.2/3, ...                 % sigma of Gaussian envelope
+            'contrast', 0.9,...                     % 0.6 Michelson contrast
+            'meanLuminanceCdPerM2', 40, ...         % mean luminance
+            'pixelsAlongWidthDim', 256, ...         % pixels- width dimension
+            'pixelsAlongHeightDim', 256 ...         % pixels- height dimension
+            );
+        theScene =  generateGaborScene('stimParams', stimParams);
+        sensorImageRGB = [];
+    end
     
-    %% Convert to ISETbio scene
-    meanLuminance = [];
-    theScene = sceneFromFile(sensorImageRGB, 'rgb', meanLuminance, theDisplay);
-        
-    meanLuminance = sceneGet(theScene, 'mean luminance');
     theScene = sceneAdjustLuminance(theScene, 100);
     meanLuminance = sceneGet(theScene, 'mean luminance')
     % Scale the scene to be a little larger than the mosaic
     size = sceneGet(theScene, 'size');
     theScene = sceneSet(theScene, 'h fov', theMosaicFOV(1) * 1.5);
+    
+    
 end
 
 function theDisplay = generateTheDisplay()
