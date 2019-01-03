@@ -57,10 +57,6 @@ function [validationData, extraData, varargout] = t_coneCurrentEyeMovementsRespo
 %     'visualizeResponses' - true/false (default true). Call the fancy visualize response routine
 %     'visualizedConditionIndices' - list of conditions indices for which to visualize respondrd (default: empty - all conditions)
 %     'visualizeOuterSegmentFilters' - true/false (default false). Visualize the outer segment impulse response functions.
-%     'visualizationFormat' - How to arrange visualized maps. 
-%       Available options: 'montage', 'video'. Default is 'montage'
-%     'visualizedResponseNormalization' - How to normalize visualized responses
-%        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
 %     'exportPDF' - true/false (default true).  If visualizing responses,
 %        export the PDF files.
 %     'delete' - true/false (default false).  Delete the response instance
@@ -95,8 +91,6 @@ p.addParameter('visualizeDisplay', false,@islogical);
 p.addParameter('visualizeStimulusAndOpticalImage', false,@islogical);
 p.addParameter('visualizeOIsequence', false, @islogical);
 p.addParameter('visualizeMosaicWithFirstEMpath', false, @islogical);
-p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
-p.addParameter('visualizationFormat', 'montage', @ischar);
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('exportPDF',true,@islogical);
 p.addParameter('delete',false,@islogical);
@@ -105,7 +99,6 @@ p.addParameter('IBIOColorDetectSnapshot', [], @isstruct);
 p.parse(varargin{:});
 rParams = p.Results.rParams;
 testDirectionParams = p.Results.testDirectionParams;
-visualizationFormat = p.Results.visualizationFormat;
 parforWorkersNum = p.Results.parforWorkersNum;
 
 % Check the parforWorkersNum
@@ -114,11 +107,6 @@ if (numberOfWorkers < parforWorkersNum)
     parforWorkersNum = numberOfWorkers;
 end
 
-% Ensure visualizationFormat has a valid value
-if (strcmp(visualizationFormat, 'montage')) || (strcmp(visualizationFormat, 'video'))
-else
-    error('visualizationFormat must be set to either ''montage'' or ''video''. Current value: ''%s''.', visualizationFormat);
-end
 
 % Initialize varargout
 varargout{1} = [];   % Impulse responses if (visualizeOuterSegmentFilters is true)
@@ -717,8 +705,7 @@ if ((p.Results.visualizeResponses || p.Results.visualizeOuterSegmentFilters))
                 hFigsInfo = visualizeResponseInstances(theMosaic, ...
                     stimData, noStimData, ...
                     p.Results.visualizeOuterSegmentFilters, ...
-                    p.Results.visualizedResponseNormalization, ...
-                    kk, nParforConditions, p.Results.visualizationFormat);
+                    kk, nParforConditions);
 
                 % Save figures produced
                 theProgram = mfilename;

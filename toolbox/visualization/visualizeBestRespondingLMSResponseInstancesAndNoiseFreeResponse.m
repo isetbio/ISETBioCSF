@@ -1,107 +1,118 @@
 function hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(...
     timeAxis, noStimResponseInstances, stimResponseInstances, ...
     noStimNoiseFreeResponse, stimNoiseFreeResponse, responseRange, ...
-    responseLevelsNum, coneTypeIndicesToVisualize, plotType, signalSource, yAxisLabel, figNo)
+    signalSource, yAxisLabel, figNo)
 
-    % Select what we are visualizing
-    noStimResponseInstances = noStimResponseInstances(coneTypeIndicesToVisualize,:,:);
-    stimResponseInstances = stimResponseInstances(coneTypeIndicesToVisualize,:,:);
-    noStimNoiseFreeResponse = noStimNoiseFreeResponse(coneTypeIndicesToVisualize,:);
-    stimNoiseFreeResponse = stimNoiseFreeResponse(coneTypeIndicesToVisualize,:);
+    stimOnsetTime = timeAxis(end);
+    dt = timeAxis(2)-timeAxis(1);
+    compositeResponseTimeAxis = cat(2, timeAxis, timeAxis-timeAxis(1)+dt+timeAxis(end)); 
+    stimOnsetTime = stimOnsetTime - compositeResponseTimeAxis(1)+dt;
+    compositeResponseTimeAxis = compositeResponseTimeAxis - compositeResponseTimeAxis(1);
     
-    % Arrange subplot regions
-    responseNums = size(noStimResponseInstances,1);
-    if (responseNums > 1)        
-        for k = 1:responseNums
-            subplotPosVectors(responseNums-k+1,1).v = [0.065 0.05+(k-1)*0.33 0.67 0.25];
-            subplotPosVectors(responseNums-k+1,2).v = [0.78 0.05+(k-1)*0.33 0.19 0.25];
-        end
-    elseif (responseNums == 1)
-        subplotPosVectors(1,1).v = [0.065 0.11 0.67 0.83];
-        subplotPosVectors(1,2).v = [0.78 0.11 0.19 0.83];
-    else
-        error('responseNums in %s is: %d\n', mfilename(), responseNums)
+    compositeNoiseFreeResponses = cat(2, noStimNoiseFreeResponse, stimNoiseFreeResponse);
+    compositeResponseInstances = cat(3, noStimResponseInstances, stimResponseInstances);
+    pause
+    
+    timeTicks = [-500:50:500];
+    if (strcmp(signalSource, 'isomerizations'))
+        areaPlotMode = 'steps';
+        yticks = 0:5:50;
+    elseif (strcmp(signalSource, 'photocurrents'))
+         areaPlotMode = 'lines';
+        yticks = -100:5:0;
     end
-
-
     
-    plotType = 'density';
-    responseLevels = linspace(responseRange(1), responseRange(2), responseLevelsNum);
     
     hFig = figure(figNo); clf;
-    if (responseNums > 1)
-        formatFigureForPaper(hFig, ...
-            'figureType','RESPONSE_INSTANCE_THREE_CONDIITIONS');
-    else
-        formatFigureForPaper(hFig, ...
-            'figureType','RESPONSE_INSTANCE_SINGLE_CONDIITION');
+    set(hFig, 'Position', [10 10 600 345], 'Color', [1 1 1]);
+    ax = subplot('Position', [0.15 0.25 0.83 0.71]);
+    
+    for coneTypeIndex = 1:3
+        switch (coneTypeIndex)
+            case 1
+                edgeColor = [1 0 0];
+                faceColor = [1 0.5 0.5];
+            case 2
+                edgeColor = [0 0.8 0];
+                faceColor = [0.5 1 0.5];
+            case 3
+                edgeColor = [0 0 1];
+                faceColor = [0.5 0.8 1];
+        end
+        instances = squeeze(compositeResponseInstances(coneTypeIndex,:,:));
+        meanResponse = squeeze(compositeNoiseFreeResponses(coneTypeIndex,:));
+        renderAreaPlot(ax,compositeResponseTimeAxis,min(instances,[],1),max(instances,[],1), meanResponse, edgeColor, faceColor, areaPlotMode);
+        hold on;
+        plot(ax, stimOnsetTime*[1 1], responseRange, 'k-', 'LineWidth', 1.5);
+    end       
+    
+    
+            
+    set(ax, 'XLim', [compositeResponseTimeAxis(1)-dt compositeResponseTimeAxis(end)+dt], 'YLim', responseRange, ...
+        'FontSize', 28, 'XTick', timeTicks, ...
+        'YTick', yticks, 'LineWidth', 1.0);
+    if (~isempty(yAxisLabel))
+        ylabel(sprintf('\\it %s',yAxisLabel), 'FontWeight', 'normal', 'FontSize', 36)
+    end
+    xlabel('\it time (msec)', 'FontWeight', 'normal', 'FontSize', 36);
+    grid on;
+    
+    drawnow
+    
+end
+
+function renderAreaPlot(ax,x, yLow, yHigh, yMean, edgeColor, faceColor, mode)
+
+    v = [x(1) yLow(1)];
+    yMeanTrace = yMean(1);
+    xMeanTrace = x(1);
+    dt = x(2)-x(1);
+    
+    for k = 1:(numel(yHigh)-1)
+        if (strcmp(mode, 'lines'))
+            newV = [x(k) yHigh(k)];
+            yMeanTraceIncrement = yMean(k);
+            xMeanTraceIncrement = x(k);
+        else
+            newV = [x(k) yHigh(k); x(k+1) yHigh(k)];
+            yMeanTraceIncrement = [yMean(k) yMean(k)];
+            xMeanTraceIncrement = [x(k) x(k+1)];
+        end
+        v = cat(1, v, newV);
+        yMeanTrace = cat(2, yMeanTrace, yMeanTraceIncrement);
+        xMeanTrace = cat(2, xMeanTrace, xMeanTraceIncrement);
     end
     
-    for responseIndex = 1:responseNums
-        ax1 = subplot('Position', subplotPosVectors(responseIndex,1).v);
-        ax2 = subplot('Position', subplotPosVectors(responseIndex,2).v);
-        
-        if (responseNums == 1)
-            timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, ...
-                squeeze(noStimResponseInstances(responseIndex,:,:)), squeeze(stimResponseInstances(responseIndex,:,:)), ...
-                squeeze(noStimNoiseFreeResponse(responseIndex,:)), squeeze(stimNoiseFreeResponse(responseIndex,:)), ...
-                [min(responseLevels) max(responseLevels)], timeAxis, plotType, 1, 1, 1);
+    if (strcmp(mode, 'lines'))
+        v = cat(1 ,v, [x(k+1) yHigh(k+1)]);
+        yMeanTrace = cat(2, yMeanTrace, yMean(k+1));
+        xMeanTrace = cat(2, xMeanTrace, x(k+1));
+    else
+        v = cat(1 ,v, [x(k+1) yHigh(k+1); x(k+1)+dt yHigh(k+1); x(k+1)+dt yLow(k+1); x(k+1) yLow(k+1)]);
+        yMeanTrace = cat(2, yMeanTrace, [yMean(k+1) yMean(k+1)]);
+        xMeanTrace = cat(2, xMeanTrace, [x(k+1) x(k+1)+dt]);
+    end
+    
+    for k = (numel(yLow)):-1:2
+        if (strcmp(mode, 'lines'))
+            newV = [x(k) yLow(k)];
         else
-            timeAxisLimits = renderNullTestComboResponse(ax1, ax2, signalSource, ...
-                squeeze(noStimResponseInstances(responseIndex,:,:)), squeeze(stimResponseInstances(responseIndex,:,:)), ...
-                squeeze(noStimNoiseFreeResponse(responseIndex,:)), squeeze(stimNoiseFreeResponse(responseIndex,:)), ...
-                [min(responseLevels) max(responseLevels)], timeAxis, plotType, 1, 1, 1);
+            newV = [x(k) yLow(k); x(k-1) yLow(k)];
         end
-        
-        t = [];
-        if (responseNums > 1)
-            if (responseIndex == 1)
-               %t = text(ax1, 8, responseLevels(end)*0.87, ' A ');
-               %xlabel(ax1, '');
-               %xlabel(ax2, '');
-            elseif (responseIndex == 2)
-               %t = text(ax1, 8, responseLevels(end)*0.87, ' B ');
-               %xlabel(ax1, '');
-               %xlabel(ax2, '');
-            elseif (responseIndex == 3)
-               %t = text(ax1, 8, responseLevels(end)*0.87, ' C ');
-            end
-            
-        end  
-        
-        if (responseNums > 1)
-            formatFigureForPaper(hFig, ...
-                'figureType','RESPONSE_INSTANCE_THREE_CONDIITIONS', ...
-                'theAxes', ax1, ...
-                'theText', t);
-
-            hL = legend(ax2, 'null stimulus', 'test stimulus');
-            formatFigureForPaper(hFig, ...
-                'figureType','RESPONSE_INSTANCE_THREE_CONDIITIONS', ...
-                'theAxes', ax2, ...
-                'theLegend', hL);
-        else
-            formatFigureForPaper(hFig, ...
-                'figureType','RESPONSE_INSTANCE_SINGLE_CONDIITION', ...
-                'theAxes', ax1, ...
-                'theText', t);
-
-            hL = legend(ax2, 'null stimulus', 'test stimulus');
-            formatFigureForPaper(hFig, ...
-                'figureType','RESPONSE_INSTANCE_SINGLE_CONDIITION', ...
-                'theAxes', ax2, ...
-                'theLegend', hL);
-        end
-        
-        
-        if (strcmp(signalSource, 'isomerizations'))
-            ytickformat(ax1, '%.0f');
-        else
-            ytickformat(ax1, '%.1f');
-        end
-        xtickformat(ax2, '%0.2f');
-        grid(ax2, 'on');
-        
-    end % responseIndex
+        v = cat(1, v, newV);
+    end
+    
+    v = cat(1,v, [x(1) yLow(1)]);
+    f = 1:size(v,1);
+    desaturation = 0.0;
+    alpha = 0.5;
+    patch(ax,'Faces',f,'Vertices',v,...
+        'FaceAlpha', alpha, ...
+        'FaceColor', faceColor*(1-desaturation)+desaturation*[1 1 1], ...
+        'EdgeColor', edgeColor*(1-desaturation)+desaturation*[1 1 1], ...
+        'LineWidth',1.0)
+    hold(ax, 'on');
+    plot(ax, xMeanTrace, yMeanTrace, 'k-', 'Color', edgeColor, 'LineWidth', 3);
+    
 end
 

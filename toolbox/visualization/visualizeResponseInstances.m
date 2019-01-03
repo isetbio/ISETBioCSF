@@ -1,10 +1,6 @@
 function hFigsInfo = visualizeResponseInstances(theMosaic, ...
     stimData, noStimData, visualizeOuterSegmentFilters, ...
-    responseNormalization, condIndex, condsNum, format)
-
-    % Which best cone types to visualize instances from
-    coneTypeIndicesToVisualize = [1 2 3];  % the best L, M- and S-cone
-    coneTypeIndicesToVisualize = [1];      % only the L-cone
+    condIndex, condsNum)
     
     instancesNum = size(stimData.responseInstanceArray.theMosaicIsomerizations,1);
     if (instancesNum < 1)
@@ -77,6 +73,9 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
         else
             makeVideos = false;
         end
+        
+        makeVideos = false;
+        
         hFigs = visualizeNoiseFreeAndFirstInstanceWithActivationProfile(...
                  stimData, noStimData, theMosaic, signalName, ...
                  visualizedSignalRange, visualizedResponseInstance, ...
@@ -141,18 +140,15 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
     end
     
     if (~isempty(noStimData.responseInstanceArray.theMosaicIsomerizations))
-        isomerizationLevels = [0 30];
-        isomerizationQuantizationLevelsNum = round(isomerizationLevels(2)-isomerizationLevels(1));
+        isomerizationResponsRange = [0 30];
         hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(...
             timeAxis, ...
             noStimIsomerizationsResponseInstances*theMosaic.integrationTime, ...
             stimIsomerizationsResponseInstances*theMosaic.integrationTime, ...
             noStimNoiseFreeIsomerizationsResponse*theMosaic.integrationTime, ...
             stimNoiseFreeIsomerizationsResponse*theMosaic.integrationTime, ...
-            isomerizationLevels, ...
-            isomerizationQuantizationLevelsNum, ...
-            coneTypeIndicesToVisualize, ...
-            'density', 'isomerizations', 'R*/cone', 5001);
+            isomerizationResponsRange, ...
+            'isomerizations', 'R*/cone', 5001);
     else
         hFig = [];
     end 
@@ -160,19 +156,16 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
             'filename', 'peakConeIsomerizationResponseInstances',...
             'hFig', hFig);
 
-    if (~isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))
-        photocurrentsQuantizationLevelsNum = 100;
-        photocurrentsLevels = [-90 -50]; 
+    if (~isempty(noStimData.responseInstanceArray.theMosaicPhotocurrents))  
+        photocurrentResponsRange = [-90 -65]; 
         hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(...
             timeAxis, ...
             noStimPhotocurrentsResponseInstances, ...
             stimPhotocurrentsResponseInstances, ...
             noStimNoiseFreePhotocurrentsResponse, ...
             stimNoiseFreePhotocurrentsResponse, ...
-            photocurrentsLevels, ...
-            photocurrentsQuantizationLevelsNum, ...
-            coneTypeIndicesToVisualize, ...
-            'line', 'photocurrents', 'pA', 5002);
+            photocurrentResponsRange, ...
+            'photocurrents', 'pA', 5002);
     else
         hFig = [];
     end
@@ -488,19 +481,23 @@ function hFigs = visualizeNoiseFreeAndFirstInstanceWithActivationProfile(...
         [~,kidx] = max(abs(diffSignal(:)));
         [~,timeBinOfPeakResponse] = ind2sub(size(diffSignal), kidx);
 
+        fprintf('Isomerization peak response at %2.0f msec\n', stimData.responseInstanceArray.timeAxis(timeBinOfPeakResponse)*1000);
+        
         % Determine visualized response range
         signalRange = determineVisualizedIsomerizationsRange(theMosaic, stimData, timeBinOfPeakResponse);
         
         signalLabel = 'cone excitation';
         signalNameFigNo = 0;
     elseif (strcmp(signalName, 'Photocurrent'))
-        
+
         % Determine visualized time bin of max response
         diffSignal = bsxfun(@minus,stimData.noiseFreePhotocurrents, squeeze(stimData.noiseFreePhotocurrents(:,1)));
         
         [~,kidx] = max(abs(diffSignal(:)));
         [~,timeBinOfPeakResponse] = ind2sub(size(diffSignal), kidx);
 
+        fprintf('Photocurrent peak response at %2.0f msec\n', stimData.responseInstanceArray.timeAxis(timeBinOfPeakResponse)*1000);
+        
         % Determine visualized response range
         signalRange = determineVisualizedPhotocurrentsRange(theMosaic, stimData, timeBinOfPeakResponse);
         signalLabel = 'p-current (pA)';
@@ -510,7 +507,6 @@ function hFigs = visualizeNoiseFreeAndFirstInstanceWithActivationProfile(...
     
     
     timeAxis = noStimData.responseInstanceArray.timeAxis;
-    fprintf('Time of peak respose: %f\n', timeAxis(timeBinOfPeakResponse));
     
     % The responses to the STIM 
     hFigs = {};
@@ -672,7 +668,7 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
     hFigTmp = figure(3+figNo); clf;
     hFig{numel(hFig)+1} = hFigTmp;
     set(hFigTmp, 'Position', [10 10 600 345], 'Color', [1 1 1]);
-    ax = subplot('Position', [0.15 0.25 0.84 0.71]);
+    ax = subplot('Position', [0.15 0.25 0.83 0.71]);
     generateConeLinePlot(ax, theMosaic, ...
         stimDataNoiseFreeSignalAtPeakTime, ...
         noStimDataNoiseFreeSignalAtPeakTime, ...
@@ -682,7 +678,7 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
     hFigTmp = figure(4+figNo); clf;
     hFig{numel(hFig)+1} = hFigTmp;
     set(hFigTmp, 'Position', [10 10 600 345], 'Color', [1 1 1]);
-    ax = subplot('Position', [0.15 0.25 0.84 0.71]);
+    ax = subplot('Position', [0.15 0.25 0.83 0.701]);
     generateConeLinePlot(ax, theMosaic, ...
         stimDataSignalInstanceAtPeakTime, ...
         noStimDataNoiseFreeSignalAtPeakTime, ...
@@ -885,18 +881,7 @@ function isomerizationsRange = determineVisualizedIsomerizationsRange(theMosaic,
     ];
 
     isomerizationsRange = noiseFreeIsomerizationsRange;
-    isomerizationsRange = prctile(stimData.responseInstanceArray.theMosaicIsomerizations(:), [0 95])
-    
-    % add to the range so the visualized range matches the low-end of the 
-    % instancesIsomerizationsRange
-%     delta = isomerizationsRange(1)-instancesIsomerizationsRange(1);
-%     if (delta > 0)
-%         isomerizationsRange = isomerizationsRange + delta * [-1 1];
-%     end
-%     isomerizationsRange = round(isomerizationsRange);
-%     if (isomerizationsRange(2) == isomerizationsRange(1))
-%         isomerizationsRange(2) = isomerizationsRange(1) + 1;
-%     end
+    isomerizationsRange = prctile(stimData.responseInstanceArray.theMosaicIsomerizations(:), [0 95]);
 end
 
 
@@ -914,19 +899,6 @@ function photocurrentsRange = determineVisualizedPhotocurrentsRange(theMosaic, s
 %         max(max(squeeze(stimData.responseInstanceArray.theMosaicPhotocurrents(:,lmConeIndices,timeBinOfPeakResponse)))) ...
 %     ];
 
-    photocurrentsRange = noiseFreeRange;
-    photocurrentsRange = prctile(stimData.responseInstanceArray.theMosaicPhotocurrents(:), [0 95])
-    
-%     % add to the range so the visualized range matches the low-end of the 
-%     % instancesRange
-%     delta = photocurrentsRange(1)-instancesRange(1);
-%     if (delta > 0)
-%         photocurrentsRange = photocurrentsRange + delta * [-1 1];
-%     end
-%     photocurrentsRange = round(photocurrentsRange);
-%     if (photocurrentsRange(2) == photocurrentsRange(1))
-%         photocurrentsRange(2) = photocurrentsRange(1) + 0.5;
-%     end
-    
+    photocurrentsRange = noiseFreeRange +[-3 3];
     
 end
