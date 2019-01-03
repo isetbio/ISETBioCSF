@@ -16,8 +16,6 @@ function [validationData, extraData] = t_coneCurrentEyeMovementsResponseInstance
 %        visualizations.  Set to false when running big jobs on clusters or
 %        in parfor loops, as plotting doesn't seem to play well with those
 %        conditions.
-%   'visualizedResponseNormalization' - How to normalize visualized responses
-%        Available options: 'submosaicBasedZscore', 'LMSabsoluteResponseBased', 'LMabsoluteResponseBased', 'MabsoluteResponseBased'
 %   'exportPDF' - true/false (default true).  If visualizing responses,
 %        export the PDF files.
 %   'renderVideo' - true/false (default true).  If visualizing responses, generate
@@ -34,7 +32,6 @@ p.addParameter('contrastParams',[],@isemptyorstruct);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('generatePlots',false,@islogical);
-p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('exportPDF',true,@islogical);
 p.addParameter('renderVideo',true,@islogical);
 p.addParameter('delete',false',@islogical);
@@ -96,7 +93,6 @@ end
     'rParams',rParams, ...
     'testDirectionParams',contrastParams, ...
     'freezeNoise', p.Results.freezeNoise, ...
-    'generatePlots',p.Results.generatePlots, ...
-    'visualizedResponseNormalization', p.Results.visualizedResponseNormalization);
+    'generatePlots',p.Results.generatePlots);
 
 
