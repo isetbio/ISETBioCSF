@@ -51,11 +51,6 @@ function [validationData, extraData] = c_BanksEtAlReplicate(varargin)
 %   'thresholdCriterionFraction' value (default 0.75). Criterion corrrect for threshold.
 %   'generatePlots' - true/false (default true).  No plots are generated unless this is true.
 %   'visualizeResponses' - true/false (default false).  Do the fancy response visualization when generating responses.
-%   'visualizedResponseNormalization' - string (default 'submosaicBasedZscore'). How to normalize visualized responses
-%        'submosaicBasedZscore'       [DHB Note:] Say what these do, please (default).
-%        'LMSabsoluteResponseBased'
-%        'LMabsoluteResponseBased'
-%        'MabsoluteResponseBased'
 %   'plotPsychometric' - true/false (default true).  Plot psychometric functions.
 %   'plotCSF' - true/false (default true).  Plot results.
 %   'freezeNoise' - true/false (default true). Freeze noise so calculations reproduce.
@@ -93,7 +88,6 @@ p.addParameter('fitPsychometric',true,@islogical);
 p.addParameter('thresholdCriterionFraction',0.75,@isnumeric);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeResponses',false,@islogical);
-p.addParameter('visualizedResponseNormalization', 'submosaicBasedZscore', @ischar);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotCSF',true,@islogical);
 p.addParameter('freezeNoise',true,@islogical);
@@ -226,7 +220,6 @@ for ll = 1:length(p.Results.luminances)
                'rParams',rParams,...
                'testDirectionParams',testDirectionParams,...
                'compute',true,...
-               'visualizedResponseNormalization', p.Results.visualizedResponseNormalization, ...
                'visualizeResponses',p.Results.visualizeResponses, ...
                'generatePlots',p.Results.generatePlots,...
                'freezeNoise',p.Results.freezeNoise,...
