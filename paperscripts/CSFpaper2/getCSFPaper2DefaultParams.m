@@ -63,7 +63,7 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
     params.nContrastsPerDirection =  20;
     
     % Trials to generate
-    trialsToCompute = 128;
+    trialsToCompute = 1024;
     params.nTrainingSamples = trialsToCompute; 
     
     % Freeze noise for repeatable results
@@ -81,7 +81,7 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
     params.spatialPoolingKernelParams.activationFunction = 'linear';
     
     % Split computations and specify RAM memory
-    params.ramPercentageEmployed = 2.4;
+    params.ramPercentageEmployed = 1.2;
     if (computationInstance == 0)
         % All mosaic sizes in 1 MATLAB session
         params.cyclesPerDegreeExamined =  [2 4 8 16 32 50 60]; 
