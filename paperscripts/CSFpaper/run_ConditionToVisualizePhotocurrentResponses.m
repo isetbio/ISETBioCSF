@@ -2,34 +2,25 @@ function run_ConditionToVisualizePhotocurrentResponses
 % This is the script used to just visualize responses
 
     % How to split the computation
-    % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
+    % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all but
+    % the 2 largest), or some specific spatial frequency, like 16
     computationInstance = 16;
     
-    % Mosaic to use (ecc-based cone density AND cone efficiency)
-    mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrection'; 
+
+    % Pupil diameter to be used
+    pupilDiamMm = 3.0;
     
-    % Optics to use
-    opticsName = 'ThibosDefaultSubject3MMPupil';
+    % Integration time to use, 2.5 is better for capturing fixationalEM dynamics
+    integrationTimeMilliseconds = 5.0;
     
-    params = getCSFpaperDefaultParams(mosaicName, computationInstance);
+    params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, computationInstance);
     
-    % Adjust any params we want to change from their default values
-    params.opticsModel = opticsName;
-    params.coneContrastDirection = 'L+M+S';
-    params.lowContrast = 0.1; % was 0.01;
-    params.highContrast =  1.0; % was 0.1;
-    params.nContrastsPerDirection = 2;
+    % Only the max contrast level
+    params.lowContrast = 1.0; 
+    params.highContrast =  1.0; 
+    params.nContrastsPerDirection = 1;
     params.nTrainingSamples = 4;
-    params.performanceTrialsUsed = [];
-    
-    % Response duration params
-    params.frameRate = 20; %(20 frames/sec, so 2 frames, each 50 msec long)
-    params.responseStabilizationMilliseconds = 100;
-    params.responseExtinctionMilliseconds = 50;
-    
-    % Eye movement setup
-    params.emPathType =  'random';
-    params.centeredEMPaths = true;
+        
     
     % Simulation steps to perform
     params.computeResponses = true;
@@ -48,22 +39,8 @@ function run_ConditionToVisualizePhotocurrentResponses
     
     params.visualizeKernelTransformedSignals = true;
     params.findPerformance = ~true;
-    params.visualizePerformance = true;
+    params.visualizePerformance = ~true;
     params.deleteResponseInstances = ~true;
-
-    params.performanceClassifier = 'svmV1FilterBank';
-    %params.performanceClassifier = 'svmV1FilterEnsemble';
-    params.parforWorkersNumForClassification = 1;
-    
-    if (strcmp(params.performanceClassifier,'svmV1FilterEnsemble'))
-        params.spatialPoolingKernelParams.spatialPositionsNum = 9;
-        params.spatialPoolingKernelParams.cyclesPerRFs =  [1.5 2.5];
-        params.spatialPoolingKernelParams.orientations =  [0];
-    else
-        params.spatialPoolingKernelParams.type = 'V1CosUnit';
-        params.spatialPoolingKernelParams.activationFunction = 'linear'; % 'fullWaveRectifier';
-    end
-
     
     % Go
     run_BanksPhotocurrentEyeMovementConditions(params);

@@ -58,6 +58,9 @@ p.addParameter('emPathType','frozen0',@(x)ismember(x, {'none', 'frozen', 'frozen
 p.addParameter('centeredEMPaths',false, @islogical); 
 p.addParameter('responseStabilizationMilliseconds', 80, @isnumeric);
 p.addParameter('responseExtinctionMilliseconds', 200, @isnumeric);
+p.addParameter('secondsToInclude', [], @isnumeric);
+p.addParameter('secondsToIncludeOffset', [], @isnumeric);
+p.addParameter('singleBinTemporalWindowIfPossible', true, @islogical);
 
 % PERFORMANCE COMPUTATION OPTIONS
 p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
@@ -421,6 +424,7 @@ function rParams = updateBackgroundParams(rParams, userParams, luminance)
 end
 
 function rParams = updateTemporalParams(rParams, userParams)
+    
     % In the absence of info from the Banks et al paper, assume 10 Hz
     % refresh rate (to accelerate computations)
     frameRate = userParams.frameRate;
@@ -431,18 +435,29 @@ function rParams = updateTemporalParams(rParams, userParams)
     responseStabilizationSeconds = ceil(userParams.responseStabilizationMilliseconds/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
     % Allow some milliseconds for response to return to 0
     responseExtinctionSeconds = ceil(userParams.responseExtinctionMilliseconds/1000/stimulusSamplingIntervalInSeconds)*stimulusSamplingIntervalInSeconds;
-    secondsToInclude = responseStabilizationSeconds+userParams.stimulusDurationInSeconds+responseExtinctionSeconds;   
+    if (isempty(userParams.secondsToInclude))
+        userParams.secondsToInclude = responseStabilizationSeconds+userParams.stimulusDurationInSeconds+responseExtinctionSeconds;
+    end
+    if (isempty(userParams.secondsToIncludeOffset))
+        userParams.secondsToIncludeOffset = 0/1000;
+    end
         
     rParams.temporalParams = modifyStructParams(rParams.temporalParams, ...
             'frameRate', frameRate, ...
             'windowTauInSeconds', windowTauInSeconds, ...
             'stimulusSamplingIntervalInSeconds', stimulusSamplingIntervalInSeconds, ...
             'stimulusDurationInSeconds', userParams.stimulusDurationInSeconds, ...
-            'secondsToInclude', secondsToInclude, ...
+            'secondsToInclude', userParams.secondsToInclude, ...
+            'secondsToIncludeOffset', userParams.secondsToIncludeOffset, ...
             'secondsForResponseStabilization', responseStabilizationSeconds, ...
-            'secondsForResponseExtinction', responseExtinctionSeconds, ...
-            'secondsToIncludeOffset', 0/1000 ...
+            'secondsForResponseExtinction', responseExtinctionSeconds ...
      );
+ 
+    if (isfield(userParams, 'singleBinTemporalWindowIfPossible'))
+        rParams.temporalParams.singleBinTemporalWindowIfPossible = userParams.singleBinTemporalWindowIfPossible;
+    else
+        rParams.temporalParams.singleBinTemporalWindowIfPossible = true;
+    end
 end
 
 function rParams = updateEyeMovementParams(rParams, userParams)

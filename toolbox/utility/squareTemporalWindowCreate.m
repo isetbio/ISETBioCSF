@@ -1,8 +1,8 @@
 function [sampleTimes, squareTemporalWindow, rasterModulation] = squareTemporalWindowCreate(temporalParams)
 %
-% Create a square temporal window.
-
-if (temporalParams.stimulusDurationInSeconds == temporalParams.stimulusSamplingIntervalInSeconds)
+% Special case where we generate a temporal window with a singe time sample
+if (temporalParams.stimulusDurationInSeconds == temporalParams.stimulusSamplingIntervalInSeconds) && ...
+   (temporalParams.singleBinTemporalWindowIfPossible)
     sampleTimes = [0];
     squareTemporalWindow = 1;
     rasterModulation = 1;

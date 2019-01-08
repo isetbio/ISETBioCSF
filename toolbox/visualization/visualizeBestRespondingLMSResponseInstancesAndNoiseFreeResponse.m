@@ -6,14 +6,13 @@ function hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(
     stimOnsetTime = timeAxis(end);
     dt = timeAxis(2)-timeAxis(1);
     compositeResponseTimeAxis = cat(2, timeAxis, timeAxis-timeAxis(1)+dt+timeAxis(end)); 
-    stimOnsetTime = stimOnsetTime - compositeResponseTimeAxis(1)+dt;
+    stimOnsetTime = stimOnsetTime - compositeResponseTimeAxis(1);
     compositeResponseTimeAxis = compositeResponseTimeAxis - compositeResponseTimeAxis(1);
     
     compositeNoiseFreeResponses = cat(2, noStimNoiseFreeResponse, stimNoiseFreeResponse);
     compositeResponseInstances = cat(3, noStimResponseInstances, stimResponseInstances);
-    pause
     
-    timeTicks = [-500:50:500];
+    timeTicks = [-500:50:1500];
     if (strcmp(signalSource, 'isomerizations'))
         areaPlotMode = 'steps';
         yticks = 0:5:50;
@@ -41,7 +40,11 @@ function hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(
         end
         instances = squeeze(compositeResponseInstances(coneTypeIndex,:,:));
         meanResponse = squeeze(compositeNoiseFreeResponses(coneTypeIndex,:));
-        renderAreaPlot(ax,compositeResponseTimeAxis,min(instances,[],1),max(instances,[],1), meanResponse, edgeColor, faceColor, areaPlotMode);
+        rRange = prctile(instances, [5 95], [1]);
+        rLow = squeeze(rRange(1,:)); %min(instances,[],1);
+        rHigh = squeeze(rRange(2,:)); %max(instances,[],1);
+       
+        renderAreaPlot(ax,compositeResponseTimeAxis,rLow, rHigh, meanResponse, edgeColor, faceColor, areaPlotMode);
         hold on;
         plot(ax, stimOnsetTime*[1 1], responseRange, 'k-', 'LineWidth', 1.5);
     end       

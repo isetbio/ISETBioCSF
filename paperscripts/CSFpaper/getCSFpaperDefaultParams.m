@@ -66,6 +66,7 @@ function params = getCSFpaperDefaultParams(mosaicName,  computationInstance)
     params.frameRate = 10; %(1 frame)
     params.responseStabilizationMilliseconds = 40;
     params.responseExtinctionMilliseconds = 40;
+    params.singleBinTemporalWindowIfPossible = true;
     
     % Split computations and specify RAM memory
     if (computationInstance == 0)
