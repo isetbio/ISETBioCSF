@@ -120,6 +120,10 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
 
     
     % Single L, M, and S-cone (best responses) showing distribution of all response instances
+    %
+    % Range of instances to be outlined, in percent
+    instancesPercentRange = [10 90];
+    
     for submosaicIndex = 1:3
         if (~isempty(peakConeIndex{submosaicIndex}))
             theSelectedConeIndex = peakConeIndex{submosaicIndex};
@@ -148,7 +152,8 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
             noStimNoiseFreeIsomerizationsResponse*theMosaic.integrationTime, ...
             stimNoiseFreeIsomerizationsResponse*theMosaic.integrationTime, ...
             isomerizationResponsRange, ...
-            'isomerizations', 'R*/cone', 5001);
+            instancesPercentRange, ...
+            'isomerizations', 'cone excitation', 5001);
     else
         hFig = [];
     end 
@@ -165,7 +170,8 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
             noStimNoiseFreePhotocurrentsResponse, ...
             stimNoiseFreePhotocurrentsResponse, ...
             photocurrentResponsRange, ...
-            'photocurrents', 'pA', 5002);
+            instancesPercentRange, ...
+            'photocurrents', 'p-current (pA)', 5002);
     else
         hFig = [];
     end
@@ -862,7 +868,7 @@ function generateConeLinePlot(ax, theMosaic, activation, nullStimActivation, sig
     else
         set(gca, 'YTickLabel', {});
     end
-    grid 'on'; box 'on';
+    grid 'on'; box 'off';
     xlabel('\it space (deg)', 'FontWeight', 'normal', 'FontSize', 36);
 end
 
