@@ -13,15 +13,25 @@ function run_ConditionToVisualizePhotocurrentResponses
     % Integration time to use, 2.5 is better for capturing fixationalEM dynamics
     integrationTimeMilliseconds = 5.0;
     
+    % Examine a 200 msec long pulse
+    stimDurationMilliseconds = 200;
+    
+    % Just for visualizaition add another 100 ms
+    extraMillisecondsForVisualizingResponseDecay = 100;
+    
     params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, computationInstance);
+    
+    % Update params struct
+    params.stimDurationMs = stimDurationMilliseconds;
+    params.secondsToInclude = params.secondsToInclude + extraMillisecondsForVisualizingResponseDecay/1000;
+    params.responseExtinctionMilliseconds = params.responseExtinctionMilliseconds + extraMillisecondsForVisualizingResponseDecay/1000;
     
     % Only the max contrast level
     params.lowContrast = 1.0; 
     params.highContrast =  1.0; 
     params.nContrastsPerDirection = 1;
-    params.nTrainingSamples = 4;
+    params.nTrainingSamples = 1024;
         
-    
     % Simulation steps to perform
     params.computeResponses = true;
     params.computeMosaic = ~true; 
@@ -37,7 +47,7 @@ function run_ConditionToVisualizePhotocurrentResponses
     params.visualizeSpatialPoolingScheme = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
     
-    params.visualizeKernelTransformedSignals = true;
+    params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = ~true;
     params.visualizePerformance = ~true;
     params.deleteResponseInstances = ~true;

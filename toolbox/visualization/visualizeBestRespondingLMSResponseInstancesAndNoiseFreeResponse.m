@@ -18,7 +18,11 @@ function hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(
     compositeResponseInstances = cat(3, noStimResponseInstances, stimResponseInstances);
     
     timeTicks = [-250 -200 -150 -100 -50 0 50 100 150 200 250]/1000;
-    timeTickLabels = {' ', '-0.2', ' ', '-0.1', '-.05', '0', '.05', '0.1', ' ', '0.2', ' '};
+    if (max(compositeResponseTimeAxis) < 0.2)
+        timeTickLabels = {' ', '-0.2', ' ', '-0.1', '-.05', '0', '.05', '0.1', ' ', '0.2', ' '};
+    else
+        timeTickLabels = {' ', '-0.2', ' ', '-0.1', ' ', '0', ' ', '0.1', ' ', '0.2', ' '};
+    end
     timeLimits = max(abs(compositeResponseTimeAxis))*[-1 1];
     
     if (strcmp(signalSource, 'isomerizations'))
