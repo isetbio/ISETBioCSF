@@ -79,6 +79,9 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
     params.performanceClassifier = 'svmV1FilterBank';
     params.spatialPoolingKernelParams.type = 'V1CosUnit';
     params.spatialPoolingKernelParams.activationFunction = 'linear';
+    params.spatialPoolingKernelParams.adjustForConeDensity = false;
+    params.spatialPoolingKernelParams.temporalPCAcoeffs = Inf;  % Inf, results in no PCA, just the raw time series
+    params.spatialPoolingKernelParams.shrinkageFactor = 1.0;  % > 1, results in expansion, < 1 results in shrinking 
     
     % Split computations and specify RAM memory
     params.ramPercentageEmployed = 1.2;
