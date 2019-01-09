@@ -9,7 +9,7 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
     params.apertureBlur = true;                         % employ cone aperture blur
     params.wavefrontSpatialSamples = 261*2+1;           % This gives us an OTF sampling of 1.003 c/deg
     params.opticalImagePadSizeDegs = [];
-    params.pupilDiamMm = pupilDiamMm;                           % 3 is more appropriate for a 100 cd/m2 mean scene luminance
+    params.pupilDiamMm = pupilDiamMm;                   % 3 is more appropriate for a 100 cd/m2 mean scene luminance
     
     % Mosaic params
     mosaicParams = getParamsForMosaicWithLabel(mosaicName);
