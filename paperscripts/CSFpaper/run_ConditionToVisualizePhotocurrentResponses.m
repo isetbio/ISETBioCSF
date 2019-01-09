@@ -14,7 +14,10 @@ function run_ConditionToVisualizePhotocurrentResponses
     integrationTimeMilliseconds = 5.0;
     
     % Examine a 200 msec long pulse
-    stimDurationMilliseconds = 200;
+    stimDurationMilliseconds = 50;
+    
+    % 100 cd/m2
+    stimulusLuminance = 100;
     
     % Just for visualizaition add another 100 ms
     extraMillisecondsForVisualizingResponseDecay = 100;
@@ -22,6 +25,7 @@ function run_ConditionToVisualizePhotocurrentResponses
     params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, computationInstance);
     
     % Update params struct
+    params.luminancesExamined = stimulusLuminance;
     params.stimDurationMs = stimDurationMilliseconds;
     params.secondsToInclude = params.secondsToInclude + extraMillisecondsForVisualizingResponseDecay/1000;
     params.responseExtinctionMilliseconds = params.responseExtinctionMilliseconds + extraMillisecondsForVisualizingResponseDecay/1000;
@@ -30,7 +34,7 @@ function run_ConditionToVisualizePhotocurrentResponses
     params.lowContrast = 1.0; 
     params.highContrast =  1.0; 
     params.nContrastsPerDirection = 1;
-    params.nTrainingSamples = 1024;
+    params.nTrainingSamples = 64;
         
     % Simulation steps to perform
     params.computeResponses = true;
