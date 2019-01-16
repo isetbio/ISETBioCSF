@@ -14,6 +14,8 @@ function varargout = formatFigureForPaper(hFig, varargin)
     p.addParameter('theTextFontSize', [], @isnumeric);
     p.addParameter('theFigureTitle', '', @ischar);
     p.addParameter('theLegendPosition', [], @(x)(isnumeric(x)||ischar(x)));
+    p.addParameter('figureHasFinalSize', false, @islogical);
+    
     p.parse(varargin{:});
     
     varargout = {};
@@ -35,6 +37,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
     theTextFontSize = p.Results.theTextFontSize;
     theFigureTitle = p.Results.theFigureTitle;
     theLegendPosition = p.Results.theLegendPosition;
+    figureHasFinalSize = p.Results.figureHasFinalSize;
     
     switch (figureType)
         case 'CONE_APERTURE'
@@ -330,39 +333,64 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 
             if (isempty(theAxes)) && (isempty(theLegend))
                 if (plotRatiosOfOtherConditionsToFirst)
-                    set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
-                    varargout{1} = subplot('Position', [0.19 0.30 0.80 0.69]);
-                    varargout{2} = subplot('Position', [0.19 0.07 0.80 0.22]);
+                    if (figureHasFinalSize)
+                        set(hFig, 'Color', [1 1 1], 'Position', [10 10 190 340]);
+                        varargout{1} = subplot('Position', [0.215 0.31 0.78 0.68]);
+                        varargout{2} = subplot('Position', [0.215 0.08 0.78 0.22]);
+                    else
+                        set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
+                        varargout{1} = subplot('Position', [0.19 0.30 0.80 0.69]);
+                        varargout{2} = subplot('Position', [0.19 0.07 0.80 0.22]);
+                    end
+                    
                 else
-                    set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 700]);
+                    if (figureHasFinalSize)
+                        set(hFig, 'Color', [1 1 1], 'Position', [10 10 190 265]);
+                    else
+                        set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 700]);
+                    end
                     varargout{1} = subplot('Position', [0.19 0.09 0.80 0.90]);
                 end
             end
 
+            if (figureHasFinalSize)
+                fontSize = 9;
+                legendFontSize = 7;
+                textFontSize = 12;
+                labelFontSize = 10;
+                axesLineWidth = 0.25;
+            else
+                fontSize = 22;
+                legendFontSize = 18;
+                textFontSize = 30;
+                labelFontSize = 24;
+                axesLineWidth = 0.25;
+            end
+                    
             if (~isempty(theAxes))
                 set(theAxes, 'YScale', 'log', 'XScale', 'log', 'YTick', csTicks, 'XTick', sfTicks, ...
                     'XLim', [sfLims(1)-dx1 sfLims(2)+dx2], 'YLim', [csLims(1)-dy1 csLims(2)+dy2]);
                 box(theAxes, 'on'); grid(theAxes, 'on');
-                set(theAxes, 'FontSize', 22, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
-                xlabel(theAxes,'\it spatial frequency (c/deg)', 'FontWeight', 'normal', 'FontSize', 24);
-                ylabel(theAxes,'\it contrast sensitivity', 'FontWeight', 'normal', 'FontSize', 24);
+                set(theAxes, 'FontSize', fontSize, 'TickLength',[0.02, 0.02], 'LineWidth', axesLineWidth);
+                xlabel(theAxes,'\it spatial frequency (c/deg)', 'FontWeight', 'normal', 'FontSize', labelFontSize);
+                ylabel(theAxes,'\it contrast sensitivity', 'FontWeight', 'normal', 'FontSize', labelFontSize);
             end
             
             if (~isempty(theLegend))
                 if (~isempty(theLegendPosition))
                     if (ischar(theLegendPosition))
-                        set(theLegend, 'FontSize', 18, 'Location', theLegendPosition);
+                        set(theLegend, 'FontSize', legendFontSize, 'Location', theLegendPosition);
                     else
-                        set(theLegend, 'FontSize', 18, 'Position', theLegendPosition, 'Units', 'normalized');
+                        set(theLegend, 'FontSize', legendFontSize, 'Position', theLegendPosition, 'Units', 'normalized');
                     end
                 else
-                    set(theLegend, 'FontSize', 18, 'Location', 'NorthEast');
+                    set(theLegend, 'FontSize', legendFontSize, 'Location', 'NorthEast');
                 end
             end
             
             if (~isempty(theText))
                 if (isempty(theTextFontSize))
-                    theTextFontSize = 30;
+                    theTextFontSize = textFontSize;
                 end
                 set(theText, 'FontSize', theTextFontSize, ...
                     'FontWeight', 'Bold', ...
@@ -384,9 +412,9 @@ function varargout = formatFigureForPaper(hFig, varargin)
                     end
                     ytickformat(theRatioAxes,'%.2f')
                     box(theRatioAxes, 'on'); grid(theRatioAxes, 'on');
-                    set(theRatioAxes, 'FontSize', 22, 'TickLength',[0.02, 0.02], 'LineWidth', 0.75);
-                    xlabel(theRatioAxes,'\it spatial frequency (c/deg)', 'FontWeight', 'normal', 'FontSize', 24);
-                    ylabel(theRatioAxes,'\it sensitivity ratio', 'FontWeight', 'normal', 'FontSize', 24);
+                    set(theRatioAxes, 'FontSize', fontSize, 'TickLength',[0.02, 0.02] , 'LineWidth', axesLineWidth);
+                    xlabel(theRatioAxes,'\it spatial frequency (c/deg)', 'FontWeight', 'normal', 'FontSize', labelFontSize);
+                    ylabel(theRatioAxes,'\it sensitivity ratio', 'FontWeight', 'normal', 'FontSize', labelFontSize);
                     set(theAxes, 'XTickLabel', {});
                 end
             end
@@ -395,6 +423,21 @@ function varargout = formatFigureForPaper(hFig, varargin)
             error('Unknown figure type: ''%s''.', figureType);
     end % switch
     
+    if (figureHasFinalSize)
+        set(theAxes,'GridLineStyle','-');
+        set(theAxes,'GridAlpha', 0.15);
+        set(theAxes,'MinorGridLineStyle','-')
+        set(theAxes,'MinorGridAlpha', 0.1);
+        
+        if (plotRatiosOfOtherConditionsToFirst)
+            if (~isempty(theRatioAxes))
+                set(theRatioAxes,'GridLineStyle','-');
+                set(theRatioAxes,'GridAlpha', 0.15);
+                set(theRatioAxes,'MinorGridLineStyle','-')
+                set(theRatioAxes,'MinorGridAlpha', 0.1);
+            end
+        end
+    end
     if (~isempty(theFigureTitle))
         title(theAxes, theFigureTitle);
     end

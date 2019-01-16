@@ -31,17 +31,17 @@ function run_paper2IsomerizationsVsPhotocurrents
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all but
     % the 2 largest), or some specific spatial frequency, like 16
-    computationInstance = 16;
+    computationInstance = 0;
  
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = false;
+    makeSummaryFigure = true;
     
     % Whether to compute responses
     computeResponses = ~true;
-    visualizeResponses = true;
-    findPerformance = false;
-    visualizePerformance = false;
+    visualizeResponses = ~true;
+    findPerformance = ~true;
+    visualizePerformance = true;
     
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
@@ -54,12 +54,12 @@ function run_paper2IsomerizationsVsPhotocurrents
     
     if (~computeResponses)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'Ideal observer, isomerizations';
+        examinedCond(condIndex).label = 'Ideal observer, R*';
         examinedCond(condIndex).performanceClassifier = 'mlpt';
         examinedCond(condIndex).performanceSignal = 'isomerizations';
 
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Template-Linear, isomerizations';
+        examinedCond(condIndex).label = 'SVM-Template-Linear, R*';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -67,7 +67,7 @@ function run_paper2IsomerizationsVsPhotocurrents
     end
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Linear, photocurrents';
+    examinedCond(condIndex).label = 'SVM-Template-Linear, pCurrent';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -103,6 +103,22 @@ function run_paper2IsomerizationsVsPhotocurrents
     
     
     if (makeSummaryFigure)
+        variedParamName = 'SignalType';
+        theRatioLims = [0.05 1.0];
+        theRatioTicks = [0.05 0.1 0.2 0.5 1.0];
+        formatLabel = 'ComparedToBanksSubjects';
+        generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
+            'figureType', 'CSF', ...
+            'showSubjectData', ~true, ...
+            'showSubjectMeanData', ~true, ...
+            'plotFirstConditionInGray', true, ...
+            'plotRatiosOfOtherConditionsToFirst', true, ...
+            'theRatioLims', theRatioLims, ...
+            'theRatioTicks', theRatioTicks, ... 
+            'theLegendPosition', [0.2,0.91,0.75,0.08], ...  % custom legend position and size
+            'paperDir', 'CSFpaper2', ...      % sub-directory where figure will be exported
+            'figureHasFinalSize', true ...    % publication-ready size
+            );
     end
     
 

@@ -17,6 +17,9 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     p.addParameter('inGraphText', '', @ischar);
     p.addParameter('inGraphTextPos', [], @isnumeric);
     p.addParameter('inGraphTextFontSize', [], @isnumeric);
+    p.addParameter('paperDir', 'CSFpaper', @ischar);
+    p.addParameter('figureHasFinalSize', false, @islogical);
+    
     p.parse(varargin{:});
     
     figureType = p.Results.figureType;
@@ -38,6 +41,8 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     theRatioLims = p.Results.theRatioLims;
     theRatioTicks = p.Results.theRatioTicks;
     theLegendPosition = p.Results.theLegendPosition;
+    paperDir = p.Results.paperDir;
+    figureHasFinalSize = p.Results.figureHasFinalSize;
     
     if (~isempty(theFigData))
         for condIndex = 1:numel(theFigData)
@@ -54,7 +59,8 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     hFig = figure(1); clf;
     [theAxes, theRatioAxes] = formatFigureForPaper(hFig, ...
         'figureType', figureType, ...
-        'plotRatiosOfOtherConditionsToFirst', plotRatiosOfOtherConditionsToFirst);
+        'plotRatiosOfOtherConditionsToFirst', plotRatiosOfOtherConditionsToFirst, ...
+        'figureHasFinalSize', figureHasFinalSize);
     
     
     % Displayed colors
@@ -100,10 +106,19 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
             plot(theAxes,figData.BanksCSF('34 cd/m2').x,figData.BanksCSF('34 cd/m2').y,'-','Color', squeeze(colors(1,:)), 'LineWidth',2);
             plot(theAxes,figData.BanksCSF('340 cd/m2').x,figData.BanksCSF('340 cd/m2').y,'-','Color', squeeze(colors(2,:)), 'LineWidth',2);
             plot(theAxes,figData.BanksCSF('3.4 cd/m2').x,figData.BanksCSF('3.4 cd/m2').y,'-','Color', squeeze(colors(3,:)), 'LineWidth',2);
-        end
-        
+        end    
     end
    
+    
+    if (figureHasFinalSize)
+        markerSize = 6;
+        lineWidth = 1.15;
+    else
+        markerSize = 14;
+        lineWidth = 3.0;
+    end
+    
+    
     for condIndex = 1:numel(theFigData)
         
         plotThisCSFAtFullContrast = any(ismember(figDataIndicesToDisplay, condIndex));
@@ -127,23 +142,21 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
             plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o-', 'Color', color1, ...
                 'MarkerEdgeColor', color2, ...
                 'MarkerFaceColor', color3, ...
-                'MarkerSize',16,'LineWidth',3);
+                'MarkerSize',markerSize,'LineWidth',lineWidth);
         else
             if (saturationFactor == 0)
                 edgeColor = max(0, squeeze(colors(condIndex,:))-faceColor);
                 faceColor2 = min(1, squeeze(colors(condIndex,:)) + faceColor);
-                markerSize = 14;
             else
                 edgeColor = max(0, squeeze(colors(condIndex,:))-faceColor);
                 faceColor2 = min(1, squeeze(colors(condIndex,:)) + faceColor);
                 edgeColor  = [0.7 0.7 0.7] + saturationFactor * edgeColor;
                 faceColor2 = [0.7 0.7 0.7] + saturationFactor * faceColor2;
-                markerSize = 12;
             end
             plot(theAxes, cpd{condIndex}, contrastSensitivity{condIndex}, 'o-', 'Color', edgeColor, ...
                 'MarkerEdgeColor', edgeColor, ...
                 'MarkerFaceColor', faceColor2, ...
-                'MarkerSize',markerSize,'LineWidth',3);
+                'MarkerSize',markerSize,'LineWidth',lineWidth);
         end
     end
    
@@ -190,13 +203,13 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
         plot(theAxes, msbSubjectSFs, msbSubjectCSFs, '^', ...
             'MarkerEdgeColor', subjectColor-0.3, ...
             'MarkerFaceColor', subjectColor, ...
-            'MarkerSize',14,'LineWidth',2);
+            'MarkerSize',markerSize,'LineWidth',lineWidth);
         
         subjectColor = [0.8 0.8 0.8];
         plot(theAxes, pjbSubjectSFs, pjbSubjectCSFs, '^', ...
             'MarkerEdgeColor', subjectColor-0.3, ...
             'MarkerFaceColor', subjectColor, ...
-            'MarkerSize',14,'LineWidth',2);
+            'MarkerSize',markerSize,'LineWidth',lineWidth);
         
 
         % Legends
@@ -204,7 +217,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
         variedParamLegends{numel(variedParamLegends)+1} = 'Subject PJB (Banks et al ''87)';
         
         if (showSubjectMeanData)
-            plot(theAxes, msbSubjectSFsHiRes, meanSubjectCSF, 'k-', 'LineWidth', 2);
+            plot(theAxes, msbSubjectSFsHiRes, meanSubjectCSF, 'k-', 'LineWidth', lineWidth);
             %variedParamLegends{numel(variedParamLegends)+1} = 'Mean of subjects PJB,MSB';
         end
     end % showSubjectData
@@ -215,6 +228,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     else
         hL = [];
     end
+    
     
     % Add text
     if (~isempty(inGraphText))
@@ -257,7 +271,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
                 'ko-', 'Color', edgeColor, ...
                 'MarkerEdgeColor', edgeColor, ...
                 'MarkerFaceColor', faceColor2, ...
-                'MarkerSize',14,'LineWidth',3);
+                'MarkerSize',markerSize,'LineWidth',lineWidth);
         end
         
         if (showSubjectData)
@@ -265,7 +279,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
                 'k-', 'Color', [0 0 0], ...
                 'MarkerEdgeColor', [0 0 0], ...
                 'MarkerFaceColor', [0.5 0.5 0.5], ...
-                'MarkerSize',14,'LineWidth',3);
+                'MarkerSize',markerSize,'LineWidth',lineWidth);
         end
         
         hold(theRatioAxes, 'off');
@@ -283,13 +297,15 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
         'theLegend', hL, ...
         'theLegendPosition', theLegendPosition, ...
         'theText', t, ...
-        'theTextFontSize', inGraphTextFontSize);
+        'theTextFontSize', inGraphTextFontSize, ...
+        'figureHasFinalSize', figureHasFinalSize);
     
     %if (strcmp(fixedParamName, 'ComparedToBanks87Photocurrents'))
     %    set(hL, 'Location', 'NorthOutside');
     %end
     
-    exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', 'projects/IBIOColorDetect/paperfigs/CSFpaper/exports');
+    
+    exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', sprintf('projects/IBIOColorDetect/paperfigs/%s/exports', paperDir));
     figureName = fullfile(exportsDir, sprintf('%sVary%s.pdf', variedParamName, fixedParamName));
     NicePlot.exportFigToPDF(figureName, hFig, 300);
 end
