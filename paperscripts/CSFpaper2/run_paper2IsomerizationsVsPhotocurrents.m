@@ -32,7 +32,6 @@ function run_paper2IsomerizationsVsPhotocurrents
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all but
     % the 2 largest), or some specific spatial frequency, like 16
     computationInstance = 0;
- 
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -46,9 +45,11 @@ function run_paper2IsomerizationsVsPhotocurrents
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
     
-    % Integration time to use, 2.5 is better for capturing fixationalEM dynamics
+    % Integration time to use: Here set to 5.0 ms, but 2.5 ms may be better 
+    % for capturing the dynamcs of fixationalEM
     integrationTimeMilliseconds = 5.0;
     
+    % Assemble conditions list to be examined
     % Init condition index
     condIndex = 0;
     
@@ -75,7 +76,6 @@ function run_paper2IsomerizationsVsPhotocurrents
     
     % Go
     examinedLegends = {};
-    
     for condIndex = 1:numel(examinedCond)
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, computationInstance);
         
@@ -115,14 +115,11 @@ function run_paper2IsomerizationsVsPhotocurrents
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.2,0.91,0.75,0.08], ...  % custom legend position and size
-            'paperDir', 'CSFpaper2', ...      % sub-directory where figure will be exported
-            'figureHasFinalSize', true ...    % publication-ready size
+            'theLegendPosition', [0.220,0.905,0.77,0.08], ...   % custom legend position and size
+            'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
+            'figureHasFinalSize', true ...                      % publication-ready size
             );
     end
-    
-
-    
 end
 
 function params = getRemainingDefaultParams(params, computePhotocurrents, computeResponses, visualizeResponses, findPerformance, visualizePerformance)
