@@ -1,8 +1,0 @@
-function generateLargeMosaicInSteps
-    theMosaic = coneMosaicHex(7, ...              % hex lattice sampling factor
-        'fovDegs', stimParams.sizeDegs, ...        % match mosaic width to stimulus size
-        'eccBasedConeDensity', true, ...           % cone density varies with eccentricity
-        'eccBasedConeQuantalEfficiency', true, ... % cone quantal efficiency varies with eccentricity
-        'integrationTime', 20/1000, ...            % 50 msec integration time
-        'maxGridAdjustmentIterations', 50);    
-end
