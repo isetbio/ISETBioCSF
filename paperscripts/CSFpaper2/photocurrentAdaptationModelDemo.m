@@ -1,47 +1,137 @@
 function photocurrentAdaptationModelDemo
-    %old()
+
+    % The Rieke et al os model is constructed from responses to
+    % isomerization rates in the range [500 20000] R*/cone/sec
+    validIsomerizationRateRange = [300 20000];
     
+    % Duration of flash in seconds
     flashDurationSeconds = 100/1000;
-    flashIsomerizationsPerSec = [100 300 1000 3000 10000];
-    backgroundIsomerizationsPerSec = [0 100 500 1000 2000 5000 10000 20000 50000];
+    
+    % Different flash amplitudes to be examined
+    nFlashLevels = 5;
+    minFlashIsomerizationRate = 100;
+    maxFlashIsomerizationRate = 10000;
+    flashIsomerizationsPerSec = round(logspace(log10(minFlashIsomerizationRate), log10(maxFlashIsomerizationRate), nFlashLevels)/10)*10;
+    idx = find(flashIsomerizationsPerSec>100);
+    flashIsomerizationsPerSec(idx) = round(flashIsomerizationsPerSec(idx)/100)*100;
+    
+    % Different adaptation backgrounds to be examined: dark + 500:20000
+    nBackgroundLevels = 8;
+    minBackgroundIsomerizationRate = 300;
+    maxBackgroundIsomerizationRate = 20000;
+    backgroundIsomerizationsPerSec = round([0 logspace(log10(minBackgroundIsomerizationRate), log10(maxBackgroundIsomerizationRate),nBackgroundLevels)]/10)*10;
+    idx = find(backgroundIsomerizationsPerSec>100);
+    backgroundIsomerizationsPerSec(idx) = round(backgroundIsomerizationsPerSec(idx)/100)*100;
+    idx = find(backgroundIsomerizationsPerSec>1000);
+    backgroundIsomerizationsPerSec(idx) = round(backgroundIsomerizationsPerSec(idx)/1000)*1000;
+    
+    flashIsomerizationsPerSec = [50 100 500 1000 3000 5000 10000 20000];
+    backgroundIsomerizationsPerSec = [0 3000 10000 20000];
+    
+    % Compute model responses
     [timeAxisSeconds, isomerizationStimuli, pCurrents, noisyPcurrents] = ...
         computePcurrent(flashDurationSeconds, backgroundIsomerizationsPerSec, flashIsomerizationsPerSec);
-    plotResponses(timeAxisSeconds, isomerizationStimuli, pCurrents, noisyPcurrents, backgroundIsomerizationsPerSec, flashIsomerizationsPerSec);
     
-    sensitivities = computeflashSensitivities(pCurrents, backgroundIsomerizationsPerSec, flashIsomerizationsPerSec);
+    % Compute flash sensititivies
+    [sensitivities, peakResponses, peakResponsesTimes] = computeflashSensitivities(timeAxisSeconds, pCurrents, backgroundIsomerizationsPerSec, flashIsomerizationsPerSec);
+    
+    % Plot the responses
+    plotNoiseFreeResponsesOnly = ~true;
+    plotResponses(timeAxisSeconds, isomerizationStimuli, pCurrents, noisyPcurrents, backgroundIsomerizationsPerSec, flashIsomerizationsPerSec, plotNoiseFreeResponsesOnly);
+    
+    % Plot the sensitivities
     plotSensitivities(sensitivities, backgroundIsomerizationsPerSec, flashIsomerizationsPerSec);
     
+    % Plot the peak responses
+    plotPeakResponses(peakResponses, peakResponsesTimes, backgroundIsomerizationsPerSec, flashIsomerizationsPerSec);
+end
+
+function plotPeakResponses(peakResponses, peakResponsesTimes, backgroundIsomerizationsRates, flashIsomerizationsRates)
+    nBackgrounds = numel(backgroundIsomerizationsRates);
+    nFlashes = numel(flashIsomerizationsRates);
+    
+    cmap = brewermap(nBackgrounds, 'spectral');
+    
+    hFig = figure(4); clf;
+    
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 400 400]);
+    
+    legends = {};
+    for backgroundIndex = 1:nBackgrounds
+        legends{numel(legends)+1} = sprintf('%2.0f R*/cone/sec', backgroundIsomerizationsRates(backgroundIndex));
+    end
+    
+    for backgroundIndex = 1:nBackgrounds
+        responses = peakResponses(backgroundIndex,:);
+        delays = peakResponsesTimes(backgroundIndex,:);
+        color = squeeze(cmap(backgroundIndex,:));
+        
+        subplot(1,2,1);
+        plot(flashIsomerizationsRates, responses, 'o-', 'MarkerSize', 12, 'LineWidth', 1.5, ...
+            'MarkerFaceColor', color*0.5+[0.5 0.5 0.5],  'MarkerEdgeColor', color*0.7, 'Color', color*0.7 );
+        set(gca, 'XScale', 'log');
+        hold on
+        
+        subplot(1,2,2);
+        hold on
+        plot(flashIsomerizationsRates, delays*1000, 'o-', 'MarkerSize', 12, 'LineWidth', 1.5, ...
+            'MarkerFaceColor', color*0.5+[0.5 0.5 0.5],  'MarkerEdgeColor', color*0.7, 'Color', color*0.7);
+        set(gca, 'XScale', 'log');
+    end
+    subplot(1,2,1);
+    grid on; box on;
+    set(gca, 'XTick', [100 300 1000 3000 10000], 'FontSize', 10);
+    legend(legends, 'Location', 'NorthWest');
+    xlabel('\it flash intensity');
+    ylabel('\it peak response');
+    
+    subplot(1,2,2);
+    legend(legends, 'Location', 'SouthWest');
+    grid on; box on;
+    set(gca, 'XTick', [100 300 1000 3000 10000], 'FontSize', 10);
+    xlabel('\it flash intensity');
+    ylabel('\it peak response time (msec)');
 end
 
 function plotSensitivities(sensitivities, backgroundIsomerizationsRates, flashIsomerizationsRates)
     nBackgrounds = numel(backgroundIsomerizationsRates);
-    nflashes = numel(flashIsomerizationsRates);
+    nFlashes = numel(flashIsomerizationsRates);
     darkBackgroundIndex = 1;
     
-    figure(3); clf;
+    hFig = figure(3); clf;
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 400 400]);
     legends = {};
-    for flashIndex = 1:nflashes
-        legends{numel(legends)+1} = sprintf('flash: %d', flashIsomerizationsRates(flashIndex));
+    for flashIndex = 1:nFlashes
+        legends{numel(legends)+1} = sprintf('flash: %2.0f R*/cone/sec', flashIsomerizationsRates(flashIndex));
     end
     
-    cmap = colormap(colorcube);
-    for flashIndex = 1:nflashes
+    cmap = brewermap(nFlashes, 'spectral');
+    for flashIndex = 1:nFlashes
         darkSensitivity = sensitivities(darkBackgroundIndex,flashIndex);
+        color = squeeze(cmap(flashIndex,:));
         plot(backgroundIsomerizationsRates(2:end), sensitivities(2:end,flashIndex)/darkSensitivity, ...
-            'rs-', 'LineWidth', 1.5, 'Color', squeeze(cmap(flashIndex,:)));
+            'o-', 'MarkerSize', 12, 'LineWidth', 1.5, ...
+            'MarkerFaceColor', color*0.5+[0.5 0.5 0.5],  'MarkerEdgeColor', color*0.7, 'Color', color*0.7);
         hold on
-        legend(legends)
-        set(gca, 'XScale', 'log', 'Yscale', 'log', 'YLim', [0.01 1.0]);
-        xlabel('background intensity (R*/sec)');
-        ylabel('flash sensitivity (S/Sd)');
     end
+    legend(legends, 'Location', 'SouthWest');
+    grid on
+    set(gca, 'XTick', [300 600 1000 3000 6000 10000 30000], 'XLim', [300 30000]);
+    set(gca, 'XScale', 'log', 'Yscale', 'log', 'YLim', [0.01 1.0], 'FontSize', 10);
+    xlabel('\it background light intensity (R*/cone/sec)');
+    ylabel('\it flash sensitivity (S/Sd)');
     
 end
 
-function sensitivities = computeflashSensitivities(pCurrents, backgroundIsomerizationsRates, flashIsomerizationsRates)
+function [sensitivities, peakResponses, peakResponsesTimes] = computeflashSensitivities(timeAxis, pCurrents, backgroundIsomerizationsRates, flashIsomerizationsRates)
     nBackgrounds = numel(backgroundIsomerizationsRates);
     nflashes = numel(flashIsomerizationsRates);
     sensitivities = zeros(nBackgrounds, nflashes);
+    peakResponses = zeros(nBackgrounds, nflashes);
+    peakResponsesTimes = zeros(nBackgrounds, nflashes);
+    
+
+    ii = find(timeAxis > 0);
     
     for backgroundIndex = 1:nBackgrounds
         for flashIndex = 1:nflashes
@@ -49,38 +139,81 @@ function sensitivities = computeflashSensitivities(pCurrents, backgroundIsomeriz
             peakFlashResponseModulation = max(response) - response(1);
             flashStrength = flashIsomerizationsRates(flashIndex);
             sensitivities(backgroundIndex,  flashIndex) = peakFlashResponseModulation / flashStrength;
+            [m,idx] = max(response(ii));
+            peakResponses(backgroundIndex,  flashIndex) = m-response(1);
+            peakResponsesTimes(backgroundIndex, flashIndex) = timeAxis(ii(idx));
         end
     end
-    
 end
 
 
-function plotResponses(timeAxisSeconds, isomerizationStimuli, pCurrents, noisyPcurrents, backgroundIsomerizationsRates, flashIsomerizationsRates)
-    
+
+function plotResponses(timeAxisSeconds, isomerizationStimuli, pCurrents, noisyPcurrents, backgroundIsomerizationsRates, flashIsomerizationsRates, plotNoiseFreeResponsesOnly)
     nBackgrounds = numel(backgroundIsomerizationsRates);
     nflashes = numel(flashIsomerizationsRates);
+    if (plotNoiseFreeResponsesOnly)
+        pRange = [min(pCurrents(:))-1 max(pCurrents(:))+1];
+    else
+        pRange = [-95 -35]; %prctile(noisyPcurrents(:), [0.5 99.5]);
+    end
+    
+    % Plot every 20-th time sample
+    idx = 1:20:numel(timeAxisSeconds);
     
     hFig = figure(2); clf;
+    set(hFig, 'Position', [10 10 900 450], 'Color', [1 1 1]);
     subplotPos = NicePlot.getSubPlotPosVectors(...
-       'rowsNum', nBackgrounds, ...
+       'rowsNum', 1, ...
        'colsNum', nflashes, ...
-       'heightMargin',  0.06, ...
-       'widthMargin',    0.05, ...
-       'leftMargin',     0.07, ...
+       'heightMargin',  0.02, ...
+       'widthMargin',    0.01, ...
+       'leftMargin',     0.045, ...
+       'rightMargin',    0.01, ...
        'bottomMargin',   0.07, ...
-       'topMargin',      0.02);
+       'topMargin',      0.03);
    
+    colors = brewermap(nBackgrounds, 'spectral');
+    legends = {};
     for backgroundIndex = 1:nBackgrounds
-        for flashIndex = 1:nflashes
-            subplot('Position', subplotPos(backgroundIndex, flashIndex).v)
-            plot(timeAxisSeconds, squeeze(noisyPcurrents(backgroundIndex,flashIndex,:)), 'k-', ...
-                'Color', [0.4 0.4 0.4]); hold on;
-            plot(timeAxisSeconds, squeeze(pCurrents(backgroundIndex,flashIndex,:)), 'c-', 'LineWidth', 3.0);
-            plot(timeAxisSeconds, squeeze(pCurrents(backgroundIndex,flashIndex,:)), 'b-', 'LineWidth', 1.5);
-            set(gca, 'YLim', [-95 -40], 'XLim', [-0.25 1.0]);
-            title(sprintf('Bkgnd: %d, flash: %d', backgroundIsomerizationsRates(backgroundIndex), flashIsomerizationsRates(flashIndex)));
-        end % flashIndex
-    end % backgroundIndex
+        legends{numel(legends)+1} = sprintf('%2.0f R*/cone/sec', backgroundIsomerizationsRates(backgroundIndex));
+    end
+     
+    for flashIndex = 1:nflashes
+        subplot('Position', subplotPos(1, flashIndex).v);
+        hold on;
+        % Plot noise-free traces
+        for backgroundIndex = 1:nBackgrounds
+            lineColor = squeeze(colors(backgroundIndex,:));
+            plot(timeAxisSeconds(idx), squeeze(pCurrents(backgroundIndex,flashIndex,idx)), 'k-', 'LineWidth', 4.0, 'Color', lineColor);
+        end
+        
+        
+        if (~plotNoiseFreeResponsesOnly)
+            % Plot noisy traces
+            for backgroundIndex = 1:nBackgrounds
+                lineColor = squeeze(colors(backgroundIndex,:)); 
+                plot(timeAxisSeconds(idx), squeeze(noisyPcurrents(backgroundIndex,flashIndex,idx)), 'k-', ...
+                    'Color', lineColor*0.7 + 0.3*[1 1 1], 'LineWidth', 1.5); 
+            end
+            % Plot noise-free traces again
+            for backgroundIndex = 1:nBackgrounds
+                 lineColor = squeeze(colors(backgroundIndex,:));
+                plot(timeAxisSeconds(idx), squeeze(pCurrents(backgroundIndex,flashIndex,idx)), 'k-', 'LineWidth', 4.0, 'Color', lineColor*0.7);
+            end
+        end
+        
+        legend(legends);
+        set(gca, 'YLim', pRange, 'XLim', [-0.05 0.45], 'Color', [1 1 1]);
+        xlabel('\it time (seconds)');
+        if (flashIndex == 1)
+            ylabel('pCurrent (pA)');
+        else
+            set(gca, 'YTickLabel', {});
+        end
+        grid on; box on;
+        title(sprintf('flash: %2.0f R*/cone/sec', flashIsomerizationsRates(flashIndex)));
+        set(gca, 'FontSize', 10);
+     end % flashIndex
 end
 
 function [timeAxisSeconds, isomerizationStimuli, pCurrents, noisyPcurrents] = ...
