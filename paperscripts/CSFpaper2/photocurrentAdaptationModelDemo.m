@@ -254,10 +254,10 @@ function [timeAxisSeconds, isomerizationStimuli, pCurrents, noisyPcurrents] = ..
     state = osAdaptSteadyState(os, backgroundRates);
     s = struct('state', state, 'timeStep', tTimeStep);
     
-    % Compute pCurrent response to isomerization stimuli
+    % Compute mean pCurrent response to the isomerization stimuli
     pCurrents = osAdaptTemporal(isomerizationStimuli, s);
     
-    % Add noise
+    % Add pCurrent noise
     noisyPcurrents = osAddNoise(pCurrents);
     
     % Only include part of response sightly before the flashDurationOnsetSeconds
@@ -266,7 +266,6 @@ function [timeAxisSeconds, isomerizationStimuli, pCurrents, noisyPcurrents] = ..
     isomerizationStimuli = isomerizationStimuli(:,:,idx);
     pCurrents = pCurrents(:,:,idx);
     noisyPcurrents = noisyPcurrents(:,:,idx);
-    
 end
 
 
