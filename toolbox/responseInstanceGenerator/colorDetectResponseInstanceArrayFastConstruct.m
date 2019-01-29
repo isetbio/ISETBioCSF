@@ -15,8 +15,11 @@ function [responseStruct, osImpulseResponseFunctions, osImpulseReponseFunctionTi
 %            the computation is printed in the command window along with the
 %            workerID (from a parfor loop).
 %  'displayTrialBlockPartitionDiagnostics' -true/false (default false). Wether to report time elapsed for each block
-%  'centeredEMPaths' - true/false (default false) 
-%               Controls wether the eye movement paths start at (0,0) (default) or wether they are centered around (0,0)
+%  'centeredEMPaths' - true/false (default false) or a string
+%               Controls wether the eye movement paths start at (0,0) (default) or whether they are centered around (0,0)
+%               If a string the two possible values are
+%               'atStimulusModulationOnset', in which case, the em position is (0,0) at stimulus onset, OR
+%               'atStimulusModulationMidPoint', in which case, the centroid of the emPath within the stimulation time is at (0,0)
 %  'osImpulseResponseFunctions' - the LMS impulse response filters to be used (default: [])
 %  'osMeanCurrents' - the steady-state LMS currents caused by the mean absorption LMS rates
 %  'computePhotocurrentResponseInstances' - true/false (default true) wether to compute photocurrent response instances
@@ -152,19 +155,24 @@ if ischar(p.Results.centeredEMPaths)
     timeOfStimOffset = stimulusTimeAxis(idx(end)) + temporalParams.stimulusSamplingIntervalInSeconds;
     stimulusMidTime = timeOfStimOnset + (timeOfStimOffset-timeOfStimOnset)/2;
     
+    emPathTimeAxis = stimulusTimeAxis(1) + (0:(eyeMovementsNum-1)) * theMosaic.integrationTime;
+    
     % Determine alignment time
     if (strcmp(p.Results.centeredEMPaths, 'atStimulusModulationMidPoint'))
         alignmentTime = stimulusMidTime;
+        [~,tAlignmentBin] = min(abs(emPathTimeAxis-alignmentTime));
+        
+        % determine time bins over which we average position to find the center of the em path
+        tRangeBins = round(0.5*temporalParams.stimulusDurationInSeconds/theMosaic.integrationTime);
+        tBinsForAveraging = tAlignmentBin + [-tRangeBins:1:tRangeBins];
+    
     elseif (strcmp(p.Results.centeredEMPaths, 'atStimulusModulationOnset'))
          alignmentTime = timeOfStimOnset;
+         [~,tAlignmentBin] = min(abs(emPathTimeAxis-alignmentTime));
+         tBinsForAveraging = tAlignmentBin;
     else
         error('Unknown alignemnt method: ''%s''.', p.Results.centeredEMPaths);
     end
-    
-    % Find the closest time of the emPathTimeAxis to the alignmentTime
-    emPathTimeAxis = stimulusTimeAxis(1) + (0:(eyeMovementsNum-1)) * theMosaic.integrationTime;
-    [~,tAlignmentBin] = min(abs(emPathTimeAxis-alignmentTime));
-    tRangeBins = round(0.5*temporalParams.stimulusDurationInSeconds/theMosaic.integrationTime);
     
     if (1==2)
                 %fprintf('emPath should be 0 at t = %2.2f msec (time point: %d)', emPathTimeAxis(tAlignmentBin)*1000, tAlignmentBin);
@@ -195,10 +203,6 @@ if ischar(p.Results.centeredEMPaths)
                 plot(emPathTimeAxis(tAlignmentBin)*[1 1], 100*[-1 1], 'k-');
                 drawnow
     end
-    
-    % determine time bins over which we average position to find the center
-    % of the em path
-    tBinsForAveraging = tAlignmentBin + [-tRangeBins:1:tRangeBins];
     
     % Recenter the emPaths
     emPathCenters = theEMpaths(:,tBinsForAveraging,:);
