@@ -32,7 +32,7 @@ p.addParameter('seed',1, @isnumeric);
 p.addParameter('workerID', [], @isnumeric);
 p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('useSinglePrecision',true,@islogical);
-p.addParameter('centeredEMPaths',false, @islogical); 
+p.addParameter('centeredEMPaths',false, @(x) (islogical(x) || (ischar(x))));
 p.addParameter('theExpandedMosaic', []);
 p.addParameter('osImpulseResponseFunctions', [], @isnumeric);
 p.addParameter('osMeanCurrents', [], @isnumeric);
@@ -136,32 +136,112 @@ clear(varsToClear{:});
 
 %% Compute number of eye movements
 eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theMosaic.integrationTime, ...
-    'stimulusSamplingInterval', temporalParams.stimulusDurationInSeconds);
+    'stimulusSamplingInterval', temporalParams.stimulusSamplingIntervalInSeconds);
+
 
 %% Generate eye movement paths for all instances
 [theEMpaths, theEMpathsMicrons] = colorDetectMultiTrialEMPathGenerate(...
     theMosaic, nTrials, eyeMovementsNum, temporalParams.emPathType, ...
-    'centeredEMPaths', p.Results.centeredEMPaths, ...
+    'centeredEMPaths', (islogical(p.Results.centeredEMPaths))&&(p.Results.centeredEMPaths), ... 
     'seed', currentSeed);
+    
+if ischar(p.Results.centeredEMPaths)
+    % Find time points at which stimulus in on
+    idx = find(stimulusModulationFunction>0);
+    timeOfStimOnset = stimulusTimeAxis(idx(1));
+    timeOfStimOffset = stimulusTimeAxis(idx(end)) + temporalParams.stimulusSamplingIntervalInSeconds;
+    stimulusMidTime = timeOfStimOnset + (timeOfStimOffset-timeOfStimOnset)/2;
+    
+    % Determine alignment time
+    if (strcmp(p.Results.centeredEMPaths, 'atStimulusModulationMidPoint'))
+        alignmentTime = stimulusMidTime;
+    elseif (strcmp(p.Results.centeredEMPaths, 'atStimulusModulationOnset'))
+         alignmentTime = timeOfStimOnset;
+    else
+        error('Unknown alignemnt method: ''%s''.', p.Results.centeredEMPaths);
+    end
+    
+    % Find the closest time of the emPathTimeAxis to the alignmentTime
+    emPathTimeAxis = stimulusTimeAxis(1) + (0:(eyeMovementsNum-1)) * theMosaic.integrationTime;
+    [~,tAlignmentBin] = min(abs(emPathTimeAxis-alignmentTime));
+    tRangeBins = round(0.5*temporalParams.stimulusDurationInSeconds/theMosaic.integrationTime);
+    
+    if (1==2)
+                %fprintf('emPath should be 0 at t = %2.2f msec (time point: %d)', emPathTimeAxis(tAlignmentBin)*1000, tAlignmentBin);
 
-if (p.Results.visualizeMosaicWithFirstEMpath)
-    visualizedTrial = 1;
-    hFig = theMosaic.visualizeGrid(...
-        'overlayEMpathMicrons', squeeze(theEMpathsMicrons(visualizedTrial,:,:)), ...  % expects emPath in microns, not cone units
-        'apertureShape', 'disks', ...
-        'visualizedConeAperture', 'geometricArea', ...
-        'labelConeTypes', true,...
-        'backgroundColor', [1 1 1], ...
-        'generateNewFigure', true);
-    % Save figure
-    theProgram = mfilename;
-    rwObject = IBIOColorDetectReadWriteBasic;
-    data = 0;
-    fileName = sprintf('MosaicAndFirstEMpath');
-    rwObject.write(fileName, data, p.Results.paramsList, theProgram, ...
-           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+                figure(100); clf;
+                subplot(2,2,1);
+                plot(emPathTimeAxis, squeeze(theEMpaths(:,:,1)), 'r-');
+                hold on;
+                plot(emPathTimeAxis, squeeze(theEMpaths(:,:,1))*0, 'k-');
+                plot(emPathTimeAxis(tAlignmentBin)*[1 1], 100*[-1 1], 'k-');
+
+                subplot(2,2,2);
+                plot(emPathTimeAxis, squeeze(theEMpaths(:,:,2)), 'b-');
+                hold on;
+                plot(emPathTimeAxis, squeeze(theEMpaths(:,:,1))*0, 'k-');
+                plot(emPathTimeAxis(tAlignmentBin)*[1 1], 100*[-1 1], 'k-');
+
+                subplot(2,2,3);
+                plot(emPathTimeAxis, squeeze(theEMpathsMicrons(:,:,1)), 'r-');
+                hold on;
+                plot(emPathTimeAxis, squeeze(theEMpaths(:,:,1))*0, 'k-');
+                plot(emPathTimeAxis(tAlignmentBin)*[1 1], 100*[-1 1], 'k-');
+
+                subplot(2,2,4);
+                plot(emPathTimeAxis, squeeze(theEMpathsMicrons(:,:,2)), 'b-');
+                hold on;
+                plot(emPathTimeAxis, squeeze(theEMpaths(:,:,1))*0, 'k-');
+                plot(emPathTimeAxis(tAlignmentBin)*[1 1], 100*[-1 1], 'k-');
+                drawnow
+    end
+    
+    % determine time bins over which we average position to find the center
+    % of the em path
+    tBinsForAveraging = tAlignmentBin + [-tRangeBins:1:tRangeBins];
+    
+    % Recenter the emPaths
+    emPathCenters = theEMpaths(:,tBinsForAveraging,:);
+    emPathCenters = mean(emPathCenters,2);
+    theEMpaths = bsxfun(@minus, theEMpaths, emPathCenters);
+    % emPaths must be integered-valued, so round
+    theEMpaths = round(theEMpaths);
+    
+    % Recenter the emPathsMicrons
+    emPathMicronsCenters = theEMpathsMicrons(:,tBinsForAveraging,:);
+    emPathMicronsCenters = mean(emPathMicronsCenters,2);
+    % subtract them from the emPaths
+    theEMpathsMicrons = bsxfun(@minus, theEMpathsMicrons, emPathMicronsCenters);    
+    
+    if (1==2)
+                figure(101); clf;
+                subplot(2,2,1);
+                plot(emPathTimeAxis, squeeze(theEMpaths(:,:,1)), 'r-');
+                hold on;
+                plot(emPathTimeAxis, squeeze(theEMpaths(:,:,1))*0, 'k-');
+                plot(emPathTimeAxis(tAlignmentBin)*[1 1], 100*[-1 1], 'k-');
+
+                subplot(2,2,2);
+                plot(emPathTimeAxis, squeeze(theEMpaths(:,:,2)), 'b-');
+                hold on;
+                plot(emPathTimeAxis, squeeze(theEMpaths(:,:,1))*0, 'k-');
+                plot(emPathTimeAxis(tAlignmentBin)*[1 1], 100*[-1 1], 'k-');
+
+                subplot(2,2,3);
+                plot(emPathTimeAxis, squeeze(theEMpathsMicrons(:,:,1)), 'r-');
+                hold on;
+                plot(emPathTimeAxis, squeeze(theEMpaths(:,:,1))*0, 'k-');
+                plot(emPathTimeAxis(tAlignmentBin)*[1 1], 100*[-1 1], 'k-');
+
+                subplot(2,2,4);
+                plot(emPathTimeAxis, squeeze(theEMpathsMicrons(:,:,2)), 'b-');
+                hold on;
+                plot(emPathTimeAxis, squeeze(theEMpaths(:,:,1))*0, 'k-');
+                plot(emPathTimeAxis(tAlignmentBin)*[1 1], 100*[-1 1], 'k-');
+                drawnow
+    end
 end
-
+ 
 
 %% Generate theExpandedMosaic
 padRows = max(max(abs(theEMpaths(:, :, 2))));
@@ -232,8 +312,29 @@ else
     responseStruct.responseInstanceArray.theMosaicPhotocurrents = photocurrents;
 end
 responseStruct.responseInstanceArray.theMosaicEyeMovements = theEMpaths(:,isomerizationsTimeIndicesToKeep,:);
+responseStruct.responseInstanceArray.theMosaicEyeMovementsMicrons = theEMpathsMicrons(:,isomerizationsTimeIndicesToKeep,:);
 responseStruct.responseInstanceArray.timeAxis = isomerizationsTimeAxis(isomerizationsTimeIndicesToKeep);
 responseStruct.responseInstanceArray.photocurrentTimeAxis = photoCurrentTimeAxis(photocurrentsTimeIndicesToKeep);
+
+if (p.Results.visualizeMosaicWithFirstEMpath)
+    visualizedTrial = 1;
+    visualizedTimeIndices = 1:size(responseStruct.responseInstanceArray.theMosaicEyeMovementsMicrons,2); % find(responseStruct.responseInstanceArray.timeAxis<100/1000);
+    %emVisualizationTime = [responseStruct.responseInstanceArray.timeAxis(visualizedTimeIndices(1)) responseStruct.responseInstanceArray.timeAxis(visualizedTimeIndices(end))]
+    hFig = theMosaic.visualizeGrid(...
+        'overlayEMpathMicrons', squeeze(responseStruct.responseInstanceArray.theMosaicEyeMovementsMicrons(visualizedTrial,visualizedTimeIndices,:)), ...
+        'apertureShape', 'disks', ...
+        'visualizedConeAperture', 'geometricArea', ...
+        'labelConeTypes', true,...
+        'backgroundColor', [1 1 1], ...
+        'generateNewFigure', true);
+    % Save figure
+    theProgram = mfilename;
+    rwObject = IBIOColorDetectReadWriteBasic;
+    data = 0;
+    fileName = sprintf('MosaicAndFirstEMpath');
+    rwObject.write(fileName, data, p.Results.paramsList, theProgram, ...
+           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+end
 
 if (~p.Results.computeNoiseFreeSignals)
     responseStruct.noiseFreeIsomerizations = [];

@@ -55,7 +55,7 @@ p.addParameter('frameRate',10,@isnumeric);
 
 % Response dynamics
 p.addParameter('emPathType','frozen0',@(x)ismember(x, {'none', 'frozen', 'frozen0', 'random', 'randomNoSaccades'}));
-p.addParameter('centeredEMPaths',false, @islogical); 
+p.addParameter('centeredEMPaths',false, @(x) (islogical(x) || (ischar(x)))); 
 p.addParameter('responseStabilizationMilliseconds', 80, @isnumeric);
 p.addParameter('responseExtinctionMilliseconds', 200, @isnumeric);
 p.addParameter('secondsToInclude', [], @isnumeric);

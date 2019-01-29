@@ -69,7 +69,7 @@ function [validationData, extraData, varargout] = t_coneCurrentEyeMovementsRespo
 p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
-p.addParameter('centeredEMPaths',false, @islogical); 
+p.addParameter('centeredEMPaths',false, @(x) (islogical(x) || (ischar(x))));
 p.addParameter('displayTrialBlockPartitionDiagnostics', false, @islogical);
 p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
@@ -431,6 +431,8 @@ if (p.Results.compute)
      
     % Parfor over trial blocks
     parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
+    %for trialBlock = 1:nParforTrialBlocks
+            
         % Get the parallel pool worker ID
         t = getCurrentTask();
         if (~isempty(p.Results.workerID))  
@@ -527,7 +529,8 @@ if (p.Results.compute)
         osMeanCurrents = {};
         
         % Parfor over blocks of trials
-        parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum) 
+        parfor (trialBlock = 1:nParforTrialBlocks, parforWorkersNum)
+        %     for trialBlock = 1:nParforTrialBlocks
             % Get the parallel pool worker ID
             t = getCurrentTask();
             

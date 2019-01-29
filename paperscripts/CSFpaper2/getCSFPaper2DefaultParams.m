@@ -1,4 +1,4 @@
-function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, computationInstance)
+function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationSeconds, computationInstance)
 
     mosaicName = 'ISETbioHexEccBasedLMSrealisticEfficiencyCorrectionAndMacularPigment';
     opticsName = 'ThibosAverageSubject3MMPupil';
@@ -20,7 +20,8 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
     end
     
     % Temporal params that are best for combo isomerizations/photocurrent responses
-    params.frameRate = 10;                      %(10 frames/sec, so 1, 100 msec long frame)
+    params.frameRate = frameRate;                     
+    params.stimulusDurationInSeconds = stimulusDurationSeconds;
     params.singleBinTemporalWindowIfPossible = false;
     params.responseStabilizationMilliseconds = 400;  % 500 msec is really needed to avoid being on settling part of the photocurrent response
     params.responseExtinctionMilliseconds = 100;
@@ -28,15 +29,15 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
     params.integrationTimeMilliseconds = integrationTimeMilliseconds;
     
     if (params.integrationTimeMilliseconds == 2.5)
-        params.secondsToInclude = 150/1000;
+        params.secondsToInclude = params.stimulusDurationInSeconds + 50/1000;
         params.secondsToIncludeOffset = 75/1000;
                                  
     elseif (params.integrationTimeMilliseconds == 4.0)
-        params.secondsToInclude = 148/1000;
+        params.secondsToInclude = params.stimulusDurationInSeconds + 48/1000;
         params.secondsToIncludeOffset = 72/1000;
         
     elseif (params.integrationTimeMilliseconds == 5.0)
-        params.secondsToInclude = 150/1000;
+        params.secondsToInclude = params.stimulusDurationInSeconds + 50/1000;
         params.secondsToIncludeOffset = 75/1000; 
     else
         error('integrationTimeMilliseconds is not 2.5 4 or 5: %f', integrationTimeMilliseconds);
