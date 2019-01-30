@@ -2,7 +2,7 @@ function visualizeResponses(coneMosaic, coneExcitations, figNo)
     hFig = figure(figNo); clf;
     set(hFig, 'Position', [10 10 1500 950], 'Color', [1 1 1], 'Name', 'Mosaic and 3 response instances');
     axHandle = subplot(2,3,2);
-    coneMosaic.visualizeGrid('axesHandle', axHandle, 'displayVisualDegs', true);
+    coneMosaic.visualizeGrid('axesHandle', axHandle, 'ticksInVisualDegs', true);
     xlabel('space (degs)', 'FontWeight', 'bold');
     ylabel('space (degs)', 'FontWeight', 'bold');
     title('cone mosaic');
