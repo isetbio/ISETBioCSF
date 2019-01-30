@@ -149,7 +149,7 @@ function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPatt
         backgroundColor = [0 0 0];
     end
     
-    activationLUT = gray(1024);
+    activationLUT = brewermap(1024, '*greys'); % gray(1024);
     titleForColorBar = ''; %'R*/5 msec';
     
     
@@ -164,16 +164,16 @@ function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPatt
     for iTrial = 1:nTrials
     for emIndex = 1:emNum
         frameIndex = frameIndex + 1;
-        peakFrame = emNum/2;
+        peakFrame = 1; %emNum/2;
         if (makeGif)
             ff = emIndex - peakFrame;
-            sigma = peakFrame/3;
+            sigma = emNum/4;
             fractionGauss = 2*exp(-0.5*(ff/sigma)^2);
             if (fractionGauss > 1)
                 fractionGauss = 1;
             end
-            minFraction = 0.4;
-            maxFraction = 1.4;
+            minFraction = 0.25;
+            maxFraction = 1.0;
             fraction = minFraction + fractionGauss;
             if (fraction > maxFraction)
                 fraction = maxFraction;
@@ -219,7 +219,7 @@ function hFig = generateResponseFigComponent(theMosaic, visualizedActivationPatt
             % Smooth with the smoothing kernel
             data = frame.cdata;
             rFactor = fractionGauss;
-            gaussSigmaPixels = 0.9-0.2*rFactor^0.5; % 0.6*(2.0*rFactor^0.5);
+            gaussSigmaPixels = 0.75-0.4*rFactor^0.5; % 0.6*(2.0*rFactor^0.5);
             frame.cdata = data(marginPixels+(1:gifSizePixels), marginPixels+(1:gifSizePixels),:);
             data = frame.cdata;
             
