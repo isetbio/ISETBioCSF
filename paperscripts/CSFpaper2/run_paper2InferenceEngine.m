@@ -1,11 +1,11 @@
-function run_paper2FixationalEyeMovementsVsNone
-% Compute and contrast performance for fixational eye movements vs no EM.
+function run_paper2InferenceEngine
+% Compute and contrast performance via different inference engines.
 %
 % Syntax:
-%   run_paper2FixationalEyeMovementsVsNone
+%   run_paper2InferenceEngine
 %
 % Description:
-%    Compute and contrast performance for fixational eye movements vs no EM
+%    Compute and contrast performance via different inference engines.
 %
 %    The computation is done via the ecc-based cone efficiency & macular pigment
 %    mosaic and the default Thibos subject. We use a 5 msec integration
@@ -27,13 +27,13 @@ function run_paper2FixationalEyeMovementsVsNone
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all but
     % the 2 largest), or some specific spatial frequency, like 16
-    computationInstance = 2;
+    computationInstance = 1;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
     findPerformance = true;
     visualizePerformance = true;
@@ -54,29 +54,41 @@ function run_paper2FixationalEyeMovementsVsNone
     % Compute photocurrent responses
     computePhotocurrents = true;
     
+    performanceSignal = 'photocurrents';
+    emPath = 'frozen0';         % 'randomNoSaccades'
+    centeredEMPaths = true;     % 'atStimulusModulationMidPoint'
     
     % Assemble conditions list to be examined
     % Init condition index
     condIndex = 0;
     
 %     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-Template-Linear, pCurrent, noEM';
+%     examinedCond(condIndex).label = 'SVM-Template-Linear';
+%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+%     examinedCond(condIndex).performanceSignal = performanceSignal;
+%     examinedCond(condIndex).emPathType = emPath;
+%     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'SVM-Template-Quadr';
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = emPath;
+    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    
+    
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'SVM-Template-Linear, pCurrent, driftEM-1';
 %     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
 %     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
 %     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
 %     examinedCond(condIndex).performanceSignal = 'photocurrents';
-%     examinedCond(condIndex).emPathType = 'frozen0';
-%     examinedCond(condIndex).centeredEMPaths = true;
-   
-    
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Linear, pCurrent, driftEM-1';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).performanceSignal = 'photocurrents';
-    examinedCond(condIndex).emPathType = 'randomNoSaccades';
-    examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
+%     examinedCond(condIndex).emPathType = 'randomNoSaccades';
+%     examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
     
     % Go
     examinedLegends = {};
