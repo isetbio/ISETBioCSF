@@ -148,6 +148,8 @@ eyeMovementsNum = theOIsequence.maxEyeMovementsNumGivenIntegrationTime(theMosaic
     'centeredEMPaths', (islogical(p.Results.centeredEMPaths))&&(p.Results.centeredEMPaths), ... 
     'seed', currentSeed);
     
+%% Special emPath centering - we use this when we want to center assymetrically, e.g., when the stimulus onset is not at zero
+% This was needed in the photocurrent computation because we needed a warm-up period
 if ischar(p.Results.centeredEMPaths)
     % Find time points at which stimulus in on
     idx = find(stimulusModulationFunction>0);
