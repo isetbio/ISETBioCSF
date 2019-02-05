@@ -1,8 +1,7 @@
 function generateLargeMosaicInSteps
     mosaicFOV = 10;
     spacing = coneSpacingDistribution(mosaicFOV);
-    minPositionChangeToTriggerTriangularization = round(median(spacing)*0.5*10)/10
-    pause
+    minPositionChangeToTriggerTriangularization = round(median(spacing)*0.5*100)/100
     visualizationUpdateIterations = 5;
     
     mosaicParams = struct(...
