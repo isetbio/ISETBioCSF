@@ -1,9 +1,7 @@
 function generateLargeMosaicInSteps
-    mosaicFOV = 10.0;
-    [eccDegs, spacing] = coneSpacingDistribution(mosaicFOV);
-
-    minPositionChangeToTriggerTriangularization = max([round(max(spacing)*0.5*100) round(min(spacing)*100)])/100
-    visualizationUpdateIterations = 5;
+    mosaicFOV = 7.5;
+    minPositionChangeToTriggerTriangularization = nan; 
+    visualizationUpdateIterations = 1;
 
     mosaicParams = struct(...
         'resamplingFactor', 7, ...
@@ -15,7 +13,7 @@ function generateLargeMosaicInSteps
         'latticeAdjustmentDelaunayToleranceF', 1e-3, ...
         'queryGridAdjustmentIterations', 100, ...           % Pass Inf, to avoid querying
         'visualizationUpdateIterations', visualizationUpdateIterations, ...
-        'maxGridAdjustmentIterations', 4000, ...
+        'maxGridAdjustmentIterations', 100, ...
         'marginF',[]....
         );
 
@@ -48,16 +46,3 @@ function generateLargeMosaicInSteps
     
 end
 
-function [eccDegs,spacing] = coneSpacingDistribution(mosaicFOV)
-    micronsPerDegree = 300;
-    maxEccMicrons = mosaicFOV/2 * micronsPerDegree;
-    eccMicrons = 0:5:maxEccMicrons;
-    eccDegs = eccMicrons / micronsPerDegree;
-    eccMeters = eccMicrons * 1e-6;
-    
-    spacingQ1 = coneSizeReadData('eccentricity', eccMeters, 'angle', 0*eccMeters)*1e6;
-    spacingQ2 = coneSizeReadData('eccentricity', eccMeters, 'angle', 0*eccMeters+90)*1e6;
-    spacingQ3 = coneSizeReadData('eccentricity', eccMeters, 'angle', 0*eccMeters+180)*1e6;
-    spacingQ4 = coneSizeReadData('eccentricity', eccMeters, 'angle', 0*eccMeters+270)*1e6;
-    spacing = (spacingQ1+spacingQ2+spacingQ3+spacingQ4)/4;
-end
