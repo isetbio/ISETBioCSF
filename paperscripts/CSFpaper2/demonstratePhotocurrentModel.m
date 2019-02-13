@@ -1,55 +1,77 @@
 function demonstratePhotocurrentModel
-
-    % Examined adaptation levels (photons/cone/sec)
-    adaptationPhotonRatesForImpulseResponse = [0 300 1000 3000 10000];
-    eccentricity = 'foveal';
     figNo = 0;
+    eccentricity = 'foveal';
+    simulationTimeStepSeconds = 0.1/1000;
     
+    %figNo = demoImpulseResponses(eccentricity, simulationTimeStepSeconds, figNo);
+    
+    figNo = demoStepResponses(eccentricity, simulationTimeStepSeconds, figNo);
+end
+
+function figNo = demoImpulseResponses(eccentricity, simulationTimeStepSeconds, figNo)
+    % Examined adaptation levels (photons/cone/sec)
+    adaptationPhotonRates = [0 300 1000 3000 10000];
+
     % Compute the impulse response at different adaptation levels
     [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, modelResponses, legends] = ...
-        computeImpulseReponses(adaptationPhotonRatesForImpulseResponse, eccentricity);
+        computeImpulseReponses(adaptationPhotonRates, simulationTimeStepSeconds, eccentricity);
     
     % Plot the impulse response at different adaptation levels
     figNo = figNo + 1;
-    plotImpulseResponses(timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, adaptationPhotonRatesForImpulseResponse, legends, figNo);
+    plotImpulseResponses(timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, adaptationPhotonRates, legends, figNo);
     
-    % Plot the model response
+    % Plot the model response to the impulse stimuli
     figNo = figNo + 1;
     plotModelResponses(modelResponses, legends,figNo);
-    
-    
-    % Compute the step responses at different adaptation levels
-    adaptationPhotonRates = [1000];
-    photonsDeliveredDuringPulses = [-500 500];
-    pulseDurationSeconds = 100/1000;
-    [timeAxis, stepResponses, modelResponses, legends] = computeStepReponses(adaptationPhotonRates, photonsDeliveredDuringPulses, pulseDurationSeconds, eccentricity);
-    
-    
-    
-    
 end
 
-function [timeAxis, stepResponses, modelResponses, legends] = computeStepReponses(adaptationPhotonRates, photonsDeliveredDuringPulses, pulseDurationSeconds, eccentricity)
+
+function figNo = demoStepResponses(eccentricity, simulationTimeStepSeconds, figNo)
+    % Compute the step responses at different adaptation levels
+    adaptationPhotonRates = [100 300 1000 3000 10000];
+    pulseDurationSeconds = 100/1000;
+    pulseWeberContrasts = [0.125 0.25 0.5 0.75 1.0];
+    
+    [timeAxis, stepResponses, modelResponses, legends] = computeStepReponses(adaptationPhotonRates, pulseWeberContrasts, pulseDurationSeconds, simulationTimeStepSeconds, eccentricity);
+    
+    % Plot the different step responses
+    figNo = figNo + 1;
+    plotStepResponses(timeAxis, stepResponses, adaptationPhotonRates, pulseWeberContrasts, legends, figNo);
+end
+
+function [timeAxis, stepResponses, modelResponses, legends] = computeStepReponses(adaptationPhotonRates, pulseWeberContrasts, pulseDurationSeconds, simulationTimeStepSeconds, eccentricity)
     % Define stim params struct
     stimParams = struct(...
-        'type', 'pulse', ...                                % type of stimulus
-        'adaptationPhotonRate', [], ...                     % background pRate
-        'pulseDurationSeconds', pulseDurationSeconds, ...   % pulse duration in seconds
-        'photonsDeliveredDuringPulse', [], ...              % how many photons during the pulse duration
-        'totalDurationSeconds', 0.6...                      % total duration of the stimulus
+        'type', 'pulse', ...                                    % type of stimulus
+        'adaptationPhotonRate', [], ...                         % background pRate
+        'pulseDurationSeconds', pulseDurationSeconds, ...       % pulse duration in seconds
+        'photonsDeliveredDuringPulse', [], ...                  % how many photons during the pulse duration
+        'totalDurationSeconds', 0.6, ...                        % total duration of the stimulus
+        'timeSampleSeconds', simulationTimeStepSeconds ...
     );
 
-
+    
     % Initialize
-    legends = {};
-    modelResponses = cell(numel(adaptationPhotonRates), numel(photonsDeliveredDuringPulses));
+    nAdaptationLevels = numel(adaptationPhotonRates);
+    mPulseStrengths = 2*numel(pulseWeberContrasts);  
+    modelResponses = cell(nAdaptationLevels, mPulseStrengths);
+    legends = cell(nAdaptationLevels, mPulseStrengths);
     
     % Run model for the different adaptation levels
-    for adaptationIndex = 1:numel(adaptationPhotonRates) 
-        for pulseStrengthIndex = 1:numel(photonsDeliveredDuringPulses)
+    for adaptationIndex = 1:nAdaptationLevels
+        
+        photonsDeliveredDuringPulse = [];
+        for weberIndex = 1:numel(pulseWeberContrasts)
+            photonsDeliveredDuringPulse(numel(photonsDeliveredDuringPulse)+1) = ...
+                pulseWeberContrasts(weberIndex)*adaptationPhotonRates(adaptationIndex)*pulseDurationSeconds;
+            photonsDeliveredDuringPulse(numel(photonsDeliveredDuringPulse)+1) = ...
+                -pulseWeberContrasts(weberIndex)*adaptationPhotonRates(adaptationIndex)*pulseDurationSeconds;
+        end
+    
+        for pulseStrengthIndex = 1:mPulseStrengths
             % Design stimulus
             stimParams.adaptationPhotonRate = adaptationPhotonRates(adaptationIndex);
-            stimParams.photonsDeliveredDuringPulse = photonsDeliveredDuringPulses(pulseStrengthIndex);
+            stimParams.photonsDeliveredDuringPulse = photonsDeliveredDuringPulse(pulseStrengthIndex);
             stimulus = designPhotonRateStimulus(stimParams);
             
             % Run model
@@ -57,27 +79,28 @@ function [timeAxis, stepResponses, modelResponses, legends] = computeStepReponse
             
             % Obtain step response by subtracting the adaptation membrane current
             if (adaptationIndex*pulseStrengthIndex==1)
-                stepResponses = zeros(numel(adaptationPhotonRates), numel(photonsDeliveredDuringPulses), length(model.membraneCurrent));
+                stepResponses = zeros(nAdaptationLevels, mPulseStrengths, length(model.membraneCurrent));
             end
-            stepResponses(adaptationIndex, pulseStrengthIndex, :) = model.membraneCurrent-model.membraneCurrentAdaptation;
+            stepResponses(adaptationIndex, pulseStrengthIndex, :) = model.membraneCurrent;
         
             modelResponses{adaptationIndex} = model;
-            legends{numel(legends)+1} = sprintf('adapt:%2.0f p/c/s\npulse:%2.0f p/c/s', stimParams.adaptationPhotonRate, stimParams.adaptationPhotonRate);
+            legends{adaptationIndex,pulseStrengthIndex} = sprintf('adapt:%2.0f p/c/s\npulse:%2.0f p/c/s', stimParams.adaptationPhotonRate, stimParams.adaptationPhotonRate);
             timeAxis = model.timeAxis;
         end
     end
-    
+
     
 end
 
-function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, modelResponses, legends] = computeImpulseReponses(adaptationPhotonRates, eccentricity)
+function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, modelResponses, legends] = computeImpulseReponses(adaptationPhotonRates, simulationTimeStepSeconds, eccentricity)
     % Define stim params struct
     stimParams = struct(...
         'type', 'pulse', ...                            % type of stimulus
         'adaptationPhotonRate', 2000, ...               % background pRate
         'pulseDurationSeconds', 1/1000, ...             % pulse duration in seconds
         'photonsDeliveredDuringPulse', 1, ...           % how many photons during the pulse duration
-        'totalDurationSeconds', 0.6...                  % total duration of the stimulus
+        'totalDurationSeconds', 0.6, ...                  % total duration of the stimulus
+        'timeSampleSeconds', simulationTimeStepSeconds ...
     );
       
     % Initialize
@@ -205,8 +228,14 @@ end
 function plotTimeSeries(timeAxis, signal, lineColor, signalName, plotType, labelXaxis, labelYaxis)
     if (strcmp(plotType, 'stem'))
         stem(timeAxis*1000, signal, 'Color', lineColor, 'MarkerFaceColor', lineColor, 'MarkerSize', 6, 'LineWidth', 1.0);
-    else
+    elseif (strcmp(plotType, 'line'))
         plot(timeAxis*1000, signal, '-', 'Color', lineColor, 'LineWidth', 1.5);
+    elseif (strcmp(plotType, 'dashed line'))
+        plot(timeAxis*1000, signal, '--', 'Color', lineColor, 'LineWidth', 1.5);
+    elseif (strcmp(plotType, 'dotted line'))
+        plot(timeAxis*1000, signal, ':', 'Color', lineColor, 'LineWidth', 1.5);
+    else
+        error('Uknown plotType ''%s'' in plotTimeSeries', plotType);
     end
     if (labelYaxis)
         ylabel(sprintf('\\it %s',signalName));
@@ -220,6 +249,61 @@ function plotTimeSeries(timeAxis, signal, lineColor, signalName, plotType, label
         xTickLabels = {};
     end
     set(gca, 'XLim', [timeAxis(1) timeAxis(end)]*1000, 'XTick', xTicks, 'XTickLabel', xTickLabels, 'FontSize', 14);
+end
+
+function plotStepResponses(timeAxis, stepResponses, adaptationPhotonRates, pulseWeberContrasts, legends, figNo)
+
+    nAdaptationLevels = size(stepResponses,1);
+    mPulseStrengths = size(stepResponses,2);
+    
+    hFig = figure(figNo); clf;
+    set(hFig, 'Color', [1 1 1]);
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+       'colsNum', nAdaptationLevels, ...
+       'rowsNum', mPulseStrengths/2, ...
+       'heightMargin',   0.03, ...
+       'widthMargin',    0.02, ...
+       'leftMargin',     0.07, ...
+       'rightMargin',    0.01, ...
+       'bottomMargin',   0.05, ...
+       'topMargin',      0.02);
+   
+   for pulseStrengthIndex = 1:2:mPulseStrengths
+        labelXaxis = false;
+        if (pulseStrengthIndex == mPulseStrengths-1)
+           labelXaxis = true;
+        end
+           
+        for adaptationIndex = 1:nAdaptationLevels
+           labelYaxis = false;
+           if (adaptationIndex == 1)
+               labelYaxis = true;
+           end
+           weberContrastIndex = floor(pulseStrengthIndex/2)+1;
+           subplot('Position', subplotPosVectors(weberContrastIndex, adaptationIndex).v);
+           % step increment response
+           responseIncrement = squeeze(stepResponses(adaptationIndex, pulseStrengthIndex,:));
+           % step decrement response
+           responseDecrement = squeeze(stepResponses(adaptationIndex, pulseStrengthIndex+1,:));
+           plotTimeSeries(timeAxis, responseIncrement, 'r', '', 'line', labelXaxis, labelYaxis);
+           hold on;
+           plotTimeSeries(timeAxis, responseDecrement, 'b', '', 'line', labelXaxis, labelYaxis);
+           plotTimeSeries(timeAxis, responseDecrement(1)-(responseDecrement-responseDecrement(1)), 'b', 'current (pAmps)', 'dotted line', labelXaxis, labelYaxis);
+           text(150, -5, sprintf('%2.0f photons/cone/sec', pulseWeberContrasts(weberContrastIndex)*adaptationPhotonRates(adaptationIndex)), 'FontSize', 12);
+           yLim = [-90 0];
+           set(gca, 'YLim',  yLim, 'YTick', [-90:10:0]);
+           if (adaptationIndex > 1)
+               set(gca, 'YTickLabel', {});
+           end
+           grid on; box on 
+           if (pulseStrengthIndex == 1)
+               title(sprintf('%2.0f photons/cone/sec', adaptationPhotonRates(adaptationIndex)), 'FontSize', 12);
+           end
+       end
+   end
+   
+    
 end
 
 function plotImpulseResponses(timeAxis, impulseResponse, tfAxis, spectra, pRatesBackground, legends, figNo)
@@ -315,12 +399,11 @@ end
 
 function stimulus = designPhotonRateStimulus(stimParams)
     % Setup warm up time
-    simulationTimeStepSeconds = 0.1/1000;
     stimulus.warmUpTimeSeconds = 25.0;
-    stimulus.onsetSeconds = stimulus.warmUpTimeSeconds + simulationTimeStepSeconds;
+    stimulus.onsetSeconds = stimulus.warmUpTimeSeconds + stimParams.timeSampleSeconds;
     stimulus.durationSeconds = stimulus.onsetSeconds + stimParams.totalDurationSeconds;
-    stimulus.timeAxis = 0:simulationTimeStepSeconds:stimulus.durationSeconds;
-    dt = stimulus.timeAxis(2)-stimulus.timeAxis(1);
+    stimulus.timeAxis = 0:stimParams.timeSampleSeconds:stimulus.durationSeconds;
+    dt = stimParams.timeSampleSeconds;
     
     % Background
     stimulus.pRate = zeros(1,length(stimulus.timeAxis)) + stimParams.adaptationPhotonRate;
