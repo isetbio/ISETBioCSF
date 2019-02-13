@@ -258,7 +258,7 @@ function [timeAxisSeconds, isomerizationStimuli, pCurrents, noisyPcurrents] = ..
     pCurrents = osAdaptTemporal(isomerizationStimuli, s);
     
     % Add pCurrent noise
-    noisyPcurrents = osAddNoise(pCurrents);
+    noisyPcurrents = osAddNoise(pCurrents, 'sampTime', tTimeStep);
     
     % Only include part of response sightly before the flashDurationOnsetSeconds
     idx = find(timeAxisSeconds>=flashDurationOnsetSeconds-0.25);
