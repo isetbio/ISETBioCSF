@@ -26,15 +26,17 @@ end
 function figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, figNo)
 
     % Examined adaptation levels (photons/cone/sec)
-    adaptationPhotonRates = [100 300 1000 3000 10000];
+    adaptationPhotonRates = logspace(log10(0.2), log10(20), 6) * 1000;
+    pulseWeberContrasts   = logspace(log10(0.02),log10(0.99),5);
     pulseDurationSeconds = 100/1000;
-    pulseWeberContrasts = logspace(log10(0.01),log10(1.0),5);
-    noisyInstancesNum = 1000;
+    
+    noisyInstancesNum = 3000;
+    timeWindowForSNRanalysis = [0 200]/1000;
     
     [timeAxis, photoCurrents, noisyPhotoCurrentsInstance, ...
      timeAxisConeExcitations, coneExcitations, noisyConeExcitationInstance, photocurrentSNR, coneExcitationSNR, legends] = ...
-        computeNoisyPhotocurrentReponses(adaptationPhotonRates, pulseWeberContrasts, ...
-        pulseDurationSeconds, simulationTimeStepSeconds, eccentricity, noisyInstancesNum);
+        computeNoisyReponseSNRs(adaptationPhotonRates, pulseWeberContrasts, ...
+        pulseDurationSeconds, simulationTimeStepSeconds, eccentricity, noisyInstancesNum, timeWindowForSNRanalysis);
     
     
     % Plot the different step responses

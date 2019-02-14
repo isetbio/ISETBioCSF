@@ -64,47 +64,86 @@ function plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, 
         signedWeberContrasts(pulseStrengthIndex) = weberSign * stepWeberContrasts(weberContrastIndex);
     end
     
-    cmap = brewermap(nAdaptationLevels, '*spectral');
    
     decrementIndices = find(signedWeberContrasts<0);
     incrementIndices = find(signedWeberContrasts>0);
    
-    subplot(2,3,1);
-    plotSNR(-signedWeberContrasts(decrementIndices), ...
+    WeberContrastLims = [1e-2 1.1]*100;
+    SNRLims = [-25 35];
+    SNRDiffLims = [-20 0];
+    adaptationRateLims = [150 22000];
+    diffSNR = photocurrentSNR - coneExcitationSNR;
+        
+    subplot(2,4,1);
+    plotSNR(-signedWeberContrasts(decrementIndices)*100, ...
             squeeze(coneExcitationSNR(:, decrementIndices)), ...
-            cmap, adaptationPhotonRates, 'SNR(cone excitation) (dB)', 'decrement');
-   
-    subplot(2,3,4);
-    plotSNR(signedWeberContrasts(incrementIndices), ...
+            adaptationPhotonRates, 'R*/c/sec', WeberContrastLims , SNRLims, ...
+            'contrast (%)', 'SNR(cone excitation) (dB)', 'decrement', 'NorthWest');
+    
+    subplot(2,4,2);
+    plotSNR(signedWeberContrasts(incrementIndices)*100, ...
             squeeze(coneExcitationSNR(:, incrementIndices)), ...
-            cmap, adaptationPhotonRates, 'SNR(cone excitation) (dB)', 'increment');
-        
-    subplot(2,3,2);
-    plotSNR(-signedWeberContrasts(decrementIndices), ...
+            adaptationPhotonRates, 'R*/c/sec', WeberContrastLims , SNRLims, ...
+            'contrast (%)', 'SNR(cone excitation) (dB)', 'increment', 'NorthWest');
+    
+    subplot(2,4,5);
+    plotSNR(-signedWeberContrasts(decrementIndices)*100, ...
             squeeze(photocurrentSNR(:, decrementIndices)), ...
-            cmap, adaptationPhotonRates, 'SNR(pCurrent) (dB)', 'decrement');
-        
-    subplot(2,3,5);
-    plotSNR(signedWeberContrasts(incrementIndices), ...
+            adaptationPhotonRates, 'R*/c/sec', WeberContrastLims , SNRLims, ...
+            'contrast (%)', 'SNR(pCurrent) (dB)', 'decrement', 'NorthWest');
+    
+    subplot(2,4,6);
+    plotSNR(signedWeberContrasts(incrementIndices)*100, ...
             squeeze(photocurrentSNR(:, incrementIndices)), ...
-            cmap, adaptationPhotonRates, 'SNR(pCurrent) (dB)', 'increment');
+            adaptationPhotonRates, 'R*/c/sec', WeberContrastLims , SNRLims, ...
+            'contrast (%)', 'SNR(pCurrent) (dB)', 'increment', 'NorthWest');
         
-    subplot(2,3,3);
-    SNRRatioDecrements = squeeze(photocurrentSNR(:, decrementIndices)) ./ ...
-              squeeze(coneExcitationSNR(:, decrementIndices));
-    plotSNR(-signedWeberContrasts(decrementIndices), ...
-            SNRRatioDecrements, ...
-            cmap, adaptationPhotonRates, 'SNR(pCurrent)/SNR(cone excitation)', 'decrement');
-        
+    
+    subplot(2,4,3);
+    plotSNR(-signedWeberContrasts(decrementIndices)*100, squeeze(diffSNR (:, decrementIndices)), ...
+            adaptationPhotonRates, 'R*/c/sec', WeberContrastLims , SNRDiffLims, ...
+            'contrast (%)', 'SNR(pCurrent) - SNR(cone excitation)', 'decrement', 'NorthEast');   
    
-    subplot(2,3,6);
-    SNRRatioIncrements = squeeze(photocurrentSNR(:, incrementIndices)) ./ ...
-              squeeze(coneExcitationSNR(:, incrementIndices));
-          
-    plotSNR(signedWeberContrasts(incrementIndices), ...
-            SNRRatioIncrements, ...
-            cmap, adaptationPhotonRates, 'SNR(pCurrent)/SNR(cone excitation)', 'increment');
+    subplot(2,4,4);
+    plotSNR(signedWeberContrasts(incrementIndices)*100, squeeze(diffSNR (:, incrementIndices)), ...
+            adaptationPhotonRates, 'R*/c/sec', WeberContrastLims , SNRDiffLims, ...
+            'contrast (%)', 'SNR(pCurrent) - SNR(cone excitation)', 'increment', 'NorthEast');
+        
+    
+    subplot(2,4,7);
+    plotSNR(adaptationPhotonRates, (diffSNR(:,decrementIndices))', ...
+            -signedWeberContrasts(decrementIndices)*100, '% contrast', adaptationRateLims , SNRDiffLims, ...
+            'adaptation level (R*/c/sec)', 'SNR(pCurrent) - SNR(cone excitation)', 'decrement', 'SouthWest');
+    
+    subplot(2,4,8);
+    plotSNR(adaptationPhotonRates, (diffSNR(:,incrementIndices))', ...
+            signedWeberContrasts(incrementIndices)*100, '% contrast', adaptationRateLims , SNRDiffLims, ...
+            'adaptation level (R*/c/sec)', 'SNR(pCurrent) - SNR(cone excitation)', 'increment', 'SouthWest');
+        
+end
 
+function plotSNR(x, SNR, variedPropertyValue, variedPropertyUnits, XLims, Ylims, theXLabel, theYLabel,  theTitle, theLegendLocation)
+
+   legends = cell(1,numel(variedPropertyValue));
+   cmap = brewermap(numel(variedPropertyValue), '*spectral');
+    
+   for kIndex = 1:numel(variedPropertyValue)
+       color = squeeze(cmap(kIndex,:));
+       plot(x, squeeze(SNR(kIndex,:)), 's-', 'LineWidth', 1.5, 'MarkerSize', 12, ...
+           'Color', 0.5*color, 'MarkerFaceColor', 0.5*color+[0.5 0.5 0.5], ...
+           'MarkerEdgeColor', 0.5*color);
+       if (kIndex == 1)
+           hold on;
+       end
+       legends{kIndex} = sprintf('%2.0f %s',variedPropertyValue(kIndex), variedPropertyUnits);
+   end
+   
+   set(gca, 'FontSize', 14, 'XLim', XLims,  'YLim', Ylims, 'XScale', 'log', 'YScale', 'linear');
+   xlabel(sprintf('\\it %s', theXLabel));
+   ylabel(sprintf('\\it %s', theYLabel));
+   grid on; box on;
+   legend(legends, 'Location', theLegendLocation);
+   title(theTitle)
 end
 
 function plotTraces(stepWeberContrasts, adaptationPhotonRates, timeAxis, meanTraces, noisyTraces, signalName)
@@ -118,13 +157,19 @@ function plotTraces(stepWeberContrasts, adaptationPhotonRates, timeAxis, meanTra
        'widthMargin',    0.01, ...
        'leftMargin',     0.05, ...
        'rightMargin',    0.01, ...
-       'bottomMargin',   0.04, ...
-       'topMargin',      0.01);
+       'bottomMargin',   0.05, ...
+       'topMargin',      0.03);
    
     
    for pulseStrengthIndex = 1:mStepStrengths
         
         weberContrastIndex = floor((pulseStrengthIndex-1)/2)+1;
+        
+        if (mod(pulseStrengthIndex,2) == 1) 
+            signedWeberContrast = stepWeberContrasts(weberContrastIndex);
+        else
+            signedWeberContrast =-stepWeberContrasts(weberContrastIndex);
+        end
         
         labelXaxis = false;
         if (pulseStrengthIndex == mStepStrengths)
@@ -149,48 +194,30 @@ function plotTraces(stepWeberContrasts, adaptationPhotonRates, timeAxis, meanTra
            hold on;
            plotTemporalResponse(timeAxis, responseMean, 'r', '', 'line', labelXaxis, labelYaxis);
            
-           if (strcmp(signalName, 'photocurrent'))
-               title(sprintf('%2.0f photons/cone/sec', stepWeberContrasts(weberContrastIndex)*adaptationPhotonRates(adaptationIndex)), 'FontSize', 12);
+           if (strcmp(signalName, 'photocurrent')) 
                yLims = [-90 0];
                yTicks = -90:10:0;
                set(gca, 'YLim',  yLims, 'YTick', yTicks);
            else
-               title(sprintf('%2.0f photons/cone/sec', stepWeberContrasts(weberContrastIndex)*adaptationPhotonRates(adaptationIndex)), 'FontSize', 12);
-               yLims = [0 2000];
-               yTicks = 0:500:2000;
+               yLims = [0 20000];
+               yTicks = 0:2000:20000;
                set(gca, 'YLim',  yLims, 'YTick', yTicks);
            end
            
+           stepPhotonRate = signedWeberContrast*adaptationPhotonRates(adaptationIndex);
+           if (pulseStrengthIndex == 1)
+               title(sprintf('bkgnd:%2.0f photons/cone/sec\n stepDiff: %2.0f photons/cone/sec', adaptationPhotonRates(adaptationIndex), stepPhotonRate), 'FontSize', 12);
+           else
+               title(sprintf('stepDiff: %2.0f photons/cone/sec', stepPhotonRate), 'FontSize', 12);
+           end
+               
            if (adaptationIndex > 1)
                set(gca, 'YTickLabel', {});
            end
            grid on; box on 
-           if (pulseStrengthIndex == 1)
-               title(sprintf('%2.0f photons/cone/sec', adaptationPhotonRates(adaptationIndex)), 'FontSize', 12);
-           end
        end
    end
 end
 
-function plotSNR(weberC, SNR, cmap, adaptationPhotonRates, theYLabel, theTitle)
 
-   legends = cell(1,numel(adaptationPhotonRates));
 
-   for adaptationIndex = 1:numel(adaptationPhotonRates)
-       color = squeeze(cmap(adaptationIndex,:));
-       plot(weberC, squeeze(SNR(adaptationIndex,:)), 's-', 'LineWidth', 1.5, 'MarkerSize', 12, ...
-           'Color', 0.5*color, 'MarkerFaceColor', 0.5*color+[0.5 0.5 0.5], ...
-           'MarkerEdgeColor', 0.5*color);
-       if (adaptationIndex == 1)
-           hold on;
-       end
-       legends{adaptationIndex} = sprintf('%2.0f R*/c/sec',adaptationPhotonRates(adaptationIndex));
-   end
-   
-   set(gca, 'FontSize', 14, 'XLim', [1e-2 1],  'XScale', 'log', 'YScale', 'linear');
-   xlabel('\it weber contrast');
-   ylabel(sprintf('\\it %s', theYLabel));
-   grid on; box on;
-   legend(legends, 'Location', 'NorthWest');
-   title(theTitle)
-end
