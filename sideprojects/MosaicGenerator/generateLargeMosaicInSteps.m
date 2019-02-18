@@ -1,5 +1,5 @@
 function generateLargeMosaicInSteps
-    mosaicFOV = 0.5; %10;
+    mosaicFOV = 10;
     minPositionChangeToTriggerTriangularization = nan; 
     visualizationUpdateIterations = 1;
 
@@ -31,7 +31,8 @@ function generateLargeMosaicInSteps
         'queryGridAdjustmentIterations',        mosaicParams.queryGridAdjustmentIterations, ...
         'queryAdditionnalPassBatch',            mosaicParams.queryAdditionnalPassBatch, ...
         'visualizationUpdateIterations',        mosaicParams.visualizationUpdateIterations, ...
-        'maxGridAdjustmentIterations',          mosaicParams.maxGridAdjustmentIterations);
+        'maxGridAdjustmentIterations',          mosaicParams.maxGridAdjustmentIterations, ...
+        'useParfor', true);
     
     
     theMosaic.visualizeGrid('ticksInVisualDegs', true);
