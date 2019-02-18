@@ -1,10 +1,10 @@
 function plotSignalToNoiseResults(timeAxis, photoCurrents, noisyPhotoCurrentsInstances, ...
     timeAxisConeExcitations, coneExcitations, noisyConeExcitationInstances, ...
-    photocurrentSNR, coneExcitationSNR, adaptationPhotonRates, stepWeberContrasts, legends, figNo)
+    photocurrentSNR, coneExcitationSNR, transformDecibelsToRatios, adaptationPhotonRates, stepWeberContrasts, legends, figNo)
 % Plot the signal-to-noise results
 %
 % Syntax:
-%   plotStepResponses(timeAxis, stepResponses, adaptationPhotonRates, stepWeberContrasts, legends, figNo)
+%   plotSignalToNoiseResults(timeAxis, stepResponses, adaptationPhotonRates, stepWeberContrasts, legends, figNo)
 %
 % Description:
 %    Plot the photocurrent responses for the different step stimuli which
@@ -44,11 +44,11 @@ function plotSignalToNoiseResults(timeAxis, photoCurrents, noisyPhotoCurrentsIns
     figNo = figNo + 1000;
     hFig = figure(figNo); clf;
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1220 845]);
-    plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, photocurrentSNR);
+    plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, photocurrentSNR, transformDecibelsToRatios);
     
 end
 
-function plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, photocurrentSNR)
+function plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, photocurrentSNR, transformDecibelsToRatios)
 
     nAdaptationLevels = size(coneExcitationSNR,1);
     mStepStrengths = size(coneExcitationSNR,2);
@@ -70,62 +70,76 @@ function plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, 
    
     WeberContrastLims = [1e-2 1.1]*100;
     WeberContrastTicks = [0.03 0.1 3 10 30 100];
-    SNRLims = [-25 35];
-    SNRDiffLims = [-20 0];
-    adaptationRateLims = [150 22000];
+    SNRLims = [-35 40];
+    SNRTicks = -30:10:100;
+    SNRDiffLims = [-25 0];
+    SNRDiffTicks = -100:5:100;
+    adaptationRateLims = [90 12000];
     adaptationRateTicks = [100 300 1000 3000 10000];
     diffSNR = photocurrentSNR - coneExcitationSNR;
-        
+    
     subplot(2,4,1);
     plotSNR(-signedWeberContrasts(decrementIndices)*100, ...
             squeeze(coneExcitationSNR(:, decrementIndices)), ...
             adaptationPhotonRates, 'R*/c/sec', WeberContrastLims , SNRLims, WeberContrastTicks,...
-            'contrast (%)', 'SNR(cone excitation) (dB)', 'decrement', 'NorthWest');
+            SNRTicks, transformDecibelsToRatios, 'contrast (%)', 'SNR (cone excitation)', 'decrement', 'NorthWest');
     
     subplot(2,4,2);
     plotSNR(signedWeberContrasts(incrementIndices)*100, ...
             squeeze(coneExcitationSNR(:, incrementIndices)), ...
             adaptationPhotonRates, 'R*/c/sec', WeberContrastLims , SNRLims, WeberContrastTicks,...
-            'contrast (%)', 'SNR(cone excitation) (dB)', 'increment', 'NorthWest');
+            SNRTicks, transformDecibelsToRatios, 'contrast (%)', 'SNR (cone excitation)', 'increment', 'NorthWest');
     
     subplot(2,4,5);
     plotSNR(-signedWeberContrasts(decrementIndices)*100, ...
             squeeze(photocurrentSNR(:, decrementIndices)), ...
             adaptationPhotonRates, 'R*/c/sec', WeberContrastLims , SNRLims, WeberContrastTicks,...
-            'contrast (%)', 'SNR(pCurrent) (dB)', 'decrement', 'NorthWest');
+            SNRTicks, transformDecibelsToRatios, 'contrast (%)', 'SNR (pCurrent)', 'decrement', 'NorthWest');
     
     subplot(2,4,6);
     plotSNR(signedWeberContrasts(incrementIndices)*100, ...
             squeeze(photocurrentSNR(:, incrementIndices)), ...
             adaptationPhotonRates, 'R*/c/sec', WeberContrastLims , SNRLims, WeberContrastTicks,...
-            'contrast (%)', 'SNR(pCurrent) (dB)', 'increment', 'NorthWest');
+            SNRTicks, transformDecibelsToRatios, 'contrast (%)', 'SNR (pCurrent)', 'increment', 'NorthWest');
         
     
     subplot(2,4,3);
+    if (transformDecibelsToRatios)
+        yAxisLabel = 'SNR(pCurrent) / SNR(cone excitation)';
+    else
+        yAxisLabel = 'SNR(pCurrent) - SNR(cone excitation) (dB)';
+    end
+    
     plotSNR(-signedWeberContrasts(decrementIndices)*100, squeeze(diffSNR (:, decrementIndices)), ...
             adaptationPhotonRates, 'R*/c/sec', WeberContrastLims , SNRDiffLims, WeberContrastTicks,...
-            'contrast (%)', 'SNR(pCurrent) - SNR(cone excitation)', 'decrement', 'NorthEast');   
+            SNRDiffTicks, transformDecibelsToRatios, 'contrast (%)', yAxisLabel, 'decrement', 'SouthWest');   
    
     subplot(2,4,4);
     plotSNR(signedWeberContrasts(incrementIndices)*100, squeeze(diffSNR (:, incrementIndices)), ...
             adaptationPhotonRates, 'R*/c/sec', WeberContrastLims , SNRDiffLims, WeberContrastTicks,...
-            'contrast (%)', 'SNR(pCurrent) - SNR(cone excitation)', 'increment', 'NorthEast');
+            SNRDiffTicks, transformDecibelsToRatios, 'contrast (%)', yAxisLabel, 'increment', 'SouthWest');
         
     
     subplot(2,4,7);
     plotSNR(adaptationPhotonRates, (diffSNR(:,decrementIndices))', ...
             -signedWeberContrasts(decrementIndices)*100, '% contrast', adaptationRateLims , SNRDiffLims, adaptationRateTicks, ...
-            'adaptation level (R*/c/sec)', 'SNR(pCurrent) - SNR(cone excitation)', 'decrement', 'SouthWest');
+            SNRDiffTicks, transformDecibelsToRatios, 'adaptation level (R*/c/sec)', yAxisLabel, 'decrement', 'SouthWest');
     
     subplot(2,4,8);
     plotSNR(adaptationPhotonRates, (diffSNR(:,incrementIndices))', ...
             signedWeberContrasts(incrementIndices)*100, '% contrast', adaptationRateLims, SNRDiffLims, adaptationRateTicks, ...
-            'adaptation level (R*/c/sec)', 'SNR(pCurrent) - SNR(cone excitation)', 'increment', 'SouthWest');
+            SNRDiffTicks, transformDecibelsToRatios, 'adaptation level (R*/c/sec)', yAxisLabel, 'increment', 'SouthWest');
         
 end
 
-function plotSNR(x, SNR, variedPropertyValue, variedPropertyUnits, XLims, Ylims, XTicks,  theXLabel, theYLabel,  theTitle, theLegendLocation)
+function plotSNR(x, SNR, variedPropertyValue, variedPropertyUnits, XLims, Ylims, XTicks, YTicks, transformDecibelsToRatios, theXLabel, theYLabel,  theTitle, theLegendLocation)
 
+   if (transformDecibelsToRatios)
+       SNR = 10.^(SNR/10);
+       Ylims = 10.^(Ylims/10);
+       YTicks = 10.^(YTicks/10);
+   end
+   
    legends = cell(1,numel(variedPropertyValue));
    cmap = brewermap(numel(variedPropertyValue), '*spectral');
     
@@ -140,7 +154,17 @@ function plotSNR(x, SNR, variedPropertyValue, variedPropertyUnits, XLims, Ylims,
        legends{kIndex} = sprintf('%2.0f %s',variedPropertyValue(kIndex), variedPropertyUnits);
    end
    
-   set(gca, 'FontSize', 14, 'XLim', XLims, 'YLim', Ylims, 'XTick', XTicks, 'YTick', -100:5:100, 'XScale', 'log', 'YScale', 'linear');
+   if (transformDecibelsToRatios)
+       YScale = 'log';
+   else
+       YScale = 'linear';
+   end
+   Ylims
+   sprintf('%2.3f\n', YTicks)
+   
+   set(gca, 'FontSize', 14, 'XLim', XLims, 'YLim', Ylims, ...
+       'XTick', XTicks, 'YTick', YTicks, 'YTickLabel', sprintf('%2.3f\n', YTicks), ...
+       'XScale', 'log', 'YScale', YScale);
    xlabel(sprintf('\\it %s', theXLabel));
    ylabel(sprintf('\\it %s', theYLabel));
    grid on; box on;
@@ -201,9 +225,9 @@ function plotTraces(stepWeberContrasts, adaptationPhotonRates, timeAxis, meanTra
                yTicks = -90:10:0;
                set(gca, 'YLim',  yLims, 'YTick', yTicks);
            else
-               yLims = [0 20000];
-               yTicks = 0:2000:20000;
-               set(gca, 'YLim',  yLims, 'YTick', yTicks);
+               yLims = [0 50000];
+               yTicks = 0:5000:45000;
+               set(gca, 'YLim',  yLims, 'YTick', yTicks, 'YTickLabel', {'0', '', '10k', '', '20k', '', '30k', '', '40k', ''});
            end
            
            stepPhotonRate = signedWeberContrast*adaptationPhotonRates(adaptationIndex);
@@ -215,6 +239,12 @@ function plotTraces(stepWeberContrasts, adaptationPhotonRates, timeAxis, meanTra
                
            if (adaptationIndex > 1)
                set(gca, 'YTickLabel', {});
+           else
+               if (strcmp(signalName, 'photocurrent')) 
+                    ylabel('photocurrent (pAmps)')
+               else
+                   ylabel('cone excitation rate (R*/c/s)')
+               end
            end
            grid on; box on 
        end

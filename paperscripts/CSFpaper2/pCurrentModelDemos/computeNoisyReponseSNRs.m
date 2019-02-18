@@ -1,6 +1,9 @@
-function [timeAxis, photoCurrents, noisyPhotoCurrentsInstance, timeAxisConeExcitations, coneExcitations, noisyConeExcitationInstance, photocurrentSNR, coneExcitationSNR, legends] = ...
+function [timeAxis, photoCurrents, noisyPhotoCurrentsInstance, ...
+    timeAxisConeExcitations, coneExcitationRates, noisyConeExcitationRateInstance, ...
+    photocurrentSNR, coneExcitationSNR, legends] = ...
         computeNoisyReponseSNRs(adaptationPhotonRates, pulseWeberContrasts, ...
-        pulseDurationSeconds, simulationTimeStepSeconds, eccentricity, noisyInstancesNum, timeWindowForSNRanalysis)
+        pulseDurationSeconds, simulationTimeStepSeconds, eccentricity, noisyInstancesNum, ...
+        timeWindowForSNRanalysis, displaySNRVectors)
     
     % Compute the model responses for all conditions
     [~, ~, modelResponses, legends] = computeStepReponses(adaptationPhotonRates, ...
@@ -17,15 +20,42 @@ function [timeAxis, photoCurrents, noisyPhotoCurrentsInstance, timeAxisConeExcit
     for adaptationIndex = 1:nAdaptationLevels 
         for pulseStrengthIndex = 1:mPulseStrengths
             modelResponse = modelResponses{adaptationIndex, pulseStrengthIndex};
+            
+            % Compute cone excitation signals fro stimulus photon rate
+            noisyConeExcitationRateSignals = ...
+                computeConeExcitationSignalsFromStimulusPhotonRate(modelResponse.pRate, pulseDurationSeconds, noisyInstancesNum);
+            meanConeExcitationRateSignal = modelResponse.pRate;
+             
             timeAxis = modelResponse.timeAxis;
             timeAxisConeExcitations = timeAxis;
             
             % Allocate memory
             if (adaptationIndex*pulseStrengthIndex == 1)
-                photoCurrents = zeros(nAdaptationLevels, mPulseStrengths, numel(timeAxis));
-                noisyPhotoCurrentsInstance = zeros(nAdaptationLevels, mPulseStrengths, numel(timeAxis));
+                photoCurrents   = zeros(nAdaptationLevels, mPulseStrengths, numel(timeAxis));
+                coneExcitationRates = zeros(nAdaptationLevels, mPulseStrengths, numel(timeAxis));
+                noisyPhotoCurrentsInstance  = zeros(nAdaptationLevels, mPulseStrengths, numel(timeAxis));
+                noisyConeExcitationRateInstance = zeros(nAdaptationLevels, mPulseStrengths, numel(timeAxis));
             end
             
+            
+            % Do SNR computation for the cone excitation signal
+            % Extract mean cone excitation responses
+            coneExcitationRates(adaptationIndex, pulseStrengthIndex,:) = meanConeExcitationRateSignal;
+            
+            % Save the first noisy instance
+            noisyConeExcitationRateInstance(adaptationIndex, pulseStrengthIndex,:) = noisyConeExcitationRateSignals(1,:);
+           
+            % Compute the SNR based on the noise traces (signal-mean signal) and the mean response modulation
+            noiseTraces = bsxfun(@minus, noisyConeExcitationRateSignals, meanConeExcitationRateSignal);
+            responseModulation = meanConeExcitationRateSignal - meanConeExcitationRateSignal(1);
+            
+            % Compute the SNR
+            coneExcitationSNR(adaptationIndex, pulseStrengthIndex) = ...
+                computeSNR(responseModulation, noiseTraces, displaySNRVectors, timeAxis, ...
+                timeWindowForSNRanalysis, 'cone excitations'); 
+            
+            
+            % Do SNR computation for the photocurrent signal
             % Extract mean photocurrent responses
             photoCurrents(adaptationIndex, pulseStrengthIndex,:) = modelResponse.membraneCurrent;
             
@@ -37,52 +67,74 @@ function [timeAxis, photoCurrents, noisyPhotoCurrentsInstance, timeAxisConeExcit
             responseModulation = modelResponse.membraneCurrent - modelResponse.membraneCurrent(1);
             
             % Compute the SNR for the photocurrents
-            displayVectors = ~true;
             photocurrentSNR(adaptationIndex, pulseStrengthIndex) = ...
-                computeSNR(responseModulation, noiseTraces, displayVectors, timeAxis, timeWindowForSNRanalysis);
+                computeSNR(responseModulation, noiseTraces, displaySNRVectors, timeAxis, ...
+                timeWindowForSNRanalysis, 'photocurrent');
                      
-            
-            % Do SNR computation for the cone excitation signal
-            % To compute Poisson noise we need to convert photon rate to photon count. What integation time to use?
-            % Do this for pulseDurationSeconds
-            photonCountingIntegrationTime = pulseDurationSeconds;
-            meanConeExcitationCountSignal = round(modelResponse.pRate * photonCountingIntegrationTime);
-
-            % Obtain noisy cone excitation response instances
-            noisyConeExcitationCountSignals = coneMosaic.photonNoise(repmat(meanConeExcitationCountSignal, [noisyInstancesNum 1]));
-            
-            % Back to photon rates
-            meanConeExcitationRateSignal = meanConeExcitationCountSignal / photonCountingIntegrationTime;
-            noisyConeExcitationRateSignals = noisyConeExcitationCountSignals / photonCountingIntegrationTime;
-            
-            % Allocate memory
-            if (adaptationIndex*pulseStrengthIndex == 1)
-                coneExcitations = zeros(nAdaptationLevels, mPulseStrengths, numel(timeAxis));
-                noisyConeExcitationInstance = zeros(nAdaptationLevels, mPulseStrengths, numel(timeAxis));
-            end
-            
-            % Extract mean cone excitation responses
-            coneExcitations(adaptationIndex, pulseStrengthIndex,:) = meanConeExcitationCountSignal;
-            
-            % Save the first noisy instance
-            noisyConeExcitationInstance(adaptationIndex, pulseStrengthIndex,:) = noisyConeExcitationRateSignals(1,:);
-           
-            % Compute the SNR based on the noise traces (signal-mean signal) and the mean response modulation
-            noiseTraces = bsxfun(@minus, noisyConeExcitationRateSignals, meanConeExcitationRateSignal);
-            responseModulation = meanConeExcitationRateSignal - meanConeExcitationRateSignal(1);
-            
-            % Compute the SNR
-            coneExcitationSNR(adaptationIndex, pulseStrengthIndex) = ...
-                computeSNR(responseModulation, noiseTraces, displayVectors, timeAxis, timeWindowForSNRanalysis); 
         end
     end
 end
 
-function theSNR = computeSNR(meanSignalModulation, noiseTraces, displayVectors, timeAxis, timeWindowForSNRanalysis )
+
+function noisyConeExcitationRateSignals = computeConeExcitationSignalsFromStimulusPhotonRate(pRate, pulseDurationSeconds, noisyInstancesNum)
+            
+    % To compute Poisson noise we need to convert photon rate to photon count. What integation time to use?
+    % Do this for pulseDurationSeconds
+    photonCountingIntegrationTime = pulseDurationSeconds;
+    meanConeExcitationCountSignal = round(pRate * photonCountingIntegrationTime);
+
+    % Obtain noisy cone excitation response instances
+    noisyConeExcitationCountSignals = coneMosaic.photonNoise(repmat(meanConeExcitationCountSignal, [noisyInstancesNum 1]));
+
+    % Noisy photon rates
+    noisyConeExcitationRateSignals = noisyConeExcitationCountSignals / photonCountingIntegrationTime;          
+end
+
+
+function theSNR = computeSNR(meanSignalModulation, noiseTraces, displaySNRVectors, timeAxis, timeWindowForSNRanalysis, signalName)
 
     % Concatenate signals along all their instances
     noisyInstancesNum = size(noiseTraces,1);
-    timeBinsForSNR = find(timeAxis>=timeWindowForSNRanalysis(1) & timeAxis <=timeWindowForSNRanalysis(2));
+    if (numel(timeWindowForSNRanalysis) == 2)
+        timeBinsForSNR = find(timeAxis>=timeWindowForSNRanalysis(1) & timeAxis <=timeWindowForSNRanalysis(2));
+        duration = timeAxis(timeBinsForSNR(end))-timeAxis(timeBinsForSNR(1));
+        fprintf('SNR for %s will be performed over t = [%2.2f - %2.2f] (duration:%2.2f) msec\n', signalName, timeAxis(timeBinsForSNR(1))*1000, timeAxis(timeBinsForSNR(end))*1000, duration*1000);
+    else
+        [~,timeBinOfPeakSignalModulation] = max(abs(meanSignalModulation));
+        if (isempty(timeWindowForSNRanalysis))
+            timeBinsForSNR = timeBinOfPeakSignalModulation;
+            fprintf('SNR for %s will be performed at t = %2.2f  msec (peak)\n', signalName, timeAxis(timeBinsForSNR)*1000);
+        else
+            if (strcmp(signalName, 'cone excitations'))
+                % Cone excitation windowing is simple
+                t1 = timeAxis(timeBinOfPeakSignalModulation);
+                t2 = t1 + timeWindowForSNRanalysis;
+            else
+                % Photocurrent windowing
+                t1 = timeAxis(timeBinOfPeakSignalModulation) - timeWindowForSNRanalysis/2;
+                t2 = timeAxis(timeBinOfPeakSignalModulation) + timeWindowForSNRanalysis/2;
+                % Search around the peak to find a time point over which
+                % the signal has dropped the same amount from its peak
+                timeBins = find(timeAxis>=t1 & timeAxis <=t2);
+                dBins = round(20/(1000*(timeAxis(2)-timeAxis(1))));
+                deltaR = zeros(1,2*dBins+1);
+                deltaBins = -dBins:dBins;
+                for k = 1:numel(deltaBins)
+                    r = abs(meanSignalModulation(timeBins+deltaBins(k)));
+                    deltaR(k) = abs(r(1)-r(end));
+                end
+                [~,idx] = min(deltaR);
+                % adjusted timeBinOfPeakSignalModulation
+                timeBinOfPeakSignalModulation = timeBinOfPeakSignalModulation+deltaBins(idx);
+                t1 = timeAxis(timeBinOfPeakSignalModulation) - timeWindowForSNRanalysis/2;
+                t2 = timeAxis(timeBinOfPeakSignalModulation) + timeWindowForSNRanalysis/2;
+            end
+            timeBinsForSNR = find(timeAxis>=t1 & timeAxis <=t2);
+            duration = timeAxis(timeBinsForSNR(end))-timeAxis(timeBinsForSNR(1));
+            fprintf('SNR for %s will be performed over t = [%2.2f - %2.2f] (duration:%2.2f) msec\n', signalName, timeAxis(timeBinsForSNR(1))*1000, timeAxis(timeBinsForSNR(end))*1000, duration*1000);
+        end
+    end
+    
     
     % Only use the signals withing the timeWindowForSNRanalysis
     meanSignalModulation = meanSignalModulation(timeBinsForSNR);
@@ -93,20 +145,50 @@ function theSNR = computeSNR(meanSignalModulation, noiseTraces, displayVectors, 
     noise  = reshape(noiseTraces', [1 numel(noiseTraces)]); 
 
     % Compute the SNR on these long vectors
-    theSNR = snr(signal, noise);
+    theSNR = measureSNR(signal, noise);
 
-    if (displayVectors)
-        % Just display 3 instances of the SNR signals
-        displayedTimeBins = 1:(3*numel(timeBinsForSNR));
-        figure(1234); clf;
+    if (displaySNRVectors)
+        displayedInstancesNum = 4;
+        % Just display 10 instances of the SNR signals
+        displayedTimeBins = 1:(displayedInstancesNum*numel(timeBinsForSNR));
+        figure(1234); 
+        if (strcmp(signalName, 'cone excitations'))
+            subplot(2,2,1);
+            cla;
+            ylabel('pRate');
+        else
+            subplot(2,2,2);
+            cla
+            ylabel('pCurrent');
+        end
         stairs(signal(displayedTimeBins), 'r-', 'LineWidth', 2); hold on;
         stairs(noise(displayedTimeBins), 'k-');
         title(sprintf('SNR = %2.2f', theSNR));
         
         % Just display the SNR mean signal  
-        figure(1235); clf;
-        stairs(timeAxis(timeBinsForSNR)*1000, meanSignalModulation, 'r-', 'LineWidth', 2); hold on;
+        if (strcmp(signalName, 'cone excitations'))
+            subplot(2,2,3);
+            cla
+            ylabel('pRate');
+        else
+            subplot(2,2,4);
+            cla
+            ylabel('pCurrent');
+        end
+ 
+        stairs(timeAxis(timeBinsForSNR)*1000, meanSignalModulation, 'r-', 'LineWidth', 2);
+        drawnow
     end
     
+end
+
+function theSNR = measureSNR(signal, noise)
+    if (length(signal) ~= length(noise))
+        error('lengths of signal and noise must match')
+    end
+
+    signalPower = sum(abs(signal).^2)/length(signal);
+    noisePower = sum(abs(noise).^2)/length(signal);
+    theSNR = 10 * log10(signalPower / noisePower);
 end
 
