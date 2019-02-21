@@ -46,6 +46,15 @@ function plotSignalToNoiseResults(timeAxis, photoCurrents, noisyPhotoCurrentsIns
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1220 845]);
     plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, photocurrentSNR, transformDecibelsToRatios);
     
+    figure(221); clf;
+    SNRLims = [-35 40];
+    plot(coneExcitationSNR(:), photocurrentSNR(:), 'k.');
+    set(gca, 'FontSize', 14, 'XLim', SNRLims, 'YLim', SNRLims);
+    xlabel(sprintf('\\it %s', 'cone excitation SNR'));
+    ylabel(sprintf('\\it %s', 'pCurrent SNR'));
+    grid on; box on;
+    axis 'square';
+    
 end
 
 function plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, photocurrentSNR, transformDecibelsToRatios)
@@ -74,8 +83,8 @@ function plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, 
     SNRTicks = -30:10:100;
     SNRDiffLims = [-25 0];
     SNRDiffTicks = -100:5:100;
-    adaptationRateLims = [90 12000];
-    adaptationRateTicks = [100 300 1000 3000 10000];
+    adaptationRateLims = [30 12000];
+    adaptationRateTicks = [30 100 300 1000 3000 10000];
     diffSNR = photocurrentSNR - coneExcitationSNR;
     
     subplot(2,4,1);
@@ -159,9 +168,7 @@ function plotSNR(x, SNR, variedPropertyValue, variedPropertyUnits, XLims, Ylims,
    else
        YScale = 'linear';
    end
-   Ylims
-   sprintf('%2.3f\n', YTicks)
-   
+
    set(gca, 'FontSize', 14, 'XLim', XLims, 'YLim', Ylims, ...
        'XTick', XTicks, 'YTick', YTicks, 'YTickLabel', sprintf('%2.3f\n', YTicks), ...
        'XScale', 'log', 'YScale', YScale);
@@ -225,8 +232,8 @@ function plotTraces(stepWeberContrasts, adaptationPhotonRates, timeAxis, meanTra
                yTicks = -90:10:0;
                set(gca, 'YLim',  yLims, 'YTick', yTicks);
            else
-               yLims = [0 50000];
-               yTicks = 0:5000:45000;
+               yLims = [0 20000];
+               yTicks = 0:5000:20000;
                set(gca, 'YLim',  yLims, 'YTick', yTicks, 'YTickLabel', {'0', '', '10k', '', '20k', '', '30k', '', '40k', ''});
            end
            

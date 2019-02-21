@@ -26,10 +26,10 @@ end
 function figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, figNo)
 
     % Examined adaptation levels (photons/cone/sec)
-    nAdaptationLevels = 5;
+    nAdaptationLevels = 6;
     nContrastLevels = 7;
-    adaptationPhotonRates = logspace(log10(0.1), log10(10), nAdaptationLevels) * 1000;
-    pulseWeberContrasts   = logspace(log10(0.02),log10(0.90),nContrastLevels);
+    adaptationPhotonRates = logspace(log10(0.03), log10(10),   nAdaptationLevels) * 1000;
+    pulseWeberContrasts   = logspace(log10(0.02), log10(0.90), nContrastLevels);
     pulseDurationSeconds = 100/1000;
     
     noisyInstancesNum = 100;
