@@ -1,8 +1,8 @@
-function stimulus = designPhotonRateStimulus(stimParams)
+function stimulus = designPhotonRateStimulus(stimParams, spontaneousIsomerizationRate)
 % Design a photon rate stimulus (input to runPhotocurrentModel.m)
 %
 % Syntax:
-%   stimulus = designPhotonRateStimulus(stimParams);
+%   stimulus = designPhotonRateStimulus(stimParams, spontaneousIsomerizationRate);
 %
 % Description:
 %    Function to run the outer segment photocurrent model for impulse
@@ -12,6 +12,8 @@ function stimulus = designPhotonRateStimulus(stimParams)
 %
 % Inputs:
 %    stimParams     - struct with different parameters
+%    spontaneousIsomerizationRate - the rate of spontaneous photon
+%    absorptions
 %
 % Output:
 %    stimulus       - struct with stimulus components
@@ -26,11 +28,16 @@ function stimulus = designPhotonRateStimulus(stimParams)
     stimulus.warmUpTimeSeconds = 25.0;
     stimulus.onsetSeconds = stimulus.warmUpTimeSeconds + stimParams.timeSampleSeconds;
     stimulus.durationSeconds = stimulus.onsetSeconds + stimParams.totalDurationSeconds;
+    
+    % Time axis
     stimulus.timeAxis = 0:stimParams.timeSampleSeconds:stimulus.durationSeconds;
     dt = stimParams.timeSampleSeconds;
     
     % Background
     stimulus.pRate = zeros(1,length(stimulus.timeAxis)) + stimParams.adaptationPhotonRate;
+    
+    % Add the spontaneous isomerization rate
+    stimulus.pRate = stimulus.pRate + spontaneousIsomerizationRate;
     
     % Design stimulus
     switch (stimParams.type)

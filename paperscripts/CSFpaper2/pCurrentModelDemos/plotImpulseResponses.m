@@ -30,26 +30,38 @@ function plotImpulseResponses(timeAxis, impulseResponses, temporalFrequencyAxis,
     % Color scheme to use for the different impulse resposes
     cmap = brewermap(numel(adaptationPhotonRates) , 'spectral');
 
-    xLims = [0 500];
-    xTicks = 0:100:500;
+    xLims = [0 200];
+    xTicks = 0:50:500;
     
     hFig = figure(figNo); clf;
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 720 720]);
+    
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+       'rowsNum', 2, ...
+       'colsNum', 3, ...
+       'heightMargin',  0.06, ...
+       'widthMargin',    0.05, ...
+       'leftMargin',     0.07, ...
+       'rightMargin',    0.03, ...
+       'bottomMargin',   0.15, ...
+       'topMargin',      0.1);
+
     subplot(2,2,1); hold on
     for backgroundIndex = 1:numel(adaptationPhotonRates) 
         plot(timeAxis*1000, squeeze(impulseResponses(backgroundIndex,:)), '-', ...
-            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 2);
+            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 1.5);
     end
     for backgroundIndex = 1:numel(adaptationPhotonRates) 
         plot(timeAxis*1000, squeeze(impulseResponses(backgroundIndex,:)), '-', ...
-            'Color', [0 0 0], 'LineWidth', 3);
+            'Color', [0 0 0], 'LineWidth', 2);
         plot(timeAxis*1000, squeeze(impulseResponses(backgroundIndex,:)), '-', ...
-            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 2);
+            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 1.5);
     end
 
     hold off
     xlabel('\it time (msec)');
-    set(gca, 'YLim', max(abs(impulseResponses(:)))*[-0.3 1.1], 'XLim', xLims, 'XTick', xTicks);
+    set(gca, 'YLim', [-0.2 0.95], 'XLim', xLims, 'XTick', xTicks);
     set(gca, 'FontSize', 14);
     legend(legends);
     grid on; box on;
@@ -59,21 +71,21 @@ function plotImpulseResponses(timeAxis, impulseResponses, temporalFrequencyAxis,
         scaledIR = squeeze(impulseResponses(backgroundIndex,:));
         scaledIR = scaledIR/max(abs(scaledIR));
         plot(timeAxis*1000, scaledIR, '-', ...
-            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 2);
+            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 1.5);
     end
     for backgroundIndex = 1:numel(adaptationPhotonRates) 
         scaledIR = squeeze(impulseResponses(backgroundIndex,:));
         scaledIR = scaledIR/max(abs(scaledIR));
         plot(timeAxis*1000, scaledIR, '-', ...
-            'Color', [0 0 0], 'LineWidth', 3);
+            'Color', [0 0 0], 'LineWidth', 2);
         plot(timeAxis*1000, scaledIR, '-', ...
-            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 2);
+            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 1.5);
     end
 
     hold off
     xlabel('\it time (msec)');
     legend(legends);
-    set(gca, 'YLim', [-0.3 1.1], 'XLim', xLims, 'XTick', xTicks);
+    set(gca, 'YLim', [-0.22 1.02], 'XLim', xLims, 'XTick', xTicks);
     set(gca, 'FontSize', 14);
     grid on; box on;
 
@@ -81,13 +93,13 @@ function plotImpulseResponses(timeAxis, impulseResponses, temporalFrequencyAxis,
     subplot(2,2,2); hold on;
     for backgroundIndex = 1:numel(adaptationPhotonRates)
         plot(temporalFrequencyAxis, squeeze(frequencySpectra(backgroundIndex,:))/max(frequencySpectra(:)), '-', ...
-            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 2);
+            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 1.5);
     end
     for backgroundIndex = 1:numel(adaptationPhotonRates)
         plot(temporalFrequencyAxis, squeeze(frequencySpectra(backgroundIndex,:))/max(frequencySpectra(:)), '-', ...
-            'Color', [0 0 0], 'LineWidth', 3);
+            'Color', [0 0 0], 'LineWidth', 2);
         plot(temporalFrequencyAxis, squeeze(frequencySpectra(backgroundIndex,:))/max(frequencySpectra(:)), '-', ...
-            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 2);
+            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 1.5);
     end
     xlabel('\it temporal frequency (Hz)');
     legend(legends, 'Location', 'SouthWest');
@@ -101,13 +113,13 @@ function plotImpulseResponses(timeAxis, impulseResponses, temporalFrequencyAxis,
     subplot(2,2,4); hold on;
     for backgroundIndex = 1:numel(adaptationPhotonRates)
         plot(temporalFrequencyAxis, squeeze(frequencySpectra(backgroundIndex,:))/max(frequencySpectra(:)), '-', ...
-            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 2);
+            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 1.5);
     end
     for backgroundIndex = 1:numel(adaptationPhotonRates)
         plot(temporalFrequencyAxis, squeeze(frequencySpectra(backgroundIndex,:))/max(frequencySpectra(:)), '-', ...
-            'Color', [0 0 0], 'LineWidth', 3);
+            'Color', [0 0 0], 'LineWidth', 2);
         plot(temporalFrequencyAxis, squeeze(frequencySpectra(backgroundIndex,:))/max(frequencySpectra(:)), '-', ...
-            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 2);
+            'Color', squeeze(cmap(backgroundIndex,:)), 'LineWidth', 1.5);
     end
     xlabel('\it temporal frequency (Hz)');
     legend(legends, 'Location', 'SouthWest');

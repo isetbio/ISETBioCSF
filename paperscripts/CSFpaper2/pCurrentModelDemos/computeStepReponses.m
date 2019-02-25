@@ -1,11 +1,11 @@
 function [timeAxis, stepResponses, modelResponses, legends] = ...
-    computeStepReponses(adaptationPhotonRates, pulseWeberContrasts, pulseDurationSeconds, simulationTimeStepSeconds, eccentricity, noisyInstancesNum)
+    computeStepReponses(adaptationPhotonRates, pulseWeberContrasts, pulseDurationSeconds, simulationTimeStepSeconds, spontaneousIsomerizationRate, eccentricity, noisyInstancesNum)
 % Run the photocurrent model for a number of step stimuli
 %
 % Syntax:
 %   [timeAxis, stepResponses, modelResponses, legends] = ...
 %    computeStepReponses(adaptationPhotonRates, pulseWeberContrasts, ...
-%    pulseDurationSeconds, simulationTimeStepSeconds, eccentricity);
+%    pulseDurationSeconds, simulationTimeStepSeconds, spontaneousIsomerizationRate, eccentricity);
 %
 % Description:
 %    Function to run the outer segment photocurrent model for a number of 
@@ -21,6 +21,7 @@ function [timeAxis, stepResponses, modelResponses, legends] = ...
 %    pulseWeberContrasts       - Vector of pulse Weber contrasts
 %    pulseDurationSeconds      - Scalar. Pulse duration in seconds
 %    simulationTimeStepSeconds - Scalar. Simulation time step in seconds
+%    spontaneousIsomerizationRate - Scalar. Spontaneous isomerization rate
 %    eccentricity              - String. 'foveal' or 'peripheral'
 %    noisyInstancesNum         - Number of noisy instances to compute
 %
@@ -74,7 +75,7 @@ function [timeAxis, stepResponses, modelResponses, legends] = ...
             % Design stimulus
             stimParams.adaptationPhotonRate = adaptationPhotonRates(adaptationIndex);
             stimParams.photonsDeliveredDuringPulse = photonsDeliveredDuringPulses(pulseStrengthIndex);
-            stimulus = designPhotonRateStimulus(stimParams);
+            stimulus = designPhotonRateStimulus(stimParams, spontaneousIsomerizationRate);
             
             % Run model
             model = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum);

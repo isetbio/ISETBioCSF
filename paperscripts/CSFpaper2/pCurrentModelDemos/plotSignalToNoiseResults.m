@@ -29,16 +29,22 @@ function plotSignalToNoiseResults(timeAxis, photoCurrents, noisyPhotoCurrentsIns
 % History:
 %    2/13/19  NPC   ISETBIO Team, 2019
     
+    
     % Plot photocurrent response traces
+    timeLimits = [0 300]; timeTicks = 0:50:1000;
     hFig = figure(figNo); clf;
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1220 845]);
-    plotTraces(stepWeberContrasts, adaptationPhotonRates, timeAxis, photoCurrents, noisyPhotoCurrentsInstances, 'photocurrent');
+    plotTraces(stepWeberContrasts, adaptationPhotonRates, ...
+        timeAxis, photoCurrents, noisyPhotoCurrentsInstances, 'photocurrent', ...
+        timeLimits, timeTicks);
    
     % Plot cone excitations response traces
     figNo = figNo + 1000;
     hFig = figure(figNo); clf;
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1220 845]);
-    plotTraces(stepWeberContrasts, adaptationPhotonRates, timeAxisConeExcitations, coneExcitations, noisyConeExcitationInstances, 'cone excitations');
+    plotTraces(stepWeberContrasts, adaptationPhotonRates, ...
+        timeAxisConeExcitations, coneExcitations, noisyConeExcitationInstances, 'cone excitations', ...
+        timeLimits, timeTicks);
    
     % Plot the SNRs across adaptation levels and contrasts
     figNo = figNo + 1000;
@@ -46,14 +52,43 @@ function plotSignalToNoiseResults(timeAxis, photoCurrents, noisyPhotoCurrentsIns
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1220 845]);
     plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, photocurrentSNR, transformDecibelsToRatios);
     
-    figure(221); clf;
-    SNRLims = [-35 40];
-    plot(coneExcitationSNR(:), photocurrentSNR(:), 'k.');
-    set(gca, 'FontSize', 14, 'XLim', SNRLims, 'YLim', SNRLims);
-    xlabel(sprintf('\\it %s', 'cone excitation SNR'));
-    ylabel(sprintf('\\it %s', 'pCurrent SNR'));
+    figNo = figNo + 1000;
+    hFig = figure(figNo); clf;
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1220 845]);
+    plotSNRsAcrossAllConditions(coneExcitationSNR, photocurrentSNR,  transformDecibelsToRatios)
+end
+
+function plotSNRsAcrossAllConditions(coneExcitationSNR, photocurrentSNR,  transformDecibelsToRatios)
+    SNRLims = [-37 27];
+    SNRTicks = -50:5:50;
+    
+    if (transformDecibelsToRatios)
+       coneExcitationSNR = 10.^(coneExcitationSNR/10);
+       photocurrentSNR = 10.^(photocurrentSNR/10);
+       SNRLims = 10.^(SNRLims/10);
+       SNRTicks = 10.^(SNRTicks/10);
+    end
+   
+    plot(coneExcitationSNR(:), photocurrentSNR(:), 'rp');
+    hold on;
+    plot(SNRLims, SNRLims, 'k-');
+    set(gca, 'FontSize', 14, 'XLim', SNRLims, 'YLim', SNRLims, 'XTick', SNRTicks, 'YTick', SNRTicks);
+    
     grid on; box on;
     axis 'square';
+    
+    if (transformDecibelsToRatios)
+        xAxisLabel = 'SNR (cone excitation)';
+        yAxisLabel = 'SNR (pCurrent)';
+        set(gca, 'XScale', 'log');
+        set(gca, 'YScale', 'log');
+    else
+        xAxisLabel = 'SNR (cone excitation) (dB)';
+        yAxisLabel = 'SNR (pCurrent) (dB)';
+    end
+    
+    xlabel(sprintf('\\it %s', xAxisLabel));
+    ylabel(sprintf('\\it %s', yAxisLabel));
     
 end
 
@@ -79,10 +114,10 @@ function plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, 
    
     WeberContrastLims = [1e-2 1.1]*100;
     WeberContrastTicks = [0.03 0.1 3 10 30 100];
-    SNRLims = [-35 40];
+    SNRLims = [-40 30];
     SNRTicks = -30:10:100;
-    SNRDiffLims = [-25 0];
-    SNRDiffTicks = -100:5:100;
+    SNRDiffLims = [-15 -5];
+    SNRDiffTicks = (-30:1:0);
     adaptationRateLims = [30 12000];
     adaptationRateTicks = [30 100 300 1000 3000 10000];
     diffSNR = photocurrentSNR - coneExcitationSNR;
@@ -151,12 +186,13 @@ function plotSNR(x, SNR, variedPropertyValue, variedPropertyUnits, XLims, Ylims,
    
    legends = cell(1,numel(variedPropertyValue));
    cmap = brewermap(numel(variedPropertyValue), '*spectral');
-    
+   cmapSaturation = 0.5;
+   
    for kIndex = 1:numel(variedPropertyValue)
        color = squeeze(cmap(kIndex,:));
        plot(x, squeeze(SNR(kIndex,:)), 's-', 'LineWidth', 1.5, 'MarkerSize', 12, ...
-           'Color', 0.5*color, 'MarkerFaceColor', 0.5*color+[0.5 0.5 0.5], ...
-           'MarkerEdgeColor', 0.5*color);
+           'Color', cmapSaturation*color, 'MarkerFaceColor', cmapSaturation*color + (1-cmapSaturation)*[1 1 1], ...
+           'MarkerEdgeColor', cmapSaturation*color);
        if (kIndex == 1)
            hold on;
        end
@@ -168,18 +204,46 @@ function plotSNR(x, SNR, variedPropertyValue, variedPropertyUnits, XLims, Ylims,
    else
        YScale = 'linear';
    end
-
+   
+   YTickLabels = {};
+   for k = 1:numel(YTicks)
+       if (YTicks(k) >= 10)
+            YTickLabels{k} = sprintf('%2.0f', YTicks(k));
+       elseif (YTicks(k) >= 1)
+            YTickLabels{k} = sprintf('%2.1f', YTicks(k));
+       elseif (YTicks(k) >= 0.1)
+           YTickLabels{k} = sprintf('%2.2f', YTicks(k));
+       elseif (YTicks(k) >= 0.01)
+           YTickLabels{k} = sprintf('%2.3f', YTicks(k));
+       elseif (YTicks(k) >= 0.001)
+           YTickLabels{k} = sprintf('%2.4f', YTicks(k));
+       else
+           YTickLabels{k} = sprintf('%f', YTicks(k));
+       end
+   end
+   
    set(gca, 'FontSize', 14, 'XLim', XLims, 'YLim', Ylims, ...
-       'XTick', XTicks, 'YTick', YTicks, 'YTickLabel', sprintf('%2.3f\n', YTicks), ...
+       'XTick', XTicks, 'YTick', YTicks, 'YTickLabel', YTickLabels, ...
        'XScale', 'log', 'YScale', YScale);
    xlabel(sprintf('\\it %s', theXLabel));
    ylabel(sprintf('\\it %s', theYLabel));
+   
    grid on; box on;
-   legend(legends, 'Location', theLegendLocation);
+   if (numel(legends)<5)
+        legend(legends, 'Location', theLegendLocation);
+   else
+        cmapSaturation = 0.7;
+        cmap = bsxfun(@plus, cmapSaturation*cmap, (1-cmapSaturation)*[1 1 1]);
+        colormap(cmap);
+        normalizedTicks = linspace(0,1,numel(variedPropertyValue));
+        cbarHandle = colorbar('Ticks', normalizedTicks, 'TickLabels', sprintf('%2.0f\n', variedPropertyValue));
+        cbarHandle.Label.String = sprintf('%s',variedPropertyUnits);
+   end
+   
    title(theTitle)
 end
 
-function plotTraces(stepWeberContrasts, adaptationPhotonRates, timeAxis, meanTraces, noisyTraces, signalName)
+function plotTraces(stepWeberContrasts, adaptationPhotonRates, timeAxis, meanTraces, noisyTraces, signalName, timeLimits, timeTicks)
 
     nAdaptationLevels = size(meanTraces,1);
     mStepStrengths = size(meanTraces,2);
@@ -237,6 +301,8 @@ function plotTraces(stepWeberContrasts, adaptationPhotonRates, timeAxis, meanTra
                set(gca, 'YLim',  yLims, 'YTick', yTicks, 'YTickLabel', {'0', '', '10k', '', '20k', '', '30k', '', '40k', ''});
            end
            
+           set(gca, 'XLim', timeLimits, 'XTick', timeTicks);
+           
            stepPhotonRate = signedWeberContrast*adaptationPhotonRates(adaptationIndex);
            if (pulseStrengthIndex == 1)
                title(sprintf('bkgnd:%2.0f photons/cone/sec\n stepDiff: %2.0f photons/cone/sec', adaptationPhotonRates(adaptationIndex), stepPhotonRate), 'FontSize', 12);
@@ -248,7 +314,7 @@ function plotTraces(stepWeberContrasts, adaptationPhotonRates, timeAxis, meanTra
                set(gca, 'YTickLabel', {});
            else
                if (strcmp(signalName, 'photocurrent')) 
-                    ylabel('photocurrent (pAmps)')
+                   ylabel('photocurrent (pAmps)')
                else
                    ylabel('cone excitation rate (R*/c/s)')
                end

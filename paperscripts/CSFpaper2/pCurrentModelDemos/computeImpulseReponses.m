@@ -35,16 +35,16 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
 % History:
 %    2/13/19  NPC   ISETBIO Team, 2019
 
-
     % Define the stim params struct
     stimParams = struct(...
         'type', 'pulse', ...                            % type of stimulus
-        'adaptationPhotonRate', 2000, ...               % background pRate
-        'pulseDurationSeconds', 1/1000, ...             % pulse duration in seconds
+        'adaptationPhotonRate', [], ...               % background pRate
+        'pulseDurationSeconds', simulationTimeStepSeconds, ...             % pulse duration in seconds
         'photonsDeliveredDuringPulse', 1, ...           % how many photons during the pulse duration
         'totalDurationSeconds', 0.6, ...                  % total duration of the stimulus
         'timeSampleSeconds', simulationTimeStepSeconds ...
     );
+
       
     % Initialize
     modelResponses = cell(1,numel(adaptationPhotonRates));
@@ -55,7 +55,7 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
     for adaptationIndex = 1:numel(adaptationPhotonRates) 
         % Design stimulus
         stimParams.adaptationPhotonRate = adaptationPhotonRates(adaptationIndex);
-        stimulus = designPhotonRateStimulus(stimParams);
+        stimulus = designPhotonRateStimulus(stimParams, 0);
         
         % Run model
         model = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum);
@@ -91,7 +91,7 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
         modelResponses{adaptationIndex} = model;
         impulseResponses(adaptationIndex,:) = ir;
         impulseResponseSpectra(adaptationIndex,:) = irSpectrum(idx);
-        legends{adaptationIndex} = sprintf('%2.0f photons/cone/sec', stimParams.adaptationPhotonRate);
+        legends{adaptationIndex} = sprintf('%2.0f photons/c/s', stimParams.adaptationPhotonRate);
         timeAxis = model.timeAxis;
     end
 end
