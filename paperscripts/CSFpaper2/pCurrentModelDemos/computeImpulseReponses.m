@@ -41,7 +41,7 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
         'adaptationPhotonRate', [], ...               % background pRate
         'pulseDurationSeconds', simulationTimeStepSeconds, ...             % pulse duration in seconds
         'photonsDeliveredDuringPulse', 1, ...           % how many photons during the pulse duration
-        'totalDurationSeconds', 0.6, ...                  % total duration of the stimulus
+        'totalDurationSeconds', 0.2, ...                  % total duration of the stimulus
         'timeSampleSeconds', simulationTimeStepSeconds ...
     );
 
