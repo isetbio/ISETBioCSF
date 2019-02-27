@@ -1,5 +1,5 @@
 function generateLargeMosaicInSteps
-    mosaicFOV = 11;
+    mosaicFOV = 15;
     minPositionChangeToTriggerTriangularization = nan; 
     visualizationUpdateIterations = 1;
 
