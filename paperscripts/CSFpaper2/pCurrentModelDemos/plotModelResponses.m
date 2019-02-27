@@ -28,7 +28,7 @@ function plotModelResponses(modelResponses, legends, figNo)
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
        'colsNum', nModels, ...
-       'rowsNum', 6, ...
+       'rowsNum', 7, ...
        'heightMargin',   0.03, ...
        'widthMargin',    0.06, ...
        'leftMargin',     0.07, ...
@@ -78,13 +78,20 @@ function plotModelResponses(modelResponses, legends, figNo)
         grid on; box on;
         
         subplot('Position', subplotPosVectors(5,iModel).v);
+        plotTemporalResponse(model.timeAxis, model.gC, 'r', 'GC', 'line', false, labelYaxis);
+        yLim = [min(model.gC(1:end-10)) max(model.gC(1:end-10))];
+        yTicks = 0:1:10000;
+        set(gca, 'YLim', yLim, 'YTick', yTicks);
+        grid on; box on;
+        
+        subplot('Position', subplotPosVectors(6,iModel).v);
         plotTemporalResponse(model.timeAxis, model.cGMP, 'r', 'cGMP', 'line', false, labelYaxis);
         yTicks = 13:0.02:21;
         yLim = model.cGMP(1)+[-0.08 0.02];
         set(gca, 'YLim', yLim, 'YTick', yTicks, 'YTickLabel', sprintf('%2.2f\n', yTicks));
         grid on; box on;
         
-        subplot('Position', subplotPosVectors(6,iModel).v);
+        subplot('Position', subplotPosVectors(7,iModel).v);
         plotTemporalResponse(model.timeAxis, model.membraneCurrent, 'r', sprintf('photocurrent\n(pAmps)'), 'line', true, labelYaxis);
         yTicks = -90:0.2:0;
         yLim = model.membraneCurrent(1)+[-0.3 1];

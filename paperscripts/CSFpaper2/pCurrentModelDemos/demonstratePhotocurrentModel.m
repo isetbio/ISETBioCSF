@@ -10,8 +10,9 @@ function demonstratePhotocurrentModel
     spontaneousIsomerizationRate = 100;
     
     doImpulseResponseAnalysis = true;
-    doStepResponseAnalysis = true;
-    doSignalToNoiseAnalysis = true;
+    doOnOffAsymmetryAnalysis = ~true;
+    doStepResponseAnalysis = ~true;
+    doSignalToNoiseAnalysis = ~true;
     
     
     figNo = 0;
@@ -19,6 +20,10 @@ function demonstratePhotocurrentModel
     % Compute and visualize the pCurrent impulse responses at different adaptation levels
     if (doImpulseResponseAnalysis)
         figNo = demoImpulseResponses(eccentricity, simulationTimeStepSeconds, figNo);
+    end
+    
+    if (doOnOffAsymmetryAnalysis)
+        figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, figNo);
     end
     
     % Compute and visualze the pCurrent step responses at differentadaptation levels
@@ -32,6 +37,25 @@ function demonstratePhotocurrentModel
     
 end
 
+function figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, figNo)
+    % Compute the step responses at different adaptation levels
+    adaptationPhotonRates = [17000];
+    pulseDurationSeconds = 500/1000;
+    interpulseIntervalSeconds = 1000/1000;
+    pulseWeberContrasts = [0.12 25 50 70 100];
+    
+    spontaneousIsomerizationRate = 0;
+    instancesNum = 1;
+    
+    [timeAxis, onOffResponses, modelResponses, legends] = ...
+        computeOnOFFReponses(adaptationPhotonRates, pulseWeberContrasts, ...
+        pulseDurationSeconds, interpulseIntervalSeconds, simulationTimeStepSeconds, spontaneousIsomerizationRate, eccentricity, instancesNum);
+    
+    % Plot the different step responses
+    figNo = figNo + 1;
+    plotOnOffResponses(timeAxis, stepResponses, adaptationPhotonRates, pulseWeberContrasts, legends, figNo);
+end
+
 function figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, figNo)
 
     % Examined adaptation levels (photons/cone/sec)
@@ -41,7 +65,7 @@ function figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds,
     adaptationPhotonRates = round(adaptationPhotonRates/10)*10;
     idx = find(adaptationPhotonRates>100);
     adaptationPhotonRates(idx) = round(adaptationPhotonRates(idx)/100)*100;
-    pulseWeberContrasts   = [0.03 0.1 0.3]; % logspace(log10(0.03), log10(0.30), nContrastLevels);
+    pulseWeberContrasts   = [0.016 0.1 0.6]; % logspace(log10(0.03), log10(0.30), nContrastLevels);
     pulseDurationSeconds  = 100/1000;
     
     noisyInstancesNum = 100;
@@ -75,7 +99,7 @@ end
 
 function figNo = demoImpulseResponses(eccentricity, simulationTimeStepSeconds, figNo)
     % Examined adaptation levels (photons/cone/sec)
-    adaptationPhotonRates = [0 300 1000 3000 10000];
+    adaptationPhotonRates = [0]; % [0 300 1000 3000 10000];
     
     % Compute the impulse response at different adaptation levels
     [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, modelResponses, legends] = ...

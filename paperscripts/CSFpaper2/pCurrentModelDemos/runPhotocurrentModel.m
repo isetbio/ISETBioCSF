@@ -108,6 +108,7 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
     modelResponse.opsin = opsin(keptIndices);
     modelResponse.pde = pde(keptIndices);
     modelResponse.ca = ca(keptIndices);
+    modelResponse.gC = gC(keptIndices);
     modelResponse.caSlow = caSlow(keptIndices);
     modelResponse.cGMP = cGMP(keptIndices);
     modelResponse.membraneCurrent = Imembrane(keptIndices);
