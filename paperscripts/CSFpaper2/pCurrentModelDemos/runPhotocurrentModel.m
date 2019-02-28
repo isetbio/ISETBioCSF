@@ -129,7 +129,11 @@ end
 function opsin = computeOpsinActivation(opsin, pRate, modelConstants, dt)
     % Implementing the following equation
     % dOpsin/dt = gamma * pRate(t) - sigma * opsin(t)
-    opsin = opsin + dt * (modelConstants.gamma * pRate - modelConstants.sigma * opsin);
+    gain = modelConstants.gamma;
+    rateConstant = modelConstants.sigma;
+    opsin = opsin + dt * (gain * pRate - rateConstant * opsin);
+    fprintf('Opsin gain: %f, rate constant: %f\n', gain, rateConstant);
+    pause
 end
 
 function pde = computePDEactivation(pde, opsin, modelConstants, dt)
