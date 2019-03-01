@@ -4,15 +4,15 @@ function demonstratePhotocurrentModel
     eccentricity = 'foveal';
     
     % time step for biophysical model
-    simulationTimeStepSeconds = 0.05/1000;
+    simulationTimeStepSeconds = 0.1/1000;
     
     % Spontaneous photoisomerization rate (100 R*/c/sec)
     spontaneousIsomerizationRate = 100;
     
-    doImpulseResponseAnalysis = ~true;
-    doOnOffAsymmetryAnalysis = true;
+    doImpulseResponseAnalysis = true;
+    doOnOffAsymmetryAnalysis = ~true;
     doStepResponseAnalysis = ~true;
-    doSignalToNoiseAnalysis = ~true;
+    doSignalToNoiseAnalysis = true;
     
     
     figNo = 0;
@@ -39,8 +39,8 @@ end
 
 function figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, figNo)
     % Compute the step responses at different adaptation levels
-    adaptationPhotonRates = [1000 7000 17000];
-    pulseDurationSeconds = 500/1000;
+    adaptationPhotonRates = [1000 10000 13000];
+    pulseDurationSeconds = 1000/1000;
     pulseWeberContrasts = [0.12 0.24 0.48 0.96];
    
     
@@ -48,8 +48,8 @@ function figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, fig
     constantStimParams = struct(...
         'type', 'on_off_pulses', ...                            % type of stimulus
         'pulseDurationSeconds', pulseDurationSeconds, ...       % pulse duration in seconds
-        'interpulseIntervalSeconds', 1, ...                   % interpular interval in seconds
-        'totalDurationSeconds', 3, ...                        % total duration of the stimulus
+        'interpulseIntervalSeconds', 1, ...                     % interpular interval in seconds
+        'totalDurationSeconds', 4, ...                          % total duration of the stimulus
         'timeSampleSeconds', simulationTimeStepSeconds ...
     );
 
@@ -62,7 +62,7 @@ function figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, fig
     
     % Plot the different On/OFF responses
     figNo = figNo + 1;
-    plotOnOffResponses(timeAxis, onOffResponses, adaptationPhotonRates, pulseWeberContrasts, legends, figNo);
+    plotOnOffResponses(timeAxis, onOffResponses, modelResponses, adaptationPhotonRates, pulseWeberContrasts, legends, figNo);
 end
 
 function figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, figNo)

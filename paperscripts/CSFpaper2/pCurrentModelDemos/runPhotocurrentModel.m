@@ -25,8 +25,7 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
 
     useDefaultImplementation = ~true;
     
-    
-    
+
     if (useDefaultImplementation)
         switch (eccentricity)
             case 'foveal'
@@ -40,7 +39,7 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
         % simulation time step
         dt = stimulus.timeAxis(2)-stimulus.timeAxis(1);
     
-        fprintf('Computing %d response instances\n', noisyInstancesNum);
+        fprintf('Computing %d response instances (default implementation)\n', noisyInstancesNum);
         os = osSet(os, 'noise flag', 'none');
         % Compute steady-state
         state = osAdaptSteadyState(os, stimulus.pRate(1));
@@ -68,8 +67,9 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
         modelResponse.caSlow = modelResponse.opsin;
         modelResponse.cGMP = modelResponse.opsin;
         modelResponse.membraneCurrent = pCurrents(keptIndices);
-        modelResponse.noisyMembraneCurrents = noisyPcurrents(keptIndices);
-    
+        if (noisyInstancesNum>0)
+            modelResponse.noisyMembraneCurrents = noisyPcurrents(keptIndices);
+        end
         % Obtain adaptation current as the current at the last point in the warmup period.
         modelResponse.membraneCurrentAdaptation = pCurrents(idx(1));
         return;
@@ -167,7 +167,7 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
     
     % Add outer segment noise instances
     if (noisyInstancesNum > 0)
-        fprintf('Computing %d response instances\n', noisyInstancesNum);
+        fprintf('Computing %d response instances (deconstructed implementation)\n', noisyInstancesNum);
         ImembraneManyInstances = repmat(reshape(modelResponse.membraneCurrent, [1 1 numel(modelResponse.membraneCurrent)]), [1 noisyInstancesNum]);
         modelResponse.noisyMembraneCurrents = squeeze(osAddNoise(ImembraneManyInstances, 'sampTime', dt));
     else

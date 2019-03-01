@@ -1,4 +1,4 @@
-function plotOnOffResponses(timeAxis, stepResponses, adaptationPhotonRates, stepWeberConstants, legends, figNo)
+function plotOnOffResponses(timeAxis, stepResponses, modelResponses, adaptationPhotonRates, stepWeberConstants, legends, figNo)
 % Plot the photocurrent responses for the examined On/OFF stimuli 
 %
 % Syntax:
@@ -62,11 +62,16 @@ function plotOnOffResponses(timeAxis, stepResponses, adaptationPhotonRates, step
            lineColor = squeeze(cmap(weberContrastIndex,:));
            % step increment response
            responseIncrement = squeeze(stepResponses(adaptationIndex, pulseStrengthIndex,:));
+           modelResponse = modelResponses{adaptationIndex, pulseStrengthIndex};
+           noisyResponseIncrement = squeeze(modelResponse.noisyMembraneCurrents(1,:));
            % Plot
+
+           plotTemporalResponse(timeAxis, noisyResponseIncrement, lineColor*0.5 + 0.5*[1 1 1], '', 'line', labelXaxis, labelYaxis);
+           hold on;
            plotTemporalResponse(timeAxis, responseIncrement, lineColor, '', 'line', labelXaxis, labelYaxis);
-           if (pulseStrengthIndex==1)
-               hold on;
-           end
+%            if (pulseStrengthIndex==1)
+%                hold on;
+%            end
            
            yLim = [-100 0];
            set(gca, 'YLim',  yLim, 'YTick', [-100:10:0]);

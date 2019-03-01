@@ -81,6 +81,9 @@ function plotModelResponses(modelResponses, legends, figNo)
         plotTemporalResponse(model.timeAxis, model.gC, 'r', 'GC', 'line', false, labelYaxis);
         yLim = [min(model.gC(1:end-10)) max(model.gC(1:end-10))];
         yTicks = 0:1:10000;
+        if (yLim(2)==yLim(1))
+            yLim = [-1 1];
+        end
         set(gca, 'YLim', yLim, 'YTick', yTicks);
         grid on; box on;
         
