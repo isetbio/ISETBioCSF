@@ -1,5 +1,5 @@
-function plotStepResponses(timeAxis, stepResponses, adaptationPhotonRates, stepWeberConstants, legends, figNo)
-% Plot the photocurrent responses for the examined step stimuli 
+function plotOnOffResponses(timeAxis, stepResponses, adaptationPhotonRates, stepWeberConstants, legends, figNo)
+% Plot the photocurrent responses for the examined On/OFF stimuli 
 %
 % Syntax:
 %   plotStepResponses(timeAxis, stepResponses, adaptationPhotonRates, stepWeberConstants, legends, figNo)
@@ -33,9 +33,12 @@ function plotStepResponses(timeAxis, stepResponses, adaptationPhotonRates, stepW
     hFig = figure(figNo); clf;
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1220 845]);
     
+    % Color scheme to use for the different impulse resposes
+    cmap = brewermap(mStepStrengths/2 , 'spectral');
+    
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
        'colsNum', nAdaptationLevels, ...
-       'rowsNum', mStepStrengths/2, ...
+       'rowsNum', 1, ...
        'heightMargin',   0.03, ...
        'widthMargin',    0.02, ...
        'leftMargin',     0.07, ...
@@ -43,38 +46,38 @@ function plotStepResponses(timeAxis, stepResponses, adaptationPhotonRates, stepW
        'bottomMargin',   0.05, ...
        'topMargin',      0.02);
    
-   for pulseStrengthIndex = 1:2:mStepStrengths
-        labelXaxis = false;
-        if (pulseStrengthIndex == mStepStrengths-1)
-           labelXaxis = true;
+   for adaptationIndex = 1:nAdaptationLevels
+        subplot('Position', subplotPosVectors(1, adaptationIndex).v);
+        
+        labelYaxis = false;
+        if (adaptationIndex == 1)
+          labelYaxis = true;
         end
+        
+        legends = {};
+        for pulseStrengthIndex = 1:2:mStepStrengths
+           labelXaxis = true;
            
-        for adaptationIndex = 1:nAdaptationLevels
-           labelYaxis = false;
-           if (adaptationIndex == 1)
-               labelYaxis = true;
-           end
            weberContrastIndex = floor(pulseStrengthIndex/2)+1;
+           lineColor = squeeze(cmap(weberContrastIndex,:));
            % step increment response
            responseIncrement = squeeze(stepResponses(adaptationIndex, pulseStrengthIndex,:));
-           % step decrement response
-           responseDecrement = squeeze(stepResponses(adaptationIndex, pulseStrengthIndex+1,:));
            % Plot
-           subplot('Position', subplotPosVectors(weberContrastIndex, adaptationIndex).v);
-           plotTemporalResponse(timeAxis, responseIncrement, 'r', '', 'line', labelXaxis, labelYaxis);
-           hold on;
-           plotTemporalResponse(timeAxis, responseDecrement, 'b', '', 'line', labelXaxis, labelYaxis);
-           plotTemporalResponse(timeAxis, responseDecrement(1)-(responseDecrement-responseDecrement(1)), 'b', 'current (pAmps)', 'dotted line', labelXaxis, labelYaxis);
-           text(150, -5, sprintf('%2.0f photons/cone/sec', stepWeberConstants(weberContrastIndex)*adaptationPhotonRates(adaptationIndex)), 'FontSize', 12);
+           plotTemporalResponse(timeAxis, responseIncrement, lineColor, '', 'line', labelXaxis, labelYaxis);
+           if (pulseStrengthIndex==1)
+               hold on;
+           end
+           
            yLim = [-100 0];
            set(gca, 'YLim',  yLim, 'YTick', [-100:10:0]);
            if (adaptationIndex > 1)
                set(gca, 'YTickLabel', {});
            end
            grid on; box on 
-           if (pulseStrengthIndex == 1)
-               title(sprintf('%2.0f photons/cone/sec', adaptationPhotonRates(adaptationIndex)), 'FontSize', 12);
-           end
-       end
+           legends{numel(legends)+1} = sprintf('c = %2.1f%%', stepWeberConstants(weberContrastIndex)*100);
+        end
+        legend(legends);
+        
+        title(sprintf('adaptation: %2.0f photons/cone/sec', adaptationPhotonRates(adaptationIndex)), 'FontSize', 12);
    end
 end

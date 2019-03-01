@@ -1,10 +1,10 @@
 function [timeAxis, stepResponses, modelResponses, legends] = ...
-    computeStepReponses(adaptationPhotonRates, pulseWeberContrasts, pulseDurationSeconds, simulationTimeStepSeconds, spontaneousIsomerizationRate, eccentricity, noisyInstancesNum)
+    computeStepReponses(constantStimParams, adaptationPhotonRates, pulseWeberContrasts, pulseDurationSeconds,  spontaneousIsomerizationRate, eccentricity, noisyInstancesNum)
 % Run the photocurrent model for a number of step stimuli
 %
 % Syntax:
 %   [timeAxis, stepResponses, modelResponses, legends] = ...
-%    computeStepReponses(adaptationPhotonRates, pulseWeberContrasts, ...
+%    computeStepReponses(constantStimParams, adaptationPhotonRates, pulseWeberContrasts, ...
 %    pulseDurationSeconds, simulationTimeStepSeconds, spontaneousIsomerizationRate, eccentricity);
 %
 % Description:
@@ -20,7 +20,6 @@ function [timeAxis, stepResponses, modelResponses, legends] = ...
 %    adaptationPhotonRates     - Vector of background photon rates (R*/c/s)
 %    pulseWeberContrasts       - Vector of pulse Weber contrasts
 %    pulseDurationSeconds      - Scalar. Pulse duration in seconds
-%    simulationTimeStepSeconds - Scalar. Simulation time step in seconds
 %    spontaneousIsomerizationRate - Scalar. Spontaneous isomerization rate
 %    eccentricity              - String. 'foveal' or 'peripheral'
 %    noisyInstancesNum         - Number of noisy instances to compute
@@ -39,19 +38,10 @@ function [timeAxis, stepResponses, modelResponses, legends] = ...
 % History:
 %    2/13/19  NPC   ISETBIO Team, 2019
 
-
-    % Define the stim params struct
-    stimParams = struct(...
-        'type', 'pulse', ...                                    % type of stimulus
-        'adaptationPhotonRate', [], ...                         % background pRate
-        'pulseDurationSeconds', pulseDurationSeconds, ...       % pulse duration in seconds
-        'photonsDeliveredDuringPulse', [], ...                  % how many photons during the pulse duration
-        'totalDurationSeconds', 0.6, ...                        % total duration of the stimulus
-        'timeSampleSeconds', simulationTimeStepSeconds ...
-    );
-
     
     % Initialize
+    stimParams = constantStimParams;
+    
     nAdaptationLevels = numel(adaptationPhotonRates);
     mPulseStrengths = 2*numel(pulseWeberContrasts);
     photonsDeliveredDuringPulses = zeros(1, mPulseStrengths);

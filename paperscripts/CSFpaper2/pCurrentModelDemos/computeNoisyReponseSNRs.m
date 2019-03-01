@@ -5,9 +5,17 @@ function [timeAxis, photoCurrents, noisyPhotoCurrentsInstance, ...
         pulseDurationSeconds, simulationTimeStepSeconds, spontaneousIsomerizationRate, eccentricity, noisyInstancesNum, ...
         timeWindowForSNRanalysis, displaySNRVectors)
     
+    % Define the stim params struct
+    constantStimParams = struct(...
+        'type', 'pulse', ...                                    % type of stimulus
+        'pulseDurationSeconds', pulseDurationSeconds, ...       % pulse duration in seconds
+        'totalDurationSeconds', 0.6, ...                        % total duration of the stimulus
+        'timeSampleSeconds', simulationTimeStepSeconds ...
+    );
+
     % Compute the model responses for all conditions
-    [~, ~, modelResponses, legends] = computeStepReponses(adaptationPhotonRates, ...
-        pulseWeberContrasts, pulseDurationSeconds, simulationTimeStepSeconds, spontaneousIsomerizationRate, eccentricity, noisyInstancesNum);
+    [~, ~, modelResponses, legends] = computeStepReponses(constantStimParams, adaptationPhotonRates, ...
+        pulseWeberContrasts, pulseDurationSeconds, spontaneousIsomerizationRate, eccentricity, noisyInstancesNum);
 
     % Extract the noisy photocurrents
     nAdaptationLevels = size(modelResponses,1);

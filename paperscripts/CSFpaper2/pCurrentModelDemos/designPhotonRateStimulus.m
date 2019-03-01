@@ -49,6 +49,24 @@ function stimulus = designPhotonRateStimulus(stimParams, spontaneousIsomerizatio
             pulsePhotonRate = stimParams.photonsDeliveredDuringPulse/stimParams.pulseDurationSeconds;
             % Add the pulse photon rate to the background photon rate
             stimulus.pRate(stimBinIndices) = stimulus.pRate(stimBinIndices) + pulsePhotonRate;
+            
+        case 'on_off_pulses'
+            % Determine time bins for the ON pulse
+            stimBins = round(stimParams.pulseDurationSeconds/dt);
+            stimBinIndices = round(stimulus.onsetSeconds/dt) + (0:(stimBins-1));
+            % Determine photon rate for the pulse
+            pulsePhotonRate = stimParams.photonsDeliveredDuringPulse/stimParams.pulseDurationSeconds;
+            % Add the pulse photon rate to the background photon rate
+            stimulus.pRate(stimBinIndices) = stimulus.pRate(stimBinIndices) + pulsePhotonRate;
+            
+            % Determine time bins for the OFF pulse
+            secondOnsetSeconds = stimulus.onsetSeconds + stimParams.pulseDurationSeconds + stimParams.interpulseIntervalSeconds;
+            stimBinIndices = round(secondOnsetSeconds/dt) + (0:(stimBins-1));
+            % Determine photon rate for the pulse
+            pulsePhotonRate =-stimParams.photonsDeliveredDuringPulse/stimParams.pulseDurationSeconds;
+            % Add the pulse photon rate to the background photon rate
+            stimulus.pRate(stimBinIndices) = stimulus.pRate(stimBinIndices) + pulsePhotonRate;
+            
         otherwise
             error('Unknown stimulus type: ''%s''.', stimParams.type);
     end

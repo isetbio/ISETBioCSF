@@ -93,7 +93,7 @@ function plotModelResponses(modelResponses, legends, figNo)
         
         subplot('Position', subplotPosVectors(7,iModel).v);
         plotTemporalResponse(model.timeAxis, model.membraneCurrent, 'r', sprintf('photocurrent\n(pAmps)'), 'line', true, labelYaxis);
-        yTicks = -90:0.2:0;
+        yTicks = -100:0.2:0;
         yLim = model.membraneCurrent(1)+[-0.3 1];
         set(gca, 'YLim', yLim, 'YTick', yTicks, 'YTickLabel', sprintf('%2.1f\n', yTicks));
         grid on; box on;

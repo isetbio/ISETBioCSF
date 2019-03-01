@@ -9,8 +9,8 @@ function demonstratePhotocurrentModel
     % Spontaneous photoisomerization rate (100 R*/c/sec)
     spontaneousIsomerizationRate = 100;
     
-    doImpulseResponseAnalysis = true;
-    doOnOffAsymmetryAnalysis = ~true;
+    doImpulseResponseAnalysis = ~true;
+    doOnOffAsymmetryAnalysis = true;
     doStepResponseAnalysis = ~true;
     doSignalToNoiseAnalysis = ~true;
     
@@ -39,21 +39,30 @@ end
 
 function figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, figNo)
     % Compute the step responses at different adaptation levels
-    adaptationPhotonRates = [17000];
+    adaptationPhotonRates = [1000 7000 17000];
     pulseDurationSeconds = 500/1000;
-    interpulseIntervalSeconds = 1000/1000;
-    pulseWeberContrasts = [0.12 25 50 70 100];
+    pulseWeberContrasts = [0.12 0.24 0.48 0.96];
+   
     
+    % Define the stim params struct
+    constantStimParams = struct(...
+        'type', 'on_off_pulses', ...                            % type of stimulus
+        'pulseDurationSeconds', pulseDurationSeconds, ...       % pulse duration in seconds
+        'interpulseIntervalSeconds', 1, ...                   % interpular interval in seconds
+        'totalDurationSeconds', 3, ...                        % total duration of the stimulus
+        'timeSampleSeconds', simulationTimeStepSeconds ...
+    );
+
     spontaneousIsomerizationRate = 0;
     instancesNum = 1;
     
     [timeAxis, onOffResponses, modelResponses, legends] = ...
-        computeOnOFFReponses(adaptationPhotonRates, pulseWeberContrasts, ...
-        pulseDurationSeconds, interpulseIntervalSeconds, simulationTimeStepSeconds, spontaneousIsomerizationRate, eccentricity, instancesNum);
+        computeStepReponses(constantStimParams, adaptationPhotonRates, pulseWeberContrasts, ...
+        pulseDurationSeconds, spontaneousIsomerizationRate, eccentricity, instancesNum);
     
-    % Plot the different step responses
+    % Plot the different On/OFF responses
     figNo = figNo + 1;
-    plotOnOffResponses(timeAxis, stepResponses, adaptationPhotonRates, pulseWeberContrasts, legends, figNo);
+    plotOnOffResponses(timeAxis, onOffResponses, adaptationPhotonRates, pulseWeberContrasts, legends, figNo);
 end
 
 function figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, figNo)
@@ -116,17 +125,26 @@ end
 
 
 function figNo = demoStepResponses(eccentricity, simulationTimeStepSeconds, figNo)
+
     % Compute the step responses at different adaptation levels
     adaptationPhotonRates = [100 300 1000 3000 10000];
     pulseDurationSeconds = 100/1000;
     pulseWeberContrasts = [0.125 0.25 0.5 0.75 1.0];
     
+    % Define the stim params struct
+    constantStimParams = struct(...
+        'type', 'pulse', ...                                    % type of stimulus
+        'pulseDurationSeconds', pulseDurationSeconds, ...       % pulse duration in seconds
+        'totalDurationSeconds', 0.6, ...                        % total duration of the stimulus
+        'timeSampleSeconds', simulationTimeStepSeconds ...
+    );
+
     spontaneousIsomerizationRate = 0;
     instancesNum = 1;
     
     [timeAxis, stepResponses, modelResponses, legends] = ...
-        computeStepReponses(adaptationPhotonRates, pulseWeberContrasts, ...
-        pulseDurationSeconds, simulationTimeStepSeconds, spontaneousIsomerizationRate, eccentricity, instancesNum);
+        computeStepReponses(constantStimParams, adaptationPhotonRates, pulseWeberContrasts, ...
+        pulseDurationSeconds, spontaneousIsomerizationRate, eccentricity, instancesNum);
     
     % Plot the different step responses
     figNo = figNo + 1;

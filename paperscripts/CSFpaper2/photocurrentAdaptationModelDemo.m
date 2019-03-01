@@ -5,7 +5,7 @@ function photocurrentAdaptationModelDemo
     validIsomerizationRateRange = [300 20000];
     
     % Duration of flash in seconds
-    flashDurationSeconds = 100/1000;
+    flashDurationSeconds = 1000/1000;
     
     % Different flash amplitudes to be examined
     nFlashLevels = 5;
@@ -25,8 +25,8 @@ function photocurrentAdaptationModelDemo
     idx = find(backgroundIsomerizationsPerSec>1000);
     backgroundIsomerizationsPerSec(idx) = round(backgroundIsomerizationsPerSec(idx)/1000)*1000;
     
-    flashIsomerizationsPerSec = [50 100 500 1000 3000 5000 10000 20000];
-    backgroundIsomerizationsPerSec = [0 3000 10000 20000];
+    flashIsomerizationsPerSec = 17000*[-1 1 -0.5 0.5 -0.1 0.1]; %[50 100 500 1000 3000 5000 10000 20000];
+    backgroundIsomerizationsPerSec = [17000]; %[0 3000 10000 20000];
     
     % Compute model responses
     [timeAxisSeconds, isomerizationStimuli, pCurrents, noisyPcurrents] = ...
@@ -203,7 +203,7 @@ function plotResponses(timeAxisSeconds, isomerizationStimuli, pCurrents, noisyPc
         end
         
         legend(legends);
-        set(gca, 'YLim', pRange, 'XLim', [-0.05 0.45], 'Color', [1 1 1]);
+        set(gca, 'YLim', pRange, 'XLim', [-0.05 1.6], 'Color', [1 1 1]);
         xlabel('\it time (seconds)');
         if (flashIndex == 1)
             ylabel('pCurrent (pA)');
@@ -247,7 +247,7 @@ function [timeAxisSeconds, isomerizationStimuli, pCurrents, noisyPcurrents] = ..
     backgroundRates = repmat(backgroundIsomerizationsPerSec(:), [1 nflashes]);
     
     % Set up biophysics os
-    os = osCreate('biophys');
+    os = osBioPhys('eccentricity', 0);
     os = osSet(os, 'noise flag', 'none');
     
     % Compute steady-state
@@ -464,9 +464,10 @@ model = obj.state;
 adaptedData = zeros([size(model.opsin) size(pRate, 3) + 1]);
 adaptedData(:, :, 1) = model.bgCur;
 
-q = 2 * model.beta * model.cdark / (model.k * model.gdark ^ model.h);
+q = 2 * model.beta * model.cdark / (model.k * model.gdark ^ model.h)
 smax = model.eta / model.phi * model.gdark * ...
-    (1 + (model.cdark / model.kGc) ^ model.n);
+    (1 + (model.cdark / model.kGc) ^ model.n)
+pause
 
 for ii = 1 : size(pRate, 3)
     model.opsin = model.opsin + dt * (model.OpsinGain * pRate(:, :, ii) ...
