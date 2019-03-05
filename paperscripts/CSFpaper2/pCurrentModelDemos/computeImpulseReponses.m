@@ -15,6 +15,8 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
 %    eccentricity.
 %
 % Inputs:
+%    impulseDurationSeconds    - The duration of the impulse in seconds
+%    photonCountDuringImpulse  - The photon count delivered during the impulse
 %    adaptationPhotonRates     - Vector of background photon rates (R*/c/s)
 %    simulationTimeStepSeconds - Scalar. Simulation time step in seconds
 %    eccentricity              - String. 'foveal' or 'peripheral'
