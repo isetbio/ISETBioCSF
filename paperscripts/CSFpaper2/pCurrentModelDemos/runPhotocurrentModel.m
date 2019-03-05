@@ -167,7 +167,7 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
     
     % Add outer segment noise instances
     if (noisyInstancesNum > 0)
-        fprintf('Computing %d response instances (deconstructed implementation)\n', noisyInstancesNum);
+        fprintf('Computing %d response instances (components implementation - not default)\n', noisyInstancesNum);
         ImembraneManyInstances = repmat(reshape(modelResponse.membraneCurrent, [1 1 numel(modelResponse.membraneCurrent)]), [1 noisyInstancesNum]);
         modelResponse.noisyMembraneCurrents = squeeze(osAddNoise(ImembraneManyInstances, 'sampTime', dt));
     else

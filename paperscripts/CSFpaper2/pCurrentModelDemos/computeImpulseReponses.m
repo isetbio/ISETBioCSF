@@ -1,5 +1,5 @@
 function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, ...
-    modelResponses, legends] = computeImpulseReponses(adaptationPhotonRates, ...
+    modelResponses, legends] = computeImpulseReponses(impulseDurationSeconds, photonCountDuringImpulse, adaptationPhotonRates, ...
     simulationTimeStepSeconds, eccentricity)
 % Run the photocurrent model for a number of impulse stimuli
 %
@@ -39,9 +39,9 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
     stimParams = struct(...
         'type', 'pulse', ...                            % type of stimulus
         'adaptationPhotonRate', [], ...               % background pRate
-        'pulseDurationSeconds', simulationTimeStepSeconds, ...             % pulse duration in seconds
-        'photonsDeliveredDuringPulse', 1, ...           % how many photons during the pulse duration
-        'totalDurationSeconds', 1.0, ...                  % total duration of the stimulus
+        'pulseDurationSeconds', impulseDurationSeconds, ...             % pulse duration in seconds
+        'photonsDeliveredDuringPulse', photonCountDuringImpulse, ...           % how many photons during the pulse duration
+        'totalDurationSeconds', 1000/1000, ...                  % total duration of the stimulus
         'timeSampleSeconds', simulationTimeStepSeconds ...
     );
 
@@ -91,7 +91,7 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
         modelResponses{adaptationIndex} = model;
         impulseResponses(adaptationIndex,:) = ir;
         impulseResponseSpectra(adaptationIndex,:) = irSpectrum(idx);
-        legends{adaptationIndex} = sprintf('%2.0f photons/c/s', stimParams.adaptationPhotonRate);
+        legends{adaptationIndex} = sprintf('bkgnd: %2.0f photons/cone/s', stimParams.adaptationPhotonRate);
         timeAxis = model.timeAxis;
     end
 end

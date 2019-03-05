@@ -11,8 +11,9 @@ function demonstratePhotocurrentModel
     
     doImpulseResponseAnalysis = true;
     doOnOffAsymmetryAnalysis = ~true;
-    doStepResponseAnalysis = ~true;
-    doSignalToNoiseAnalysis = true;
+    doStepResponseAnalysis = true;
+    doBipolarStepResponseAnalysis = ~true;
+    doSignalToNoiseAnalysis = ~true;
     
     
     figNo = 0;
@@ -22,13 +23,18 @@ function demonstratePhotocurrentModel
         figNo = demoImpulseResponses(eccentricity, simulationTimeStepSeconds, figNo);
     end
     
+    % Compute and visualze the pCurrent step responses at differentadaptation levels
+    if (doStepResponseAnalysis)
+        figNo = demoStepResponses(eccentricity, simulationTimeStepSeconds, figNo);
+    end
+    
     if (doOnOffAsymmetryAnalysis)
         figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, figNo);
     end
     
     % Compute and visualze the pCurrent step responses at differentadaptation levels
-    if (doStepResponseAnalysis)
-        figNo = demoStepResponses(eccentricity, simulationTimeStepSeconds, figNo);
+    if (doBipolarStepResponseAnalysis)
+        figNo = demoBipolarStepResponses(eccentricity, simulationTimeStepSeconds, figNo);
     end
     
     if (doSignalToNoiseAnalysis)
@@ -39,8 +45,8 @@ end
 
 function figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, figNo)
     % Compute the step responses at different adaptation levels
-    adaptationPhotonRates = [1000 10000 13000];
-    pulseDurationSeconds = 1000/1000;
+    adaptationPhotonRates = [3000 10000];
+    pulseDurationSeconds = 100/1000;
     pulseWeberContrasts = [0.12 0.24 0.48 0.96];
    
     
@@ -48,8 +54,8 @@ function figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, fig
     constantStimParams = struct(...
         'type', 'on_off_pulses', ...                            % type of stimulus
         'pulseDurationSeconds', pulseDurationSeconds, ...       % pulse duration in seconds
-        'interpulseIntervalSeconds', 1, ...                     % interpular interval in seconds
-        'totalDurationSeconds', 4, ...                          % total duration of the stimulus
+        'interpulseIntervalSeconds', 0.5, ...                     % interpular interval in seconds
+        'totalDurationSeconds', 1.0, ...                          % total duration of the stimulus
         'timeSampleSeconds', simulationTimeStepSeconds ...
     );
 
@@ -108,11 +114,13 @@ end
 
 function figNo = demoImpulseResponses(eccentricity, simulationTimeStepSeconds, figNo)
     % Examined adaptation levels (photons/cone/sec)
-    adaptationPhotonRates = [0]; % [0 300 1000 3000 10000];
+    adaptationPhotonRates = [6000]; % [0 300 1000 3000 10000];
+    impulseDurationSeconds = simulationTimeStepSeconds;
+    photonCountDuringImpulse = 1;
     
     % Compute the impulse response at different adaptation levels
     [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, modelResponses, legends] = ...
-        computeImpulseReponses(adaptationPhotonRates, simulationTimeStepSeconds, eccentricity);
+        computeImpulseReponses(impulseDurationSeconds, photonCountDuringImpulse, adaptationPhotonRates, simulationTimeStepSeconds, eccentricity);
     
     % Plot the impulse response at different adaptation levels
     figNo = figNo + 1;
@@ -125,6 +133,26 @@ end
 
 
 function figNo = demoStepResponses(eccentricity, simulationTimeStepSeconds, figNo)
+    % Examined adaptation levels (photons/cone/sec)
+    adaptationPhotonRates = [6000]; % [0 300 1000 3000 10000];
+    stepDurationSeconds = 500/1000;
+    photonCountDuringImpulse = adaptationPhotonRates*stepDurationSeconds*0.1;
+    
+    % Compute the impulse response at different adaptation levels
+    [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, modelResponses, legends] = ...
+        computeImpulseReponses(stepDurationSeconds, photonCountDuringImpulse, adaptationPhotonRates, simulationTimeStepSeconds, eccentricity);
+    
+    % Plot the impulse response at different adaptation levels
+    figNo = figNo + 1;
+    plotImpulseResponses(timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, adaptationPhotonRates, legends, figNo);
+    
+    % Plot the model response to the impulse stimuli
+    figNo = figNo + 1;
+    plotModelResponses(modelResponses, legends,figNo);
+end
+
+
+function figNo = demoBipolarStepResponses(eccentricity, simulationTimeStepSeconds, figNo)
 
     % Compute the step responses at different adaptation levels
     adaptationPhotonRates = [100 300 1000 3000 10000];

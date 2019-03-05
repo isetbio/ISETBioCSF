@@ -66,20 +66,22 @@ function plotOnOffResponses(timeAxis, stepResponses, modelResponses, adaptationP
            noisyResponseIncrement = squeeze(modelResponse.noisyMembraneCurrents(1,:));
            % Plot
 
-           plotTemporalResponse(timeAxis, noisyResponseIncrement, lineColor*0.5 + 0.5*[1 1 1], '', 'line', labelXaxis, labelYaxis);
+           yLims = [-100 0];
+           yTicks = [-100:10:0];
+           yTickLabels = sprintf('%2.0f\n', yTicks);
+           plotTemporalResponse(timeAxis, noisyResponseIncrement, lineColor*0.5 + 0.5*[1 1 1], ...
+               '', 'line', labelXaxis, labelYaxis, ...
+               yLims, yTicks, yTickLabels);
            hold on;
-           plotTemporalResponse(timeAxis, responseIncrement, lineColor, '', 'line', labelXaxis, labelYaxis);
-%            if (pulseStrengthIndex==1)
-%                hold on;
-%            end
+           plotTemporalResponse(timeAxis, responseIncrement, lineColor, ...
+               '', 'line', labelXaxis, labelYaxis, ...
+               yLims, yTicks, yTickLabels);
            
-           yLim = [-100 0];
-           set(gca, 'YLim',  yLim, 'YTick', [-100:10:0]);
            if (adaptationIndex > 1)
                set(gca, 'YTickLabel', {});
            end
-           grid on; box on 
            legends{numel(legends)+1} = sprintf('c = %2.1f%%', stepWeberConstants(weberContrastIndex)*100);
+           drawnow
         end
         legend(legends);
         
