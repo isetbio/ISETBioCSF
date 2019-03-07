@@ -7,9 +7,9 @@ function demonstratePhotocurrentModel
     simulationTimeStepSeconds = 0.1/1000;
     
     % Spontaneous photoisomerization rate (100 R*/c/sec)
-    spontaneousIsomerizationRate = 100;
+    spontaneousIsomerizationRate = 0;
     
-    doImpulseResponseAnalysis = true;
+    doImpulseResponseAnalysis = ~true;
     doOnOffAsymmetryAnalysis = ~true;
     doStepResponseAnalysis = true;
     doBipolarStepResponseAnalysis = ~true;
@@ -25,7 +25,9 @@ function demonstratePhotocurrentModel
     
     % Compute and visualze the pCurrent step responses at differentadaptation levels
     if (doStepResponseAnalysis)
-        figNo = demoStepResponses(eccentricity, simulationTimeStepSeconds, figNo);
+        adaptationPhotonRate = 30 / 5 *  1000; % corresponding to typical 5 ms count of 30 cone excitations
+        pulseWeberContrast = 0.90;
+        figNo = demoStepResponses(eccentricity, simulationTimeStepSeconds, adaptationPhotonRate, pulseWeberContrast, figNo);
     end
     
     if (doOnOffAsymmetryAnalysis)
@@ -132,23 +134,19 @@ function figNo = demoImpulseResponses(eccentricity, simulationTimeStepSeconds, f
 end
 
 
-function figNo = demoStepResponses(eccentricity, simulationTimeStepSeconds, figNo)
+function figNo = demoStepResponses(eccentricity, simulationTimeStepSeconds, adaptationPhotonRate, pulseWeberContrast,figNo)
     % Examined adaptation levels (photons/cone/sec)
-    adaptationPhotonRates = [6000]; % [0 300 1000 3000 10000];
+    adaptationPhotonRates = adaptationPhotonRate;
     stepDurationSeconds = 500/1000;
-    photonCountDuringImpulse = adaptationPhotonRates*stepDurationSeconds*0.1;
+    photonCountDuringImpulse = adaptationPhotonRates*stepDurationSeconds*pulseWeberContrast;
     
     % Compute the impulse response at different adaptation levels
     [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, modelResponses, legends] = ...
         computeImpulseReponses(stepDurationSeconds, photonCountDuringImpulse, adaptationPhotonRates, simulationTimeStepSeconds, eccentricity);
     
-    % Plot the impulse response at different adaptation levels
-    figNo = figNo + 1;
-    plotImpulseResponses(timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, adaptationPhotonRates, legends, figNo);
-    
     % Plot the model response to the impulse stimuli
     figNo = figNo + 1;
-    plotModelResponses(modelResponses, legends,figNo);
+    plotModelResponses(modelResponses, legends, []);
 end
 
 

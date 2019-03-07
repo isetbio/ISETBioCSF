@@ -43,7 +43,7 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
         'adaptationPhotonRate', [], ...               % background pRate
         'pulseDurationSeconds', impulseDurationSeconds, ...             % pulse duration in seconds
         'photonsDeliveredDuringPulse', photonCountDuringImpulse, ...           % how many photons during the pulse duration
-        'totalDurationSeconds', 1000/1000, ...                  % total duration of the stimulus
+        'totalDurationSeconds', impulseDurationSeconds+500/1000, ...                  % total duration of the stimulus
         'timeSampleSeconds', simulationTimeStepSeconds ...
     );
 
@@ -51,7 +51,7 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
     % Initialize
     modelResponses = cell(1,numel(adaptationPhotonRates));
     legends = cell(1, numel(adaptationPhotonRates));
-    noisyInstancesNum = 0;
+    noisyInstancesNum = 1;
     
     % Run model for the different adaptation levels
     for adaptationIndex = 1:numel(adaptationPhotonRates) 

@@ -23,7 +23,7 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
 % History:
 %    2/13/19  NPC   ISETBIO Team, 2019
 
-    useDefaultImplementation = ~true;
+    useDefaultImplementation = true;
     
 
     if (useDefaultImplementation)
