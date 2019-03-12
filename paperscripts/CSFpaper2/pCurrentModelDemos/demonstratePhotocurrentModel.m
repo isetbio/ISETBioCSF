@@ -10,8 +10,8 @@ function demonstratePhotocurrentModel
     spontaneousIsomerizationRate = 0;
     
     doImpulseResponseAnalysis = ~true;
-    doOnOffAsymmetryAnalysis = ~true;
-    doStepResponseAnalysis = true;
+    doOnOffAsymmetryAnalysis = true;
+    doStepResponseAnalysis = ~true;                     % used to illustrate the different model components
     doBipolarStepResponseAnalysis = ~true;
     doSignalToNoiseAnalysis = ~true;
     
@@ -47,9 +47,9 @@ end
 
 function figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, figNo)
     % Compute the step responses at different adaptation levels
-    adaptationPhotonRates = [3000 10000];
+    adaptationPhotonRates = [6000];
     pulseDurationSeconds = 100/1000;
-    pulseWeberContrasts = [0.12 0.24 0.48 0.96];
+    pulseWeberContrasts = [0.15 0.25 0.5 0.75 1.0];
    
     
     % Define the stim params struct
@@ -62,11 +62,13 @@ function figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, fig
     );
 
     spontaneousIsomerizationRate = 0;
-    instancesNum = 1;
+    instancesNum = 0;
+    %false to visualize the internal model components
+    useDefaultPhotocurrentImplementation = true;
     
     [timeAxis, onOffResponses, modelResponses, legends] = ...
         computeStepReponses(constantStimParams, adaptationPhotonRates, pulseWeberContrasts, ...
-        pulseDurationSeconds, spontaneousIsomerizationRate, eccentricity, instancesNum);
+        pulseDurationSeconds, spontaneousIsomerizationRate, eccentricity, instancesNum, useDefaultPhotocurrentImplementation);
     
     % Plot the different On/OFF responses
     figNo = figNo + 1;
@@ -116,21 +118,27 @@ end
 
 function figNo = demoImpulseResponses(eccentricity, simulationTimeStepSeconds, figNo)
     % Examined adaptation levels (photons/cone/sec)
-    adaptationPhotonRates = [6000]; % [0 300 1000 3000 10000];
+    adaptationPhotonRates = [60 600 6000]; % [0 300 1000 3000 10000];
     impulseDurationSeconds = simulationTimeStepSeconds;
     photonCountDuringImpulse = 1;
+    %false to visualize the internal model components
+    useDefaultPhotocurrentImplementation = true;
     
     % Compute the impulse response at different adaptation levels
     [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, modelResponses, legends] = ...
-        computeImpulseReponses(impulseDurationSeconds, photonCountDuringImpulse, adaptationPhotonRates, simulationTimeStepSeconds, eccentricity);
+        computeImpulseReponses(impulseDurationSeconds, photonCountDuringImpulse, adaptationPhotonRates, ...
+        simulationTimeStepSeconds, eccentricity, useDefaultPhotocurrentImplementation);
     
     % Plot the impulse response at different adaptation levels
     figNo = figNo + 1;
-    plotImpulseResponses(timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, adaptationPhotonRates, legends, figNo);
+    plotFrequencySpectra = ~true;
+    plotImpulseResponses(timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, adaptationPhotonRates, plotFrequencySpectra, legends, figNo);
     
     % Plot the model response to the impulse stimuli
-    figNo = figNo + 1;
-    plotModelResponses(modelResponses, legends,figNo);
+    if (~useDefaultPhotocurrentImplementation)
+        figNo = figNo + 1;
+        plotModelResponses(modelResponses, legends,figNo);
+    end
 end
 
 

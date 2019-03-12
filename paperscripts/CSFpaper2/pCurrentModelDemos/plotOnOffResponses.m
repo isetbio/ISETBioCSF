@@ -34,16 +34,16 @@ function plotOnOffResponses(timeAxis, stepResponses, modelResponses, adaptationP
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 1220 845]);
     
     % Color scheme to use for the different impulse resposes
-    cmap = brewermap(mStepStrengths/2 , 'spectral');
+    cmap = brewermap(mStepStrengths/2 , 'reds');
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
        'colsNum', nAdaptationLevels, ...
        'rowsNum', 1, ...
        'heightMargin',   0.03, ...
-       'widthMargin',    0.02, ...
-       'leftMargin',     0.07, ...
+       'widthMargin',    0.05, ...
+       'leftMargin',     0.1, ...
        'rightMargin',    0.01, ...
-       'bottomMargin',   0.05, ...
+       'bottomMargin',   0.10, ...
        'topMargin',      0.02);
    
    for adaptationIndex = 1:nAdaptationLevels
@@ -60,31 +60,34 @@ function plotOnOffResponses(timeAxis, stepResponses, modelResponses, adaptationP
            
            weberContrastIndex = floor(pulseStrengthIndex/2)+1;
            lineColor = squeeze(cmap(weberContrastIndex,:));
-           % step increment response
-           responseIncrement = squeeze(stepResponses(adaptationIndex, pulseStrengthIndex,:));
-           modelResponse = modelResponses{adaptationIndex, pulseStrengthIndex};
-           noisyResponseIncrement = squeeze(modelResponse.noisyMembraneCurrents(1,:));
-           % Plot
+           response = squeeze(stepResponses(adaptationIndex, pulseStrengthIndex,:));
 
-           yLims = [-100 0];
-           yTicks = [-100:10:0];
+           % Plot
+           yLims = [-90 -25];
+           yTicks = [-100:5:0];
+           
            yTickLabels = sprintf('%2.0f\n', yTicks);
-           plotTemporalResponse(timeAxis, noisyResponseIncrement, lineColor*0.5 + 0.5*[1 1 1], ...
+           if (~isempty(modelResponses{adaptationIndex,pulseStrengthIndex}.noisyMembraneCurrents))
+                noisyResponse = squeeze(modelResponses{adaptationIndex,pulseStrengthIndex}.noisyMembraneCurrents(1,:));
+                plotTemporalResponse(timeAxis, noisyResponse, lineColor, ...
                '', 'line', labelXaxis, labelYaxis, ...
-               yLims, yTicks, yTickLabels);
+               yLims, yTicks, yTickLabels);  
+           end
            hold on;
-           plotTemporalResponse(timeAxis, responseIncrement, lineColor, ...
+           plotTemporalResponse(timeAxis, response, lineColor, ...
                '', 'line', labelXaxis, labelYaxis, ...
                yLims, yTicks, yTickLabels);
            
            if (adaptationIndex > 1)
                set(gca, 'YTickLabel', {});
+           else
+              ylabel('photocurrent (pAmps)'); 
            end
            legends{numel(legends)+1} = sprintf('c = %2.1f%%', stepWeberConstants(weberContrastIndex)*100);
            drawnow
         end
-        legend(legends);
+        legend(legends, 'Location', 'SouthWest');
         
-        title(sprintf('adaptation: %2.0f photons/cone/sec', adaptationPhotonRates(adaptationIndex)), 'FontSize', 12);
+        title(sprintf('bkgnd: %2.0f photons/cone/sec', adaptationPhotonRates(adaptationIndex)), 'FontSize', 12);
    end
 end

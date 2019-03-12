@@ -252,7 +252,7 @@ function plotModelResponses(modelResponses, legends, figNo)
         yLims = [floor(min(model.membraneCurrent(:))/deltaTick)*deltaTick ceil(max(model.membraneCurrent(:))/deltaTick)*deltaTick];
         yLims = [floor(min(model.noisyMembraneCurrents(:))/deltaTick)*deltaTick ceil(max(model.noisyMembraneCurrents(:))/deltaTick)*deltaTick];
         
-        plotTemporalResponse(model.timeAxis, model.membraneCurrent, 'r', sprintf('photocurrent\n(pAmps)'), 'line', true, labelYaxis, ...
+        plotTemporalResponse(model.timeAxis, model.membraneCurrent, 'r', sprintf('photocurrent (pA)'), 'line', true, labelYaxis, ...
             yLims, yTicks, yTickLabels);
         if (isempty(figNo))
             NicePlot.exportFigToPDF('pCurrent_response.pdf', hFig, 300);
@@ -261,19 +261,19 @@ function plotModelResponses(modelResponses, legends, figNo)
         %
         % The noisy photocurrent
         %
-        if (~isempty(figNo))
-            subplot('Position', subplotPosVectors(8,iModel).v);
-        else
-            hFig = figure(); clf;
-            figNo = figNo + 1;
-            set(hFig, 'Color', [1 1 1], 'Position', panelFigurePosition);
-        end
-        
-        size(model.noisyMembraneCurrents)
-        plotTemporalResponse(model.timeAxis, squeeze(model.noisyMembraneCurrents), 'r', sprintf('photocurrent\n(pAmps)'), 'line', true, labelYaxis, ...
-            yLims, yTicks, yTickLabels);
-        if (isempty(figNo))
-            NicePlot.exportFigToPDF('pCurrentNoisy_response.pdf', hFig, 300);
+        if (~isempty(model.noisyMembraneCurrents))
+            if (~isempty(figNo))
+                subplot('Position', subplotPosVectors(8,iModel).v);
+            else
+                hFig = figure(); clf;
+                figNo = figNo + 1;
+                set(hFig, 'Color', [1 1 1], 'Position', panelFigurePosition);
+            end
+            plotTemporalResponse(model.timeAxis, squeeze(model.noisyMembraneCurrents), 'r', sprintf('photocurrent\n(pAmps)'), 'line', true, labelYaxis, ...
+                yLims, yTicks, yTickLabels);
+            if (isempty(figNo))
+                NicePlot.exportFigToPDF('pCurrentNoisy_response.pdf', hFig, 300);
+            end
         end
         
     end

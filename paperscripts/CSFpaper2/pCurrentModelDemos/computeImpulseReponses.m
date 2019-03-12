@@ -1,6 +1,6 @@
 function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, ...
     modelResponses, legends] = computeImpulseReponses(impulseDurationSeconds, photonCountDuringImpulse, adaptationPhotonRates, ...
-    simulationTimeStepSeconds, eccentricity)
+    simulationTimeStepSeconds, eccentricity, useDefaultPhotocurrentImplementation)
 % Run the photocurrent model for a number of impulse stimuli
 %
 % Syntax:
@@ -20,7 +20,9 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
 %    adaptationPhotonRates     - Vector of background photon rates (R*/c/s)
 %    simulationTimeStepSeconds - Scalar. Simulation time step in seconds
 %    eccentricity              - String. 'foveal' or 'peripheral'
-%
+%    useDefaultPhotocurrentImplementation  - true or false
+%                 - true to use the os object - no internal component visualization
+%                 - false to visualize the internal components
 % Output:
 %    timeAxis              - the time axis of the response
 %    impulseResponses      - the responses to the various impulse stimuli
@@ -51,7 +53,8 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
     % Initialize
     modelResponses = cell(1,numel(adaptationPhotonRates));
     legends = cell(1, numel(adaptationPhotonRates));
-    noisyInstancesNum = 1;
+    noisyInstancesNum = 0;
+    
     
     % Run model for the different adaptation levels
     for adaptationIndex = 1:numel(adaptationPhotonRates) 
@@ -60,7 +63,7 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
         stimulus = designPhotonRateStimulus(stimParams, 0);
         
         % Run model
-        model = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum);
+        model = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum, useDefaultPhotocurrentImplementation);
 
         % Obtain impulse response by subtracting the adaptation membrane current
         ir = model.membraneCurrent-model.membraneCurrentAdaptation;

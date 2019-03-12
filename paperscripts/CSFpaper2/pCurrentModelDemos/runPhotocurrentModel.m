@@ -1,4 +1,4 @@
-function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum)
+function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum, useDefaultImplementation)
 % Run the photocurrent model for a singe stimulus
 %
 % Syntax:
@@ -13,7 +13,9 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
 %    eccentricity - String. 'foveal' or 'peripheral'. Determines model
 %                   constants to be used
 %    noisyInstancesNum - Number of noisy instances to compute
-%
+%    useDefaultImplementation - true or false
+%                 - true to use the os object - no internal component visualization
+%                 - false to visualize the internal components
 % Output:
 %    modelResponse - struct containing the various model component responses
 %
@@ -23,8 +25,6 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
 % History:
 %    2/13/19  NPC   ISETBIO Team, 2019
 
-    useDefaultImplementation = true;
-    
 
     if (useDefaultImplementation)
         switch (eccentricity)
@@ -69,6 +69,8 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
         modelResponse.membraneCurrent = pCurrents(keptIndices);
         if (noisyInstancesNum>0)
             modelResponse.noisyMembraneCurrents = noisyPcurrents(keptIndices);
+        else
+            modelResponse.noisyMembraneCurrents = [];
         end
         % Obtain adaptation current as the current at the last point in the warmup period.
         modelResponse.membraneCurrentAdaptation = pCurrents(idx(1));

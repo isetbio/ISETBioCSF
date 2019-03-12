@@ -1,5 +1,5 @@
 function [timeAxis, stepResponses, modelResponses, legends] = ...
-    computeStepReponses(constantStimParams, adaptationPhotonRates, pulseWeberContrasts, pulseDurationSeconds,  spontaneousIsomerizationRate, eccentricity, noisyInstancesNum)
+    computeStepReponses(constantStimParams, adaptationPhotonRates, pulseWeberContrasts, pulseDurationSeconds,  spontaneousIsomerizationRate, eccentricity, noisyInstancesNum, useDefaultImplementation)
 % Run the photocurrent model for a number of step stimuli
 %
 % Syntax:
@@ -23,6 +23,9 @@ function [timeAxis, stepResponses, modelResponses, legends] = ...
 %    spontaneousIsomerizationRate - Scalar. Spontaneous isomerization rate
 %    eccentricity              - String. 'foveal' or 'peripheral'
 %    noisyInstancesNum         - Number of noisy instances to compute
+%    useDefaultImplementation  - true or false
+%                 - true to use the os object - no internal component visualization
+%                 - false to visualize the internal components
 %
 % Output:
 %    timeAxis       - the time axis of the response
@@ -68,7 +71,7 @@ function [timeAxis, stepResponses, modelResponses, legends] = ...
             stimulus = designPhotonRateStimulus(stimParams, spontaneousIsomerizationRate);
             
             % Run model
-            model = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum);
+            model = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum, useDefaultImplementation);
             
             % Obtain step response by subtracting the adaptation membrane current
             if (adaptationIndex*pulseStrengthIndex==1)
