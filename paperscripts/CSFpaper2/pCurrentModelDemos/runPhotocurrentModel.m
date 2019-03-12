@@ -25,7 +25,6 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
 % History:
 %    2/13/19  NPC   ISETBIO Team, 2019
 
-
     if (useDefaultImplementation)
         switch (eccentricity)
             case 'foveal'
@@ -47,6 +46,7 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
         % Compute mean pCurrent response to the isomerization stimuli
         pCurrents = osAdaptTemporal(stimulus.pRate, s);
         if (noisyInstancesNum>0)
+            pCurrents = repmat(pCurrents, [noisyInstancesNum 1]);
             noisyPcurrents = osAddNoise(pCurrents, 'sampTime', dt);
         end
         
@@ -66,10 +66,12 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
         modelResponse.gC = modelResponse.opsin;
         modelResponse.caSlow = modelResponse.opsin;
         modelResponse.cGMP = modelResponse.opsin;
-        modelResponse.membraneCurrent = pCurrents(keptIndices);
+        
         if (noisyInstancesNum>0)
-            modelResponse.noisyMembraneCurrents = noisyPcurrents(keptIndices);
+            modelResponse.membraneCurrent = pCurrents(1, keptIndices);
+            modelResponse.noisyMembraneCurrents = noisyPcurrents(:,keptIndices);
         else
+            modelResponse.membraneCurrent = pCurrents(keptIndices);
             modelResponse.noisyMembraneCurrents = [];
         end
         % Obtain adaptation current as the current at the last point in the warmup period.

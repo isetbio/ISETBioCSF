@@ -31,30 +31,51 @@ function plotOnOffResponses(timeAxis, stepResponses, modelResponses, adaptationP
     mStepStrengths = size(stepResponses,2);
     
     hFig = figure(figNo); clf;
-    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1220 845]);
-    
-    % Color scheme to use for the different impulse resposes
-    cmap = brewermap(mStepStrengths/2 , 'reds');
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 725]);
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-       'colsNum', nAdaptationLevels, ...
+       'colsNum', 1, ...
        'rowsNum', 1, ...
        'heightMargin',   0.03, ...
        'widthMargin',    0.05, ...
-       'leftMargin',     0.1, ...
+       'leftMargin',     0.15, ...
        'rightMargin',    0.01, ...
-       'bottomMargin',   0.10, ...
-       'topMargin',      0.02);
+       'bottomMargin',   0.09, ...
+       'topMargin',      0.01);
    
    for adaptationIndex = 1:nAdaptationLevels
-        subplot('Position', subplotPosVectors(1, adaptationIndex).v);
+       dResponses = squeeze(stepResponses(adaptationIndex, :,:));
+       response = squeeze(stepResponses(adaptationIndex, 1,:));
+       dResponse(adaptationIndex) = ceil(max(abs(dResponses(:)-response(1)))/5)*5;
+   end
+
+   legends = {};
+   for adaptationIndex = 1:nAdaptationLevels
+        subplot('Position', subplotPosVectors(1, 1).v);
+        hold on
+        if (adaptationIndex == 1)
+            % Color scheme to use for the different impulse resposes
+            cmap = brewermap(mStepStrengths/2 , 'greys');
+        elseif (adaptationIndex == 2)
+            % Color scheme to use for the different impulse resposes
+            cmap = brewermap(mStepStrengths/2 , 'blues');
+        else 
+            % Color scheme to use for the different impulse resposes
+            cmap = brewermap(mStepStrengths/2 , 'reds');
+        end
         
         labelYaxis = false;
         if (adaptationIndex == 1)
           labelYaxis = true;
         end
         
-        legends = {};
+        
+        %response = squeeze(stepResponses(adaptationIndex, 1,:));
+        %yLims = response(1) + dResponse(adaptationIndex) * [-1 1];
+        yLims = [-93 -25]; %[floor(min(stepResponses(:))/5)*5 ceil(max(stepResponses(:))/5)*5]; 
+        yTicks = [-100:5:0];
+        yTickLabels = sprintf('%2.0f\n', yTicks);
+        
         for pulseStrengthIndex = 1:2:mStepStrengths
            labelXaxis = true;
            
@@ -63,10 +84,6 @@ function plotOnOffResponses(timeAxis, stepResponses, modelResponses, adaptationP
            response = squeeze(stepResponses(adaptationIndex, pulseStrengthIndex,:));
 
            % Plot
-           yLims = [-90 -25];
-           yTicks = [-100:5:0];
-           
-           yTickLabels = sprintf('%2.0f\n', yTicks);
            if (~isempty(modelResponses{adaptationIndex,pulseStrengthIndex}.noisyMembraneCurrents))
                 noisyResponse = squeeze(modelResponses{adaptationIndex,pulseStrengthIndex}.noisyMembraneCurrents(1,:));
                 plotTemporalResponse(timeAxis, noisyResponse, lineColor, ...
@@ -79,15 +96,18 @@ function plotOnOffResponses(timeAxis, stepResponses, modelResponses, adaptationP
                yLims, yTicks, yTickLabels);
            
            if (adaptationIndex > 1)
-               set(gca, 'YTickLabel', {});
+               %set(gca, 'YTickLabel', {});
            else
-              ylabel('photocurrent (pAmps)'); 
+              ylabel('\it photocurrent (pA)'); 
            end
-           legends{numel(legends)+1} = sprintf('c = %2.1f%%', stepWeberConstants(weberContrastIndex)*100);
+           
+           set(gca, 'FontSize', 24);
+           
+           legends{numel(legends)+1} = sprintf('bkgnd: %2.0f R*/c/s; c = %2.1f%%', adaptationPhotonRates(adaptationIndex), stepWeberConstants(weberContrastIndex)*100);
            drawnow
         end
-        legend(legends, 'Location', 'SouthWest');
+        %legend(legends, 'Location', 'NorthEast');
         
-        title(sprintf('bkgnd: %2.0f photons/cone/sec', adaptationPhotonRates(adaptationIndex)), 'FontSize', 12);
+        %title(sprintf('bkgnd: %2.0f photons/cone/sec', adaptationPhotonRates(adaptationIndex)), 'FontSize', 12);
    end
 end

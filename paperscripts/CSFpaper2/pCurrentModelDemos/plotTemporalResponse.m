@@ -2,11 +2,11 @@ function plotTemporalResponse(timeAxis, signal, lineColor, signalName, plotType,
     if (strcmp(plotType, 'stem'))
         stem(timeAxis*1000, signal, 'Color', lineColor, 'MarkerFaceColor', lineColor, 'MarkerSize', 6, 'LineWidth', 1.0);
     elseif (strcmp(plotType, 'line'))
-        plot(timeAxis*1000, signal, '-', 'Color', lineColor, 'LineWidth', 1.5);
+        plot(timeAxis*1000, signal, '-', 'Color', lineColor, 'LineWidth', 2);
     elseif (strcmp(plotType, 'dashed line'))
-        plot(timeAxis*1000, signal, '--', 'Color', lineColor, 'LineWidth', 1.5);
+        plot(timeAxis*1000, signal, '--', 'Color', lineColor, 'LineWidth', 2);
     elseif (strcmp(plotType, 'dotted line'))
-        plot(timeAxis*1000, signal, ':', 'Color', lineColor, 'LineWidth', 1.5);
+        plot(timeAxis*1000, signal, ':', 'Color', lineColor, 'LineWidth', 2);
     else
         error('Uknown plotType ''%s'' in plotTemporalResponse', plotType);
     end
@@ -14,13 +14,13 @@ function plotTemporalResponse(timeAxis, signal, lineColor, signalName, plotType,
         ylabel(sprintf('\\it %s',signalName));
     end
     
-    if (timeAxis(end)>= 0.99)
+    if (timeAxis(end)>= 1.99)
         xTicks = [0:250:8000];
         xTickLabels = {'0', '', '500', '',  '1000', '', ...
                     '1500', '', '2000', '', '2500', '', '3000', '', '3500', '', ...
                     '4000', '', '4500', '', '5000', '', '5500', '', '6000', '', ...
                     '6500', '', '7000', '', '7500', '', '8000'};
-    elseif (timeAxis(end)>0.4)
+    elseif (timeAxis(end)>0.99)
         xTicks = [0:100:8000];
         xTickLabels = {'0', '', '200', '', '400', '', '600', '', '800', '', ...
                     '1000', '', '1200', '', '1400', '', '1600', '', '1800', '', ...
