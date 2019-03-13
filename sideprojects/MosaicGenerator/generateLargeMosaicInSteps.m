@@ -1,7 +1,7 @@
 function generateLargeMosaicInSteps
-    mosaicFOV = 10;
+    mosaicFOV = 30;
     minPositionChangeToTriggerTriangularization = nan; 
-    visualizationUpdateIterations = 1;
+    visualizationUpdateIterations = 5;
 
     mosaicParams = struct(...
         'resamplingFactor', 5, ...
