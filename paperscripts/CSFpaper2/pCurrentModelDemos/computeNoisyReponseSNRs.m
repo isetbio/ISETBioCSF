@@ -2,12 +2,23 @@ function [timeAxis, photoCurrents, noisyPhotoCurrentsInstance, ...
     timeAxisConeExcitations, coneExcitationRates, noisyConeExcitationRateInstance, ...
     photocurrentSNR, coneExcitationSNR, legends] = ...
         computeNoisyReponseSNRs(adaptationPhotonRates, pulseWeberContrasts, ...
-        pulseDurationSeconds, simulationTimeStepSeconds, eccentricity, noisyInstancesNum, ...
+        pulseDurationSeconds, simulationTimeStepSeconds, spontaneousIsomerizationRate, eccentricity, noisyInstancesNum, ...
         timeWindowForSNRanalysis, displaySNRVectors)
     
+    % Define the stim params struct
+    constantStimParams = struct(...
+        'type', 'pulse', ...                                    % type of stimulus
+        'pulseDurationSeconds', pulseDurationSeconds, ...       % pulse duration in seconds
+        'totalDurationSeconds', 0.4, ...                        % total duration of the stimulus
+        'timeSampleSeconds', simulationTimeStepSeconds ...
+    );
+
+    %false to visualize the internal model components
+    useDefaultPhotocurrentImplementation = true;
+    
     % Compute the model responses for all conditions
-    [~, ~, modelResponses, legends] = computeStepReponses(adaptationPhotonRates, ...
-        pulseWeberContrasts, pulseDurationSeconds, simulationTimeStepSeconds, eccentricity, noisyInstancesNum);
+    [~, ~, modelResponses, legends] = computeStepReponses(constantStimParams, adaptationPhotonRates, ...
+        pulseWeberContrasts, pulseDurationSeconds, spontaneousIsomerizationRate, eccentricity, noisyInstancesNum, useDefaultPhotocurrentImplementation);
 
     % Extract the noisy photocurrents
     nAdaptationLevels = size(modelResponses,1);
@@ -23,7 +34,7 @@ function [timeAxis, photoCurrents, noisyPhotoCurrentsInstance, ...
             
             % Compute cone excitation signals fro stimulus photon rate
             noisyConeExcitationRateSignals = ...
-                computeConeExcitationSignalsFromStimulusPhotonRate(modelResponse.pRate, pulseDurationSeconds, noisyInstancesNum);
+                computeConeExcitationSignalsFromStimulusPhotonRate(modelResponse.pRate, spontaneousIsomerizationRate, pulseDurationSeconds, noisyInstancesNum);
             meanConeExcitationRateSignal = modelResponse.pRate;
              
             timeAxis = modelResponse.timeAxis;
@@ -46,6 +57,10 @@ function [timeAxis, photoCurrents, noisyPhotoCurrentsInstance, ...
             noisyConeExcitationRateInstance(adaptationIndex, pulseStrengthIndex,:) = noisyConeExcitationRateSignals(1,:);
            
             % Compute the SNR based on the noise traces (signal-mean signal) and the mean response modulation
+            if (any(noisyConeExcitationRateSignals(:)<0))
+                fprintf('What the heck? ''noisyConeExcitationRateSignals'' has negative elements.\n');
+                error('this shouldnt happen');
+            end
             noiseTraces = bsxfun(@minus, noisyConeExcitationRateSignals, meanConeExcitationRateSignal);
             responseModulation = meanConeExcitationRateSignal - meanConeExcitationRateSignal(1);
             
@@ -76,16 +91,16 @@ function [timeAxis, photoCurrents, noisyPhotoCurrentsInstance, ...
 end
 
 
-function noisyConeExcitationRateSignals = computeConeExcitationSignalsFromStimulusPhotonRate(pRate, pulseDurationSeconds, noisyInstancesNum)
+function noisyConeExcitationRateSignals = computeConeExcitationSignalsFromStimulusPhotonRate(pRate, spontaneousIsomerizationRate, pulseDurationSeconds, noisyInstancesNum)
             
     % To compute Poisson noise we need to convert photon rate to photon count. What integation time to use?
     % Do this for pulseDurationSeconds
     photonCountingIntegrationTime = pulseDurationSeconds;
-    meanConeExcitationCountSignal = round(pRate * photonCountingIntegrationTime);
+    meanConeExcitationCountSignal = round((pRate+spontaneousIsomerizationRate) * photonCountingIntegrationTime);
 
     % Obtain noisy cone excitation response instances
     noisyConeExcitationCountSignals = coneMosaic.photonNoise(repmat(meanConeExcitationCountSignal, [noisyInstancesNum 1]));
-
+    
     % Noisy photon rates
     noisyConeExcitationRateSignals = noisyConeExcitationCountSignals / photonCountingIntegrationTime;          
 end
@@ -119,10 +134,16 @@ function theSNR = computeSNR(meanSignalModulation, noiseTraces, displaySNRVector
                 dBins = round(20/(1000*(timeAxis(2)-timeAxis(1))));
                 deltaR = zeros(1,2*dBins+1);
                 deltaBins = -dBins:dBins;
+                
                 for k = 1:numel(deltaBins)
-                    r = abs(meanSignalModulation(timeBins+deltaBins(k)));
-                    deltaR(k) = abs(r(1)-r(end));
+                    if ((timeBins+deltaBins(k)>=1) && (timeBins+deltaBins(k) < numel(meanSignalModulation)))
+                        r = abs(meanSignalModulation(timeBins+deltaBins(k)));
+                        deltaR(k) = abs(r(1)-r(end));
+                    else
+                        deltaR(k) = inf;
+                    end
                 end
+                
                 [~,idx] = min(deltaR);
                 % adjusted timeBinOfPeakSignalModulation
                 timeBinOfPeakSignalModulation = timeBinOfPeakSignalModulation+deltaBins(idx);
@@ -151,6 +172,7 @@ function theSNR = computeSNR(meanSignalModulation, noiseTraces, displaySNRVector
         displayedInstancesNum = 4;
         % Just display 10 instances of the SNR signals
         displayedTimeBins = 1:(displayedInstancesNum*numel(timeBinsForSNR));
+
         figure(1234); 
         if (strcmp(signalName, 'cone excitations'))
             subplot(2,2,1);

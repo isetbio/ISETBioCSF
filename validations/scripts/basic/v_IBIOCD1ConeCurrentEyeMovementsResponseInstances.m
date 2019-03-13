@@ -41,7 +41,7 @@ function ValidationFunction(runTimeParams)
     rParams = responseParamsGenerate;
     rParams.spatialParams.gaussianFWHMDegs = 0.35;
     rParams.spatialParams.cyclesPerDegree = 8;
-    rParams.spatialParams.fieldOfViewDegs = 0.5;
+    rParams.spatialParams.fieldOfViewDegs = 0.4;
     rParams.temporalParams.secondsToInclude = 0.24;
     rParams.temporalParams.emPathType = 'frozen';
     rParams.mosaicParams.conePacking = 'rect';
@@ -72,9 +72,9 @@ function ValidationFunction(runTimeParams)
     rParams.mosaicParams.fov = 0.3; 
     rParams.mosaicParams.resamplingFactor = 2;
     rParams.mosaicParams.latticeAdjustmentPositionalToleranceF =  0.5;      % For production work, this should either not get passed or get set to equal or lower than 0.01      
-    rParams.mosaicParams.latticeAdjustmentDelaunayToleranceF = 0.5;        % For production work, this should either not get passed or get set to equal or lower than 0.001 
+    rParams.mosaicParams.latticeAdjustmentDelaunayToleranceF = 0.5;         % For production work, this should either not get passed or get set to equal or lower than 0.001 
     rParams.mosaicParams.marginF =  1/sqrt(2.0);                            % For production work this should not get passed or set to empty
-    testDirectionParams.trialsNum = 1;
+    testDirectionParams.trialsNum = 2;
 
     [validationData4, extraData4] = t_coneCurrentEyeMovementsResponseInstances(...
         'employStandardHostComputerResources', true, ...

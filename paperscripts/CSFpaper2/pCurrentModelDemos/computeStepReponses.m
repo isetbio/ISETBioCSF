@@ -1,11 +1,11 @@
 function [timeAxis, stepResponses, modelResponses, legends] = ...
-    computeStepReponses(adaptationPhotonRates, pulseWeberContrasts, pulseDurationSeconds, simulationTimeStepSeconds, eccentricity, noisyInstancesNum)
+    computeStepReponses(constantStimParams, adaptationPhotonRates, pulseWeberContrasts, pulseDurationSeconds,  spontaneousIsomerizationRate, eccentricity, noisyInstancesNum, useDefaultImplementation)
 % Run the photocurrent model for a number of step stimuli
 %
 % Syntax:
 %   [timeAxis, stepResponses, modelResponses, legends] = ...
-%    computeStepReponses(adaptationPhotonRates, pulseWeberContrasts, ...
-%    pulseDurationSeconds, simulationTimeStepSeconds, eccentricity);
+%    computeStepReponses(constantStimParams, adaptationPhotonRates, pulseWeberContrasts, ...
+%    pulseDurationSeconds, simulationTimeStepSeconds, spontaneousIsomerizationRate, eccentricity);
 %
 % Description:
 %    Function to run the outer segment photocurrent model for a number of 
@@ -20,9 +20,12 @@ function [timeAxis, stepResponses, modelResponses, legends] = ...
 %    adaptationPhotonRates     - Vector of background photon rates (R*/c/s)
 %    pulseWeberContrasts       - Vector of pulse Weber contrasts
 %    pulseDurationSeconds      - Scalar. Pulse duration in seconds
-%    simulationTimeStepSeconds - Scalar. Simulation time step in seconds
+%    spontaneousIsomerizationRate - Scalar. Spontaneous isomerization rate
 %    eccentricity              - String. 'foveal' or 'peripheral'
 %    noisyInstancesNum         - Number of noisy instances to compute
+%    useDefaultImplementation  - true or false
+%                 - true to use the os object - no internal component visualization
+%                 - false to visualize the internal components
 %
 % Output:
 %    timeAxis       - the time axis of the response
@@ -38,19 +41,10 @@ function [timeAxis, stepResponses, modelResponses, legends] = ...
 % History:
 %    2/13/19  NPC   ISETBIO Team, 2019
 
-
-    % Define the stim params struct
-    stimParams = struct(...
-        'type', 'pulse', ...                                    % type of stimulus
-        'adaptationPhotonRate', [], ...                         % background pRate
-        'pulseDurationSeconds', pulseDurationSeconds, ...       % pulse duration in seconds
-        'photonsDeliveredDuringPulse', [], ...                  % how many photons during the pulse duration
-        'totalDurationSeconds', 0.6, ...                        % total duration of the stimulus
-        'timeSampleSeconds', simulationTimeStepSeconds ...
-    );
-
     
     % Initialize
+    stimParams = constantStimParams;
+    
     nAdaptationLevels = numel(adaptationPhotonRates);
     mPulseStrengths = 2*numel(pulseWeberContrasts);
     photonsDeliveredDuringPulses = zeros(1, mPulseStrengths);
@@ -74,10 +68,10 @@ function [timeAxis, stepResponses, modelResponses, legends] = ...
             % Design stimulus
             stimParams.adaptationPhotonRate = adaptationPhotonRates(adaptationIndex);
             stimParams.photonsDeliveredDuringPulse = photonsDeliveredDuringPulses(pulseStrengthIndex);
-            stimulus = designPhotonRateStimulus(stimParams);
+            stimulus = designPhotonRateStimulus(stimParams, spontaneousIsomerizationRate);
             
             % Run model
-            model = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum);
+            model = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum, useDefaultImplementation);
             
             % Obtain step response by subtracting the adaptation membrane current
             if (adaptationIndex*pulseStrengthIndex==1)

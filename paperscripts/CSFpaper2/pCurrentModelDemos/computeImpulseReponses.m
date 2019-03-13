@@ -1,6 +1,6 @@
 function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, ...
-    modelResponses, legends] = computeImpulseReponses(adaptationPhotonRates, ...
-    simulationTimeStepSeconds, eccentricity)
+    modelResponses, legends] = computeImpulseReponses(impulseDurationSeconds, photonCountDuringImpulse, adaptationPhotonRates, ...
+    simulationTimeStepSeconds, eccentricity, useDefaultPhotocurrentImplementation)
 % Run the photocurrent model for a number of impulse stimuli
 %
 % Syntax:
@@ -15,10 +15,14 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
 %    eccentricity.
 %
 % Inputs:
+%    impulseDurationSeconds    - The duration of the impulse in seconds
+%    photonCountDuringImpulse  - The photon count delivered during the impulse
 %    adaptationPhotonRates     - Vector of background photon rates (R*/c/s)
 %    simulationTimeStepSeconds - Scalar. Simulation time step in seconds
 %    eccentricity              - String. 'foveal' or 'peripheral'
-%
+%    useDefaultPhotocurrentImplementation  - true or false
+%                 - true to use the os object - no internal component visualization
+%                 - false to visualize the internal components
 % Output:
 %    timeAxis              - the time axis of the response
 %    impulseResponses      - the responses to the various impulse stimuli
@@ -35,30 +39,31 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
 % History:
 %    2/13/19  NPC   ISETBIO Team, 2019
 
-
     % Define the stim params struct
     stimParams = struct(...
         'type', 'pulse', ...                            % type of stimulus
-        'adaptationPhotonRate', 2000, ...               % background pRate
-        'pulseDurationSeconds', 1/1000, ...             % pulse duration in seconds
-        'photonsDeliveredDuringPulse', 1, ...           % how many photons during the pulse duration
-        'totalDurationSeconds', 0.6, ...                  % total duration of the stimulus
+        'adaptationPhotonRate', [], ...               % background pRate
+        'pulseDurationSeconds', impulseDurationSeconds, ...             % pulse duration in seconds
+        'photonsDeliveredDuringPulse', photonCountDuringImpulse, ...           % how many photons during the pulse duration
+        'totalDurationSeconds', impulseDurationSeconds+500/1000, ...                  % total duration of the stimulus
         'timeSampleSeconds', simulationTimeStepSeconds ...
     );
+
       
     % Initialize
     modelResponses = cell(1,numel(adaptationPhotonRates));
     legends = cell(1, numel(adaptationPhotonRates));
     noisyInstancesNum = 0;
     
+    
     % Run model for the different adaptation levels
     for adaptationIndex = 1:numel(adaptationPhotonRates) 
         % Design stimulus
         stimParams.adaptationPhotonRate = adaptationPhotonRates(adaptationIndex);
-        stimulus = designPhotonRateStimulus(stimParams);
+        stimulus = designPhotonRateStimulus(stimParams, 0);
         
         % Run model
-        model = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum);
+        model = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum, useDefaultPhotocurrentImplementation);
 
         % Obtain impulse response by subtracting the adaptation membrane current
         ir = model.membraneCurrent-model.membraneCurrentAdaptation;
@@ -91,7 +96,7 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
         modelResponses{adaptationIndex} = model;
         impulseResponses(adaptationIndex,:) = ir;
         impulseResponseSpectra(adaptationIndex,:) = irSpectrum(idx);
-        legends{adaptationIndex} = sprintf('%2.0f photons/cone/sec', stimParams.adaptationPhotonRate);
+        legends{adaptationIndex} = sprintf('bkgnd: %2.0f photons/cone/s', stimParams.adaptationPhotonRate);
         timeAxis = model.timeAxis;
     end
 end

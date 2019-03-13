@@ -43,6 +43,10 @@ function plotStepResponses(timeAxis, stepResponses, adaptationPhotonRates, stepW
        'bottomMargin',   0.05, ...
        'topMargin',      0.02);
    
+   yLims = [-93 -25];
+   yTicks = [-100:5:0];
+   yTickLabels = sprintf('%2.0f\n', yTicks);
+        
    for pulseStrengthIndex = 1:2:mStepStrengths
         labelXaxis = false;
         if (pulseStrengthIndex == mStepStrengths-1)
@@ -61,13 +65,13 @@ function plotStepResponses(timeAxis, stepResponses, adaptationPhotonRates, stepW
            responseDecrement = squeeze(stepResponses(adaptationIndex, pulseStrengthIndex+1,:));
            % Plot
            subplot('Position', subplotPosVectors(weberContrastIndex, adaptationIndex).v);
-           plotTemporalResponse(timeAxis, responseIncrement, 'r', '', 'line', labelXaxis, labelYaxis);
+           plotTemporalResponse(timeAxis, responseIncrement, 'r', '', 'line', labelXaxis, labelYaxis, yLims, yTicks, yTickLabels);
            hold on;
-           plotTemporalResponse(timeAxis, responseDecrement, 'b', '', 'line', labelXaxis, labelYaxis);
-           plotTemporalResponse(timeAxis, responseDecrement(1)-(responseDecrement-responseDecrement(1)), 'b', 'current (pAmps)', 'dotted line', labelXaxis, labelYaxis);
+           plotTemporalResponse(timeAxis, responseDecrement, 'b', '', 'line', labelXaxis, labelYaxis, yLims, yTicks, yTickLabels);
+           plotTemporalResponse(timeAxis, responseDecrement(1)-(responseDecrement-responseDecrement(1)), 'b', 'current (pAmps)', 'dotted line', labelXaxis, labelYaxis, yLims, yTicks, yTickLabels);
            text(150, -5, sprintf('%2.0f photons/cone/sec', stepWeberConstants(weberContrastIndex)*adaptationPhotonRates(adaptationIndex)), 'FontSize', 12);
-           yLim = [-90 0];
-           set(gca, 'YLim',  yLim, 'YTick', [-90:10:0]);
+           yLim = [-100 0];
+           set(gca, 'YLim',  yLim, 'YTick', [-100:10:0]);
            if (adaptationIndex > 1)
                set(gca, 'YTickLabel', {});
            end

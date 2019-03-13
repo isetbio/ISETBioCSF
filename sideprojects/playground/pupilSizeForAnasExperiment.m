@@ -1,5 +1,5 @@
 function pupilSizeForAnasExperiment
-
+ 
     % fraction of stimulus area to background (entire display) area
     fraction = 0.288;
     scene.xDegs = 20;

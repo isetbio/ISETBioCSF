@@ -52,12 +52,13 @@ function hFig = visualizeBestRespondingLMSResponseInstancesAndNoiseFreeResponse(
         end
         instances = squeeze(compositeResponseInstances(coneTypeIndex,:,:));
         meanResponse = squeeze(compositeNoiseFreeResponses(coneTypeIndex,:));
-        meanResponseFromInstances = mean(instances,1);
-        
+     
         rRange = prctile(instances, instancesPercentRange, 1);
         rLow = squeeze(rRange(1,:));
         rHigh = squeeze(rRange(2,:));
-        renderResponseRangeAreaPlot(ax,compositeResponseTimeAxis,rLow, rHigh, meanResponseFromInstances, edgeColor, faceColor, responsePlottingStyle);
+
+        
+        renderResponseRangeAreaPlot(ax,compositeResponseTimeAxis,rLow, rHigh, meanResponse, edgeColor, faceColor, responsePlottingStyle);
         hold on;
         plot(ax, stimOnsetTime*[1 1], responseRange, 'k-', 'LineWidth', 1.5);
     end       
