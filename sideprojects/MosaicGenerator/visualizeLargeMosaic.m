@@ -1,7 +1,7 @@
 function visualizeLargeMosaic()
     load('ConeMosaic_15.0Degs_Best.mat', 'theMosaic');
 
-    center = [0 1];
+    center = [0 0];
     radius = 1.5;
     
     visualizeSubregion(theMosaic, center, radius);

@@ -47,7 +47,7 @@ function run_ConditionToVisualizePhotocurrentAndEyeMovements
        
     % Modify default params
     % Eye movement types
-    params.emPathType = 'randomNoSaccades';  % 'random' (with saccades),  'randomNoSaccades', or 'none'
+    params.emPathType = 'randomNoSaccades';     % 'random' (with saccades),  'randomNoSaccades', or 'frozen0'
     
     % Eye movement centering
     % 'atStimulusModulationMidPoint' (the centroid of the emPath within the stimulation time is at (0,0)), OR 
