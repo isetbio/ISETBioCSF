@@ -35,7 +35,7 @@ function run_paper2InferenceEngine
     % Whether to compute responses
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -62,17 +62,17 @@ function run_paper2InferenceEngine
     % Init condition index
     condIndex = 0;
     
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-Template-Linear';
-%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-%     examinedCond(condIndex).performanceSignal = performanceSignal;
-%     examinedCond(condIndex).emPathType = emPath;
-%     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'SVM-Template-Linear (noEM)';
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = emPath;
+    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Quadr';
+    examinedCond(condIndex).label = 'SVM-Template-Quadr (noEM)';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
@@ -95,6 +95,9 @@ function run_paper2InferenceEngine
     for condIndex = 1:numel(examinedCond)
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
+        
+        
+        params.cyclesPerDegreeExamined =  [4 8 16 32 50 60]; 
         
         % Update params
         cond = examinedCond(condIndex);

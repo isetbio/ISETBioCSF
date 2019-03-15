@@ -49,6 +49,13 @@ function run_paper2IsomerizationsVsPhotocurrents
     % for capturing the dynamcs of fixationalEM
     integrationTimeMilliseconds = 5.0;
     
+    % How long the stimulus is.
+    % We might be changing the duration. 100 ms is the default
+    stimulusDurationInSeconds = 100/1000;
+    % Frame rate in Hz. 10 Hz, so each frame is 100 msec long
+    % Will need to change this to study shorter stimulus durations.
+    frameRate = 10; 
+    
     % Assemble conditions list to be examined
     % Init condition index
     condIndex = 0;
@@ -77,7 +84,7 @@ function run_paper2IsomerizationsVsPhotocurrents
     % Go
     examinedLegends = {};
     for condIndex = 1:numel(examinedCond)
-        params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, computationInstance);
+        params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds,  frameRate, stimulusDurationInSeconds, computationInstance);
         
         cond = examinedCond(condIndex);
         
