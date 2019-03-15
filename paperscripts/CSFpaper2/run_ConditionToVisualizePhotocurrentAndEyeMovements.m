@@ -51,15 +51,15 @@ function run_ConditionToVisualizePhotocurrentAndEyeMovements
     
     % Eye movement centering
     % 'atStimulusModulationMidPoint' (the centroid of the emPath within the stimulation time is at (0,0)), OR 
-    % 'atStimulusModulationOnset' (he em position is (0,0) at stimulus onset)
+    % 'atStimulusModulationOnset' (the em position is (0,0) at stimulus onset)
     
-    params.centeredEMPaths = 'atStimulusModulationMidPoint'; % 'atStimulusModulationOnset'
+    params.centeredEMPaths = 'atStimulusModulationOnset'; % 'atStimulusModulationMidPoint'; % 'atStimulusModulationOnset'
     
     % Only the max contrast level
     params.lowContrast = 1.0; 
     params.highContrast =  1.0; 
     params.nContrastsPerDirection = 1;
-    params.nTrainingSamples = 1024;
+    params.nTrainingSamples = 8;
         
     % Simulation steps to perform
     params.computeResponses = true;

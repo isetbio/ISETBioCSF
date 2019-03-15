@@ -669,6 +669,7 @@ if ((p.Results.visualizeResponses || p.Results.visualizeOuterSegmentFilters))
                 noStimData.responseInstanceArray.theMosaicPhotocurrents  = noStimData.responseInstanceArray.theMosaicPhotocurrents(1:idx,:,:);
             end
             noStimData.responseInstanceArray.theMosaicEyeMovements = noStimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
+            noStimData.responseInstanceArray.theMosaicEyeMovementsMicrons = noStimData.responseInstanceArray.theMosaicEyeMovementsMicrons(1:idx,:,:);
         end
         
         rParams = ancillaryData.rParams;
@@ -700,8 +701,10 @@ if ((p.Results.visualizeResponses || p.Results.visualizeOuterSegmentFilters))
                     stimData.responseInstanceArray.theMosaicPhotocurrents = stimData.responseInstanceArray.theMosaicPhotocurrents(1:idx,:,:);
                 end
                 stimData.responseInstanceArray.theMosaicEyeMovements = stimData.responseInstanceArray.theMosaicEyeMovements(1:idx,:,:);
+                stimData.responseInstanceArray.theMosaicEyeMovementsMicrons = stimData.responseInstanceArray.theMosaicEyeMovementsMicrons(1:idx,:,:);
             end
             
+
             % Visualization routines work only for coneMosaicHex
             if (p.Results.generatePlots) && (isa(theMosaic, 'coneMosaicHex'))
                 % Call the figures generation routine
@@ -776,10 +779,12 @@ function [responseInstanceArray, noiseFreeIsomerizations, noiseFreePhotocurrents
             responseInstanceArray.timeAxis = tmpData.responseInstanceArray.timeAxis;
             responseInstanceArray.photocurrentTimeAxis = tmpData.responseInstanceArray.photocurrentTimeAxis;
             responseInstanceArray.theMosaicEyeMovements = [];
+            responseInstanceArray.theMosaicEyeMovementsMicrons = [];
             responseInstanceArray.theMosaicIsomerizations = [];
             responseInstanceArray.theMosaicPhotocurrents = [];
         end
         responseInstanceArray.theMosaicEyeMovements   = cat(1, responseInstanceArray.theMosaicEyeMovements,   tmpData.responseInstanceArray.theMosaicEyeMovements);
+        responseInstanceArray.theMosaicEyeMovementsMicrons   = cat(1, responseInstanceArray.theMosaicEyeMovementsMicrons,   tmpData.responseInstanceArray.theMosaicEyeMovementsMicrons);
         responseInstanceArray.theMosaicIsomerizations = cat(1, responseInstanceArray.theMosaicIsomerizations, tmpData.responseInstanceArray.theMosaicIsomerizations);
         responseInstanceArray.theMosaicPhotocurrents  = cat(1, responseInstanceArray.theMosaicPhotocurrents,  tmpData.responseInstanceArray.theMosaicPhotocurrents);
         % Delete the block data file

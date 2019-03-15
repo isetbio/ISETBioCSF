@@ -561,6 +561,9 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
         stimDataSignalInstanceFull = squeeze(stimData.responseInstanceArray.theMosaicPhotocurrents(visualizedResponseInstance,:,:));
         noStimDataNoiseFreeSignalFull = noStimData.noiseFreePhotocurrents;
     end
+
+    stimDataEMpathMicrons = squeeze(stimData.responseInstanceArray.theMosaicEyeMovementsMicrons(visualizedResponseInstance,:,:));
+    noStimDataEMpathMicrons = squeeze(noStimData.responseInstanceArray.theMosaicEyeMovementsMicrons(visualizedResponseInstance,:,:));
     
     if (makeVideos) 
         % Make videos
@@ -580,6 +583,8 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
         
         ax = subplot('Position', [0.155 0.72 0.84 0.23]);
         [timelinePlot, timelineArrowPlot] = generateXTConeLinePlot(ax, theMosaic, ...
+            stimDataEMpathMicrons, ...
+            noStimDataEMpathMicrons, ...
             stimDataSignalInstanceFull, ...
             noStimDataNoiseFreeSignalFull, ...
             signalRange, timeAxis, ...
@@ -697,6 +702,8 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
     set(hFigTmp, 'Position', [10 10 600 425], 'Color', [1 1 1]);
     ax = subplot('Position', [0.155 0.19 0.84 0.71]);
     generateXTConeLinePlot(ax, theMosaic, ...
+        stimDataEMpathMicrons, ...
+        noStimDataEMpathMicrons, ...
         stimDataSignalInstanceFull, ...
         noStimDataNoiseFreeSignalFull, ...
         signalRange, timeAxis, coneLinePlotType, signalName, ...
@@ -705,7 +712,8 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
         
 end
 
-function [timelinePlot, timelineArrowPlot] = generateXTConeLinePlot(ax, theMosaic, activation, nullStimActivation, signalRange, timeAxis, coneLinePlotType, signalName, xLabelTitle, yLabelTitle, showXTicks, colorbarTitle)
+function [timelinePlot, timelineArrowPlot] = generateXTConeLinePlot(ax, theMosaic, EMpath, ...
+        nullStimEMpath, activation, nullStimActivation, signalRange, timeAxis, coneLinePlotType, signalName, xLabelTitle, yLabelTitle, showXTicks, colorbarTitle)
 
     sampledHexMosaicXaxis = squeeze(theMosaic.patternSupport(1, :, 1)) + ...
         theMosaic.center(1);
@@ -757,6 +765,12 @@ function [timelinePlot, timelineArrowPlot] = generateXTConeLinePlot(ax, theMosai
         elseif (strcmp(signalName, 'Photocurrent'))
             cticks = -90:2:0;
         end
+        if (strcmp(coneLinePlotType,'stim'))
+            emTRajectoryXposDegs = squeeze(EMpath(:,1))/theMosaic.micronsPerDegree;
+        else
+            emTRajectoryXposDegs = squeeze(nullStimEMpath(:,1))/theMosaic.micronsPerDegree;
+        end
+        
     end
         
     timeAxisRange = [timeAxis(1) timeAxis(end)];
@@ -766,6 +780,8 @@ function [timelinePlot, timelineArrowPlot] = generateXTConeLinePlot(ax, theMosai
     imagesc(ax, coneXcoordsDegs, timeAxis, signalXT);
     axis(ax, 'xy');
     hold(ax, 'on');
+    plot(emTRajectoryXposDegs, timeAxis, 'rs-', 'LineWidth', 1.5);
+    
     timelinePlot = plot(ax, [min(coneXcoordsDegs) max(coneXcoordsDegs)], [nan nan], 'g-', 'LineWidth', 2);
     timelineArrowPlot = plot(ax, min(coneXcoordsDegs), nan, 'gs', 'MarkerSize', 12, 'LineWidth', 1.5, 'MarkerFaceColor', [0.6 1.0 0.6]);
     hold(ax, 'off');
