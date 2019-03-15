@@ -62,33 +62,42 @@ function run_paper2InferenceEngine
     % Init condition index
     condIndex = 0;
     
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'SVM-Template-Linear (noEM)';
+%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+%     examinedCond(condIndex).performanceSignal = performanceSignal;
+%     examinedCond(condIndex).emPathType = emPath;
+%     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+%     
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'SVM-Template-Quadr (noEM)';
+%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+%     examinedCond(condIndex).performanceSignal = performanceSignal;
+%     examinedCond(condIndex).emPathType = emPath;
+%     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    
+    
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Linear (noEM)';
+    examinedCond(condIndex).label = 'SVM-Template-Linear, pCurrent, driftEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
     examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = emPath;
-    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    examinedCond(condIndex).emPathType = 'randomNoSaccades';
+    examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Quadr (noEM)';
+    examinedCond(condIndex).label = 'SVM-Template-Quadr, pCurrent, driftEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
     examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = emPath;
-    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-    
-    
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-Template-Linear, pCurrent, driftEM-1';
-%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-%     examinedCond(condIndex).performanceSignal = 'photocurrents';
-%     examinedCond(condIndex).emPathType = 'randomNoSaccades';
-%     examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
+    examinedCond(condIndex).emPathType = 'randomNoSaccades';
+    examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
     
     % Go
     examinedLegends = {};
@@ -97,7 +106,7 @@ function run_paper2InferenceEngine
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
         
         
-        params.cyclesPerDegreeExamined =  [4 8 16 32 50 60]; 
+        params.cyclesPerDegreeExamined = [4 8 16 32 50 60]; 
         
         % Update params
         cond = examinedCond(condIndex);
