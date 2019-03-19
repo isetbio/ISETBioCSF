@@ -122,6 +122,8 @@ function plotOnOffResponses(timeAxis, stepResponses, modelResponses, adaptationP
    
    
    if (mWeberContrasts < nAdaptationLevels)
+       %  Plot differential pCurrent amplitude as a function of adaptation 
+       %  light level for the examined contrasts
        legends = {};
        cmap = brewermap(mWeberContrasts*2 , '*RdYlBu');
        
@@ -150,6 +152,8 @@ function plotOnOffResponses(timeAxis, stepResponses, modelResponses, adaptationP
        legend(legends, 'Location', 'NorthWest');
        grid on; box on;
    else 
+       %  Plot differential pCurrent amplitude as a function of pulse
+       %  contrast for the examined adaptation levels
        for adaptationIndex = 1:nAdaptationLevels
 
             if (adaptationIndex == 1)
