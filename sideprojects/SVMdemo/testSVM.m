@@ -1,4 +1,4 @@
-% Exanube SVM performance as a function  of  trialsNum
+% Examine SVM performance as a function  of  trialsNum
 function testSVM
 
     clear; close all;
@@ -13,37 +13,17 @@ function testSVM
         'fovDegs', sizeDegs, ...        % match mosaic width to stimulus size
         'integrationTimeSeconds', 10/1000);
     
-    trialsNumList = 2.^(8:13)/4;
+    trialsNumList = [100 200 400 800 1600 3200 6400 12800];
+    testContrasts  = [0.01 0.015 0.02 0.03];
     
-    testContrast  = 0.01;
-    [trialsNumList,percentCorrectMean,percentCorrectSEM] = ...
-        doAnalysisForContrast(theMosaic, testContrast, testSF,  sizeDegs, trialsNumList);
-    
-    % Plot results
-    figure(1)
-    testContrast  = 0.01;
-    [trialsNumList,percentCorrectMean,percentCorrectSEM] = ...
-        doAnalysisForContrast(testContrast, sizeDegs);
-    subplot(2,2,1);
-    plotData(trialsNumList,percentCorrectMean,percentCorrectSEM, testContrast);
-    
-    testContrast  = 0.02;
-    [trialsNumList,percentCorrectMean,percentCorrectSEM] = ...
-        doAnalysisForContrast(testContrast, sizeDegs);
-    subplot(2,2,2);
-    plotData(trialsNumList,percentCorrectMean,percentCorrectSEM, testContrast);
-    
-    testContrast  = 0.04;
-    [trialsNumList,percentCorrectMean,percentCorrectSEM] = ...
-        doAnalysisForContrast(testContrast, sizeDegs);
-    subplot(2,2,3);
-    plotData(trialsNumList,percentCorrectMean,percentCorrectSEM, testContrast);
-   
-    testContrast  = 0.08;
-    [trialsNumList,percentCorrectMean,percentCorrectSEM] = ...
-        doAnalysisForContrast(testContrast, sizeDegs);
-    subplot(2,2,4);
-    plotData(trialsNumList,percentCorrectMean,percentCorrectSEM, testContrast);
+    for k = 1:numel(testContrasts)
+        [testTrialsNumList,percentCorrectMean,percentCorrectSEM] = ...
+            doAnalysisForContrast(theMosaic, testContrasts(k), testSF, sizeDegs, trialsNumList);
+        figure(1)
+        subplot(2,2,k);
+        plotData(testTrialsNumList,percentCorrectMean,percentCorrectSEM, testContrasts(k));
+    end
+
 end
 
 
@@ -51,16 +31,16 @@ function plotData(trialsNumList,percentCorrectMean,percentCorrectSEM, testContra
     errorbar(trialsNumList,percentCorrectMean,percentCorrectSEM, 's-', ...
         'MarkerSize', 12, 'LineWidth',  1.5);
     set(gca, 'XLim', [0.5*trialsNumList(1) 1.1*trialsNumList(end)], 'XScale', 'log', ...
-        'YLim', [40 100], 'YTick', 0:20:100, ...
+        'XTick',  [10 30 100 300 1000], 'YLim', [40 100], 'YTick', 0:20:100, ...
         'FontSize', 12);
     grid on;
-    title(sprintf('contrast = %2.3f%%',  testContrast*100));
-    xlabel('nTrialsNum')
+    title(sprintf('contrast = %2.1f%%',  testContrast*100));
+    xlabel('testTrialsNum')
     ylabel('% Correct')
     
 end
 
-function [trialsNumList,percentCorrectMean,percentCorrectSEM] = ...
+function [testTrialsNumList,percentCorrectMean,percentCorrectSEM] = ...
     doAnalysisForContrast(theMosaic, testContrast, testSF, sizeDegs, trialsNumList)
     % Create presentation display and place it 5 cm in front of the eye
     presentationDisplay = displayCreate('LCD-Apple', 'viewing distance', 20/100);
@@ -104,8 +84,6 @@ function [trialsNumList,percentCorrectMean,percentCorrectSEM] = ...
     % Compute the retinal image of the null stimulus
     theNullOI = oiCompute(theOI, nullScene);
 
-    
-    
     % Obtain the indices of the grid nodes that contain cones
     [~,~,~, nonNullConeIndices] = theMosaic.indicesForCones;
         
@@ -127,16 +105,22 @@ function [trialsNumList,percentCorrectMean,percentCorrectSEM] = ...
         coneExcitationsNull = theMosaic.compute(theNullOI, 'emPath', emPath);
 
         taskIntervals = 2;
+        kFold = 10;
         [percentCorrectMean(iTrials), percentCorrectSEM(iTrials)] = ...
-            computePerformance(coneExcitationsTest, coneExcitationsNull, nonNullConeIndices, taskIntervals); 
+            computePerformance(coneExcitationsTest, coneExcitationsNull, nonNullConeIndices, taskIntervals, kFold); 
         
         fprintf('Done!');
     end
     
+    % We are doing a k-Fold cross-validation, so SVM is trained on
+    % (kFold-1)/kFold of the trials
+    % and performance is tested on the remaining 1/kFold of the trials
+    testTrialsNumList = trialsNumList/kFold;
     
 end
 
-function [percentCorrectMean, percentCorrectSEM] = computePerformance(coneExcitationsTest, coneExcitationsNull, nonNullConeIndices, taskIntervals)
+function [percentCorrectMean, percentCorrectSEM] = computePerformance(coneExcitationsTest, coneExcitationsNull, nonNullConeIndices, ...
+    taskIntervals, kFold)
 
     % Extract the response vectors for nodes containing cones
     [nTrials, nRows, mCols, nTimeBins] = size(coneExcitationsTest);
@@ -194,7 +178,6 @@ function [percentCorrectMean, percentCorrectSEM] = computePerformance(coneExcita
     svm = fitcsvm(classificationMatrixProjection,classes);
 
     % Perform a 10-fold cross-validation on the trained SVM model
-    kFold = 10;
     CVSVM = crossval(svm,'KFold',kFold);
 
     % Compute classification loss for the in-sample responses using a model
@@ -207,5 +190,5 @@ function [percentCorrectMean, percentCorrectSEM] = computePerformance(coneExcita
     percentCorrectMean = mean(fractionCorrect)*100;
     
     %  Standard  error  of the mean across all folds
-    percentCorrectSEM = std(fractionCorrect)/sqrt(kFold)*100;
+    percentCorrectSEM = std(fractionCorrect)/sqrt(numel(fractionCorrect))*100;
 end
