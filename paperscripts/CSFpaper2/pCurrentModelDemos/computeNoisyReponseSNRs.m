@@ -128,27 +128,22 @@ function theSNR = computeSNR(meanSignalModulation, noiseTraces, displaySNRVector
                 % Photocurrent windowing
                 t1 = timeAxis(timeBinOfPeakSignalModulation) - timeWindowForSNRanalysis/2;
                 t2 = timeAxis(timeBinOfPeakSignalModulation) + timeWindowForSNRanalysis/2;
-                % Search around the peak to find a time point over which
-                % the signal has dropped the same amount from its peak
-                timeBins = find(timeAxis>=t1 & timeAxis <=t2);
-                dBins = round(20/(1000*(timeAxis(2)-timeAxis(1))));
-                deltaR = zeros(1,2*dBins+1);
-                deltaBins = -dBins:dBins;
-                
-                for k = 1:numel(deltaBins)
-                    if ((timeBins+deltaBins(k)>=1) && (timeBins+deltaBins(k) < numel(meanSignalModulation)))
-                        r = abs(meanSignalModulation(timeBins+deltaBins(k)));
-                        deltaR(k) = abs(r(1)-r(end));
+                [~,idx1] = min(abs(timeAxis-t1));
+                [~,idx2] = min(abs(timeAxis-t2));
+                tBins = -300:300;
+                for tBinIndex = 1:numel(tBins)
+                    tBin = tBins(tBinIndex);
+                    if ((idx1+tBin>0) && (idx2+tBin<=numel(meanSignalModulation)))
+                        diffResp(tBinIndex) = abs(meanSignalModulation(idx1+tBin) - meanSignalModulation(idx2+tBin));
                     else
-                        deltaR(k) = inf;
+                        diffResp(tBinIndex) = inf;
                     end
                 end
-                
-                [~,idx] = min(deltaR);
-                % adjusted timeBinOfPeakSignalModulation
-                timeBinOfPeakSignalModulation = timeBinOfPeakSignalModulation+deltaBins(idx);
-                t1 = timeAxis(timeBinOfPeakSignalModulation) - timeWindowForSNRanalysis/2;
-                t2 = timeAxis(timeBinOfPeakSignalModulation) + timeWindowForSNRanalysis/2;
+                [~,tBinIndex] = min(diffResp);
+                idx1 = idx1 + tBins(tBinIndex);
+                idx2 = idx2 + tBins(tBinIndex);
+                t1 = timeAxis(idx1);
+                t2 = timeAxis(idx2);
             end
             timeBinsForSNR = find(timeAxis>=t1 & timeAxis <=t2);
             duration = timeAxis(timeBinsForSNR(end))-timeAxis(timeBinsForSNR(1));

@@ -1,6 +1,7 @@
 function plotSignalToNoiseResults(timeAxis, photoCurrents, noisyPhotoCurrentsInstances, ...
     timeAxisConeExcitations, coneExcitations, noisyConeExcitationInstances, ...
-    photocurrentSNR, coneExcitationSNR, transformDecibelsToRatios, adaptationPhotonRates, stepWeberContrasts, SNRLims, SNRTicks, legends, figNo)
+    photocurrentSNR, coneExcitationSNR, transformDecibelsToRatios, adaptationPhotonRates, stepWeberContrasts, SNRLims, SNRTicks, ...
+    spontaneousIsomerizationRate, pulseDurationSeconds, integrationTimeSeconds,legends, figNo)
 % Plot the signal-to-noise results
 %
 % Syntax:
@@ -50,8 +51,9 @@ function plotSignalToNoiseResults(timeAxis, photoCurrents, noisyPhotoCurrentsIns
     % Plot the SNRs across adaptation levels and contrasts
     figNo = figNo + 1000;
     hFig = figure(figNo); clf;
-    set(hFig, 'Color', [1 1 1], 'Position', [10 10 450 1025]);
-    plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, photocurrentSNR, transformDecibelsToRatios, SNRLims, SNRTicks);
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 750 500]);
+    plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, photocurrentSNR, transformDecibelsToRatios, ...
+        SNRLims, SNRTicks, spontaneousIsomerizationRate, pulseDurationSeconds, integrationTimeSeconds, hFig);
     
     figNo = figNo + 1000;
     hFig = figure(figNo); clf;
@@ -91,7 +93,8 @@ function plotSNRsAcrossAllConditions(coneExcitationSNR, photocurrentSNR,  transf
     
 end
 
-function plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, photocurrentSNR, transformDecibelsToRatios, SNRLims, SNRTicks)
+function plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, photocurrentSNR, transformDecibelsToRatios, SNRLims, SNRTicks, ...
+    spontaneousIsomerizationRate, pulseDurationSeconds, integrationTimeSeconds, hFig)
 
     nAdaptationLevels = size(coneExcitationSNR,1);
     mStepStrengths = size(coneExcitationSNR,2);
@@ -113,36 +116,45 @@ function plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, 
    
     WeberContrastLims = [0.02 1.0]*100;
     WeberContrastTicks = [0.03 0.1 3 10 30 100];
-    SNRDiffLims = [-18 6];
+    SNRDiffLims = [-18 3];
     SNRDiffTicks = (-30:2:20);
-    adaptationRateLims = [40 8000];
+    adaptationRateLims = [30 25000];
     adaptationRateTicks = [30 100 300 1000 3000 10000];
     diffSNR = photocurrentSNR - coneExcitationSNR;
-    cMap = brewermap(numel(decrementIndices), '*spectral');
+    cMap = brewermap(numel(decrementIndices), '*blues');
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-       'colsNum', 1, ...
-       'rowsNum', 3, ...
+       'colsNum', 2, ...
+       'rowsNum', 1, ...
        'heightMargin',   0.05, ...
-       'widthMargin',    0.01, ...
-       'leftMargin',     0.12, ...
+       'widthMargin',    0.02, ...
+       'leftMargin',     0.09, ...
        'rightMargin',    0.02, ...
-       'bottomMargin',   0.05, ...
-       'topMargin',      0.00);
+       'bottomMargin',   0.10, ...
+       'topMargin',      0.05);
    
+    selectAdaptationLevelIndices = [2 6 10];
+    if (max(selectAdaptationLevelIndices) > numel(adaptationPhotonRates))
+       selectAdaptationLevelIndices = numel(adaptationPhotonRates);
+    end
+    selectAdaptationPhotoRates = adaptationPhotonRates(selectAdaptationLevelIndices);
     subplot('Position', subplotPosVectors(1,1).v);
     plotSNR(signedWeberContrasts(incrementIndices)*100, ...
-            squeeze(coneExcitationSNR(:, decrementIndices)), ...
-            squeeze(coneExcitationSNR(:, incrementIndices)), ...
-            adaptationPhotonRates, 'R*/c/sec', cMap, WeberContrastLims , SNRLims, WeberContrastTicks,...
-            SNRTicks, transformDecibelsToRatios, 'contrast (%)', 'SNR (cone excitation)',  'NorthWest');
+            squeeze(coneExcitationSNR(selectAdaptationLevelIndices, decrementIndices)), ...
+            squeeze(coneExcitationSNR(selectAdaptationLevelIndices, incrementIndices)), ...
+            selectAdaptationPhotoRates, 'R*/c/sec', cMap, WeberContrastLims , SNRLims, WeberContrastTicks,...
+            SNRTicks, true, transformDecibelsToRatios, 'contrast (%)', 'signal to noise ratio (SNR)',  'NorthWest');
+    title('cone excitations');
     
-    subplot('Position', subplotPosVectors(2,1).v);
+    subplot('Position', subplotPosVectors(1,2).v);
     plotSNR(signedWeberContrasts(incrementIndices)*100, ...
-            squeeze(photocurrentSNR(:, decrementIndices)), ...
-            squeeze(photocurrentSNR(:, incrementIndices)), ...
-            adaptationPhotonRates, 'R*/c/sec', cMap, WeberContrastLims , SNRLims, WeberContrastTicks,...
-            SNRTicks, transformDecibelsToRatios, 'contrast (%)',  'SNR (pCurrent)',  'NorthWest');
+            squeeze(photocurrentSNR(selectAdaptationLevelIndices, decrementIndices)), ...
+            squeeze(photocurrentSNR(selectAdaptationLevelIndices, incrementIndices)), ...
+            selectAdaptationPhotoRates, 'R*/c/sec', cMap, WeberContrastLims , SNRLims, WeberContrastTicks,...
+            SNRTicks, false, transformDecibelsToRatios, 'contrast (%)',  '',  'NorthWest');
+    title('photocurrent');
+    pdfFileName = sprintf('SNR1_%2.0f_T_%2.0fmsec_P_%2.0fmsec', spontaneousIsomerizationRate, integrationTimeSeconds*1000, pulseDurationSeconds*1000);
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
     
     
     if (transformDecibelsToRatios)
@@ -150,13 +162,11 @@ function plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, 
     else
         yAxisLabel = 'SNR(pCurrent) - SNR(cone excitation) (dB)';
     end  
-    cMap = brewermap(numel(decrementIndices), 'greys');
 
     
-    subplot('Position', subplotPosVectors(3,1).v);
+    
     decrementsDiffSNR = (diffSNR(:,decrementIndices))';
     incrementsDiffSNR = (diffSNR(:,incrementIndices))';
-    contrasts = signedWeberContrasts(incrementIndices)*100;
     
     % average over contrast
     averageOverContrasts = true;
@@ -164,22 +174,41 @@ function plotSNRs(stepWeberContrasts, adaptationPhotonRates, coneExcitationSNR, 
         decrementsDiffSNR = mean(decrementsDiffSNR,1);
         dincrementsDiffSNR = mean(incrementsDiffSNR,1);
         contrasts = 100;
+    else
+        contrasts = signedWeberContrasts(incrementIndices)*100;
     end
-    % Decrements
     
-    plotSNR(adaptationPhotonRates, decrementsDiffSNR, 'decrements', ...
+    % average inc+dec SNRs
+    combineIncDec = true;
+    cMap = 0.6*[1 1 1];
+    
+    hFig2 = figure(99); clf;
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 750 500]);
+    subplot('Position', subplotPosVectors(1,1).v);
+    
+    if (combineIncDec)
+        plotSNR(adaptationPhotonRates, 'inc+dec', 0.5*(decrementsDiffSNR+incrementsDiffSNR), ...
             contrasts, '% contrast', cMap, adaptationRateLims , SNRDiffLims, adaptationRateTicks, ...
-            SNRDiffTicks, transformDecibelsToRatios, 'adaptation level (R*/c/sec)', yAxisLabel,  'SouthWest');
+            SNRDiffTicks, true, transformDecibelsToRatios, 'adaptation level (R*/c/sec)', yAxisLabel,  'SouthWest');
+        title(sprintf('spont exc.: %2.0f R*/c/s, T: %2.0fms, P: %2.0fms', spontaneousIsomerizationRate, integrationTimeSeconds*1000, pulseDurationSeconds*1000));
+    else
+        % Decrements
+        plotSNR(adaptationPhotonRates, decrementsDiffSNR+incrementsDiffSNR, 'decrements', ...
+                contrasts, '% contrast', cMap, adaptationRateLims , SNRDiffLims, adaptationRateTicks, ...
+                SNRDiffTicks, true, transformDecibelsToRatios, 'adaptation level (R*/c/sec)', yAxisLabel,  'SouthWest');
+
+        % Increments
+        plotSNR(adaptationPhotonRates, 'increments', incrementsDiffSNR, ...
+                contrasts, '% contrast', cMap, adaptationRateLims , SNRDiffLims, adaptationRateTicks, ...
+                SNRDiffTicks, true, transformDecibelsToRatios, 'adaptation level (R*/c/sec)', yAxisLabel,  'SouthWest');
+    end
     
-    % Increments
-    plotSNR(adaptationPhotonRates, 'increments', incrementsDiffSNR, ...
-            contrasts, '% contrast', cMap, adaptationRateLims , SNRDiffLims, adaptationRateTicks, ...
-            SNRDiffTicks, transformDecibelsToRatios, 'adaptation level (R*/c/sec)', yAxisLabel,  'SouthWest');
-    
+    pdfFileName = sprintf('SNR2_%2.0f_T_%2.0fmsec_P_%2.0fmsec', spontaneousIsomerizationRate, integrationTimeSeconds*1000, pulseDurationSeconds*1000);
+    NicePlot.exportFigToPDF(pdfFileName, hFig2, 300);
         
 end
 
-function plotSNR(x, decSNR, incSNR, variedPropertyValue, variedPropertyUnits, cMap, XLims, Ylims, XTicks, YTicks, transformDecibelsToRatios, theXLabel, theYLabel,  theLegendLocation)
+function plotSNR(x, decSNR, incSNR, variedPropertyValue, variedPropertyUnits, cMap, XLims, Ylims, XTicks, YTicks, showYTickLabels, transformDecibelsToRatios, theXLabel, theYLabel,  theLegendLocation)
 
    if (transformDecibelsToRatios)
        if (~ischar(decSNR))
@@ -189,7 +218,9 @@ function plotSNR(x, decSNR, incSNR, variedPropertyValue, variedPropertyUnits, cM
             incSNR = 10.^(incSNR/10);
        end
        Ylims = 10.^(Ylims/10);
-       YTicks = 10.^(YTicks/10);
+       if (~isempty(YTicks))
+            YTicks = 10.^(YTicks/10);
+       end
    end
    
    legends = cell(1,numel(variedPropertyValue));
@@ -198,10 +229,10 @@ function plotSNR(x, decSNR, incSNR, variedPropertyValue, variedPropertyUnits, cM
    if (~ischar(decSNR))
        for kIndex = 1:numel(variedPropertyValue)
            color = squeeze(cMap(kIndex,:));
-           plot(x, squeeze(decSNR(kIndex,:)), 's-', 'LineWidth', 1.5, 'MarkerSize', 12, ...
+           plot(x, squeeze(decSNR(kIndex,:)), '--o', 'LineWidth', 1.5, 'MarkerSize', 12, ...
                'Color', color*0.5, 'MarkerFaceColor', color, ...
                'MarkerEdgeColor', color*0.5);
-           legends{kIndex} = sprintf('%2.0f %s (dec)',variedPropertyValue(kIndex), variedPropertyUnits);
+           legends{kIndex} = sprintf('%2.0f %s',variedPropertyValue(kIndex), variedPropertyUnits);
        end
    end
    
@@ -209,10 +240,10 @@ function plotSNR(x, decSNR, incSNR, variedPropertyValue, variedPropertyUnits, cM
        no = numel(legends);
        for kIndex = 1:numel(variedPropertyValue)
            color = squeeze(cMap(kIndex,:));
-           plot(x, squeeze(incSNR(kIndex,:)), 'o-', 'LineWidth', 1.5, 'MarkerSize', 12, ...
+           plot(x, squeeze(incSNR(kIndex,:)), '-o', 'LineWidth', 1.5, 'MarkerSize', 12, ...
                'Color', color*0.5, 'MarkerFaceColor', color, ...
                'MarkerEdgeColor', color*0.5);
-           legends{kIndex+no} = sprintf('%2.0f %s (inc)',variedPropertyValue(kIndex), variedPropertyUnits);
+           %legends{kIndex+no} = sprintf('%2.0f %s (inc)',variedPropertyValue(kIndex), variedPropertyUnits);
        end
    end
    
@@ -248,6 +279,11 @@ function plotSNR(x, decSNR, incSNR, variedPropertyValue, variedPropertyUnits, cM
    set(gca, 'FontSize', 14, 'XLim', XLims, 'YLim', Ylims, ...
        'XTick', XTicks, 'YTick', YTicks, 'YTickLabel', YTickLabels, ...
        'XScale', 'log', 'YScale', YScale);
+   
+   if (~showYTickLabels)
+       set(gca, 'YTickLabel', {});
+   end
+   
    xlabel(sprintf('\\it %s', theXLabel));
    ylabel(sprintf('\\it %s', theYLabel));
    

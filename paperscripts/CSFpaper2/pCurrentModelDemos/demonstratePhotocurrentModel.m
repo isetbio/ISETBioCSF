@@ -5,9 +5,7 @@ function demonstratePhotocurrentModel
     
     % time step for biophysical model
     simulationTimeStepSeconds = 0.1/1000;
-    
-    % Spontaneous photoisomerization rate (100 R*/c/sec)
-    spontaneousIsomerizationRate = 100;
+   
     
     doImpulseResponseAnalysis = ~true;
     doOnOffAsymmetryAnalysis = ~true;
@@ -28,31 +26,51 @@ function demonstratePhotocurrentModel
         pulseWeberContrast = 0.90;
         figNo = demoStepResponses(eccentricity, simulationTimeStepSeconds, adaptationPhotonRate, pulseWeberContrast, figNo);
     end
-    
-    if (doOnOffAsymmetryAnalysis)
-        figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, figNo);
-    end
-    
     % Compute and visualze the pCurrent step responses at differentadaptation levels
     if (doBipolarStepResponseAnalysis)
         figNo = demoBipolarStepResponses(eccentricity, simulationTimeStepSeconds, figNo);
     end
     
+    adaptationPhotonRates = [50 100 200 400 600 1000 1800 3000 5000 10000 18000];
+    spontaneousIsomerizationRate = 50;
+    
+    noisyInstancesNum = 10;
+        
+    if (doOnOffAsymmetryAnalysis)
+        figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, ...
+            adaptationPhotonRates, pulseDurationSeconds, figNo);
+    end
+
     if (doSignalToNoiseAnalysis)
-        figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, figNo);
+        
+        pulseDurationSeconds = 50/1000; integrationTimeSeconds = 300/1000;
+        figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, ...
+            adaptationPhotonRates, pulseDurationSeconds, integrationTimeSeconds,  noisyInstancesNum, figNo);
+        
+        pulseDurationSeconds = 50/1000; integrationTimeSeconds = 200/1000;
+        figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, ...
+            adaptationPhotonRates, pulseDurationSeconds, integrationTimeSeconds,  noisyInstancesNum, figNo);
+        
+        pulseDurationSeconds = 50/1000; integrationTimeSeconds = 100/1000;
+        figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, ...
+            adaptationPhotonRates, pulseDurationSeconds, integrationTimeSeconds,  noisyInstancesNum, figNo);
+        
+        pulseDurationSeconds = 50/1000; integrationTimeSeconds = 50/1000;
+        figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, ...
+            adaptationPhotonRates, pulseDurationSeconds, integrationTimeSeconds,  noisyInstancesNum, figNo);
+        
+        pulseDurationSeconds = 50/1000; integrationTimeSeconds = 20/1000;
+        figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, ...
+            adaptationPhotonRates, pulseDurationSeconds, integrationTimeSeconds,  noisyInstancesNum, figNo);
+        
     end
     
 end
 
-function figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, figNo)
-    % Compute the step responses at different adaptation levels
-    adaptationPhotonRates = [100 1000 6000 18000];
+function figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, adaptationPhotonRates, pulseDurationSeconds, figNo)
     % compute the responses the for different step Weber contrasts
     pulseWeberContrasts = logspace(log10(0.05), log10(0.95), 10);  % [0.15 0.25 0.5 0.75 1.0];
-    
-    pulseDurationSeconds = 60/1000;
     interpulseIntervalSeconds = 600/1000;
-   
     
     % Define the stim params struct
     constantStimParams = struct(...
@@ -77,32 +95,25 @@ function figNo = demoOnOFFResponses(eccentricity, simulationTimeStepSeconds, spo
     plotOnOffResponses(timeAxis, onOffResponses, modelResponses, adaptationPhotonRates, pulseWeberContrasts, interpulseIntervalSeconds+pulseDurationSeconds, figNo);
 end
 
-function figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, figNo)
+function figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, adaptationPhotonRates, pulseDurationSeconds, integrationTimeSeconds, noisyInstancesNum, figNo)
 
-    % Examined adaptation levels (photons/cone/sec)
-    adaptationPhotonRates = [100 1000 6000 18000]; % [60 600 6000 12000]; 
-    %nAdaptationLevels = 10;
-    %adaptationPhotonRates = logspace(log10(60), log10(18000),   nAdaptationLevels);
     adaptationPhotonRates = round(adaptationPhotonRates/10)*10;
     idx = find(adaptationPhotonRates>100);
     adaptationPhotonRates(idx) = round(adaptationPhotonRates(idx)/100)*100;
     pulseWeberContrasts   = [0.025 0.05 0.1 0.2 0.4 0.8]; % logspace(log10(0.03), log10(0.30), nContrastLevels);
     
-    pulseDurationSeconds  = 100/1000;
-    
-    noisyInstancesNum = 100;
     
     % analyze SNR using the [0 200] time period
     timeWindowForSNRanalysis =  [0 200]/1000;
     
     % analyze SNR using the peak response
-    timeWindowForSNRanalysis = [];
+    %timeWindowForSNRanalysis = [];
     
     % analyze SNR using a +/- 0.5*pulseDurationSeconds around the peak time
-    %timeWindowForSNRanalysis = pulseDurationSeconds;
+    timeWindowForSNRanalysis = integrationTimeSeconds; %pulseDurationSeconds;
     
     displaySNRVectors = true;
-    transformDecibelsToRatios = ~true;
+    transformDecibelsToRatios = true;
     
     [timeAxis, photoCurrents, noisyPhotoCurrentsInstance, ...
      timeAxisConeExcitations, coneExcitationRates, noisyConeExcitationRateInstance, ...
@@ -113,12 +124,13 @@ function figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds,
     
     % Plot the different step responses
     figNo = figNo + 1;
-    SNRLims = [-50 35];
-    SNRTicks = -50:5:50;
+    SNRLims = [-35 30]; % [-50 35];
+    SNRTicks = -30:5:50;
     
     plotSignalToNoiseResults(timeAxis, photoCurrents, noisyPhotoCurrentsInstance, ...
         timeAxisConeExcitations, coneExcitationRates, noisyConeExcitationRateInstance, ...
-        photocurrentSNR, coneExcitationSNR, transformDecibelsToRatios, adaptationPhotonRates, pulseWeberContrasts, SNRLims, SNRTicks, legends, figNo); 
+        photocurrentSNR, coneExcitationSNR, transformDecibelsToRatios, adaptationPhotonRates, ...
+        pulseWeberContrasts, SNRLims, SNRTicks, spontaneousIsomerizationRate, pulseDurationSeconds, integrationTimeSeconds, legends, figNo); 
 end
 
 
