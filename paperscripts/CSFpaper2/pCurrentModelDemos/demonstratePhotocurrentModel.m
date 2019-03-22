@@ -31,7 +31,7 @@ function demonstratePhotocurrentModel
         figNo = demoBipolarStepResponses(eccentricity, simulationTimeStepSeconds, figNo);
     end
     
-    adaptationPhotonRates = [50 100 200 400 600 1000 1800 3000 5000 10000 18000];
+    adaptationPhotonRates = [6000]; %[50 100 200 400 600 1000 1800 3000 5000 10000 18000];
     spontaneousIsomerizationRate = 50;
     
     noisyInstancesNum = 10;
@@ -43,23 +43,25 @@ function demonstratePhotocurrentModel
 
     if (doSignalToNoiseAnalysis)
         
-        pulseDurationSeconds = 50/1000; integrationTimeSeconds = 300/1000;
+        integrationTimeSeconds = 200/1000;
+        
+        pulseDurationSeconds = 10/1000; 
         figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, ...
             adaptationPhotonRates, pulseDurationSeconds, integrationTimeSeconds,  noisyInstancesNum, figNo);
         
-        pulseDurationSeconds = 50/1000; integrationTimeSeconds = 200/1000;
+        pulseDurationSeconds = 25/1000; 
         figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, ...
             adaptationPhotonRates, pulseDurationSeconds, integrationTimeSeconds,  noisyInstancesNum, figNo);
         
-        pulseDurationSeconds = 50/1000; integrationTimeSeconds = 100/1000;
+        pulseDurationSeconds = 50/1000; 
         figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, ...
             adaptationPhotonRates, pulseDurationSeconds, integrationTimeSeconds,  noisyInstancesNum, figNo);
         
-        pulseDurationSeconds = 50/1000; integrationTimeSeconds = 50/1000;
+        pulseDurationSeconds = 100/1000; 
         figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, ...
             adaptationPhotonRates, pulseDurationSeconds, integrationTimeSeconds,  noisyInstancesNum, figNo);
         
-        pulseDurationSeconds = 50/1000; integrationTimeSeconds = 20/1000;
+        pulseDurationSeconds = 200/1000; 
         figNo = demoSignalToNoiseRatio(eccentricity, simulationTimeStepSeconds, spontaneousIsomerizationRate, ...
             adaptationPhotonRates, pulseDurationSeconds, integrationTimeSeconds,  noisyInstancesNum, figNo);
         
