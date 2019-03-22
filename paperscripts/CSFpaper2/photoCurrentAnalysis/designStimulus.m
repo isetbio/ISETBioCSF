@@ -1,8 +1,8 @@
-function stimulus = designPhotonRateStimulus(stimParams, spontaneousIsomerizationRate)
+function stimulus = designStimulus(stimParams, spontaneousIsomerizationRate)
 % Design a photon rate stimulus (input to runPhotocurrentModel.m)
 %
 % Syntax:
-%   stimulus = designPhotonRateStimulus(stimParams, spontaneousIsomerizationRate);
+%   stimulus = designStimulus(stimParams, spontaneousIsomerizationRate);
 %
 % Description:
 %    Function to run the outer segment photocurrent model for impulse

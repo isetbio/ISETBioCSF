@@ -1,8 +1,8 @@
-function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum, photonIntegrationTime, useDefaultImplementation)
+function modelResponse = photocurrentModel(stimulus, eccentricity, noisyInstancesNum, photonIntegrationTime, useDefaultImplementation)
 % Run the photocurrent model for a singe stimulus
 %
 % Syntax:
-%   modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum, photonIntegrationTime, useDefaultImplementation);
+%   modelResponse = photocurrentModel(stimulus, eccentricity, noisyInstancesNum, photonIntegrationTime, useDefaultImplementation);
 %
 % Description:
 %    Run the outer segment photocurrent model for a single stimulus and for
@@ -197,14 +197,34 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
     % Photon count signals
     sidx0 = find(modelResponse.timeAxis == 0);
     sidx = sidx0+(0:(round(dtPhotonExcitation/dt)):(numel(modelResponse.pRate)-sidx0-1));
-    modelResponse.meanConeExcitationCountSignal = round(modelResponse.pRate(sidx) * dtPhotonExcitation);
-    modelResponse.noisyConeExcitationTimeAxis = modelResponse.timeAxis(sidx);
     
+    
+    modelResponse.noisyConeExcitationTimeAxis = modelResponse.timeAxis(sidx);
+    modelResponse.meanConeExcitationRateSignal = modelResponse.pRate(sidx);
+    modelResponse.meanConeExcitationCountSignal = round(modelResponse.meanConeExcitationRateSignal * dtPhotonExcitation);
+    
+
     if (noisyInstancesNum > 0)
         % Now compute photon excitation count response instances
         modelResponse.noisyConeExcitations = coneMosaic.photonNoise(repmat(modelResponse.meanConeExcitationCountSignal, [noisyInstancesNum 1]));
+        if (1==2)
+            % correct counts over all reps
+            actualCounts = sum(modelResponse.noisyConeExcitations,1);
+            desiredCounts = modelResponse.meanConeExcitationRateSignal*dtPhotonExcitation*noisyInstancesNum;
+            diffs = desiredCounts-actualCounts;
+            modelResponse.noisyConeExcitations = bsxfun(@plus, modelResponse.noisyConeExcitations,diffs/noisyInstancesNum);
+            actualCounts = sum(modelResponse.noisyConeExcitations,1);
+            for k = 1:numel(actualCounts)
+                fprintf('%2.0f %2.0f %2.0f = %2.2f %2.2f rate: %2.2f\n', numel(actualCounts), numel(desiredCounts), k, actualCounts(k), desiredCounts(k), modelResponse.meanConeExcitationRateSignal(k));
+            end
+            dtPhotonExcitation
+            pause
+        end
+        
+        modelResponse.noisyConeExcitationRates = modelResponse.noisyConeExcitations/dtPhotonExcitation;
     else
         modelResponse.noisyConeExcitations = [];
+        modelResponse.noisyConeExcitationRates = [];
     end
         
 end
