@@ -71,7 +71,7 @@ function testPhotocurrentModel
     plotModelResponse(dSelect.modelResponse, ...
         dSelect.theConeExcitationSNR, ...
         dSelect.thePhotoCurrentSNR, ...
-        dSelect.noiseTimeOnset, ...
+        dSelect.noiseEstimationLatency, ...
         dSelect.coneExcitationModulationPeak, ...
         dSelect.coneExcitationPhotocurrentNoiseSigma, ...
         dSelect.photocurrentModulationPeak, photocurrentNoiseSigma);
@@ -179,11 +179,11 @@ function dStruct = runSimulation(vParams, cParams)
         modelResponse = photocurrentModel(stimulus, cParams.eccentricity, cParams.noisyInstancesNum, vParams.photonIntegrationTime, cParams.useDefaultImplementation);
         
         % Compute SNRs
-        [theConeExcitationSNR, noiseTimeOnset, coneExcitationModulationPeak, coneExcitationPhotocurrentNoiseSigma] = computeSNR(modelResponse.noisyConeExcitationTimeAxis, modelResponse.noisyConeExcitationRates);
-        [thePhotoCurrentSNR, noiseTimeOnset, photocurrentModulationPeak, photocurrentNoiseSigma] = computeSNR(modelResponse.timeAxis, modelResponse.noisyMembraneCurrents);
+        [theConeExcitationSNR, noiseEstimationLatency, coneExcitationModulationPeak, coneExcitationPhotocurrentNoiseSigma] = computeSNR(modelResponse.noisyConeExcitationTimeAxis, modelResponse.noisyConeExcitationRates);
+        [thePhotoCurrentSNR, noiseEstimationLatency, photocurrentModulationPeak, photocurrentNoiseSigma] = computeSNR(modelResponse.timeAxis, modelResponse.noisyMembraneCurrents);
         
         % Plot responses
-        plotModelResponse(modelResponse, theConeExcitationSNR, thePhotoCurrentSNR, noiseTimeOnset, ...
+        plotModelResponse(modelResponse, theConeExcitationSNR, thePhotoCurrentSNR, noiseEstimationLatency, ...
             coneExcitationModulationPeak, coneExcitationPhotocurrentNoiseSigma, photocurrentModulationPeak, photocurrentNoiseSigma);
         
         % Return results struct
@@ -195,11 +195,11 @@ function dStruct = runSimulation(vParams, cParams)
             'coneExcitationPhotocurrentNoiseSigma', coneExcitationPhotocurrentNoiseSigma, ...
         	'photocurrentModulationPeak', photocurrentModulationPeak, ...
         	'photocurrentNoiseSigma', photocurrentNoiseSigma, ...
-            'noiseTimeOnset', noiseTimeOnset);
+            'noiseEstimationLatency', noiseEstimationLatency);
 end
 
 
-function [theSNR, noiseTimeOnset, modulationPeak, noiseSigma] = computeSNR(timeAxis, noisyResponses)
+function [theSNR, noiseEstimationLatency, modulationPeak, noiseSigma] = computeSNR(timeAxis, noisyResponses)
     % measure noise properties from the last 0.5 seconds of the signal
     noiseEstimationLatency = timeAxis(end)-0.5;
     
@@ -224,7 +224,7 @@ end
 
 
 
-function plotModelResponse(modelResponse, theConeExcitationSNR, thePhotoCurrentSNR, noiseTimeOnset, ...
+function plotModelResponse(modelResponse, theConeExcitationSNR, thePhotoCurrentSNR, noiseEstimationLatency, ...
     coneExcitationModulationPeak, coneExcitationPhotocurrentNoiseSigma, photocurrentModulationPeak, photocurrentNoiseSigma)
 
     coneExcitationRange = [min(modelResponse.noisyConeExcitations(:))*0.9 max(modelResponse.noisyConeExcitations(:))*1.1];
@@ -237,7 +237,7 @@ function plotModelResponse(modelResponse, theConeExcitationSNR, thePhotoCurrentS
     stairs(modelResponse.noisyConeExcitationTimeAxis, modelResponse.noisyConeExcitations',  'k-'); hold on;
     stairs(modelResponse.noisyConeExcitationTimeAxis, modelResponse.meanConeExcitationCountSignal, 'r-',  'LineWidth', 2.0);
     stairs(modelResponse.noisyConeExcitationTimeAxis, mean(modelResponse.noisyConeExcitations,1), 'b-',  'LineWidth', 2.0);
-    plot(noiseTimeOnset*[1 1], coneExcitationRange, 'b--', 'LineWidth', 1.5);
+    plot(noiseEstimationLatency*[1 1], coneExcitationRange, 'b--', 'LineWidth', 1.5);
     ylabel('\it photon absorptions (R*/c/tau)'); xlabel('\it time (sec)');
     set(gca, 'FontSize', 14);
     set(gca, 'YLim', coneExcitationRange, 'XLim', [0 modelResponse.noisyConeExcitationTimeAxis(end)]);
@@ -254,7 +254,7 @@ function plotModelResponse(modelResponse, theConeExcitationSNR, thePhotoCurrentS
     subplot(4,1,3);
     stairs(modelResponse.noisyConeExcitationTimeAxis, modelResponse.noisyConeExcitationRates',  'k-'); hold on;
     stairs(modelResponse.noisyConeExcitationTimeAxis, modelResponse.meanConeExcitationRateSignal, 'r-',  'LineWidth', 2.0);
-    plot(noiseTimeOnset*[1 1], coneExcitationRateRange, 'b--', 'LineWidth', 1.5);
+    plot(noiseEstimationLatency*[1 1], coneExcitationRateRange, 'b--', 'LineWidth', 1.5);
     plot(0.5*[1 1], coneExcitationModulationPeak*[-0.5 0.5]+modelResponse.meanConeExcitationRateSignal(end), 'ms-', 'LineWidth', 2.0);
     plot(0.55*[1 1], coneExcitationPhotocurrentNoiseSigma*[-0.5 0.5]+modelResponse.meanConeExcitationRateSignal(end), 'bs-', 'LineWidth', 2.0);
     ylabel('\it photon absorption rate (R*/c/sec)');  xlabel('\it time (sec)');
@@ -266,7 +266,7 @@ function plotModelResponse(modelResponse, theConeExcitationSNR, thePhotoCurrentS
     plot(modelResponse.timeAxis, modelResponse.noisyMembraneCurrents', 'k-');
     hold on;
     plot(modelResponse.timeAxis, modelResponse.membraneCurrent, 'r-',  'LineWidth', 2.0);
-    plot(noiseTimeOnset*[1 1], photoCurrentRange, 'b--', 'LineWidth', 1.5);
+    plot(noiseEstimationLatency*[1 1], photoCurrentRange, 'b--', 'LineWidth', 1.5);
     plot(0.5*[1 1], photocurrentModulationPeak*[-0.5 0.5] + modelResponse.membraneCurrent(end), 'ms-', 'LineWidth', 2.0);
     plot(0.55*[1 1], photocurrentNoiseSigma*[-0.5 0.5]+ modelResponse.membraneCurrent(end), 'bs-', 'LineWidth', 2.0);
     set(gca, 'YLim', photoCurrentRange, 'XLim', [0 modelResponse.noisyConeExcitationTimeAxis(end)]);
