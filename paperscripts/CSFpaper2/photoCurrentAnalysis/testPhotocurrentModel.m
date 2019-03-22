@@ -1,32 +1,57 @@
 function testPhotocurrentModel
-    recompute = true;
-    if (recompute)
-    cParams.spontaneousIsomerizationRate = 200; %  R*/c/s
-    cParams.eccentricity  = 'foveal';
-    cParams.noisyInstancesNum = 1000;
-    cParams.useDefaultImplementation = true;
+
+    recomputeResponses = true;
     
-    % Define the stim params struct
-    vParams.weberContrast = -95/100;
-    vParams.adaptationPhotonRate = 12000;
-    vParams.pulseDurationSeconds = 100/1000;
-    vParams.photonIntegrationTime = vParams.pulseDurationSeconds;    % controls binning of photons in photon count signal
-    
-    contrastLevels = [0.02 0.04 0.08 0.16 0.32 0.64 0.90 -0.02 -0.04 -0.08 -0.16 -0.32 -0.64 -0.90 ];
-    adaptationLevels = [1000 6000 20000]; % [600 1000 1800 3000 6000 10000 20000];
-    
-    for iAdaptationIndex = 1:numel(adaptationLevels)
-        for iContrastIndex = 1:numel(contrastLevels)
-            vParams.weberContrast = contrastLevels(iContrastIndex);
-            vParams.adaptationPhotonRate = adaptationLevels(iAdaptationIndex);
-            [~, theConeExcitationSNR(iAdaptationIndex, iContrastIndex), ...
-                thePhotoCurrentSNR(iAdaptationIndex, iContrastIndex)] = runSimulation(vParams, cParams);
+    if (recomputeResponses)
+        % Constant params
+        cParams.spontaneousIsomerizationRate = 200; %  R*/c/s
+        cParams.eccentricity  = 'foveal';
+        cParams.useDefaultImplementation = true;
+        cParams.noisyInstancesNum = 2000;
+        
+        
+        % Varied Params
+        % Pulse contrast
+        vParams.weberContrast = -95/100;
+        
+        % Adaptation photon rate in R*/c/s
+        vParams.adaptationPhotonRate = 12000;
+        
+        % Pulse duration in seconds
+        vParams.pulseDurationSeconds = 100/1000;
+        
+        % The photonIntegrationTime affects the SNR of the cone
+        % excitations. The longer it is the higher the SNR. Setting it to 
+        % the pulse duration for now
+        vParams.photonIntegrationTime = vParams.pulseDurationSeconds;
+
+        % Examined contrast levels
+        contrastLevels = [0.04 0.08 0.16 0.32 0.64 0.90 -0.02 -0.04 -0.08 -0.16 -0.32 -0.64 -0.90 ];
+        
+        % Examined adaptation levels
+        adaptationLevels = [600 1000 2000 6000 20000]; % [600 1000 1800 3000 6000 10000 20000];
+
+        % Preallocate memory
+        d = cell(numel(adaptationLevels), numel(contrastLevels));
+        
+        % Run all conditions
+        for iAdaptationIndex = 1:numel(adaptationLevels)
+            for iContrastIndex = 1:numel(contrastLevels)
+                vParams.weberContrast = contrastLevels(iContrastIndex);
+                vParams.adaptationPhotonRate = adaptationLevels(iAdaptationIndex);
+                d{iAdaptationIndex, iContrastIndex} = runSimulation(vParams, cParams);
+            end
         end
-    end
-    
-    save('results.mat', 'theConeExcitationSNR', 'thePhotoCurrentSNR', 'contrastLevels', 'adaptationLevels');
+
+        save('results.mat', 'd', 'contrastLevels', 'adaptationLevels', '-v7.3');
     else
-        load('results.mat', 'theConeExcitationSNR', 'thePhotoCurrentSNR', 'contrastLevels', 'adaptationLevels');
+        load('results.mat', 'd', 'contrastLevels', 'adaptationLevels');
+        for iAdaptationIndex = 1:numel(adaptationLevels)
+            for iContrastIndex = 1:numel(contrastLevels)
+                theConeExcitationSNR(iAdaptationIndex, iContrastIndex) = d{iAdaptationIndex, iContrastIndex}.theConeExcitationSNR;
+                thePhotoCurrentSNR(iAdaptationIndex, iContrastIndex) = d{iAdaptationIndex, iContrastIndex}.thePhotoCurrentSNR;
+            end
+        end            
     end
     
     % Plot results
@@ -38,6 +63,19 @@ function testPhotocurrentModel
     
     plotPolaritySNRs(-contrastLevels(decrementsIdx), adaptationLevels, ...
         theConeExcitationSNR(:,decrementsIdx), thePhotoCurrentSNR(:,decrementsIdx), 'decrements', 3);
+    
+    % Plot some modelResponse
+    iAdaptationIndex = 1; iContrastIndex = 1;
+    dSelect = {iAdaptationIndex, iContrastIndex};
+    
+    plotModelResponse(dSelect.modelResponse, ...
+        dSelect.theConeExcitationSNR, ...
+        dSelect.thePhotoCurrentSNR, ...
+        dSelect.noiseTimeOnset, ...
+        dSelect.coneExcitationModulationPeak, ...
+        dSelect.coneExcitationPhotocurrentNoiseSigma, ...
+        dSelect.photocurrentModulationPeak, photocurrentNoiseSigma);
+        
     
 end
 
@@ -75,7 +113,7 @@ function plotPolaritySNRs(contrastLevels, adaptationLevels, theConeExcitationSNR
             'Color', 0.5*color, 'MarkerFaceColor', color, ...
             'MarkerSize', 12, 'LineWidth', 1.5); hold on;
     end
-    set(gca, 'XLim', [adaptationLevels(1)*0.9 adaptationLevels(end)*1.1], 'XTIck', [600 2000 6000 20000], 'YLim', [0.01 1.5], 'XScale', 'log');
+    set(gca, 'XLim', [adaptationLevels(1)*0.9 adaptationLevels(end)*1.1], 'XTIck', [600 2000 6000 20000], 'YLim', [0.01 1.0], 'XScale', 'log');
     grid on; box on;
     axis 'square'
     set(gca, 'FontSize', 14);
@@ -96,7 +134,7 @@ function plotSNR(contrastLevels, adaptationLevels, theSNR, showXLabel, showXTick
             'Color', 0.5*color, 'MarkerFaceColor', color, ...
             'MarkerSize', 12, 'LineWidth', 1.5); hold on;
     end
-    set(gca, 'XLim', [0.015 1.0]*100, 'XTick', [1 3 10 30 100], 'YTick', [0.1 0.3 1 3 10 30], 'YLim', [0.1 50], 'XScale', 'log', 'YScale', 'log');
+    set(gca, 'XLim', [0.015 1.0]*100, 'XTick', [1 3 10 30 100], 'YTick', [0.1 0.3 1 3 10 30], 'YLim', [0.3 50], 'XScale', 'log', 'YScale', 'log');
     grid on; box on;
     axis 'square'
     set(gca, 'FontSize', 14);
@@ -120,7 +158,7 @@ function plotSNR(contrastLevels, adaptationLevels, theSNR, showXLabel, showXTick
     legend(legends, 'Location', 'NorthWest');
 end
 
-function [modelResponse, theConeExcitationSNR, thePhotoCurrentSNR] = runSimulation(vParams, cParams)
+function dStruct = runSimulation(vParams, cParams)
 
         % Assemble full set of stimParams
         photonsDeliveredDuringPulse = vParams.weberContrast * vParams.adaptationPhotonRate * vParams.pulseDurationSeconds;
@@ -147,27 +185,40 @@ function [modelResponse, theConeExcitationSNR, thePhotoCurrentSNR] = runSimulati
         % Plot responses
         plotModelResponse(modelResponse, theConeExcitationSNR, thePhotoCurrentSNR, noiseTimeOnset, ...
             coneExcitationModulationPeak, coneExcitationPhotocurrentNoiseSigma, photocurrentModulationPeak, photocurrentNoiseSigma);
+        
+        % Return results struct
+        dStruct = struct(....
+            'modelResponse', modelResponse, ...
+        	'theConeExcitationSNR', theConeExcitationSNR, ...
+        	'thePhotoCurrentSNR', thePhotoCurrentSNR, ...
+        	'coneExcitationModulationPeak', coneExcitationModulationPeak, ...
+            'coneExcitationPhotocurrentNoiseSigma', coneExcitationPhotocurrentNoiseSigma, ...
+        	'photocurrentModulationPeak', photocurrentModulationPeak, ...
+        	'photocurrentNoiseSigma', photocurrentNoiseSigma, ...
+            'noiseTimeOnset', noiseTimeOnset);
 end
 
 
 function [theSNR, noiseTimeOnset, modulationPeak, noiseSigma] = computeSNR(timeAxis, noisyResponses)
     % measure noise properties from the last 0.5 seconds of the signal
-    noiseTimeOnset = timeAxis(end)-0.5;
+    noiseEstimationLatency = timeAxis(end)-0.5;
     
-    % Estimate noiseSigma after noiseTimeOnset
-    idx = find(timeAxis>=noiseTimeOnset);
-    noisyResponses2 = noisyResponses(:,idx);
+    % Estimate sigma of noise
+    tBinsForNoiseEstimation = find(timeAxis>=noiseEstimationLatency);
+    noisyResponses2 = noisyResponses(:,tBinsForNoiseEstimation);
     noiseSigma = std(noisyResponses2(:),  0, 1);
     
     % Estimate mean of noise 
     noiseMean = mean(noisyResponses2(:));
 
-    % Estimate mean of signal from up to last 0.3 seconds of the signal
-    idx = find(timeAxis < noiseTimeOnset);
-    meanResponse = mean(noisyResponses(:,idx), 1);
+    % Estimate mean of signal
+    tBinsForSignalEstimation = find(timeAxis < noiseEstimationLatency);
+    meanResponse = mean(noisyResponses(:,tBinsForSignalEstimation), 1);
     
-    % Estimate peak signal modulation
+    % Compute modulation peak
     modulationPeak = max(abs(meanResponse-noiseMean));
+    
+    % Compute the SNR
     theSNR = modulationPeak / noiseSigma;
 end
 
@@ -187,10 +238,6 @@ function plotModelResponse(modelResponse, theConeExcitationSNR, thePhotoCurrentS
     stairs(modelResponse.noisyConeExcitationTimeAxis, modelResponse.meanConeExcitationCountSignal, 'r-',  'LineWidth', 2.0);
     stairs(modelResponse.noisyConeExcitationTimeAxis, mean(modelResponse.noisyConeExcitations,1), 'b-',  'LineWidth', 2.0);
     plot(noiseTimeOnset*[1 1], coneExcitationRange, 'b--', 'LineWidth', 1.5);
-    
-    
-    
-    
     ylabel('\it photon absorptions (R*/c/tau)'); xlabel('\it time (sec)');
     set(gca, 'FontSize', 14);
     set(gca, 'YLim', coneExcitationRange, 'XLim', [0 modelResponse.noisyConeExcitationTimeAxis(end)]);
