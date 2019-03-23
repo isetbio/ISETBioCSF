@@ -26,7 +26,7 @@ function testPhotocurrentModel
         vParams.photonIntegrationTime = vParams.pulseDurationSeconds;
 
         % Examined contrast levels
-        contrastLevels = [0.04 0.08 0.16 0.32 0.64 0.90 -0.02 -0.04 -0.08 -0.16 -0.32 -0.64 -0.90 ];
+        contrastLevels = [0.04 0.08 0.16 0.32 0.64 0.90 -0.04 -0.08 -0.16 -0.32 -0.64 -0.90 ];
         
         % Examined adaptation levels
         adaptationLevels = [600 1000 2000 6000 20000]; % [600 1000 1800 3000 6000 10000 20000];
@@ -65,8 +65,9 @@ function testPhotocurrentModel
         theConeExcitationSNR(:,decrementsIdx), thePhotoCurrentSNR(:,decrementsIdx), 'decrements', 3);
     
     % Plot some modelResponse
-    iAdaptationIndex = 1; iContrastIndex = 1;
-    dSelect = {iAdaptationIndex, iContrastIndex};
+    iAdaptationIndex = numel(adaptationLevels); 
+    iContrastIndex = numel(contrastLevels);
+    dSelect = d{iAdaptationIndex, iContrastIndex};
     
     plotModelResponse(dSelect.modelResponse, ...
         dSelect.theConeExcitationSNR, ...
@@ -74,7 +75,8 @@ function testPhotocurrentModel
         dSelect.noiseEstimationLatency, ...
         dSelect.coneExcitationModulationPeak, ...
         dSelect.coneExcitationPhotocurrentNoiseSigma, ...
-        dSelect.photocurrentModulationPeak, photocurrentNoiseSigma);
+        dSelect.photocurrentModulationPeak, ...
+        dSelect.photocurrentNoiseSigma);
         
     
 end
@@ -82,27 +84,31 @@ end
 function plotPolaritySNRs(contrastLevels, adaptationLevels, theConeExcitationSNR, thePhotoCurrentSNR, contrastPolarity, figNo)
     
     hFig = figure(figNo); clf;
-    set(hFig, 'Position', [10 10 300 950], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 1000 400], 'Color', [1 1 1]);
 
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-       'colsNum', 1, ...
-       'rowsNum', 3, ...
+       'colsNum', 3, ...
+       'rowsNum', 1, ...
        'heightMargin',   0.1, ...
-       'widthMargin',    0.01, ...
-       'leftMargin',     0.11, ...
+       'widthMargin',    0.06, ...
+       'leftMargin',     0.05, ...
        'rightMargin',    0.00, ...
-       'bottomMargin',   0.05, ...
-       'topMargin',      0.02);
+       'bottomMargin',   0.11, ...
+       'topMargin',      0.05);
    
     subplot('Position', subplotPosVectors(1,1).v);
     plotSNR(contrastLevels, adaptationLevels, theConeExcitationSNR, true, true, true, true, sprintf('cone excitations (%s)', contrastPolarity));
    
-    subplot('Position', subplotPosVectors(2,1).v);
-    plotSNR(contrastLevels, adaptationLevels, thePhotoCurrentSNR, true, true, true, true, sprintf('photocurrent (%s)', contrastPolarity));
+    position = subplotPosVectors(1,2).v;
+    position(1) = position(1)-0.03;
+    subplot('Position', position);
+    plotSNR(contrastLevels, adaptationLevels, thePhotoCurrentSNR, true, true, ~true, ~true, sprintf('photocurrent (%s)', contrastPolarity));
 
     theSNRratios = thePhotoCurrentSNR./theConeExcitationSNR;
     
-    subplot('Position', subplotPosVectors(3,1).v);
+    position = subplotPosVectors(1,3).v;
+    position(1) = position(1)-0.01;
+    subplot('Position', position);
     legends = {};
     cMap = brewermap(numel(contrastLevels), '*Spectral');
     
@@ -113,14 +119,14 @@ function plotPolaritySNRs(contrastLevels, adaptationLevels, theConeExcitationSNR
             'Color', 0.5*color, 'MarkerFaceColor', color, ...
             'MarkerSize', 12, 'LineWidth', 1.5); hold on;
     end
-    set(gca, 'XLim', [adaptationLevels(1)*0.9 adaptationLevels(end)*1.1], 'XTIck', [600 2000 6000 20000], 'YLim', [0.01 1.0], 'XScale', 'log');
+    set(gca, 'XLim', [adaptationLevels(1)*0.9 adaptationLevels(end)*1.1], ...
+        'XTIck', [600 2000 6000 20000], 'YLim', [0.01 0.8], 'XScale', 'log');
     grid on; box on;
-    axis 'square'
     set(gca, 'FontSize', 14);
     xlabel('\it adaptation level (R*/c/s)');
-    ylabel(sprintf('\\it SNR ratio'));
+    ylabel(sprintf('\\it SNR(photocurrent) / SNR(cone excitations)'));
     legend(legends, 'Location', 'NorthEast');
-    title(sprintf('photocurrents : cone excitations\n(%s)',contrastPolarity));
+    title(sprintf('%s',contrastPolarity));
 end
 
 
@@ -134,9 +140,8 @@ function plotSNR(contrastLevels, adaptationLevels, theSNR, showXLabel, showXTick
             'Color', 0.5*color, 'MarkerFaceColor', color, ...
             'MarkerSize', 12, 'LineWidth', 1.5); hold on;
     end
-    set(gca, 'XLim', [0.015 1.0]*100, 'XTick', [1 3 10 30 100], 'YTick', [0.1 0.3 1 3 10 30], 'YLim', [0.3 50], 'XScale', 'log', 'YScale', 'log');
+    set(gca, 'XLim', [0.03 1.05]*100, 'XTick', [1 3 10 30 100], 'YTick', [0.1 0.3 1 3 10 30], 'YLim', [0.09 50], 'XScale', 'log', 'YScale', 'log');
     grid on; box on;
-    axis 'square'
     set(gca, 'FontSize', 14);
     
     if (showYLabel)
@@ -185,6 +190,12 @@ function dStruct = runSimulation(vParams, cParams)
         % Plot responses
         plotModelResponse(modelResponse, theConeExcitationSNR, thePhotoCurrentSNR, noiseEstimationLatency, ...
             coneExcitationModulationPeak, coneExcitationPhotocurrentNoiseSigma, photocurrentModulationPeak, photocurrentNoiseSigma);
+        
+        % To save space, save single precision data
+        fnames = fieldnames(modelResponse);
+        for fk = 1:numel(fnames)
+            eval(sprintf('modelResponse.%s = single(modelResponse.%s);', fnames{fk}, fnames{fk}));
+        end
         
         % Return results struct
         dStruct = struct(....

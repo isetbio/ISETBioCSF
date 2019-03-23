@@ -217,8 +217,6 @@ function modelResponse = photocurrentModel(stimulus, eccentricity, noisyInstance
             for k = 1:numel(actualCounts)
                 fprintf('%2.0f %2.0f %2.0f = %2.2f %2.2f rate: %2.2f\n', numel(actualCounts), numel(desiredCounts), k, actualCounts(k), desiredCounts(k), modelResponse.meanConeExcitationRateSignal(k));
             end
-            dtPhotonExcitation
-            pause
         end
         
         modelResponse.noisyConeExcitationRates = modelResponse.noisyConeExcitations/dtPhotonExcitation;
