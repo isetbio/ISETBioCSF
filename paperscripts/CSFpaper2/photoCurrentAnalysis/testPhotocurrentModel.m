@@ -1,14 +1,24 @@
 function testPhotocurrentModel
 
-    recomputeResponses = true;
+    recomputeResponses = ~true;
     
-    if (recomputeResponses)
+    % Pulse duration in seconds
+    vParams.pulseDurationSeconds = 100/1000;
+    %vParams.pulseDurationSeconds = 50/1000;
+    %vParams.pulseDurationSeconds = 25/1000;
+    
+    % Data filename
+    dataFileName = sprintf('results_%dmsec.mat', vParams.pulseDurationSeconds*1000);
+        
+    % Recompute responses    
+    if (recomputeResponses) 
+        fprintf('Will save to %s\n', dataFileName);
+        
         % Constant params
         cParams.spontaneousIsomerizationRate = 200; %  R*/c/s
         cParams.eccentricity  = 'foveal';
         cParams.useDefaultImplementation = true;
-        cParams.noisyInstancesNum = 2000;
-        
+        cParams.noisyInstancesNum = 1500;
         
         % Varied Params
         % Pulse contrast
@@ -17,19 +27,17 @@ function testPhotocurrentModel
         % Adaptation photon rate in R*/c/s
         vParams.adaptationPhotonRate = 12000;
         
-        % Pulse duration in seconds
-        vParams.pulseDurationSeconds = 100/1000;
-        
         % The photonIntegrationTime affects the SNR of the cone
         % excitations. The longer it is the higher the SNR. Setting it to 
         % the pulse duration for now
         vParams.photonIntegrationTime = vParams.pulseDurationSeconds;
 
         % Examined contrast levels
-        contrastLevels = [0.04 0.08 0.16 0.32 0.64 0.90 -0.04 -0.08 -0.16 -0.32 -0.64 -0.90 ];
+        contrastLevels = [-0.04 -0.08 -0.16 -0.32 -0.64 -1.0 0.04 0.08 0.16 0.32 0.64 1.0];
+
         
         % Examined adaptation levels
-        adaptationLevels = [600 1000 2000 6000 20000]; % [600 1000 1800 3000 6000 10000 20000];
+        adaptationLevels = [1000 2000 4000 8000 16000]; 
 
         % Preallocate memory
         d = cell(numel(adaptationLevels), numel(contrastLevels));
@@ -37,48 +45,162 @@ function testPhotocurrentModel
         % Run all conditions
         for iAdaptationIndex = 1:numel(adaptationLevels)
             for iContrastIndex = 1:numel(contrastLevels)
+                tic
+                fprintf('\n Computing response %d out of %d ...', (iAdaptationIndex-1)*numel(contrastLevels) + iContrastIndex, numel(adaptationLevels)*numel(contrastLevels));
                 vParams.weberContrast = contrastLevels(iContrastIndex);
                 vParams.adaptationPhotonRate = adaptationLevels(iAdaptationIndex);
                 d{iAdaptationIndex, iContrastIndex} = runSimulation(vParams, cParams);
+                fprintf('Finished in %2.1f seconds\n', toc);
             end
         end
 
-        save('results.mat', 'd', 'contrastLevels', 'adaptationLevels', '-v7.3');
+        save(dataFileName, 'd', 'contrastLevels', 'adaptationLevels', '-v7.3');
+        fprintf('Saved data to %s\n', dataFileName);
+        
     else
-        load('results.mat', 'd', 'contrastLevels', 'adaptationLevels');
-        for iAdaptationIndex = 1:numel(adaptationLevels)
-            for iContrastIndex = 1:numel(contrastLevels)
-                theConeExcitationSNR(iAdaptationIndex, iContrastIndex) = d{iAdaptationIndex, iContrastIndex}.theConeExcitationSNR;
-                thePhotoCurrentSNR(iAdaptationIndex, iContrastIndex) = d{iAdaptationIndex, iContrastIndex}.thePhotoCurrentSNR;
-            end
-        end            
+        % Load previously computed responses
+        fprintf('Will load from %s\n', dataFileName);
+        load(dataFileName, 'd', 'contrastLevels', 'adaptationLevels');       
     end
     
-    % Plot results
-    incrementsIdx = find(contrastLevels>0);
-    decrementsIdx = find(contrastLevels<0);
-    
-    plotPolaritySNRs(contrastLevels(incrementsIdx), adaptationLevels, ...
-        theConeExcitationSNR(:,incrementsIdx), thePhotoCurrentSNR(:,incrementsIdx), 'increments', 2);
-    
-    plotPolaritySNRs(-contrastLevels(decrementsIdx), adaptationLevels, ...
-        theConeExcitationSNR(:,decrementsIdx), thePhotoCurrentSNR(:,decrementsIdx), 'decrements', 3);
-    
-    % Plot some modelResponse
-    iAdaptationIndex = numel(adaptationLevels); 
-    iContrastIndex = numel(contrastLevels);
-    dSelect = d{iAdaptationIndex, iContrastIndex};
-    
-    plotModelResponse(dSelect.modelResponse, ...
-        dSelect.theConeExcitationSNR, ...
-        dSelect.thePhotoCurrentSNR, ...
-        dSelect.noiseEstimationLatency, ...
-        dSelect.coneExcitationModulationPeak, ...
-        dSelect.coneExcitationPhotocurrentNoiseSigma, ...
-        dSelect.photocurrentModulationPeak, ...
-        dSelect.photocurrentNoiseSigma);
+    for iAdaptationIndex = 1:numel(adaptationLevels)
+        for iContrastIndex = 1:numel(contrastLevels)
+            theConeExcitationSNR(iAdaptationIndex, iContrastIndex) = d{iAdaptationIndex, iContrastIndex}.theConeExcitationSNR;
+            thePhotoCurrentSNR(iAdaptationIndex, iContrastIndex) = d{iAdaptationIndex, iContrastIndex}.thePhotoCurrentSNR;
+        end
+    end  
         
     
+    % Plot results as a function of contrast
+    idx = find(contrastLevels>0);
+    figNo = 2;
+    plotPolaritySNRs(contrastLevels(idx), adaptationLevels, ...
+            theConeExcitationSNR(:,idx), thePhotoCurrentSNR(:,idx), 'increments', figNo);
+    
+    idx = find(contrastLevels<0);
+    figNo = 3;
+    plotPolaritySNRs(-contrastLevels(idx), adaptationLevels, ...
+            theConeExcitationSNR(:,idx), thePhotoCurrentSNR(:,idx), 'decrements', figNo);
+     
+    % Plot results as a function of adaptation photon rate
+    
+    % Below lims and ticks for 100 msec pulse
+    SNRLims = [0.2 50];
+    SNRTicks = [0.3 1 3 10 30];
+    SNRratioLims = [0.1 0.8];
+    SNRratioTicks = [0.1:0.1:1.0];
+    figNo = 4;
+    plotBackgroundSNR(adaptationLevels, theConeExcitationSNR, thePhotoCurrentSNR, contrastLevels,  ...
+        SNRLims, SNRTicks, SNRratioLims, SNRratioTicks, vParams.pulseDurationSeconds, figNo);
+    
+    
+    % Plot some modelResponse
+    for iAdaptationIndex = 1:numel(adaptationLevels)
+        for iContrastIndex = 1:numel(contrastLevels)
+            dSelect = d{iAdaptationIndex, iContrastIndex};
+            figNo = 1;
+            plotReponses(dSelect.modelResponse, adaptationLevels(iAdaptationIndex), contrastLevels(iContrastIndex), vParams.pulseDurationSeconds, figNo);
+        end
+    end
+    
+    
+%     plotModelResponse(dSelect.modelResponse, ...
+%         dSelect.theConeExcitationSNR, ...
+%         dSelect.thePhotoCurrentSNR, ...
+%         dSelect.noiseEstimationLatency, ...
+%         dSelect.coneExcitationModulationPeak, ...
+%         dSelect.coneExcitationPhotocurrentNoiseSigma, ...
+%         dSelect.photocurrentModulationPeak, ...
+%         dSelect.photocurrentNoiseSigma); 
+end
+
+
+
+function plotBackgroundSNR(adaptationLevels, theConeExcitationSNR, thePhotoCurrentSNR, contrastLevels, SNRLims, SNRTicks, SNRratioLims, SNRratioTicks, pulseDurationSeconds, figNo)
+    hFig = figure(figNo); clf;
+    set(hFig, 'Position', [10 10 1100 460], 'Color', [1 1 1]);
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+       'colsNum', numel(contrastLevels)/2, ...
+       'rowsNum', 2, ...
+       'heightMargin',   0.06, ...
+       'widthMargin',    0.03, ...
+       'leftMargin',     0.06, ...
+       'rightMargin',    0.00, ...
+       'bottomMargin',   0.14, ...
+       'topMargin',      0.04);
+
+    markerSize = 10;
+    for iContrastIndex = 1:(numel(contrastLevels)/2) 
+        iContrastIndex2 = find(contrastLevels == -contrastLevels(iContrastIndex));
+        
+        color = 0.4*[1 1 1];
+        subplot('Position', subplotPosVectors(1,iContrastIndex).v);
+        plot(adaptationLevels, theConeExcitationSNR(:, iContrastIndex), 'ks-', ...
+            'Color', 0.5*color, 'MarkerFaceColor', color, ...
+            'MarkerSize', markerSize, 'LineWidth', 1.5);
+        hold on;
+   
+        plot(adaptationLevels, thePhotoCurrentSNR(:, iContrastIndex), 'ko-', ...
+            'Color', 0.5*color, 'MarkerFaceColor', color, ...
+            'MarkerSize', markerSize, 'LineWidth', 1.5);
+        
+        color = 0.8*[1 1 1];
+        plot(adaptationLevels, theConeExcitationSNR(:, iContrastIndex2), 'ks-', ...
+            'Color', 0.5*color, 'MarkerFaceColor', color, ...
+            'MarkerSize', markerSize, 'LineWidth', 1.5);
+        
+        plot(adaptationLevels, thePhotoCurrentSNR(:, iContrastIndex2), 'ko-', ...
+            'Color', 0.5*color, 'MarkerFaceColor', color, ...
+            'MarkerSize', markerSize, 'LineWidth', 1.5);
+        
+        grid on
+        set(gca, 'FontSize', 14, 'XScale', 'log',  ...
+            'XTick', [300 1000 3000 10000], 'XLim', [600 20000], 'XTickLabel', {}, ...
+            'YLim', SNRLims, 'YTick', SNRTicks, 'YScale', 'log');
+        if (iContrastIndex == 1)
+            legend({'cone exc (decr.)', 'pCurrent (decr.)', 'cone exc (incr.)', 'pCurrent (incr.)',}, 'Location', 'NorthWest');
+            ylabel('\it SNR');
+        else
+            set(gca, 'YTickLabel', {});
+        end
+        
+        title(sprintf('contrast: %2.0f%%', contrastLevels(iContrastIndex2)*100)) 
+    end
+    
+    for iContrastIndex = 1:(numel(contrastLevels)/2) 
+        legends = {};
+        iContrastIndex2 = find(contrastLevels == -contrastLevels(iContrastIndex));
+        
+        color = 0.4*[1 1 1];
+        subplot('Position', subplotPosVectors(2,iContrastIndex).v);
+        plot(adaptationLevels, thePhotoCurrentSNR(:, iContrastIndex)./theConeExcitationSNR(:, iContrastIndex), 'ks-', ...
+            'Color', 0.5*color, 'MarkerFaceColor', color, ...
+            'MarkerSize', markerSize, 'LineWidth', 1.5);
+        hold on;
+
+        color = 0.8*[1 1 1];
+        plot(adaptationLevels, thePhotoCurrentSNR(:, iContrastIndex2)./theConeExcitationSNR(:, iContrastIndex2), 'ks-', ...
+            'Color', 0.5*color, 'MarkerFaceColor', color, ...
+            'MarkerSize', markerSize, 'LineWidth', 1.5);
+
+        grid on
+        set(gca, 'FontSize', 14, 'XScale', 'log', ...
+            'XTick', [300 1000 3000 10000], 'XLim', [600 20000], 'XTickLabel', {'0.3k', '1k', '3k', '10k'}, ...
+            'YLim', SNRratioLims, 'YTick', SNRratioTicks, 'YScale', 'linear');
+        
+        if (iContrastIndex == 1)
+            legend({'decr.', 'incr.'}, 'Location', 'NorthEast');
+            ylabel(sprintf('\\it pCurrent/cone excitations \n SNR ratio'));
+            xlabel(sprintf('\\it background cone \n excitation rate (R*/c/s)'));
+        else
+            set(gca, 'YTickLabel', {});
+        end
+    end
+    
+    pdfFileName = sprintf('SNR_analysis_%2.1fmsec.pdf', pulseDurationSeconds*1000);
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
+     
 end
 
 function plotPolaritySNRs(contrastLevels, adaptationLevels, theConeExcitationSNR, thePhotoCurrentSNR, contrastPolarity, figNo)
@@ -140,7 +262,7 @@ function plotSNR(contrastLevels, adaptationLevels, theSNR, showXLabel, showXTick
             'Color', 0.5*color, 'MarkerFaceColor', color, ...
             'MarkerSize', 12, 'LineWidth', 1.5); hold on;
     end
-    set(gca, 'XLim', [0.03 1.05]*100, 'XTick', [1 3 10 30 100], 'YTick', [0.1 0.3 1 3 10 30], 'YLim', [0.09 50], 'XScale', 'log', 'YScale', 'log');
+    set(gca, 'XLim', [0.03 1.05]*100, 'XTick', [1 3 10 30 100], 'YTick', [0.1 0.3 1 3 10 30], 'YLim', [0.2 50], 'XScale', 'log', 'YScale', 'log');
     grid on; box on;
     set(gca, 'FontSize', 14);
     
@@ -234,7 +356,95 @@ function [theSNR, noiseEstimationLatency, modulationPeak, noiseSigma] = computeS
 end
 
 
+function plotReponses(modelResponse, adaptationLevel, contrastLevel, pulseDurationSeconds, figNo)
+ 
+    coneExcitationRange = [0 1700];  
+    photoCurrentRange = [-90 -5];  
+    
+    hFig = figure(figNo); clf;
+    set(hFig, 'Position', [10 10 350 460], 'Color', [1 1 1]);
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+       'colsNum', 1, ...
+       'rowsNum', 2, ...
+       'heightMargin',   0.06, ...
+       'widthMargin',    0.03, ...
+       'leftMargin',     0.17, ...
+       'rightMargin',    0.02, ...
+       'bottomMargin',   0.14, ...
+       'topMargin',      0.04);
+    
+    dt = modelResponse.noisyConeExcitationTimeAxis(2)-modelResponse.noisyConeExcitationTimeAxis(1);
+    idx = find(modelResponse.noisyConeExcitationTimeAxis>modelResponse.noisyConeExcitationTimeAxis(end)-0.2);
+    negTime = modelResponse.noisyConeExcitationTimeAxis(idx)-modelResponse.noisyConeExcitationTimeAxis(end)-dt;
+    modelResponse.noisyConeExcitationTimeAxis = cat(2,negTime, modelResponse.noisyConeExcitationTimeAxis);
+    modelResponse.noisyConeExcitations = cat(2,modelResponse.noisyConeExcitations(:,idx), modelResponse.noisyConeExcitations);
+    modelResponse.meanConeExcitationCountSignal = cat(2, modelResponse.meanConeExcitationCountSignal(:,idx), modelResponse.meanConeExcitationCountSignal);
+    modelResponse.noisyConeExcitationTimeAxis = modelResponse.noisyConeExcitationTimeAxis + dt;
+    
+    
+    idx = find(modelResponse.timeAxis>modelResponse.timeAxis(end)-0.2);
+    dt = modelResponse.timeAxis(2)-modelResponse.timeAxis(1);
+    negTime = modelResponse.timeAxis(idx) - modelResponse.timeAxis(end)-dt;
+    modelResponse.timeAxis(modelResponse.timeAxis<0) = nan;
+    modelResponse.timeAxis = cat(2, negTime, modelResponse.timeAxis);
+    modelResponse.noisyMembraneCurrents = cat(2, modelResponse.noisyMembraneCurrents(:,idx), modelResponse.noisyMembraneCurrents);
+    modelResponse.membraneCurrent = cat(2, modelResponse.membraneCurrent(idx), modelResponse.membraneCurrent);
+    
+    % Display up to 500 instances
+    displayedInstancesNum = 500;
+    modelResponse.noisyConeExcitations = modelResponse.noisyConeExcitations(1:displayedInstancesNum,:);
+    modelResponse.noisyMembraneCurrents = modelResponse.noisyMembraneCurrents(1:displayedInstancesNum,:);
+    
+    subplot('Position', subplotPosVectors(1,1).v);
+    [stairsTime, stairsResponse] = stairsCoords(modelResponse.noisyConeExcitationTimeAxis, modelResponse.noisyConeExcitations);
+    hPlot = plot(stairsTime, stairsResponse,  'k-'); hold on;
+    for k = 1:numel(hPlot)
+        hPlot(k).Color(4) = 0.3;  % 5% transparent
+    end
+    [stairsTime, stairsResponse] = stairsCoords(modelResponse.noisyConeExcitationTimeAxis, modelResponse.meanConeExcitationCountSignal);
+    plot(stairsTime, stairsResponse, 'r-',  'LineWidth', 2.0);
+    ylabel(sprintf('\\it photon absorptions (R*/c/%0.2fsec)', pulseDurationSeconds));
+    grid on
+    set(gca, 'FontSize', 14);
+    set(gca, 'YLim', coneExcitationRange, 'XLim', [-0.1 0.6], 'XTick', -0.2:0.1:1, 'YTick', [0:250:3000]);
+    
+    subplot('Position', subplotPosVectors(2,1).v);
+    hPlot = plot(modelResponse.timeAxis, modelResponse.noisyMembraneCurrents', 'k-');
 
+    for k = 1:numel(hPlot)
+        hPlot(k).Color(4) = 0.05;  % 5% transparent
+    end
+    hold on;
+    
+    plot(modelResponse.timeAxis, modelResponse.membraneCurrent, 'r-',  'LineWidth', 2.0);
+    %plot(0.5*[1 1], photocurrentModulationPeak*[-0.5 0.5] + modelResponse.membraneCurrent(end), 'ms-', 'LineWidth', 2.0);
+    %plot(0.55*[1 1], photocurrentNoiseSigma*[-0.5 0.5]+ modelResponse.membraneCurrent(end), 'bs-', 'LineWidth', 2.0);
+    grid on;
+    set(gca, 'YLim', photoCurrentRange, 'XLim', [-0.1 0.6], 'XTick', -0.2:0.1:1, 'YTick', [-90:10:0]);
+    ylabel('\it photocurrent (pA)');  xlabel('\it time (sec)');
+    set(gca, 'FontSize', 14);
+    drawnow;
+
+    pdfFileName = sprintf('Responses_adapt_%f_contrast_%f_%2.1fmsec.pdf', adaptationLevel, contrastLevel, pulseDurationSeconds*1000);
+    NicePlot.exportFigToPDF(pdfFileName, hFig, 300)
+    
+end
+
+function [xStairs, yStairs] = stairsCoords(x,y)
+    xStairs(1,1) = x(1);
+    yStairs(:,1) = y(:,1);
+    for k = 1:numel(x)-1
+        xStairs = cat(2,xStairs, x(1,k));
+        yStairs = cat(2,yStairs, y(:,k));
+        
+        xStairs = cat(2,xStairs, x(1,k));
+        yStairs = cat(2,yStairs, y(:,k+1));
+    end
+    xStairs = cat(2, xStairs, x(1,k));
+    yStairs = cat(2, yStairs, y(:,k));
+end
+    
 function plotModelResponse(modelResponse, theConeExcitationSNR, thePhotoCurrentSNR, noiseEstimationLatency, ...
     coneExcitationModulationPeak, coneExcitationPhotocurrentNoiseSigma, photocurrentModulationPeak, photocurrentNoiseSigma)
 

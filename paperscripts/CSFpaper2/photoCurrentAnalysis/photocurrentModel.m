@@ -43,7 +43,6 @@ function modelResponse = photocurrentModel(stimulus, eccentricity, noisyInstance
         end
         
 
-        fprintf('Computing %d response instances (default implementation)\n', noisyInstancesNum);
         os = osSet(os, 'noise flag', 'none');
         % Compute steady-state
         state = osAdaptSteadyState(os, stimulus.pRate(1));
