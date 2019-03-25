@@ -1,11 +1,11 @@
 function testPhotocurrentModel
 
-    recomputeResponses = ~true;
+    recomputeResponses = true;
     
     % Pulse duration in seconds
     vParams.pulseDurationSeconds = 100/1000;
-    %vParams.pulseDurationSeconds = 50/1000;
-    %vParams.pulseDurationSeconds = 25/1000;
+    vParams.pulseDurationSeconds = 50/1000;
+    vParams.pulseDurationSeconds = 200/1000;
     
     % Data filename
     dataFileName = sprintf('results_%dmsec.mat', vParams.pulseDurationSeconds*1000);
@@ -404,7 +404,7 @@ function plotReponses(modelResponse, adaptationLevel, contrastLevel, pulseDurati
     end
     [stairsTime, stairsResponse] = stairsCoords(modelResponse.noisyConeExcitationTimeAxis, modelResponse.meanConeExcitationCountSignal);
     plot(stairsTime, stairsResponse, 'r-',  'LineWidth', 2.0);
-    ylabel(sprintf('\\it photon absorptions (R*/c/%0.2fsec)', pulseDurationSeconds));
+    ylabel(sprintf('\\it cone excitations (R*/c/%0.2fs)', pulseDurationSeconds));
     grid on
     set(gca, 'FontSize', 14);
     set(gca, 'YLim', coneExcitationRange, 'XLim', [-0.1 0.6], 'XTick', -0.2:0.1:1, 'YTick', [0:250:3000]);
