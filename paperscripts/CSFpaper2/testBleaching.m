@@ -3,14 +3,15 @@ function testBleaching
     %theConeMosaic = theData;
     %theConeMosaic.displayInfo()
     
-    innerSegmentAreaMicronsSquared(1) = 1.96;
-    innerSegmentAreaMicronsSquared(2) = 9.2;
-    innerSegmentAreaMicronsSquared(3) = 19.6785;
+    innerSegmentAreaMicronsSquared(1) = 1.96;  % smallest cone areaexit
+    innerSegmentAreaMicronsSquared(2) = 9.2;   % mean cone area
+    innerSegmentAreaMicronsSquared(3) = 19.6785; % max cone ares
     
     % Intensity of steady background in photons * sec^{-1} * micron^{2}
     iHalf = 10^5.57;
     
-    %                                   1%  50%   99%
+    % The values below are for 34 cd/m2 stimuli.
+    % prctile of cone excitation rates: 1%  50%   99%
     iBackgroundPhotonsPerSecPerCone = [317 14182 28136];
     
     % Compute background in photons * sec^{-1} * micron^{2}
