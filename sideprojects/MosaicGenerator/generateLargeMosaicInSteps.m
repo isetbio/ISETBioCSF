@@ -1,7 +1,7 @@
 function generateLargeMosaicInSteps
-    mosaicFOV = 15;
+    mosaicFOV = 30;
     minPositionChangeToTriggerTriangularization = nan; 
-    visualizationUpdateIterations = 5;
+    visualizationUpdateIterations = 1;
 
     mosaicParams = struct(...
         'resamplingFactor', 5, ...
@@ -44,7 +44,8 @@ function generateLargeMosaicInSteps
     
     % Save mosaic
     mosaicFileName = sprintf('%s.mat',mosaicFileName);
-    save(mosaicFileName, 'theMosaic');
+    version = '-v7.3';
+    save(mosaicFileName, 'theMosaic', version);
     fprintf('Mosaic saved in ''%s''.\n', mosaicFileName);
     
 end
