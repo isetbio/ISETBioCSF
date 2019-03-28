@@ -1,6 +1,6 @@
 function plotSNRanalysis(adaptationLevels, theConeExcitationSNR, thePhotoCurrentSNR, contrastLevels, SNRLims, SNRTicks, SNRratioLims, SNRratioTicks, pulseDurationSeconds, figNo)
     hFig = figure(figNo); clf;
-    set(hFig, 'Position', [10 10 1100 460], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 1400 460], 'Color', [1 1 1]);
     
     backgroundConeExcitationRateLims = [300 30000];
     backgroundConeExcitationRateTicks =  [300 1000 3000 10000 30000];
@@ -11,12 +11,13 @@ function plotSNRanalysis(adaptationLevels, theConeExcitationSNR, thePhotoCurrent
        'rowsNum', 2, ...
        'heightMargin',   0.06, ...
        'widthMargin',    0.03, ...
-       'leftMargin',     0.06, ...
+       'leftMargin',     0.05, ...
        'rightMargin',    0.00, ...
        'bottomMargin',   0.14, ...
        'topMargin',      0.04);
 
-    markerSize = 10;
+    markerSize = 9;
+    legends = {};
     for iContrastIndex = 1:(numel(contrastLevels)/2) 
         iContrastIndex2 = find(contrastLevels == -contrastLevels(iContrastIndex));
         
@@ -26,16 +27,18 @@ function plotSNRanalysis(adaptationLevels, theConeExcitationSNR, thePhotoCurrent
             'Color', 0.5*color, 'MarkerFaceColor', color, ...
             'MarkerSize', markerSize, 'LineWidth', 1.5);
         hold on;
-   
-        plot(adaptationLevels, thePhotoCurrentSNR(:, iContrastIndex), 'ko-', ...
-            'Color', 0.5*color, 'MarkerFaceColor', color, ...
-            'MarkerSize', markerSize, 'LineWidth', 1.5);
         
         color = 0.8*[1 1 1];
         plot(adaptationLevels, theConeExcitationSNR(:, iContrastIndex2), 'ks-', ...
             'Color', 0.5*color, 'MarkerFaceColor', color, ...
             'MarkerSize', markerSize, 'LineWidth', 1.5);
         
+        color = 0.4*[1 1 1];
+        plot(adaptationLevels, thePhotoCurrentSNR(:, iContrastIndex), 'ko-', ...
+            'Color', 0.5*color, 'MarkerFaceColor', color, ...
+            'MarkerSize', markerSize, 'LineWidth', 1.5);
+        
+        color = 0.8*[1 1 1];
         plot(adaptationLevels, thePhotoCurrentSNR(:, iContrastIndex2), 'ko-', ...
             'Color', 0.5*color, 'MarkerFaceColor', color, ...
             'MarkerSize', markerSize, 'LineWidth', 1.5);
@@ -45,13 +48,13 @@ function plotSNRanalysis(adaptationLevels, theConeExcitationSNR, thePhotoCurrent
             'XTick',backgroundConeExcitationRateTicks, 'XLim', backgroundConeExcitationRateLims, 'XTickLabel', {}, ...
             'YLim', SNRLims, 'YTick', SNRTicks, 'YScale', 'log');
         if (iContrastIndex == 1)
-            legend({'cone exc. (decr.)', 'pCurrent (decr.)', 'cone exc. (incr.)', 'pCurrent (incr.)',}, 'Location', 'NorthWest');
+            legend({'cone exc. (decr.)', 'cone exc. (incr.)', 'pCurrent (decr.)', 'pCurrent (incr.)',}, 'Location', 'NorthWest');
             ylabel('\it SNR');
         else
             set(gca, 'YTickLabel', {});
         end
         
-        title(sprintf('contrast: %2.0f%%', contrastLevels(iContrastIndex2)*100)) 
+        title(sprintf('contrast: %2.0f%%', contrastLevels(iContrastIndex2)*100), 'FontWeight', 'normal') 
     end
     
     for iContrastIndex = 1:(numel(contrastLevels)/2) 
