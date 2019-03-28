@@ -1,13 +1,13 @@
 function testPhotocurrentModel
 
-    recomputeResponses = ~true;
+    recomputeResponses = true;
     
     % Pulse duration in seconds
     
-    vParams.pulseDurationSeconds = 50/1000;
+     %vParams.pulseDurationSeconds = 50/1000;
     vParams.pulseDurationSeconds = 100/1000;
-    vParams.pulseDurationSeconds = 200/1000;
-    vParams.pulseDurationSeconds = 400/1000;
+    %vParams.pulseDurationSeconds = 200/1000;
+    %vParams.pulseDurationSeconds = 400/1000;
     
     % Data filename
     dataFileName = sprintf('results_%dmsec.mat', vParams.pulseDurationSeconds*1000);
@@ -20,7 +20,7 @@ function testPhotocurrentModel
         cParams.spontaneousIsomerizationRate = 200; %  R*/c/s
         cParams.eccentricity  = 'foveal';
         cParams.useDefaultImplementation = true;
-        cParams.noisyInstancesNum = 1500;
+        cParams.noisyInstancesNum = 2000;
         
         % Varied Params
         % Pulse contrast
@@ -35,11 +35,13 @@ function testPhotocurrentModel
         vParams.photonIntegrationTime = vParams.pulseDurationSeconds;
 
         % Examined contrast levels
-        contrastLevels = [-0.04 -0.08 -0.16 -0.32 -0.64 -1.0 0.04 0.08 0.16 0.32 0.64 1.0];
+        contrastLevels = [-0.01 -0.02 -0.04 -0.08 -0.16 -0.32 -0.64 -1.0 0.01 0.02 0.04 0.08 0.16 0.32 0.64 1.0];
 
         
         % Examined adaptation levels
-        adaptationLevels = [1000 2000 4000 8000 16000]; 
+        % prctile               1%      5%     10%     25%     50%     75%     90%    95%      99% 
+        % adaptationLevels = [0.0317  0.1434  0.2882  0.7143  1.4192  2.1320 2.5554  2.6961  2.8136]*1e4; % for 2 deg mosaic
+        adaptationLevels = [500 1000 2000 4000 8000 16000 24000]; 
 
         % Preallocate memory
         d = cell(numel(adaptationLevels), numel(contrastLevels));
@@ -96,9 +98,12 @@ function testPhotocurrentModel
     plotBackgroundSNR(adaptationLevels, theConeExcitationSNR, thePhotoCurrentSNR, contrastLevels,  ...
         SNRLims, SNRTicks, SNRratioLims, SNRratioTicks, vParams.pulseDurationSeconds, figNo);
     
-    pause
+   
+    % Plot the responses
     combinePolarities = true;
     showSNR = true;
+    showSNRcomponents = ~true;
+    
     if (combinePolarities)
         % Plot separate responses
         for iAdaptationIndex = 1:numel(adaptationLevels)
@@ -107,7 +112,7 @@ function testPhotocurrentModel
                 dPositivePolarity = d{iAdaptationIndex, iContrastIndex+numel(contrastLevels)/2};
                 figNo = 1;
                 plotResponses(dNegativePolarity.modelResponse, dPositivePolarity.modelResponse,adaptationLevels(iAdaptationIndex), ...
-                    contrastLevels(iContrastIndex), vParams.pulseDurationSeconds, showSNR, figNo);
+                    contrastLevels(iContrastIndex), vParams.pulseDurationSeconds, showSNR, showSNRcomponents, figNo);
             end
         end
     else
@@ -117,7 +122,7 @@ function testPhotocurrentModel
                 dSelected = d{iAdaptationIndex, iContrastIndex};
                 figNo = 1;
                 plotResponses(dSelected.modelResponse, [], adaptationLevels(iAdaptationIndex), ...
-                    contrastLevels(iContrastIndex), vParams.pulseDurationSeconds, showSNR, figNo);
+                    contrastLevels(iContrastIndex), vParams.pulseDurationSeconds, showSNR, showSNRcomponents, figNo);
             end
         end
     end
@@ -139,6 +144,10 @@ end
 function plotBackgroundSNR(adaptationLevels, theConeExcitationSNR, thePhotoCurrentSNR, contrastLevels, SNRLims, SNRTicks, SNRratioLims, SNRratioTicks, pulseDurationSeconds, figNo)
     hFig = figure(figNo); clf;
     set(hFig, 'Position', [10 10 1100 460], 'Color', [1 1 1]);
+    
+    backgroundConeExcitationRateLims = [400 30000];
+    backgroundConeExcitationRateTicks =  [300 1000 3000 10000 30000];
+    backgroundConeExcitationRateTickLabels =  {'0.3k', '1k', '3k', '10k', '30k'};
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
        'colsNum', numel(contrastLevels)/2, ...
@@ -176,7 +185,7 @@ function plotBackgroundSNR(adaptationLevels, theConeExcitationSNR, thePhotoCurre
         
         grid on
         set(gca, 'FontSize', 14, 'XScale', 'log',  ...
-            'XTick', [300 1000 3000 10000], 'XLim', [600 20000], 'XTickLabel', {}, ...
+            'XTick',backgroundConeExcitationRateTicks, 'XLim', backgroundConeExcitationRateLims, 'XTickLabel', {}, ...
             'YLim', SNRLims, 'YTick', SNRTicks, 'YScale', 'log');
         if (iContrastIndex == 1)
             legend({'cone exc. (decr.)', 'pCurrent (decr.)', 'cone exc. (incr.)', 'pCurrent (incr.)',}, 'Location', 'NorthWest');
@@ -206,7 +215,8 @@ function plotBackgroundSNR(adaptationLevels, theConeExcitationSNR, thePhotoCurre
 
         grid on
         set(gca, 'FontSize', 14, 'XScale', 'log', ...
-            'XTick', [300 1000 3000 10000], 'XLim', [600 20000], 'XTickLabel', {'0.3k', '1k', '3k', '10k'}, ...
+            'XTick',backgroundConeExcitationRateTicks, 'XLim', backgroundConeExcitationRateLims, ...
+            'XTickLabel', backgroundConeExcitationRateTickLabels, ...
             'YLim', SNRratioLims, 'YTick', SNRratioTicks, 'YScale', 'linear');
         
         if (iContrastIndex == 1)
@@ -221,88 +231,6 @@ function plotBackgroundSNR(adaptationLevels, theConeExcitationSNR, thePhotoCurre
     pdfFileName = sprintf('SNR_analysis_%2.1fmsec.pdf', pulseDurationSeconds*1000);
     NicePlot.exportFigToPDF(pdfFileName, hFig, 300);
      
-end
-
-function plotPolaritySNRs(contrastLevels, adaptationLevels, theConeExcitationSNR, thePhotoCurrentSNR, contrastPolarity, figNo)
-    
-    hFig = figure(figNo); clf;
-    set(hFig, 'Position', [10 10 1000 400], 'Color', [1 1 1]);
-
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-       'colsNum', 3, ...
-       'rowsNum', 1, ...
-       'heightMargin',   0.1, ...
-       'widthMargin',    0.06, ...
-       'leftMargin',     0.05, ...
-       'rightMargin',    0.00, ...
-       'bottomMargin',   0.11, ...
-       'topMargin',      0.05);
-   
-    subplot('Position', subplotPosVectors(1,1).v);
-    plotSNR(contrastLevels, adaptationLevels, theConeExcitationSNR, true, true, true, true, sprintf('cone excitations (%s)', contrastPolarity));
-   
-    position = subplotPosVectors(1,2).v;
-    position(1) = position(1)-0.03;
-    subplot('Position', position);
-    plotSNR(contrastLevels, adaptationLevels, thePhotoCurrentSNR, true, true, ~true, ~true, sprintf('photocurrent (%s)', contrastPolarity));
-
-    theSNRratios = thePhotoCurrentSNR./theConeExcitationSNR;
-    
-    position = subplotPosVectors(1,3).v;
-    position(1) = position(1)-0.01;
-    subplot('Position', position);
-    legends = {};
-    cMap = brewermap(numel(contrastLevels), '*Spectral');
-    
-    for iContrastIndex = 1:numel(contrastLevels)
-        color = squeeze(cMap(iContrastIndex,:));
-        legends{iContrastIndex} = sprintf('%2.0f%%', contrastLevels(iContrastIndex)*100);
-        plot(adaptationLevels, theSNRratios(:,iContrastIndex), 'o-', ...
-            'Color', 0.5*color, 'MarkerFaceColor', color, ...
-            'MarkerSize', 12, 'LineWidth', 1.5); hold on;
-    end
-    set(gca, 'XLim', [adaptationLevels(1)*0.9 adaptationLevels(end)*1.1], ...
-        'XTIck', [600 2000 6000 20000], 'YLim', [0.01 0.8], 'XScale', 'log');
-    grid on; box on;
-    set(gca, 'FontSize', 14);
-    xlabel('\it adaptation level (R*/c/s)');
-    ylabel(sprintf('\\it SNR(photocurrent) / SNR(cone excitations)'));
-    legend(legends, 'Location', 'NorthEast');
-    title(sprintf('%s',contrastPolarity));
-end
-
-
-function plotSNR(contrastLevels, adaptationLevels, theSNR, showXLabel, showXTickLabels, showYLabel, showYTickLabels, signalName)
-   cMap = brewermap(numel(adaptationLevels), '*RdYlBu');
-   legends = {};
-   for iAdaptationIndex = 1:numel(adaptationLevels)
-        color = squeeze(cMap(iAdaptationIndex,:));
-        legends{iAdaptationIndex} = sprintf('%2.0f', adaptationLevels(iAdaptationIndex));
-        plot(contrastLevels*100, theSNR(iAdaptationIndex,:), 'o-', ...
-            'Color', 0.5*color, 'MarkerFaceColor', color, ...
-            'MarkerSize', 12, 'LineWidth', 1.5); hold on;
-    end
-    set(gca, 'XLim', [0.03 1.05]*100, 'XTick', [1 3 10 30 100], 'YTick', [0.1 0.3 1 3 10 30], 'YLim', [0.2 50], 'XScale', 'log', 'YScale', 'log');
-    grid on; box on;
-    set(gca, 'FontSize', 14);
-    
-    if (showYLabel)
-        ylabel('\it SNR');
-    end
-    if (showXLabel)
-        xlabel('\it weber contrast (%)');
-    end
-    
-    if (~showYTickLabels)
-        set(gca, 'YTickLabel', {});
-    end
-    
-    if (~showXTickLabels)
-        set(gca, 'XTickLabel', {});
-    end
-    
-    title(signalName);
-    legend(legends, 'Location', 'NorthWest');
 end
 
 function dStruct = runSimulation(vParams, cParams)
@@ -383,20 +311,25 @@ function [theSNR, noiseEstimationLatency, peakEstimationLatency, modulationPeak,
     % Compute the SNR
     theSNR = modulationPeak / sqrt(0.5*(noiseSigma^2 + responseAtPeakSigma^2));
     
-    figure(1234); clf;
-    plot(timeAxis(tPeakBinIndex)*[1 1], noiseMean+[0 modulationPeak], 'rs-', 'LineWidth', 1.5); hold on
-    plot(timeAxis(tPeakBinIndex)*[1 1], meanResponse(tPeakBinIndex) + responseAtPeakSigma*[-1 1], 'gs-', 'LineWidth', 1.5);
-    plot(1.2*[1 1], noiseMean+noiseSigma*[-1 1], 'co-', 'LineWidth', 1.5);
-    plot(timeAxis, noisyResponses(1:20,:), 'k-'); 
-    plot(timeAxis(tPeakBinIndex)*[1 1], noiseMean+[0 modulationPeak], 'rs-', 'LineWidth', 1.5);
-    plot(timeAxis(tPeakBinIndex)*[1 1], meanResponse(tPeakBinIndex) + responseAtPeakSigma*[-1 1], 'gs-', 'LineWidth', 1.5);
-    plot(1.0*[1 1], noiseMean+noiseSigma*[-1 1], 'co-', 'LineWidth', 1.5);
-    legend({'modulationPeak', 'sigmaR', 'sigmaNoise'});
-    drawnow;
+    % Show SNR components
+    showSNRcomponents = false;
+    if (showSNRcomponents)
+        figure(1234); clf;
+        plot(timeAxis(tPeakBinIndex)*[1 1], noiseMean+[0 modulationPeak], 'rs-', 'LineWidth', 1.5); hold on
+        plot(timeAxis(tPeakBinIndex)*[1 1], meanResponse(tPeakBinIndex) + responseAtPeakSigma*[-1 1], 'gs-', 'LineWidth', 1.5);
+        plot(1.2*[1 1], noiseMean+noiseSigma*[-1 1], 'co-', 'LineWidth', 1.5);
+        plot(timeAxis, noisyResponses(1:20,:), 'k-'); 
+        plot(timeAxis(tPeakBinIndex)*[1 1], noiseMean+[0 modulationPeak], 'rs-', 'LineWidth', 1.5);
+        plot(timeAxis(tPeakBinIndex)*[1 1], meanResponse(tPeakBinIndex) + responseAtPeakSigma*[-1 1], 'gs-', 'LineWidth', 1.5);
+        plot(1.0*[1 1], noiseMean+noiseSigma*[-1 1], 'co-', 'LineWidth', 1.5);
+        legend({'modulationPeak', 'sigmaR', 'sigmaNoise'});
+        drawnow;
+    end
+    
 end
 
 
-function plotResponses(modelResponse, modelResponseOpositePolarity, adaptationLevel, contrastLevel, pulseDurationSeconds, showSNR, figNo)
+function plotResponses(modelResponse, modelResponseOpositePolarity, adaptationLevel, contrastLevel, pulseDurationSeconds, showSNR, showSNRcomponents, figNo)
  
     if (showSNR)
         [coneExcitation.SNR, ...
@@ -441,10 +374,45 @@ function plotResponses(modelResponse, modelResponseOpositePolarity, adaptationLe
         
     end
     
+    totalPhotonCount = pulseDurationSeconds * adaptationLevel;
+    modulatedPhotonCount = totalPhotonCount * contrastLevel;
     
-    coneExcitationRange = [0 30000];
-    coneExcitationTicks = 0:5000:30000;
-    coneExcitationTickLabels = {'0', '5k', '10k', '15k', '20k', '25k', '30k'};
+
+    switch (totalPhotonCount)
+        case 100
+            coneExcitationRange = [0 200];
+            coneExcitationTicks = 0:25:200;
+            coneExcitationTickLabels = {'0', '25', '50', '70', '100', '125', '150', '170', '200'};
+            
+        case 200
+            coneExcitationRange = [0 400];
+            coneExcitationTicks = 0:50:400;
+            coneExcitationTickLabels = {'0', '50', '100', '150', '200', '250', '300', '350', '400'};
+        case 400
+            coneExcitationRange = [0 750];
+            coneExcitationTicks = 0:100:700;
+            coneExcitationTickLabels = {'0', '0.1k', '0.2k', '0.3k', '0.4k', '0.5k', '0.6k', '0.7k'};
+        case 800
+            coneExcitationRange = [0 1500];
+            coneExcitationTicks = 0:200:1500;
+            coneExcitationTickLabels = {'0', '0.2k', '0.4k', '0.6k', '0.8k', '1.0k', '1.2k', '1.4k'};
+        case 1600
+            coneExcitationRange = [0 3000];
+            coneExcitationTicks = 0:500:3000;
+            coneExcitationTickLabels = {'0', '0.5k', '1.0k', '1.5k', '2.0k', '2.5k', '3.0k', '3.5k', '4.0k', '4.5k', '5.0k', '5.5k', '6.0k'};
+        case 3200
+            coneExcitationRange = [0 6000];
+            coneExcitationTicks = 0:500:6000;
+            coneExcitationTickLabels = {'0', '0.5k', '1.0k', '1.5k', '2.0k', '2.5k', '3.0k', '3.5k', '4.0k', '4.5k', '5.0k', '5.5k', '6.0k'};
+        case 6400
+            coneExcitationRange = [0 11000];
+            coneExcitationTicks = 0:1000:15000;
+            coneExcitationTickLabels = {'0', '1k', '2k', '3k', '4k', '5k', '6k', '7k', '8k', '10k', '10k', '11k'};
+        otherwise
+            coneExcitationRange = [0 11000];
+            coneExcitationTicks = 0:1000:15000;
+            coneExcitationTickLabels = {'0', '1k', '2k', '3k', '4k', '5k', '6k', '7k', '8k', '10k', '10k', '11k'};
+    end
     
     photoCurrentRange = [-90 0];  
     photoCurrentTicks = [-90:10:0];
@@ -535,21 +503,24 @@ function plotResponses(modelResponse, modelResponseOpositePolarity, adaptationLe
     end
     
     % Show SNR components
-    plot([0 0], modelResponse.meanConeExcitationCountSignal(end) + [0 -coneExcitation.modulationPeak], 'g-', 'LineWidth', 1.5);
-    plot(coneExcitation.peakEstimationLatency+pulseDurationSeconds/2*[1 1], coneExcitation.responseAtPeak + coneExcitation.responseAtPeakSigma*[-1 1], 'gs-', 'LineWidth', 1.5); 
-    plot(-0.05*[1 1], modelResponse.meanConeExcitationCountSignal(end) + coneExcitation.noiseSigma*[-1 1], 'y-', 'LineWidth', 1.5); 
-    
-    if (~isempty(modelResponseOpositePolarity))
-        plot([0 0], modelResponseOpositePolarity.meanConeExcitationCountSignal(end) + [0 coneExcitationOpositePolarity.modulationPeak], 'r-', 'LineWidth', 1.5);
-        plot(coneExcitationOpositePolarity.peakEstimationLatency+pulseDurationSeconds/2*[1 1], coneExcitationOpositePolarity.responseAtPeak + coneExcitationOpositePolarity.responseAtPeakSigma*[-1 1], 'rs-', 'LineWidth', 1.5); 
+    if (showSNR)
+        if (showSNRcomponents)
+            plot([0 0], modelResponse.meanConeExcitationCountSignal(end) + [0 -coneExcitation.modulationPeak], 'g-', 'LineWidth', 1.5);
+            plot(coneExcitation.peakEstimationLatency+pulseDurationSeconds/2*[1 1], coneExcitation.responseAtPeak + coneExcitation.responseAtPeakSigma*[-1 1], 'gs-', 'LineWidth', 1.5); 
+            plot(-0.05*[1 1], modelResponse.meanConeExcitationCountSignal(end) + coneExcitation.noiseSigma*[-1 1], 'y-', 'LineWidth', 1.5); 
+
+            if (~isempty(modelResponseOpositePolarity))
+                plot([0 0], modelResponseOpositePolarity.meanConeExcitationCountSignal(end) + [0 coneExcitationOpositePolarity.modulationPeak], 'r-', 'LineWidth', 1.5);
+                plot(coneExcitationOpositePolarity.peakEstimationLatency+pulseDurationSeconds/2*[1 1], coneExcitationOpositePolarity.responseAtPeak + coneExcitationOpositePolarity.responseAtPeakSigma*[-1 1], 'rs-', 'LineWidth', 1.5); 
+            end
+        end
+        
+        if (~isempty(modelResponseOpositePolarity))
+            title(sprintf('SNR(dec/inc): %2.1f/%2.1f', coneExcitation.SNR, coneExcitationOpositePolarity.SNR), 'FontWeight', 'normal');
+        else
+            title(sprintf('SNR: %2.1f/%2.1f', coneExcitation.SNR), 'FontWeight', 'normal');
+        end
     end
-    
-    if (~isempty(modelResponseOpositePolarity))
-        title(sprintf('SNR(dec/inc): %2.1f/%2.1f', coneExcitation.SNR, coneExcitationOpositePolarity.SNR));
-    else
-        title(sprintf('SNR: %2.1f/%2.1f', coneExcitation.SNR));
-    end
-    
     
     subplot('Position', subplotPosVectors(2,1).v);
     plotResponseInstances = true;
@@ -557,31 +528,35 @@ function plotResponses(modelResponse, modelResponseOpositePolarity, adaptationLe
         photoCurrentRange, photoCurrentTicks, timeLims, timeTicks, false, true, true, plotResponseInstances);
     if (~isempty(modelResponseOpositePolarity))
         linesComboPlot('r', modelResponseOpositePolarity.timeAxis, modelResponseOpositePolarity.noisyMembraneCurrents', ...
-            modelResponseOpositePolarity.membraneCurrent, photoCurrentRange, photoCurrentTicks, timeLims, timeTicks, false, true, false, plotResponseInstances);
+            modelResponseOpositePolarity.membraneCurrent, photoCurrentRange, photoCurrentTicks, timeLims, timeTicks, false, true, true, plotResponseInstances);
     end
     
     plotResponseInstances = false;
     linesComboPlot('g', modelResponse.timeAxis, modelResponse.noisyMembraneCurrents', modelResponse.membraneCurrent, ...
-        photoCurrentRange, photoCurrentTicks, timeLims, timeTicks, false, true, false, plotResponseInstances);
+        photoCurrentRange, photoCurrentTicks, timeLims, timeTicks, true, true, true, plotResponseInstances);
     if (~isempty(modelResponseOpositePolarity))
         linesComboPlot('r', modelResponseOpositePolarity.timeAxis, modelResponseOpositePolarity.noisyMembraneCurrents', ...
-            modelResponseOpositePolarity.membraneCurrent, photoCurrentRange, photoCurrentTicks, timeLims, timeTicks, false, true, false, plotResponseInstances);
+            modelResponseOpositePolarity.membraneCurrent, photoCurrentRange, photoCurrentTicks, timeLims, timeTicks, true, true, true, plotResponseInstances);
     end
     
     % Show SNR components
-    plot([0 0], modelResponse.membraneCurrent(end) + [0 -photoCurrent.modulationPeak], 'g-', 'LineWidth', 1.5);
-    plot(photoCurrent.peakEstimationLatency+[0 0], photoCurrent.responseAtPeak + photoCurrent.responseAtPeakSigma*[-1 1], 'gs-', 'LineWidth', 1.5); 
-    plot(-0.05*[1 1], modelResponse.membraneCurrent(end) + photoCurrent.noiseSigma*[-1 1], 'y-', 'LineWidth', 1.5); 
+    if (showSNR)
+        if (showSNRcomponents)
+            plot([0 0], modelResponse.membraneCurrent(end) + [0 -photoCurrent.modulationPeak], 'g-', 'LineWidth', 1.5);
+            plot(photoCurrent.peakEstimationLatency+[0 0], photoCurrent.responseAtPeak + photoCurrent.responseAtPeakSigma*[-1 1], 'gs-', 'LineWidth', 1.5); 
+            plot(-0.05*[1 1], modelResponse.membraneCurrent(end) + photoCurrent.noiseSigma*[-1 1], 'y-', 'LineWidth', 1.5); 
+
+            if (~isempty(modelResponseOpositePolarity))
+                plot([0 0], modelResponseOpositePolarity.membraneCurrent(end) + [0 photoCurrentOpositePolarity.modulationPeak], 'r-', 'LineWidth', 1.5);
+                plot(photoCurrentOpositePolarity.peakEstimationLatency+[0 0], photoCurrentOpositePolarity.responseAtPeak + photoCurrentOpositePolarity.responseAtPeakSigma*[-1 1], 'rs-', 'LineWidth', 1.5); 
+            end
+        end
     
-    if (~isempty(modelResponseOpositePolarity))
-        plot([0 0], modelResponseOpositePolarity.membraneCurrent(end) + [0 photoCurrentOpositePolarity.modulationPeak], 'r-', 'LineWidth', 1.5);
-        plot(photoCurrentOpositePolarity.peakEstimationLatency+[0 0], photoCurrentOpositePolarity.responseAtPeak + photoCurrentOpositePolarity.responseAtPeakSigma*[-1 1], 'rs-', 'LineWidth', 1.5); 
-    end
-    
-    if (~isempty(modelResponseOpositePolarity))
-        title(sprintf('SNR(dec/inc): %2.1f/%2.1f', photoCurrent.SNR, photoCurrentOpositePolarity.SNR));
-    else
-        title(sprintf('SNR: %2.1f/%2.1f', photoCurrent.SNR));
+        if (~isempty(modelResponseOpositePolarity))
+            title(sprintf('SNR(dec/inc): %2.1f/%2.1f', photoCurrent.SNR, photoCurrentOpositePolarity.SNR), 'FontWeight', 'normal');
+        else
+            title(sprintf('SNR: %2.1f/%2.1f', photoCurrent.SNR), 'FontWeight', 'normal');
+        end
     end
     
     drawnow;
@@ -715,32 +690,4 @@ function plotModelResponse(modelResponse, theConeExcitationSNR, thePhotoCurrentS
     ylabel('\it photocurrent (pA)');  xlabel('\it time (sec)');
     set(gca, 'FontSize', 14);
     title(sprintf('SNR = %2.2f', thePhotoCurrentSNR));
-    
 end
-
-function computeResponseDetectability(modelResponse)
-    idx = find(modelResponse.meanConeExcitationCountSignal ~= modelResponse.meanConeExcitationCountSignal(end));
-    signalDistribution = modelResponse.noisyConeExcitations(:, idx);
-    signalDistribution = signalDistribution(:);
-  
-    idx2 = setdiff(1:numel(modelResponse.noisyConeExcitationTimeAxis),  idx);
-    idx2 = idx2(1:numel(idx));
-    noiseDistribution = modelResponse.noisyConeExcitations(:, idx2);
-    noiseDistribution = noiseDistribution(:);
-    
-    % Simpson & Fitter, 1973; Swets, 1986a, 1986b
-    %Swets, J. A. (1986b). Indices of discrimination or diagnostic accuracy: Their ROC?s and implied models. Psychological Bulletin, 99(1), 100?117.
-    %Swets, J. A. (1996). Signal Detection Theory and ROC Analysis in Psychology and Diagnostics: Collected Papers. Mahwah, NJ: Lawrence Erlbaum Associates.
-    % Simpson, A. J., & Fitter, M. J. (1973). What is the best index of detectability? Psychological Bulletin, 80(6), 481?488.
-    
-    d_subA = (mean(signalDistribution)-mean(noiseDistribution)) / ...
-                  sqrt(0.5*(var(signalDistribution)+var(noiseDistribution)));
-    
-    bins = linspace(min(modelResponse.noisyConeExcitations(:)), max(modelResponse.noisyConeExcitations(:)), 50);
-    [countsSignal,centers] = hist(signalDistribution, bins);
-    [countsNoise,centers] = hist(noiseDistribution, bins);
-    figure(2)
-    bar(centers,[countsSignal(:) countsNoise(:)], 1.0)
-    title(sprintf('d_subA = %2.2f\n', d_subA));
-end
-
