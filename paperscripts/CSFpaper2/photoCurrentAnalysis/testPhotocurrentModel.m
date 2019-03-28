@@ -1,6 +1,6 @@
 function testPhotocurrentModel
 
-    recomputeResponses = true;
+    recomputeResponses = ~true;
     
     % Pulse duration in seconds
     
@@ -90,7 +90,7 @@ function testPhotocurrentModel
     % Plot results as a function of adaptation photon rate
     
     % Below lims and ticks for 100 msec pulse
-    SNRLims = [0.02 200];
+    SNRLims = [0.04 100];
     SNRTicks = [0.03 0.1 0.3 1 3 10 30 100 300];
     SNRratioLims = [0.01 1.0];
     SNRratioTicks = [0:0.2:1.0];

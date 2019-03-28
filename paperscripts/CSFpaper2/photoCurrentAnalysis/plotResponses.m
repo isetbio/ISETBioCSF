@@ -72,8 +72,12 @@ function plotResponses(modelResponse, modelResponseOpositePolarity, adaptationLe
             coneExcitationTickLabels = {'0', '0.2k', '0.4k', '0.6k', '0.8k', '1.0k', '1.2k', '1.4k'};
         case 1600
             coneExcitationRange = [0 3000];
-            coneExcitationTicks = 0:500:3000;
-            coneExcitationTickLabels = {'0', '0.5k', '1.0k', '1.5k', '2.0k', '2.5k', '3.0k', '3.5k', '4.0k', '4.5k', '5.0k', '5.5k', '6.0k'};
+            coneExcitationTicks = 0:250:3000;
+            coneExcitationTickLabels = {'0', '0.25k', '0.5k', '0.75k', '1.0k', '1.25k', '1.5k', '1.75k', '2.0k', '2.25k', '2.5k', '2.75k', '3.0k'};  
+        case 2400
+            coneExcitationRange = [0 4500];
+            coneExcitationTicks = 0:500:4500;
+            coneExcitationTickLabels = {'0', '0.5k', '1.0k', '1.5k', '2.0k', '2.5k', '3.0k', '3.5k', '4.0k', '4.5k'};
         case 3200
             coneExcitationRange = [0 6000];
             coneExcitationTicks = 0:500:6000;
@@ -83,6 +87,7 @@ function plotResponses(modelResponse, modelResponseOpositePolarity, adaptationLe
             coneExcitationTicks = 0:1000:15000;
             coneExcitationTickLabels = {'0', '1k', '2k', '3k', '4k', '5k', '6k', '7k', '8k', '10k', '10k', '11k'};
         otherwise
+            fprintf(2, 'totalPhotonCount  %d  -  no case found. using MAX range.\n', totalPhotonCount);
             coneExcitationRange = [0 11000];
             coneExcitationTicks = 0:1000:15000;
             coneExcitationTickLabels = {'0', '1k', '2k', '3k', '4k', '5k', '6k', '7k', '8k', '10k', '10k', '11k'};
