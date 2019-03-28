@@ -1,6 +1,6 @@
 function testPhotocurrentModel
 
-    recomputeResponses = true;
+    recomputeResponses = ~true;
     
     % Pulse duration in seconds
     
@@ -12,6 +12,8 @@ function testPhotocurrentModel
     % Data filename
     dataFileName = sprintf('results_%dmsec.mat', vParams.pulseDurationSeconds*1000);
         
+    
+    
     % Recompute responses    
     if (recomputeResponses) 
         fprintf('Will save to %s\n', dataFileName);
@@ -40,7 +42,7 @@ function testPhotocurrentModel
 
         % Examined adaptation levels
         % prctile               1%      5%     10%     25%     50%     75%     90%    95%      99% 
-        % adaptationLevels = [0.0317  0.1434  0.2882  0.7143  1.4192  2.1320 2.5554  2.6961  2.8136]*1e4; % for 2 deg mosaic
+        %adaptationLevels = [0.0317  0.1434  0.2882  0.7143  1.4192  2.1320 2.5554  2.6961  2.8136]*1e4; % for 2 deg mosaic
         adaptationLevels = [500 1000 2000 4000 8000 16000 24000]; 
 
         % Preallocate memory
@@ -74,18 +76,6 @@ function testPhotocurrentModel
         end
     end  
         
-    if (1==2)
-        % Plot results as a function of contrast
-        idx = find(contrastLevels>0);
-        figNo = 2;
-        plotPolaritySNRs(contrastLevels(idx), adaptationLevels, ...
-                theConeExcitationSNR(:,idx), thePhotoCurrentSNR(:,idx), 'increments', figNo);
-
-        idx = find(contrastLevels<0);
-        figNo = 3;
-        plotPolaritySNRs(-contrastLevels(idx), adaptationLevels, ...
-                theConeExcitationSNR(:,idx), thePhotoCurrentSNR(:,idx), 'decrements', figNo);
-    end
     
     % Plot results as a function of adaptation photon rate
     
@@ -99,21 +89,36 @@ function testPhotocurrentModel
         SNRLims, SNRTicks, SNRratioLims, SNRratioTicks, vParams.pulseDurationSeconds, figNo);
     
    
+    
+    
+    coneExcitationRange = [0 3000];  % or enter [] for automatic scaling
+    
     % Plot the responses
     combinePolarities = true;
     showSNR = true;
     showSNRcomponents = ~true;
-    photoCurrentRange = [-90 0];
+    photoCurrentRange = [-80 0];
+    
+    adaptationLevelsVisualized = 8000; %[2000 4000 8000 16000 24000];  % adaptationLevels
+    contrastLevelsVisualized = [0.16 0.32 0.64 1.0];  % contrastLevels (specify only positive)
     
     if (combinePolarities)
         % Plot separate responses
-        for iAdaptationIndex = 1:numel(adaptationLevels)
-            for iContrastIndex = 1:numel(contrastLevels)/2
-                dNegativePolarity = d{iAdaptationIndex, iContrastIndex};
-                dPositivePolarity = d{iAdaptationIndex, iContrastIndex+numel(contrastLevels)/2};
+        for iAdaptationIndex = 1:numel(adaptationLevelsVisualized)
+            theAdaptationIndex = find(adaptationLevels == adaptationLevelsVisualized(iAdaptationIndex));
+            if isempty(theAdaptationIndex)
+                error('Could not find data for adaptation level %2.1f R*/c/s', adaptationLevelsVisualized(iAdaptationIndex));
+            end
+            for iContrastIndex = 1:numel(contrastLevelsVisualized)
+                theContrastIndex = find(contrastLevels == -contrastLevelsVisualized(iContrastIndex));
+                if isempty(theAdaptationIndex)
+                    error('Could not find data for contrast level %2.1f R*/c/s', -contrastLevelsVisualized(iContrastIndex));
+                end
+                dNegativePolarity = d{theAdaptationIndex, theContrastIndex};
+                dPositivePolarity = d{theAdaptationIndex, theContrastIndex +numel(contrastLevels)/2};
                 figNo = 1;
-                plotResponses(dNegativePolarity.modelResponse, dPositivePolarity.modelResponse,adaptationLevels(iAdaptationIndex), ...
-                    contrastLevels(iContrastIndex), vParams.pulseDurationSeconds, photoCurrentRange, showSNR, showSNRcomponents, figNo);
+                plotResponses(dNegativePolarity.modelResponse, dPositivePolarity.modelResponse,adaptationLevels(theAdaptationIndex), ...
+                    contrastLevels(theContrastIndex), vParams.pulseDurationSeconds, photoCurrentRange, showSNR, showSNRcomponents, coneExcitationRange, figNo);
             end
         end
     else
@@ -123,7 +128,7 @@ function testPhotocurrentModel
                 dSelected = d{iAdaptationIndex, iContrastIndex};
                 figNo = 1;
                 plotResponses(dSelected.modelResponse, [], adaptationLevels(iAdaptationIndex), ...
-                    contrastLevels(iContrastIndex), vParams.pulseDurationSeconds, photoCurrentRange,  showSNR, showSNRcomponents, figNo);
+                    contrastLevels(iContrastIndex), vParams.pulseDurationSeconds, photoCurrentRange,  showSNR, showSNRcomponents, coneExcitationRange, figNo);
             end
         end
     end

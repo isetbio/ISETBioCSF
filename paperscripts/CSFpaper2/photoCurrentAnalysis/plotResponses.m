@@ -1,5 +1,5 @@
 function plotResponses(modelResponse, modelResponseOpositePolarity, adaptationLevel, contrastLevel, ...
-    pulseDurationSeconds, photoCurrentRange, showSNR, showSNRcomponents, figNo)
+    pulseDurationSeconds, photoCurrentRange, showSNR, showSNRcomponents, coneExcitationRange, figNo)
  
     if (showSNR)
         [coneExcitation.SNR, ...
@@ -44,48 +44,13 @@ function plotResponses(modelResponse, modelResponseOpositePolarity, adaptationLe
         
     end
     
-    totalPhotonCount = pulseDurationSeconds * adaptationLevel
-    
-    
-    switch (totalPhotonCount)
-        case 50
-            coneExcitationRange = [0 100];
-            coneExcitationTicks = 0:10:100;
-            coneExcitationTickLabels = {'0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'};
-            
-        case 100
-            coneExcitationRange = [0 200];
-            coneExcitationTicks = 0:25:200;
-            coneExcitationTickLabels = {'0', '25', '50', '70', '100', '125', '150', '170', '200'};
-            
-        case 200
-            coneExcitationRange = [0 400];
-            coneExcitationTicks = 0:50:400;
-            coneExcitationTickLabels = {'0', '50', '100', '150', '200', '250', '300', '350', '400'};
-        case 400
-            coneExcitationRange = [0 750];
-            coneExcitationTicks = 0:100:700;
-            coneExcitationTickLabels = {'0', '0.1k', '0.2k', '0.3k', '0.4k', '0.5k', '0.6k', '0.7k'};
-        case 800
-            coneExcitationRange = [0 1500];
-            coneExcitationTicks = 0:200:1500;
-            coneExcitationTickLabels = {'0', '0.2k', '0.4k', '0.6k', '0.8k', '1.0k', '1.2k', '1.4k'};
-        case 1600
-            coneExcitationRange = [0 3000];
-            coneExcitationTicks = 0:500:3000;
-            coneExcitationTickLabels = {'0', '0.5k', '1.0k', '1.5k', '2.0k', '2.5k', '3.0k', '3.5k', '4.0k', '4.5k', '5.0k', '5.5k', '6.0k'};
-        case 3200
-            coneExcitationRange = [0 6000];
-            coneExcitationTicks = 0:500:6000;
-            coneExcitationTickLabels = {'0', '0.5k', '1.0k', '1.5k', '2.0k', '2.5k', '3.0k', '3.5k', '4.0k', '4.5k', '5.0k', '5.5k', '6.0k'};
-        case 6400
-            coneExcitationRange = [0 11000];
-            coneExcitationTicks = 0:1000:15000;
-            coneExcitationTickLabels = {'0', '1k', '2k', '3k', '4k', '5k', '6k', '7k', '8k', '10k', '10k', '11k'};
-        otherwise
-            coneExcitationRange = [0 11000];
-            coneExcitationTicks = 0:1000:15000;
-            coneExcitationTickLabels = {'0', '1k', '2k', '3k', '4k', '5k', '6k', '7k', '8k', '10k', '10k', '11k'};
+    if (isempty(coneExcitationRange))
+        adaptingExcitationCount = pulseDurationSeconds * adaptationLevel;
+        coneExcitationRange = [0 2*adaptingExcitationCount];
+        [coneExcitationTicks, coneExcitationTickLabels] = coneExcTicksAndLabels(2*adaptingExcitationCount);
+        
+    else
+        [coneExcitationTicks, coneExcitationTickLabels] = coneExcTicksAndLabels(coneExcitationRange(2));
     end
     
     
@@ -331,3 +296,35 @@ function [xStairs, yStairs] = stairsCoords(x,y)
     xStairs = cat(2, xStairs, x(1,k));
     yStairs = cat(2, yStairs, y(:,k));
 end
+
+function [coneExcitationTicks, coneExcitationTickLabels] = coneExcTicksAndLabels(adaptingExcitationCount)
+    if (adaptingExcitationCount <=50)
+        coneExcitationTicks = 0:10:100;
+        coneExcitationTickLabels = {'0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'};
+    elseif (adaptingExcitationCount <=100) 
+        coneExcitationTicks = 0:25:200;
+        coneExcitationTickLabels = {'0', '25', '50', '70', '100', '125', '150', '170', '200'};
+    elseif (adaptingExcitationCount <=200) 
+        coneExcitationTicks = 0:50:400;
+        coneExcitationTickLabels = {'0', '50', '100', '150', '200', '250', '300', '350', '400'};
+    elseif (adaptingExcitationCount <=400)
+        coneExcitationTicks = 0:100:700;
+        coneExcitationTickLabels = {'0', '0.1k', '0.2k', '0.3k', '0.4k', '0.5k', '0.6k', '0.7k'};
+    elseif (adaptingExcitationCount <=800)
+        coneExcitationTicks = 0:200:1500;
+        coneExcitationTickLabels = {'0', '0.2k', '0.4k', '0.6k', '0.8k', '1.0k', '1.2k', '1.4k'};
+    elseif (adaptingExcitationCount <=1600)
+        coneExcitationTicks = 0:500:3000;
+        coneExcitationTickLabels = {'0', '0.5k', '1.0k', '1.5k', '2.0k', '2.5k', '3.0k'};
+    elseif (adaptingExcitationCount <=3200)
+        coneExcitationTicks = 0:500:6000;
+        coneExcitationTickLabels = {'0', '0.5k', '1.0k', '1.5k', '2.0k', '2.5k', '3.0k', '3.5k', '4.0k', '4.5k', '5.0k', '5.5k', '6.0k'};
+    elseif (adaptingExcitationCount <=6400)
+        coneExcitationTicks = 0:1000:15000;
+        coneExcitationTickLabels = {'0', '1k', '2k', '3k', '4k', '5k', '6k', '7k', '8k', '10k', '10k', '11k'};
+    else
+        coneExcitationTicks = 0:5000:60000;
+        coneExcitationTickLabels = {'0', '5k', '10k', '15k', '20k', '25k', '30k', '35k', '40k', '45k', '50k', '55k', '60k'};            
+    end
+end
+

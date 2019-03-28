@@ -1,8 +1,10 @@
-function plotSNRanalysis(adaptationLevels, theConeExcitationSNR, thePhotoCurrentSNR, contrastLevels, SNRLims, SNRTicks, SNRratioLims, SNRratioTicks, pulseDurationSeconds, figNo)
+function plotSNRanalysis(adaptationLevels, theConeExcitationSNR, thePhotoCurrentSNR, contrastLevels, ...
+    SNRLims, SNRTicks, SNRratioLims, SNRratioTicks, pulseDurationSeconds, figNo)
+
     hFig = figure(figNo); clf;
-    set(hFig, 'Position', [10 10 1100 460], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 1230 460], 'Color', [1 1 1]);
     
-    backgroundConeExcitationRateLims = [300 30000];
+    backgroundConeExcitationRateLims = [400 30000];
     backgroundConeExcitationRateTicks =  [300 1000 3000 10000 30000];
     backgroundConeExcitationRateTickLabels =  {'0.3k', '1k', '3k', '10k', '30k'};
     
@@ -10,8 +12,8 @@ function plotSNRanalysis(adaptationLevels, theConeExcitationSNR, thePhotoCurrent
        'colsNum', numel(contrastLevels)/2, ...
        'rowsNum', 2, ...
        'heightMargin',   0.06, ...
-       'widthMargin',    0.03, ...
-       'leftMargin',     0.06, ...
+       'widthMargin',    0.013, ...
+       'leftMargin',     0.05, ...
        'rightMargin',    0.00, ...
        'bottomMargin',   0.14, ...
        'topMargin',      0.04);
@@ -79,7 +81,7 @@ function plotSNRanalysis(adaptationLevels, theConeExcitationSNR, thePhotoCurrent
         if (iContrastIndex == 1)
             legend({'decr.', 'incr.'}, 'Location', 'NorthEast');
             ylabel(sprintf('\\it pCurrent/cone excitations \n SNR ratio'));
-            xlabel(sprintf('\\it background cone \n excitation rate (R*/c/s)'));
+            xlabel(sprintf('\\it adapting cone \n excitation rate (R*/c/s)'));
         else
             set(gca, 'YTickLabel', {});
         end
