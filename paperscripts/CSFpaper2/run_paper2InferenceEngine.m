@@ -33,9 +33,9 @@ function run_paper2InferenceEngine
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = ~true;
+    computeResponses = true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -56,7 +56,14 @@ function run_paper2InferenceEngine
     
     performanceSignal = 'photocurrents';
     emPath = 'frozen0';         % 'randomNoSaccades'
-    centeredEMPaths = true;     % 'atStimulusModulationMidPoint'
+    
+    % Different stategy for  drift fixational EMs
+    %centeredEMPaths =  'atStimulusModulationMidPoint';
+    % nTrainingSamples = 1024;
+     
+    % OR
+    centeredEMPaths = 'atStimulusModulationOnset'; 
+    nTrainingSamples = 1028;
     
     % Assemble conditions list to be examined
     % Init condition index
@@ -69,16 +76,16 @@ function run_paper2InferenceEngine
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
     examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = emPath;
-    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    examinedCond(condIndex).centeredEMPaths = true;
     
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Quadr (noEM)';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-    examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = emPath;
-    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'SVM-Template-Quadr (noEM)';
+%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+%     examinedCond(condIndex).performanceSignal = performanceSignal;
+%     examinedCond(condIndex).emPathType = emPath;
+%     examinedCond(condIndex).centeredEMPaths = true;
     
     
     condIndex = condIndex+1;
@@ -88,16 +95,16 @@ function run_paper2InferenceEngine
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
     examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = 'randomNoSaccades';
-    examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
+    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
     
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Quadr, pCurrent, driftEM';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-    examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = 'randomNoSaccades';
-    examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'SVM-Template-Quadr, pCurrent, driftEM';
+%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+%     examinedCond(condIndex).performanceSignal = performanceSignal;
+%     examinedCond(condIndex).emPathType = 'randomNoSaccades';
+%     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
     
     % Go
     examinedLegends = {};
@@ -106,8 +113,7 @@ function run_paper2InferenceEngine
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
         
-        params.cyclesPerDegreeExamined
-        %params.cyclesPerDegreeExamined = [4 8 16 32 50 60]; 
+        %params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60]; 
         
         % Update params
         cond = examinedCond(condIndex);
@@ -115,6 +121,8 @@ function run_paper2InferenceEngine
         params.performanceSignal = cond.performanceSignal;
         params.emPathType = cond.emPathType;
         params.centeredEMPaths = cond.centeredEMPaths;
+        params.nTrainingSamples = nTrainingSamples;
+        
         examinedLegends{numel(examinedLegends) + 1} = cond.label;
     
         if (strcmp(params.performanceClassifier, 'svmV1FilterBank'))
