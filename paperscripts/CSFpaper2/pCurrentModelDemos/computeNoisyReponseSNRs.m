@@ -34,7 +34,7 @@ function [timeAxis, photoCurrents, noisyPhotoCurrentsInstance, ...
             
             % Compute cone excitation signals fro stimulus photon rate
             noisyConeExcitationRateSignals = ...
-                computeConeExcitationSignalsFromStimulusPhotonRate(modelResponse.pRate, spontaneousIsomerizationRate, pulseDurationSeconds, noisyInstancesNum);
+                computeConeExcitationSignalsFromStimulusPhotonRate(modelResponse.pRate, pulseDurationSeconds, noisyInstancesNum);
             meanConeExcitationRateSignal = modelResponse.pRate;
              
             timeAxis = modelResponse.timeAxis;
@@ -91,12 +91,12 @@ function [timeAxis, photoCurrents, noisyPhotoCurrentsInstance, ...
 end
 
 
-function noisyConeExcitationRateSignals = computeConeExcitationSignalsFromStimulusPhotonRate(pRate, spontaneousIsomerizationRate, pulseDurationSeconds, noisyInstancesNum)
+function noisyConeExcitationRateSignals = computeConeExcitationSignalsFromStimulusPhotonRate(pRate, pulseDurationSeconds, noisyInstancesNum)
             
     % To compute Poisson noise we need to convert photon rate to photon count. What integation time to use?
     % Do this for pulseDurationSeconds
     photonCountingIntegrationTime = pulseDurationSeconds;
-    meanConeExcitationCountSignal = round((pRate+spontaneousIsomerizationRate) * photonCountingIntegrationTime);
+    meanConeExcitationCountSignal = round(pRate * photonCountingIntegrationTime);
 
     % Obtain noisy cone excitation response instances
     noisyConeExcitationCountSignals = coneMosaic.photonNoise(repmat(meanConeExcitationCountSignal, [noisyInstancesNum 1]));

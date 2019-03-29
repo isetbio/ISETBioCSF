@@ -2,7 +2,7 @@ function modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInsta
 % Run the photocurrent model for a singe stimulus
 %
 % Syntax:
-%   modelResponse = runPhotocurrentModel(stimulus, eccentricity);
+%   modelResponse = runPhotocurrentModel(stimulus, eccentricity, noisyInstancesNum, useDefaultImplementation);
 %
 % Description:
 %    Run the outer segment photocurrent model for a single stimulus and for
@@ -287,14 +287,6 @@ function [adaptedData, model] = osAdaptTemporal(pRate, obj)
 %    02/14/18  jnm  Formatting
 %    04/07/18  dhb  Skip broken example.
 
-% Examples:
-%{
-    % ETTBSkip.  To work, this example will need some inputs defined before
-    % the funtion is called.
-    %
-    % From @osBioPhys/osCompute.m, line 64:
-    [current, model.state] = osAdaptTemporal(pRate, model.state);
-%}
 
 %%  Check inputs
 if ~exist('pRate', 'var') || isempty(pRate)
@@ -332,5 +324,4 @@ end
 
 adaptedData(:, size(pRate, 2) + 1) = adaptedData(:, size(pRate, 2));
 adaptedData = adaptedData(:, 2:end);
-% model = obj.model;
 end
