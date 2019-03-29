@@ -27,7 +27,7 @@ function run_paper2InferenceEngine
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all but
     % the 2 largest), or some specific spatial frequency, like 16
-    computationInstance = 1;
+    computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
@@ -62,23 +62,23 @@ function run_paper2InferenceEngine
     % Init condition index
     condIndex = 0;
     
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-Template-Linear (noEM)';
-%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-%     examinedCond(condIndex).performanceSignal = performanceSignal;
-%     examinedCond(condIndex).emPathType = emPath;
-%     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-%     
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-Template-Quadr (noEM)';
-%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%     examinedCond(condIndex).performanceSignal = performanceSignal;
-%     examinedCond(condIndex).emPathType = emPath;
-%     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'SVM-Template-Linear (noEM)';
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = emPath;
+    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'SVM-Template-Quadr (noEM)';
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = emPath;
+    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
     
     
     condIndex = condIndex+1;
@@ -101,12 +101,13 @@ function run_paper2InferenceEngine
     
     % Go
     examinedLegends = {};
+
     for condIndex = 1:numel(examinedCond)
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
         
-        
-        params.cyclesPerDegreeExamined = [4 8 16 32 50 60]; 
+        params.cyclesPerDegreeExamined
+        %params.cyclesPerDegreeExamined = [4 8 16 32 50 60]; 
         
         % Update params
         cond = examinedCond(condIndex);
