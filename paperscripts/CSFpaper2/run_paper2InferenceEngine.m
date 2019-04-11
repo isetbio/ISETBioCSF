@@ -35,7 +35,7 @@ function run_paper2InferenceEngine
     % Whether to compute responses
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -62,15 +62,15 @@ function run_paper2InferenceEngine
      nTrainingSamples = 1024;
      
     % OR
-    centeredEMPaths = 'atStimulusModulationOnset'; 
-    nTrainingSamples = 1028;
+    %centeredEMPaths = 'atStimulusModulationOnset'; 
+    %nTrainingSamples = 1028;
     
     % Assemble conditions list to be examined
     % Init condition index
     condIndex = 0;
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Linear (noEM)';
+    examinedCond(condIndex).label = 'SVM-Template-Linear, noEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -89,7 +89,7 @@ function run_paper2InferenceEngine
     
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Linear, pCurrent, driftEM';
+    examinedCond(condIndex).label = 'SVM-Template-Linear, drift EM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -113,8 +113,7 @@ function run_paper2InferenceEngine
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
         
-        %params.cyclesPerDegreeExamined = [2 4 8 16 32 50 60]; 
-        
+
         % Update params
         cond = examinedCond(condIndex);
         params.performanceClassifier = cond.performanceClassifier;
@@ -142,8 +141,8 @@ function run_paper2InferenceEngine
     
     if (makeSummaryFigure)
         variedParamName = 'EyeMovements';
-        theRatioLims = [0.05 1.0];
-        theRatioTicks = [0.05 0.1 0.2 0.5 1.0];
+        theRatioLims = [0.1 1.1];
+        theRatioTicks = [0.05 0.1 0.2 0.5 1.1];
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
@@ -153,7 +152,7 @@ function run_paper2InferenceEngine
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.220,0.905,0.77,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.220,0.885,0.77,0.08], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );
