@@ -2,9 +2,19 @@ function plotConeQuantalEfficiencies
 
     c = coneMosaic;
     lambda = c.wave;
-    quantalEfficiencies(:,1) = c.qe(:,1) ./ c.macular.transmittance;
-    quantalEfficiencies(:,2) = c.qe(:,2) ./ c.macular.transmittance;
-    quantalEfficiencies(:,3) = c.qe(:,3) ./ c.macular.transmittance;
+    
+    efficienciesAtCornea = true;
+    
+    if (efficienciesAtCornea)
+        l = Lens();
+        quantalEfficiencies(:,1) = c.qe(:,1)  .* l.transmittance;
+        quantalEfficiencies(:,2) = c.qe(:,2)  .* l.transmittance;
+        quantalEfficiencies(:,3) = c.qe(:,3)  .* l.transmittance;
+    else
+        quantalEfficiencies(:,1) = c.qe(:,1) ./ c.macular.transmittance;
+        quantalEfficiencies(:,2) = c.qe(:,2) ./ c.macular.transmittance;
+        quantalEfficiencies(:,3) = c.qe(:,3) ./ c.macular.transmittance;
+    end
     
 
     xLims = [lambda(1) lambda(end)];
