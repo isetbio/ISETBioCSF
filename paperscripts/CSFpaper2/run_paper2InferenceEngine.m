@@ -33,7 +33,7 @@ function run_paper2InferenceEngine
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
     findPerformance = true;
     visualizePerformance = true;
@@ -54,12 +54,12 @@ function run_paper2InferenceEngine
     % Compute photocurrent responses
     computePhotocurrents = true;
     
-    performanceSignal = 'photocurrents';
+    performanceSignal = 'isomerizations'; % 'photocurrents';
     emPath = 'frozen0';         % 'randomNoSaccades'
     
     % Different stategy for  drift fixational EMs
-    %centeredEMPaths =  'atStimulusModulationMidPoint';
-    % nTrainingSamples = 1024;
+    centeredEMPaths =  'atStimulusModulationMidPoint';
+     nTrainingSamples = 1024;
      
     % OR
     centeredEMPaths = 'atStimulusModulationOnset'; 
@@ -78,14 +78,14 @@ function run_paper2InferenceEngine
     examinedCond(condIndex).emPathType = emPath;
     examinedCond(condIndex).centeredEMPaths = true;
     
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-Template-Quadr (noEM)';
-%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%     examinedCond(condIndex).performanceSignal = performanceSignal;
-%     examinedCond(condIndex).emPathType = emPath;
-%     examinedCond(condIndex).centeredEMPaths = true;
+     condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'SVM-Template-Quadr (noEM)';
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = emPath;
+    examinedCond(condIndex).centeredEMPaths = true;
     
     
     condIndex = condIndex+1;
@@ -97,14 +97,14 @@ function run_paper2InferenceEngine
     examinedCond(condIndex).emPathType = 'randomNoSaccades';
     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
     
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-Template-Quadr, pCurrent, driftEM';
-%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%     examinedCond(condIndex).performanceSignal = performanceSignal;
-%     examinedCond(condIndex).emPathType = 'randomNoSaccades';
-%     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'SVM-Template-Quadr, pCurrent, driftEM';
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = 'randomNoSaccades';
+    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
     
     % Go
     examinedLegends = {};
