@@ -27,12 +27,13 @@ function run_paper2InferenceEngine
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all but
     % the 2 largest), or some specific spatial frequency, like 16
-    computationInstance = 0;
+    computationInstance = 0; % 12, 24;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
     
     % Whether to compute responses
+    computeMosaic = ~true;
     computeResponses = ~true;
     visualizeResponses = ~true;
     findPerformance = ~true;
@@ -79,15 +80,15 @@ function run_paper2InferenceEngine
     examinedCond(condIndex).centeredEMPaths = true;
     
      condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Quadr (noEM)';
+    examinedCond(condIndex).label = 'SVM-Template-Quadr, noEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
     examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = emPath;
     examinedCond(condIndex).centeredEMPaths = true;
-    
-    
+%     
+%     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-Template-Linear, drift EM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
@@ -98,7 +99,7 @@ function run_paper2InferenceEngine
     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Quadr, pCurrent, driftEM';
+    examinedCond(condIndex).label = 'SVM-Template-Quadr, driftEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
@@ -113,6 +114,7 @@ function run_paper2InferenceEngine
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
         
+%params.cyclesPerDegreeExamined =  [2 4 8 16 24 32 50 60];
 
         % Update params
         cond = examinedCond(condIndex);
@@ -131,18 +133,18 @@ function run_paper2InferenceEngine
         
         % Update params
         params = getRemainingDefaultParams(params, ...
-            computePhotocurrents, computeResponses, ...
+            computePhotocurrents, computeResponses, computeMosaic, ...
             visualizeResponses, findPerformance, visualizePerformance); 
         
         % Go !
         [~,~, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end % condIndex
     
-    
+   
     if (makeSummaryFigure)
         variedParamName = 'EyeMovements';
-        theRatioLims = [0.1 1.1];
-        theRatioTicks = [0.05 0.1 0.2 0.5 1.1];
+        theRatioLims = [0.05 1.11];
+        theRatioTicks = [0.05 0.1 0.2 0.5 1.0];
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
@@ -159,10 +161,11 @@ function run_paper2InferenceEngine
     end
 end
 
-function params = getRemainingDefaultParams(params, computePhotocurrents, computeResponses, visualizeResponses, findPerformance, visualizePerformance)
+function params = getRemainingDefaultParams(params, computePhotocurrents, computeResponses, computeMosaic, visualizeResponses, findPerformance, visualizePerformance)
                          
+    
     % Simulation steps to perform
-    params.computeMosaic = ~true; 
+    params.computeMosaic = computeMosaic; 
     params.visualizeMosaic = ~true;
     
     params.computeResponses = computeResponses;

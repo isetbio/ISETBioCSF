@@ -88,7 +88,7 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
     params.ramPercentageEmployed = 1.2;
     if (computationInstance == 0)
         % All mosaic sizes in 1 MATLAB session
-        params.cyclesPerDegreeExamined =  [2 4 8 16 32 50 60]; 
+        params.cyclesPerDegreeExamined =  [2 4 8 12 16 24 32 50 60]; 
         params.parforWorkersNumForClassification = 3;
     elseif (computationInstance  == 1)
         % Largest mosaic
@@ -109,9 +109,15 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
     elseif (computationInstance  == 8)  
         params.cyclesPerDegreeExamined = [8];
         params.parforWorkersNumForClassification = 6;
+    elseif (computationInstance  == 12)  
+        params.cyclesPerDegreeExamined = [12];
+        params.parforWorkersNumForClassification = 6;
     elseif (computationInstance  == 16) 
         params.cyclesPerDegreeExamined = [16];
         params.parforWorkersNumForClassification = 10;
+    elseif (computationInstance  == 24) 
+        params.cyclesPerDegreeExamined = [24];
+        params.parforWorkersNumForClassification = 10; 
     elseif (computationInstance  == 32)  
         params.cyclesPerDegreeExamined = [32];
         params.parforWorkersNumForClassification = 12;
