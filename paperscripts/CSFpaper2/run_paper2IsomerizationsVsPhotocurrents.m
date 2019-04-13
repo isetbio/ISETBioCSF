@@ -86,11 +86,14 @@ function run_paper2IsomerizationsVsPhotocurrents
     for condIndex = 1:numel(examinedCond)
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds,  frameRate, stimulusDurationInSeconds, computationInstance);
         
+        params.cyclesPerDegreeExamined
+        
         cond = examinedCond(condIndex);
         
         examinedLegends{numel(examinedLegends) + 1} = cond.label;
         params.performanceClassifier = cond.performanceClassifier;
         params.performanceSignal = cond.performanceSignal;
+        params.emPathType = 'frozen0';
         
         if (strcmp(params.performanceClassifier, 'svmV1FilterBank'))
             params.spatialPoolingKernelParams.type = cond.spatialPoolingKernelParams.type;
