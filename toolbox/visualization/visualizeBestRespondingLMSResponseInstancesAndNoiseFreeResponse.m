@@ -81,6 +81,10 @@ end
 
 function renderResponseRangeAreaPlot(ax,x, yLow, yHigh, yMean, edgeColor, faceColor, plottingStyle)
 
+    if (numel(yLow) ~= numel(x))
+        return;
+    end
+    
     v = [x(1) yLow(1)];
     yMeanTrace = yMean(1);
     xMeanTrace = x(1);

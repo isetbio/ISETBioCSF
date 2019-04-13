@@ -44,6 +44,7 @@ function run_ConditionToVisualizePhotocurrentAndEyeMovements
     
     % Get params
     params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
+    
        
     % Modify default params
     % Eye movement types
@@ -53,16 +54,20 @@ function run_ConditionToVisualizePhotocurrentAndEyeMovements
     % 'atStimulusModulationMidPoint' (the centroid of the emPath within the stimulation time is at (0,0)), OR 
     % 'atStimulusModulationOnset' (the em position is (0,0) at stimulus onset)
     
-    params.centeredEMPaths =  'atStimulusModulationMidPoint'; % 'atStimulusModulationOnset'
+    params.centeredEMPaths =  'atStimulusModulationOnset';
+    params.nTrainingSamples = 8;
+    
+    %params.centeredEMPaths =  'atStimulusModulationMidPoint';
+    %params.nTrainingSamples = 4;
+    
     
     % Only the max contrast level
     params.lowContrast = 1.0; 
     params.highContrast =  1.0; 
     params.nContrastsPerDirection = 1;
-    params.nTrainingSamples = 8;
         
     % Simulation steps to perform
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     

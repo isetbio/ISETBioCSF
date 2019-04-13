@@ -15,6 +15,13 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
             'hFig', plotImpulseResponseFunctions(stimData));
     end
     
+    % Visualize the mosaic and some EM paths
+    hFig = visualizeMosaicAndSomeEMpaths(theMosaic, stimData);
+    hFigsInfo{numel(hFigsInfo)+1} = struct(...
+            'filename', 'mosaicAndSomeEMpaths',...
+            'hFig', hFig);
+        
+        
     if (~isempty(noStimData.responseInstanceArray.theMosaicIsomerizations))
         % transform isomerization counts to isomerization rate
         stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations / theMosaic.integrationTime;
@@ -180,7 +187,42 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
             'filename', 'peakConePhotocurrentResponseInstances',...
             'hFig', hFig);
         
-   end
+end
+
+function hFig = visualizeMosaicAndSomeEMpaths(theMosaic, stimData)
+
+    visualizedResponseInstances = 1:4;
+    theEMpathMicrons = squeeze(stimData.responseInstanceArray.theMosaicEyeMovementsMicrons(visualizedResponseInstances,:,:));
+    theEMpathMeters = theEMpathMicrons / 1e6;
+    hFig = figure(987); clf;
+    set(hFig, 'Position', [10 10 513 600], 'Color', [1 1 1]);
+    ax = subplot('Position', [0.01 0.12 0.98 0.895]);
+    theMosaic.visualizeGrid('axesHandle', ax, ...
+        'apertureShape', 'disks', ...
+        'visualizedConeAperture', 'lightCollectingArea', ...
+        'labelConeTypes', false,...
+        'ticksInVisualDegs', true, ...
+        'backgroundColor', [0 0 0] ...
+    );
+    hold(ax, 'on');
+    emColors = [0 1 0; 0 1 1; 1 1 0; 1 0.5 0.3];
+    for emIndex = 1:numel(visualizedResponseInstances)
+        emPathX = squeeze(theEMpathMeters(emIndex,:,1));
+        emPathY = squeeze(theEMpathMeters(emIndex,:,2));
+        plot(emPathX, emPathY, 'g-', 'LineWidth', 4, 'Color', squeeze(emColors(emIndex,:))*0.7);
+        plot(emPathX, emPathY, 'g-', 'LineWidth', 2, 'Color', squeeze(emColors(emIndex,:)));
+    end
+    
+    hold(ax, 'off');
+    xtickLabels = {'-0.2', '',  '-0.1', '', '0', '', '+0.1', '', '+0.2'};
+    xTicks = (-0.2:0.05:0.2)*theMosaic.micronsPerDegree*1e-6;
+    set(gca, 'XTick', xTicks, 'XTickLabel', xtickLabels, 'YTickLabel', {});
+    set(gca, 'FontSize', 28);
+    xlabel('\it space (deg)', 'FontWeight', 'normal', 'FontSize', 36);
+    drawnow;
+    pause
+end
+
 
 function hFig = plotImpulseResponseFunctions(stimData)
 
@@ -486,7 +528,7 @@ function hFigs = visualizeNoiseFreeAndFirstInstanceWithActivationProfile(...
         diffSignal = bsxfun(@minus,stimData.noiseFreeIsomerizations, squeeze(stimData.noiseFreeIsomerizations(:,1)));
         [~,kidx] = max(abs(diffSignal(:)));
         [~,timeBinOfPeakResponse] = ind2sub(size(diffSignal), kidx);
-
+        timeBinOfPeakResponse = timeBinOfPeakResponse - 1;
         fprintf('Isomerization peak response at %2.0f msec\n', stimData.responseInstanceArray.timeAxis(timeBinOfPeakResponse)*1000);
         
         % Determine visualized response range
@@ -562,6 +604,7 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
         noStimDataNoiseFreeSignalFull = noStimData.noiseFreePhotocurrents;
     end
 
+    
     stimDataEMpathMicrons = squeeze(stimData.responseInstanceArray.theMosaicEyeMovementsMicrons(visualizedResponseInstance,:,:));
     noStimDataEMpathMicrons = squeeze(noStimData.responseInstanceArray.theMosaicEyeMovementsMicrons(visualizedResponseInstance,:,:));
     
@@ -637,7 +680,7 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
     hFigTmp = figure(1+figNo); clf;
     hFig{numel(hFig)+1} = hFigTmp;
     set(hFigTmp, 'Position', [10 10 513 600], 'Color', [1 1 1]);
-    ax = subplot('Position', [0.01 0.11 0.98 0.895]);
+    ax = subplot('Position', [0.01 0.12 0.98 0.895]);
     theMosaic.renderActivationMap(ax, stimDataNoiseFreeSignalAtPeakTime ,...
         'visualizedConeAperture', 'geometricArea', ...
         'mapType', 'modulated disks', ...
@@ -658,7 +701,7 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
     hFigTmp = figure(2+figNo); clf;
     hFig{numel(hFig)+1} = hFigTmp;
     set(hFigTmp, 'Position', [10 10 513 600], 'Color', [1 1 1]);
-    ax = subplot('Position', [0.01 0.11 0.98 0.895]);
+    ax = subplot('Position', [0.01 0.12 0.98 0.895]);
     theMosaic.renderActivationMap(ax, stimDataSignalInstanceAtPeakTime, ...
         'visualizedConeAperture', 'geometricArea', ...
         'mapType', 'modulated disks', ...
@@ -683,7 +726,7 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
     generateConeLinePlot(ax, theMosaic, ...
         stimDataNoiseFreeSignalAtPeakTime, ...
         noStimDataNoiseFreeSignalAtPeakTime, ...
-        signalRange, coneLinePlotType, signalName, yLabelTitle);
+        signalRange, coneLinePlotType, signalName, yLabelTitle, true);
     drawnow
 
     hFigTmp = figure(4+figNo); clf;
@@ -693,20 +736,20 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
     generateConeLinePlot(ax, theMosaic, ...
         stimDataSignalInstanceAtPeakTime, ...
         noStimDataNoiseFreeSignalAtPeakTime, ...
-        signalRange, coneLinePlotType, signalName, yLabelTitle);
+        signalRange, coneLinePlotType, signalName, yLabelTitle, false);
     drawnow
 
     % Finally the XT ConeLinePlot
     hFigTmp = figure(5+figNo); clf;
     hFig{numel(hFig)+1} = hFigTmp;
-    set(hFigTmp, 'Position', [10 10 600 425], 'Color', [1 1 1]);
-    ax = subplot('Position', [0.155 0.19 0.84 0.71]);
+    set(hFigTmp, 'Position', [10 10 600 400], 'Color', [1 1 1]);
+    ax = subplot('Position', [0.15 0.22 0.83 0.75]);
     generateXTConeLinePlot(ax, theMosaic, ...
         stimDataEMpathMicrons, ...
         noStimDataEMpathMicrons, ...
         stimDataSignalInstanceFull, ...
         noStimDataNoiseFreeSignalFull, ...
-        signalRange, timeAxis, coneLinePlotType, signalName, ...
+        signalRange, timeAxis, 'differential_activations', signalName, ...
         'space (deg)', 'time (sec)', true, yLabelTitle);
     drawnow
         
@@ -753,24 +796,28 @@ function [timelinePlot, timelineArrowPlot] = generateXTConeLinePlot(ax, theMosai
     if (strcmp(coneLinePlotType, 'differential_activations'))
         signalXT = coneActivationsXT-nullStimActivationXT;
         if (strcmp(signalName, 'Isomerization'))
-            cticks = -10:5:10;
+            cTicks = -30:5:30;
+            cTickLabels = {'-30R*', '-25R*', '-20R*', '-15R*', '-10R*', '-5R*', '0R*', '5R*', '10R*', '15R*','20R*', '25R*', '30R*'};
+            signalRange = max(abs(signalXT(:)))*[-0.4 0.4];
         elseif (strcmp(signalName, 'Photocurrent'))
-            cticks = -20:2:20;
+            cTicks = -10:2:10;
+            cTickLabels = {'-10pA', '-8pA', '-6pA', '-4pA', '-2pA', '0pA', '2pA', '4pA', '6pA','8pA', '10pA'};
+            signalRange = max(abs(signalXT(:)))*[-0.4 0.4];
         end
         
     else
         signalXT = coneActivationsXT;
         if (strcmp(signalName, 'Isomerization'))
-            cticks = 0:10:30;
+            cTicks = 0:10:30;
         elseif (strcmp(signalName, 'Photocurrent'))
-            cticks = -90:2:0;
+            cTicks = -90:2:0;
         end
-        if (strcmp(coneLinePlotType,'stim'))
-            emTRajectoryXposDegs = squeeze(EMpath(:,1))/theMosaic.micronsPerDegree;
-        else
-            emTRajectoryXposDegs = squeeze(nullStimEMpath(:,1))/theMosaic.micronsPerDegree;
-        end
+    end
         
+    if (strcmp(coneLinePlotType,'stim')) || (strcmp(coneLinePlotType, 'differential_activations'))
+        emTRajectoryXposDegs = squeeze(EMpath(:,1))/theMosaic.micronsPerDegree;
+    else
+        emTRajectoryXposDegs = squeeze(nullStimEMpath(:,1))/theMosaic.micronsPerDegree;
     end
         
     timeAxisRange = [timeAxis(1) timeAxis(end)];
@@ -780,7 +827,8 @@ function [timelinePlot, timelineArrowPlot] = generateXTConeLinePlot(ax, theMosai
     imagesc(ax, coneXcoordsDegs, timeAxis, signalXT);
     axis(ax, 'xy');
     hold(ax, 'on');
-    plot(emTRajectoryXposDegs, timeAxis, 'rs-', 'LineWidth', 1.5);
+    plot(emTRajectoryXposDegs, timeAxis, '-', 'LineWidth', 5, 'Color', [0 0.7 0]);
+    plot(emTRajectoryXposDegs, timeAxis, '-', 'LineWidth', 3, 'Color', [0 1 0]);
     
     timelinePlot = plot(ax, [min(coneXcoordsDegs) max(coneXcoordsDegs)], [nan nan], 'g-', 'LineWidth', 2);
     timelineArrowPlot = plot(ax, min(coneXcoordsDegs), nan, 'gs', 'MarkerSize', 12, 'LineWidth', 1.5, 'MarkerFaceColor', [0.6 1.0 0.6]);
@@ -791,7 +839,7 @@ function [timelinePlot, timelineArrowPlot] = generateXTConeLinePlot(ax, theMosai
         xTickLabels = {};
     end
     
-    set(ax, 'XLim', conePosRange*[-1 1], 'YLim', timeAxisRange, 'CLim', signalRange, ...
+    set(ax, 'XLim', conePosRange*[-1 1], 'YLim', [timeAxisRange(1)-2.5/1000 timeAxisRange(2)+2.5/1000], 'CLim', signalRange, ...
         'FontSize', 28, 'XTick', -0.2:0.05:0.2, 'XTickLabel', xTickLabels, ...
         'YTick', timeTicks, 'YTickLabel', timeTickLabels, 'LineWidth', 1.0);
     if (~isempty(yLabelTitle))
@@ -805,13 +853,15 @@ function [timelinePlot, timelineArrowPlot] = generateXTConeLinePlot(ax, theMosai
         xlabel(sprintf('\\it %s',xLabelTitle), 'FontWeight', 'normal', 'FontSize', 36);
     end
     
-    hcb = colorbar('northoutside');
-    colorTitleHandle = get(hcb,'Title');
-    set(colorTitleHandle ,'String', colorbarTitle);
-    set(hcb, 'FontSize', 20);
+    % Colorbar
+    hcb = colorbar('northoutside', 'Ticks',cTicks,'TickLabels', cTickLabels);
+    
+    %colorTitleHandle = get(hcb,'Title');
+    %set(colorTitleHandle ,'String', colorbarTitle);
+    set(hcb, 'FontSize', 22);
 end
 
-function generateConeLinePlot(ax, theMosaic, activation, nullStimActivation, signalRange, coneLinePlotType, signalName, yLabelTitle)
+function generateConeLinePlot(ax, theMosaic, activation, nullStimActivation, signalRange, coneLinePlotType, signalName, yLabelTitle, exportNullProfile)
     if (any(size(activation) ~= size(theMosaic.pattern)))    
        activation = theMosaic.reshapeHex2DmapToHex3Dmap(activation);
        nullStimActivation = theMosaic.reshapeHex2DmapToHex3Dmap(nullStimActivation);
@@ -824,6 +874,18 @@ function generateConeLinePlot(ax, theMosaic, activation, nullStimActivation, sig
     dx = diameterForCircularApertureFromWidthForSquareAperture(...
             theMosaic.pigment.width) * 1e6 / theMosaic.micronsPerDegree;
         
+    idx = find(theMosaic.pattern == 2);
+    a = nullStimActivation(idx);
+    meanLconeActivation = mean(a(:));
+    
+    idx = find(theMosaic.pattern == 3);
+    a = nullStimActivation(idx);
+    meanMconeActivation = mean(a(:));
+    
+    idx = find(theMosaic.pattern == 4);
+    a = nullStimActivation(idx);
+    meanSconeActivation = mean(a(:));
+    
     idx = find(theMosaic.pattern > 1);
     [iRows, iCols] = ind2sub(size(theMosaic.pattern), idx);  
     coneXcoords = (sampledHexMosaicXaxis(iCols))';
@@ -848,13 +910,20 @@ function generateConeLinePlot(ax, theMosaic, activation, nullStimActivation, sig
             case 2
                 edgeColor = [1 0 0];
                 faceColor = [1 0.5 0.5];
+                fname = 'LconeProfile';
+                meanActivation = meanLconeActivation;
             case 3
                 edgeColor = [0 0.8 0];
                 faceColor = [0.5 1 0.5];
+                fname = 'MconeProfile';
+                meanActivation = meanMconeActivation;
             case 4
                 edgeColor = [0 0 1];
                 faceColor = [0.5 0.8 1];
+                fname = 'SconeProfile';
+                meanActivation = meanSconeActivation;
         end
+        
         iidx = find(identitiesOfConesAlongXaxis == coneIndex);
         if (strcmp(coneLinePlotType, 'differential_activations'))
             signal = coneActivations(iidx)-nullStimActivation(iidx);
@@ -871,6 +940,23 @@ function generateConeLinePlot(ax, theMosaic, activation, nullStimActivation, sig
                 yticks = -90:2:0;
             end
         end
+        
+        
+        if (strcmp(signalName, 'Isomerization')) && (exportNullProfile)
+            if (coneIndex < 4)
+            coneXpos = coneXcoordsDegs(iidx);
+            if (strcmp(fname,'LconeProfile'))
+                for k = 1:numel(signal)
+                    fprintf('%f %f\n', coneActivations(iidx(k)), nullStimActivation(iidx(k)));
+                end
+            end
+            
+            fullFname = sprintf('%s_%s.mat',fname, coneLinePlotType);
+            save(fullFname,'coneXpos', 'signal', 'meanActivation');
+            fprintf('Saved profile to %s\n', fullFname);
+            end
+        end
+    
         plot(ax, coneXcoordsDegs(iidx), signal, ...
             'o', 'Color', edgeColor, 'MarkerSize', 14, 'LineWidth', 1.5, ...
             'MarkerFaceColor',faceColor,'MarkerEdgeColor',edgeColor);
@@ -886,6 +972,8 @@ function generateConeLinePlot(ax, theMosaic, activation, nullStimActivation, sig
     end
     grid 'on'; box 'off';
     xlabel('\it space (deg)', 'FontWeight', 'normal', 'FontSize', 36);
+    drawnow
+    pause
 end
 
 function isomerizationsRange = determineVisualizedIsomerizationsRange(theMosaic, stimData, timeBinOfPeakIsomerizationResponse)
