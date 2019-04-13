@@ -55,7 +55,7 @@ function run_paper2InferenceEngine
     % Compute photocurrent responses
     computePhotocurrents = true;
     
-    performanceSignal = 'isomerizations'; % 'photocurrents';
+    performanceSignal = 'photocurrents'; %'isomerizations'; % 'photocurrents';
     emPath = 'frozen0';         % 'randomNoSaccades'
     
     % Different stategy for  drift fixational EMs
@@ -142,8 +142,8 @@ function run_paper2InferenceEngine
     
    
     if (makeSummaryFigure)
-        variedParamName = 'EyeMovements';
-        theRatioLims = [0.05 1.11];
+        variedParamName = sprintf('EyeMovements_%s', performanceSignal);
+        theRatioLims = [0.07 1.15];
         theRatioTicks = [0.05 0.1 0.2 0.5 1.0];
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
