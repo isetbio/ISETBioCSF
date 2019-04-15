@@ -3,7 +3,7 @@ function run_Paper1FinalConditionsUsing2mmPupil
 % with a 2 mm pupil compare to the Banks prediction.
 %  
     % How to split the computation
-    % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all 2 largest)
+    % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all but the 2 largest)
     computationInstance = 3;
 
     % Whether to make a summary figure with CSF from all examined conditions

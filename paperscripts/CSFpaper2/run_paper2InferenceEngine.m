@@ -36,7 +36,7 @@ function run_paper2InferenceEngine
     computeMosaic = ~true;
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -70,7 +70,7 @@ function run_paper2InferenceEngine
     % Init condition index
     condIndex = 0;
     
-    if (1==2)
+
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-Temp-L, cone exc., noEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
@@ -108,7 +108,7 @@ function run_paper2InferenceEngine
     examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = 'randomNoSaccades';
     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-end
+
 
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-Temp-L., pCurrent, driftEM';
