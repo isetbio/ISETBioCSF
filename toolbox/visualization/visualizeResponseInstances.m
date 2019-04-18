@@ -22,6 +22,13 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
             'hFig', hFig);
         
         
+    % Visualize mosaic activations over time
+    hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData);
+    hFigsInfo{numel(hFigsInfo)+1} = struct(...
+            'filename', 'mosaicActivationsMovieFrames',...
+            'hFig', hFig);
+        
+        
     if (~isempty(noStimData.responseInstanceArray.theMosaicIsomerizations))
         % transform isomerization counts to isomerization rate
         stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations / theMosaic.integrationTime;
@@ -186,14 +193,70 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
     hFigsInfo{numel(hFigsInfo)+1} = struct(...
             'filename', 'peakConePhotocurrentResponseInstances',...
             'hFig', hFig);
-        
 end
+
+
+function hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData)
+
+    spaceLimsDegs = 0.2*[-1 1];
+    spaceLimsMeters = spaceLimsDegs * theMosaic.micronsPerDegree * 1e-6;
+    
+    targetPosDegs = [0 0];
+    [coneIndices, conePositions, coneTypes] = indicesForConesAtPositions(theMosaic, targetPosDegs)
+    
+    
+    timeAxis = 1000*stimData.responseInstanceArray.timeAxis;
+    isomerizationInstances = stimData.responseInstanceArray.theMosaicIsomerizations / theMosaic.integrationTime;
+    meanIsomerizations = stimData.noiseFreeIsomerizations;
+    photocurrentInstances = stimData.responseInstanceArray.theMosaicPhotocurrents;
+    meanPhotocurrents = stimData.noiseFreePhotocurrents;
+    
+    size(meanIsomerizations)
+    size(meanPhotocurrents)
+    size(isomerizationInstances)
+    size(photocurrentInstances)
+    pause
+    
+    visualizedResponseInstance = 1;
+    theEMpathMicrons = squeeze(stimData.responseInstanceArray.theMosaicEyeMovementsMicrons(visualizedResponseInstance,:,:));
+    theEMpathMeters = theEMpathMicrons / 1e6;
+    
+    hFig = figure(345); clf;
+    
+    % Plot the optical image
+    ax = subplot(2,4,1);
+    imagesc(stimData.thePeakOI.xAxisDegs, stimData.thePeakOI.yAxisDegs, stimData.thePeakOI.RGBimage);
+    axis 'image';
+    set(gca, 'XLim', spaceLimsDegs, 'YLim', spaceLimsDegs);
+    
+    % Plot the mosaic with one emPath
+    ax = subplot(2,4,2);
+    theMosaic.visualizeGrid('axesHandle', ax, ...
+        'apertureShape', 'disks', ...
+        'visualizedConeAperture', 'lightCollectingArea', ...
+        'labelConeTypes', false,...
+        'ticksInVisualDegs', true, ...
+        'backgroundColor', [0 0 0] ...
+    );
+    hold(ax, 'on');
+    plot(theEMpathMeters(:,1), theEMpathMeters(:,2), 'c-', 'LineWidth', 2.0);
+    set(gca, 'XLim', spaceLimsMeters, 'YLim', spaceLimsMeters);
+    
+    subplot(2,4,3);
+    plot(timeAxis, meanIsomerizations, 'k-');
+    
+    subplot(2,4,4);
+    plot(timeAxis, meanPhotocurrents, 'k-');
+    pause
+end
+
 
 function hFig = visualizeMosaicAndSomeEMpaths(theMosaic, stimData)
 
     visualizedResponseInstances = 1:4;
     theEMpathMicrons = squeeze(stimData.responseInstanceArray.theMosaicEyeMovementsMicrons(visualizedResponseInstances,:,:));
     theEMpathMeters = theEMpathMicrons / 1e6;
+    
     hFig = figure(987); clf;
     set(hFig, 'Position', [10 10 513 600], 'Color', [1 1 1]);
     ax = subplot('Position', [0.01 0.12 0.98 0.895]);
@@ -220,7 +283,6 @@ function hFig = visualizeMosaicAndSomeEMpaths(theMosaic, stimData)
     set(gca, 'FontSize', 28);
     xlabel('\it space (deg)', 'FontWeight', 'normal', 'FontSize', 36);
     drawnow;
-    pause
 end
 
 
@@ -726,7 +788,7 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
     generateConeLinePlot(ax, theMosaic, ...
         stimDataNoiseFreeSignalAtPeakTime, ...
         noStimDataNoiseFreeSignalAtPeakTime, ...
-        signalRange, coneLinePlotType, signalName, yLabelTitle, true);
+        signalRange, coneLinePlotType, signalName, yLabelTitle, false);
     drawnow
 
     hFigTmp = figure(4+figNo); clf;
@@ -973,7 +1035,7 @@ function generateConeLinePlot(ax, theMosaic, activation, nullStimActivation, sig
     grid 'on'; box 'off';
     xlabel('\it space (deg)', 'FontWeight', 'normal', 'FontSize', 36);
     drawnow
-    pause
+
 end
 
 function isomerizationsRange = determineVisualizedIsomerizationsRange(theMosaic, stimData, timeBinOfPeakIsomerizationResponse)

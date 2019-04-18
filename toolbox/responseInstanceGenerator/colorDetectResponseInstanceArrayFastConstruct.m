@@ -404,6 +404,15 @@ if (~isempty(responseStruct.noiseFreePhotocurrents))
     responseStruct.noiseFreePhotocurrents = squeeze(responseStruct.noiseFreePhotocurrents);
 end
 
+% Save an RGB of the OI
+[~, timeBinOfPeakModulation] = max(abs(stimulusModulationFunction));
+ thePeakOI = theOIsequence.frameAtIndex(timeBinOfPeakModulation);
+support = oiGet(thePeakOI, 'spatial support', 'microns');
+micronsPerDegree = oiGet(thePeakOI, 'width')*1e6 / oiGet(thePeakOI, 'hfov');
+responseStruct.thePeakOI.xAxisDegs = support(1,:,1)/micronsPerDegree;
+responseStruct.thePeakOI.yAxisDegs = support(:,1,2)/micronsPerDegree;
+responseStruct.thePeakOI.RGBimage = oiGet(thePeakOI, 'RGB image');
+
 %% Report time taken
 if (p.Results.displayTrialBlockPartitionDiagnostics)
     if isempty(p.Results.workerID)
