@@ -1,11 +1,14 @@
 function generateFig1panels()
 
-    computationInstance = 8;
+    computationInstance = 16;
     pupilDiamMm = 3.0;
-    integrationTimeMilliseconds = 5.0;
+    integrationTimeMilliseconds = 5;
     stimulusDurationInSeconds = 100/1000;
     frameRate = 10; 
     params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
+    params.responseExtinctionMilliseconds = 400;
+    params.secondsToInclude = 0.1480*2;
+    
     params.emPathType = 'randomNoSaccades';     % 'random' (with saccades),  'randomNoSaccades', or 'frozen0'
     % Only the max contrast level
     params.lowContrast = 1.0; 
@@ -16,7 +19,7 @@ function generateFig1panels()
     %params.nTrainingSamples = 8;
     
     params.centeredEMPaths =  'atStimulusModulationMidPoint';
-    params.nTrainingSamples = 4;
+    params.nTrainingSamples = 8; % 16;
     
     % Simulation steps to perform
     params.computeResponses = ~true;
