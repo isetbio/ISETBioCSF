@@ -19,7 +19,7 @@ function generateFig1panels()
     %params.nTrainingSamples = 8;
     
     params.centeredEMPaths =  'atStimulusModulationMidPoint';
-    params.nTrainingSamples = 8; % 16;
+    params.nTrainingSamples = 4;
     
     % Simulation steps to perform
     params.computeResponses = ~true;
