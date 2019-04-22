@@ -6,7 +6,7 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
     if (instancesNum < 1)
         return;
     end
-    
+
     hFigsInfo = {};
     
     if (visualizeOuterSegmentFilters)
@@ -281,7 +281,7 @@ function hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData)
 %     set(gca, 'XLim', [0 150], 'YLim', spaceLimsDegs);
     
     
-    ax = axes('Position',[0.03 0.1 width height]);
+    ax = axes('Position',[0.8 0.78 width height]);
     theMosaic.visualizeGrid('axesHandle', ax, ...
         'apertureShape', 'disks', ...
         'visualizedConeAperture', 'lightCollectingArea', ...
@@ -294,8 +294,37 @@ function hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData)
     set(ax, 'XTickLabel', {}, 'YTickLabel',  {}, 'XLim', spaceLimsMeters, 'YLim', spaceLimsMeters);
     
     
+    dt = 1;
+    nTrials = 8192;
+    [noisyCurrents, freq] = osAddNoise(zeros(nTrials,5000), 'sampTime',  dt/1000);
+
+    for  iTrial = 1:nTrials
+        aTrial = noisyCurrents(iTrial,:);
+        ft = abs(fft(aTrial));
+        ftTrial(iTrial,:) = ft(1:numel(freq));
+    end
+    subplot(3,4,10)
+    plot(freq,mean(ftTrial,1), 'k-', 'LineWidth', 1.5);
+    set(gca, 'FontSize', 14, 'XScale', 'log', 'YScale', 'log', 'XLim', [1 400],  'XTick', [1 3 10 30 100 300 1000]);
+    xlabel('\it frequency (Hz)')
+    axis 'square';
+    box on; grid on;
+    
+    subplot(3,4,9)
+    dt = timeAxis(2)-timeAxis(1);
+    yTicks =[0 :0.05:0.2];
+    tt  = (1:size(stimData.osImpulseResponses,1))*dt - dt;
+    plot(tt, stimData.osImpulseResponses(:,1), 'r-', 'LineWidth', 1.5); hold on
+    plot(tt, stimData.osImpulseResponses(:,2), 'g-', 'LineWidth', 1.5);
+    plot(tt, stimData.osImpulseResponses(:,3), 'b-', 'LineWidth', 1.5);
+    set(gca, 'XLim', timeLims, 'XTIck', 0:50:500, 'YTick', yTicks, 'YTIckLabel', sprintf('%2.2f\n', yTicks), 'FontSize', 14); 
+    axis 'square';
+    xlabel('\it time (msec)');
+    ylabel('\it pAmps');
+    box on; grid on;
+    
     % Plot the mosaic with one emPath
-    ax = subplot(3,4,10);
+    ax = subplot(3,4,8);
     theMosaic.visualizeGrid('axesHandle', ax, ...
         'apertureShape', 'disks', ...
         'visualizedConeAperture', 'lightCollectingArea', ...
@@ -515,10 +544,11 @@ function hFig = plotImpulseResponseFunctions(stimData)
         plot(timeAxis, stimData.osImpulseResponses(:,1), 'r-', 'LineWidth', 1.5);
         plot(timeAxis, stimData.osImpulseResponses(:,2), 'g-', 'LineWidth', 1.5);
         plot(timeAxis, stimData.osImpulseResponses(:,3), 'b-', 'LineWidth', 1.5);
-        xlabel('time (msec)');
-        set(gca, 'FontSize', 14);
+        xlabel('\it time (msec)');
+        
+        set(gca, 'FontSize', 14, 'XTick', 0:50:300, 'XLim', [0 300]);
+        box on;
         grid on;
-        title(sprintf('os impulse response functions'));
         drawnow;
     else
         hFig = [];

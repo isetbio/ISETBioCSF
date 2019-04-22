@@ -35,6 +35,7 @@ function generateFig1panels()
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeSpatialPoolingScheme = ~true;
     params.visualizeMosaicWithFirstEMpath = true;
+    params.visualizeOuterSegmentFilters = true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = ~true;
