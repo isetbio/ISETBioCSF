@@ -27,14 +27,14 @@ function run_paper2_FinalConditionsUsing2mmPupil
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all but
     % the 2 largest), or some specific spatial frequency, like 16
-    computationInstance = 3;
+    computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
     makeSummaryFigure = true;
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
     findPerformance = true;
     visualizePerformance = true;
@@ -68,43 +68,43 @@ function run_paper2_FinalConditionsUsing2mmPupil
     condIndex = 0;
     
     
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Temp-L, cone exc., noEM';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).performanceSignal = 'isomerizations';
-    examinedCond(condIndex).emPathType = 'frozen0';
-    examinedCond(condIndex).centeredEMPaths = true;
-    
 %     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-Temp-L, pCurrent, noEM';
+%     examinedCond(condIndex).label = 'SVM-Temp-L, cone exc., noEM';
 %     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
 %     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
 %     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-%     examinedCond(condIndex).performanceSignal = performanceSignal;
+%     examinedCond(condIndex).performanceSignal = 'isomerizations';
 %     examinedCond(condIndex).emPathType = 'frozen0';
 %     examinedCond(condIndex).centeredEMPaths = true;
-    
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-Temp-E., pCurrent, noEM';
-%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%     examinedCond(condIndex).performanceSignal = performanceSignal;
-%     examinedCond(condIndex).emPathType = 'frozen0';
-%     examinedCond(condIndex).centeredEMPaths = true;
-%     
-%     
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Temp-E., pCurrent, driftEM';
+    examinedCond(condIndex).label = 'SVM-Temp-L, pCurrent, noEM';
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = true;
+    
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'SVM-Temp-E., pCurrent, noEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
     examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = 'randomNoSaccades';
-    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = true;
+    
+    
+    
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'SVM-Temp-E., pCurrent, driftEM';
+%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+%     examinedCond(condIndex).performanceSignal = performanceSignal;
+%     examinedCond(condIndex).emPathType = 'randomNoSaccades';
+%     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
 
     
     % Go
@@ -114,6 +114,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
         
+        params.cyclesPerDegreeExamined = [4 8 12 16 24 32 50 60];
         % Update params
         cond = examinedCond(condIndex);
         params.performanceClassifier = cond.performanceClassifier;
