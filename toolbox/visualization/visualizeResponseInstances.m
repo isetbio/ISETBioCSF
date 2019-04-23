@@ -294,19 +294,21 @@ function hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData)
     set(ax, 'XTickLabel', {}, 'YTickLabel',  {}, 'XLim', spaceLimsMeters, 'YLim', spaceLimsMeters);
     
     
-    dt = 1;
-    nTrials = 8192;
-    [noisyCurrents, freq] = osAddNoise(zeros(nTrials,5000), 'sampTime',  dt/1000);
-
-    for  iTrial = 1:nTrials
-        aTrial = noisyCurrents(iTrial,:);
-        ft = abs(fft(aTrial));
-        ftTrial(iTrial,:) = ft(1:numel(freq));
-    end
     subplot(3,4,10)
-    plot(freq,mean(ftTrial,1), 'k-', 'LineWidth', 1.5);
-    set(gca, 'FontSize', 14, 'XScale', 'log', 'YScale', 'log', 'XLim', [1 400],  'XTick', [1 3 10 30 100 300 1000]);
+    nTimeSamples = 1000;
+    nConesNum = 8192;
+    deltaT = (timeAxis(2)-timeAxis(1))/1000;
+    samplingFrequency = 1/deltaT;
+    noiseOnlyResponses = osAddNoise(zeros(1, nConesNum, nTimeSamples), 'sampTime', deltaT);
+    noiseOnlyResponses = (squeeze(noiseOnlyResponses(1,:,:)))';
+    [noisePS, freq] = pspectrum(noiseOnlyResponses, samplingFrequency);
+    noisePS = mean(noisePS,2);
+    plot(freq, noisePS, 'k-', 'LineWidth', 1.5);
+    
+    set(gca, 'FontSize', 14, 'XScale', 'log', 'YScale', 'log', 'XLim', [1 100],  'YTick', [0.01 0.03 0.10], 'YTickLabel', {'.01', '.03', '.10'}, 'XTick', [1 3 10 30 100 300 1000]);
     xlabel('\it frequency (Hz)')
+    ylabel('\it pAmps^2 / Hz');
+
     axis 'square';
     box on; grid on;
     

@@ -86,7 +86,7 @@ function run_paper2IsomerizationsVsPhotocurrents
     for condIndex = 1:numel(examinedCond)
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds,  frameRate, stimulusDurationInSeconds, computationInstance);
         
-        params.cyclesPerDegreeExamined
+        
         
         cond = examinedCond(condIndex);
         
