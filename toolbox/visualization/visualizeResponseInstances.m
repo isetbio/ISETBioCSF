@@ -6,7 +6,7 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
     if (instancesNum < 1)
         return;
     end
-    
+
     hFigsInfo = {};
     
     if (visualizeOuterSegmentFilters)
@@ -19,6 +19,13 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
     hFig = visualizeMosaicAndSomeEMpaths(theMosaic, stimData);
     hFigsInfo{numel(hFigsInfo)+1} = struct(...
             'filename', 'mosaicAndSomeEMpaths',...
+            'hFig', hFig);
+        
+        
+    % Visualize mosaic activations over time
+    hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData);
+    hFigsInfo{numel(hFigsInfo)+1} = struct(...
+            'filename', 'mosaicActivationsMovieFrames',...
             'hFig', hFig);
         
         
@@ -186,7 +193,310 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
     hFigsInfo{numel(hFigsInfo)+1} = struct(...
             'filename', 'peakConePhotocurrentResponseInstances',...
             'hFig', hFig);
-        
+end
+
+
+function hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData)
+
+    showDots = false;
+    spaceLimsDegs = 5/60*[-1 1];
+    spaceLimsMeters = spaceLimsDegs * theMosaic.micronsPerDegree * 1e-6;
+    timeLims = [0 200];
+    isomerizationsLimits = [0 30];
+    photocurrentLimits = [-83 -68];
+    
+    targetPosDegs = [0 0];
+    [targetConeIndexInFullArray, conePositions, coneTypes, targetConeIndex] = indicesForConesAtPositions(theMosaic, targetPosDegs);
+    
+    
+    timeAxis = 1000*stimData.responseInstanceArray.timeAxis;
+    isomerizationInstances = stimData.responseInstanceArray.theMosaicIsomerizations;
+    meanIsomerizations = stimData.noiseFreeIsomerizations;
+    photocurrentInstances = stimData.responseInstanceArray.theMosaicPhotocurrents;
+    meanPhotocurrents = stimData.noiseFreePhotocurrents;
+    
+    
+    visualizedResponseInstance = 2; % 13; 24
+    meanIsomerizations = squeeze(meanIsomerizations(targetConeIndex,:));
+    
+    meanPhotocurrent = squeeze(meanPhotocurrents(targetConeIndex,:));
+    isomerizationInstanceMean = squeeze(mean(isomerizationInstances(:, targetConeIndex,:),1));
+    photocurrentInstanceMean = squeeze(mean(photocurrentInstances(:, targetConeIndex,:),1));
+    isomerizationInstance = squeeze(isomerizationInstances(visualizedResponseInstance, targetConeIndex,:));
+    photocurrentInstance = squeeze(photocurrentInstances(visualizedResponseInstance, targetConeIndex,:));
+    
+    theEMpathMicrons = squeeze(stimData.responseInstanceArray.theMosaicEyeMovementsMicrons(visualizedResponseInstance,:,:));
+    theEMpathMeters = theEMpathMicrons / 1e6;
+    theEMpathDegs = theEMpathMicrons/theMosaic.micronsPerDegree;
+    
+    
+    retinalImage = stimData.thePeakOI.RGBimage.^0.5;
+    retinalImage = bsxfun(@minus, retinalImage, retinalImage(1,1,:));
+    retinalImage = squeeze(retinalImage(:,:,2));
+    m1 = min(retinalImage(:));
+    m2 = max(retinalImage(:));
+    retinalImage = (retinalImage - m1)/(m2-m1);
+    retinalImage = stimData.thePeakOI.RGBimage;
+    
+    emPathColor = [1 0 0];
+    cMap = brewermap(8, 'Reds');
+    emPathColor0 = cMap(1,:);
+    emPathColor1 = cMap(2,:);
+    emPathColor2 = cMap(3,:);
+    emPathColor3 = cMap(4,:);
+    
+    visualizationTimes = [35 40 45 50];
+    hFig = figure(345); clf;
+    set(hFig, 'Position', [10 10 950  700], 'Color', [1 1 1]);
+    
+    % Plot the optical image
+    width = 0.2*0.78;
+    height = 0.26*0.78;
+    dX = width*1.005;
+    dY = 0
+    for k = 1:numel(visualizationTimes)
+        ax = axes('Position',[0.03+(k-1)*dX 0.9-height width height]);
+        idx(k) = opticalImageEyePathComboPlot(ax, showDots, timeAxis, visualizationTimes(k), theEMpathDegs, emPathColor0,...
+            stimData.thePeakOI.xAxisDegs, stimData.thePeakOI.yAxisDegs, retinalImage, spaceLimsDegs);
+    end
+    
+
+    signalRange = [min(isomerizationInstances(:)) max(isomerizationInstances(:))];
+    for k = 1:numel(visualizationTimes)
+        ax = axes('Position',[0.03+(k-1)*dX 0.62-height width height]);
+        showActivationMap(ax, theMosaic, timeAxis, visualizationTimes(k),  ...
+            squeeze(isomerizationInstances(visualizedResponseInstance, :,:)), spaceLimsDegs, spaceLimsMeters,signalRange);
+    end   
+
+    colormap(gray(256));
+    
+%     subplot(2,4,5);
+%     plot(timeAxis, theEMpathDegs(:,1), 'r-'); hold on;
+%     plot(timeAxis, theEMpathDegs(:,2), 'b-');
+%     plot(timeAxis(idx0), theEMpathDegs(idx0,1), '*', 'MarkerSize', 12);
+%     plot(timeAxis(idx1), theEMpathDegs(idx1,1), '*', 'MarkerSize', 12);
+%     plot(timeAxis(idx2), theEMpathDegs(idx2,1), '*', 'MarkerSize', 12);
+%     plot(timeAxis(idx3), theEMpathDegs(idx3,1), '*', 'MarkerSize', 12);
+%     plot(timeAxis, timeAxis*0, 'k-');
+%     set(gca, 'XLim', [0 150], 'YLim', spaceLimsDegs);
+    
+    
+    ax = axes('Position',[0.8 0.78 width height]);
+    theMosaic.visualizeGrid('axesHandle', ax, ...
+        'apertureShape', 'disks', ...
+        'visualizedConeAperture', 'lightCollectingArea', ...
+        'labelConeTypes', true,...
+        'ticksInVisualDegs', true, ...
+        'noXaxisLabel',  true, ...
+        'noYaxisLabel', true, ...
+        'backgroundColor', [0 0 0] ...
+    );
+    set(ax, 'XTickLabel', {}, 'YTickLabel',  {}, 'XLim', spaceLimsMeters, 'YLim', spaceLimsMeters);
+    
+    
+    subplot(3,4,10)
+    nTimeSamples = 1000;
+    nConesNum = 8192;
+    deltaT = (timeAxis(2)-timeAxis(1))/1000;
+    samplingFrequency = 1/deltaT;
+    noiseOnlyResponses = osAddNoise(zeros(1, nConesNum, nTimeSamples), 'sampTime', deltaT);
+    noiseOnlyResponses = (squeeze(noiseOnlyResponses(1,:,:)))';
+    [noisePS, freq] = pspectrum(noiseOnlyResponses, samplingFrequency);
+    noisePS = mean(noisePS,2);
+    plot(freq, noisePS, 'k-', 'LineWidth', 1.5);
+    
+    set(gca, 'FontSize', 14, 'XScale', 'log', 'YScale', 'log', 'XLim', [1 100],  'YTick', [0.01 0.03 0.10], 'YTickLabel', {'.01', '.03', '.10'}, 'XTick', [1 3 10 30 100 300 1000]);
+    xlabel('\it frequency (Hz)')
+    ylabel('\it pAmps^2 / Hz');
+
+    axis 'square';
+    box on; grid on;
+    
+    subplot(3,4,9)
+    dt = timeAxis(2)-timeAxis(1);
+    yTicks =[0 :0.05:0.2];
+    tt  = (1:size(stimData.osImpulseResponses,1))*dt - dt;
+    plot(tt, stimData.osImpulseResponses(:,1), 'r-', 'LineWidth', 1.5); hold on
+    plot(tt, stimData.osImpulseResponses(:,2), 'g-', 'LineWidth', 1.5);
+    plot(tt, stimData.osImpulseResponses(:,3), 'b-', 'LineWidth', 1.5);
+    set(gca, 'XLim', timeLims, 'XTIck', 0:50:500, 'YTick', yTicks, 'YTIckLabel', sprintf('%2.2f\n', yTicks), 'FontSize', 14); 
+    axis 'square';
+    xlabel('\it time (msec)');
+    ylabel('\it pAmps');
+    box on; grid on;
+    
+    % Plot the mosaic with one emPath
+    ax = subplot(3,4,8);
+    theMosaic.visualizeGrid('axesHandle', ax, ...
+        'apertureShape', 'disks', ...
+        'visualizedConeAperture', 'lightCollectingArea', ...
+        'labelConeTypes', false,...
+        'ticksInVisualDegs', true, ...
+        'backgroundColor', [0 0 0] ...
+    );
+    hold(ax, 'on');
+    plot([-1 1]/1000, [0 0], 'k-', 'LineWidth', 1.5);
+    plot([0 0], [-1 1]/1000, 'k-', 'LineWidth', 1.5);
+    
+    idx = find(timeAxis <= 100);
+    plot(theEMpathMeters(idx,1), theEMpathMeters(idx,2), '-', 'LineWidth', 2.0, 'Color', emPathColor);
+    hold on;
+    if (showDots)
+    plot(theEMpathMeters(idx0,1), theEMpathMeters(idx0,2), 'ro', 'LineWidth', 2.0, 'MarkerFaceColor', emPathColor0, 'MarkerSize', 10);
+    plot(theEMpathMeters(idx1,1), theEMpathMeters(idx1,2), 'ro', 'LineWidth', 2.0, 'MarkerFaceColor', emPathColor1, 'MarkerSize', 10);
+    plot(theEMpathMeters(idx2,1), theEMpathMeters(idx2,2), 'ro', 'LineWidth', 2.0, 'MarkerFaceColor', emPathColor2, 'MarkerSize', 10);
+    plot(theEMpathMeters(idx3,1), theEMpathMeters(idx3,2), 'ro', 'LineWidth', 2.0, 'MarkerFaceColor', emPathColor3, 'MarkerSize', 10);
+    end
+    
+    set(gca, 'XTickLabel', {}, 'YTickLabel', {});
+    xlabel('');
+    ylabel('')
+    set(gca, 'XLim', spaceLimsMeters, 'YLim', spaceLimsMeters);
+    
+    ax  = subplot(3,4,11);
+    edgeColor = [0 0 0];
+    faceColor = [0.8 0.8 0.8];
+    plottingStyle = 'steps';
+    
+    hold on
+    renderResponseRangeAreaPlot(ax,timeAxis, isomerizationInstance*0-10, isomerizationInstance, zeros(size(isomerizationInstance))-10, ...
+        edgeColor, faceColor, 'steps')
+    stairs(timeAxis, meanIsomerizations, '-', 'LineWidth', 3, 'Color', [0 0.5 1]);
+    stairs(timeAxis, meanIsomerizations, '-', 'LineWidth', 1.5, 'Color', [0 0 1]);
+    
+    if (showDots)
+    plot((timeAxis(idx0)+2.5)*[1 1], [28 isomerizationInstance(idx0)+5], 'r-', 'LineWidth', 1.5);
+    plot((timeAxis(idx1)+2.5)*[1 1], [28 isomerizationInstance(idx1)+5], 'r-', 'LineWidth', 1.5);
+    plot((timeAxis(idx2)+2.5)*[1 1], [28 isomerizationInstance(idx2)+5], 'r-', 'LineWidth', 1.5);
+    plot((timeAxis(idx3)+2.5)*[1 1], [28 isomerizationInstance(idx3)+5], 'r-', 'LineWidth', 1.5);
+    
+    plot(timeAxis(idx0)+2.5, isomerizationInstance(idx0)+5, 'rv', 'MarkerFaceColor', emPathColor0,'MarkerSize', 10);
+    plot(timeAxis(idx1)+2.5, isomerizationInstance(idx1)+5, 'rv', 'MarkerFaceColor', emPathColor1, 'MarkerSize', 10);
+    plot(timeAxis(idx2)+2.5, isomerizationInstance(idx2)+5, 'rv', 'MarkerFaceColor', emPathColor2, 'MarkerSize', 10);
+    plot(timeAxis(idx3)+2.5, isomerizationInstance(idx3)+5, 'rv', 'MarkerFaceColor', emPathColor3, 'MarkerSize', 10);
+    end
+    
+    set(gca, 'YLim', isomerizationsLimits, 'XLim', timeLims, 'XTick', [0:50:300], 'YTick', [0:5:100], 'FontSize', 14);
+    xlabel('\it time (msec)');
+    ylabel('\it R*/c/sec');
+    box on; grid on;
+    axis 'square'
+    ax  = subplot(3,4,12);
+    plot(timeAxis, photocurrentInstance, 'k-', 'LineWidth', 1.5);  hold  on
+    %renderResponseRangeAreaPlot(ax,timeAxis, photocurrentInstance*0+photocurrentLimits(1)-10, photocurrentInstance, ...
+    %    zeros(size(photocurrentInstance))+photocurrentLimits(1)-10, edgeColor, faceColor, 'lines')
+    
+    
+    plot(timeAxis, meanPhotocurrent, '-', 'LineWidth', 3, 'Color', [0 0.5 1]);
+    plot(timeAxis, meanPhotocurrent, '-', 'LineWidth', 1.5, 'Color', [0 0 1]);
+    
+    set(gca, 'YLim', photocurrentLimits, 'XLim', timeLims, 'XTick', [0:50:300], 'YTick', [-90:2:-60], 'FontSize', 14);
+    axis 'square';
+    xlabel('\it time (msec)');
+    ylabel('\it pAmps');
+    box on; grid on;
+    pause
+end
+
+function renderResponseRangeAreaPlot(ax,x, yLow, yHigh, yMean, edgeColor, faceColor, plottingStyle)
+
+    if (numel(yLow) ~= numel(x))
+        return;
+    end
+    
+    v = [x(1) yLow(1)];
+    yMeanTrace = yMean(1);
+    xMeanTrace = x(1);
+    dt = x(2)-x(1);
+    
+    timeSamples = numel(x);
+    for k = 1:(timeSamples-1)
+        if (strcmp(plottingStyle, 'lines'))
+            newV = [x(k) yHigh(k)];
+            yMeanTraceIncrement = yMean(k);
+            xMeanTraceIncrement = x(k);
+        else
+            newV = [x(k) yHigh(k); x(k+1) yHigh(k)];
+            yMeanTraceIncrement = [yMean(k) yMean(k)];
+            xMeanTraceIncrement = [x(k) x(k+1)];
+        end
+        v = cat(1, v, newV);
+        yMeanTrace = cat(2, yMeanTrace, yMeanTraceIncrement);
+        xMeanTrace = cat(2, xMeanTrace, xMeanTraceIncrement);
+    end
+    
+    if (strcmp(plottingStyle, 'lines'))
+        v = cat(1 ,v, [x(timeSamples) yHigh(timeSamples)]);
+        yMeanTrace = cat(2, yMeanTrace, yMean(timeSamples));
+        xMeanTrace = cat(2, xMeanTrace, x(timeSamples));
+    else
+         v = cat(1 ,v, [x(timeSamples) yHigh(timeSamples); x(timeSamples)+dt yHigh(timeSamples); x(timeSamples)+dt yLow(timeSamples); x(timeSamples) yLow(timeSamples)]);
+         yMeanTrace = cat(2, yMeanTrace, [yMean(k+1) yMean(k+1)]);
+         xMeanTrace = cat(2, xMeanTrace, [x(k+1) x(k+1)+dt]);    
+    end
+    
+    for k = (numel(yLow)):-1:2
+        if (strcmp(plottingStyle, 'lines'))
+            newV = [x(k) yLow(k)];
+        else
+            newV = [x(k) yLow(k-1); x(k-1) yLow(k-1)];
+        end
+        v = cat(1, v, newV);
+    end
+    
+    v = cat(1,v, [x(1) yLow(1)]);
+    if (strcmp(plottingStyle, 'lines'))
+        timeAlignmentFactor = timeSamples/(timeSamples-2);
+        v(:,1) = v(:,1)*timeAlignmentFactor;
+        xMeanTrace = xMeanTrace*timeAlignmentFactor ;
+    end
+    
+    f = 1:size(v,1);
+    desaturation = 0.0;
+    alpha = 0.5;
+    patch(ax,'Faces',f,'Vertices',v,...
+        'FaceAlpha', alpha, ...
+        'FaceColor', faceColor*(1-desaturation)+desaturation*[1 1 1], ...
+        'EdgeColor', edgeColor*(1-desaturation)+desaturation*[1 1 1], ...
+        'LineWidth',1.5)
+    hold(ax, 'on');
+    plot(ax, xMeanTrace, yMeanTrace, 'k-', 'Color', edgeColor, 'LineWidth', 3);
+    
+end
+
+function showActivationMap(ax, theMosaic, timeAxis, visualizationTime,  isomerizationInstance, spaceLimsDegs, spaceLimsMeters,signalRange)
+    indices = find(timeAxis <= visualizationTime);
+    tBin = indices(end);
+    theMosaic.renderActivationMap(ax, squeeze(isomerizationInstance(:,tBin)), ...
+        'signalRange',  signalRange, 'mapType', 'modulated disks', ...
+        'showXLabel', false, 'showYLabel', false, 'showXTicks', false, 'showYTicks', false, ...
+        'visualizedFOV', max(spaceLimsDegs)*2);
+    hold on
+    spaceLimsMeters = spaceLimsMeters + 1.0 * 1e-6*[-1 1];
+    
+    x = [spaceLimsMeters(1) spaceLimsMeters(2)  spaceLimsMeters(2) spaceLimsMeters(1)  spaceLimsMeters(1) ];
+    y = [spaceLimsMeters(1) spaceLimsMeters(1)  spaceLimsMeters(2) spaceLimsMeters(2)  spaceLimsMeters(1) ];
+    plot(ax,x,y,'w-', 'LineWidth', 1.5);
+    text(ax, spaceLimsMeters(1), spaceLimsMeters(1)*1.1, sprintf('%2.0f msec', visualizationTime), 'FontSize', 14);
+end
+
+function idx0 = opticalImageEyePathComboPlot(ax, showDots, timeAxis, visualizationTime, theEMpathDegs, emPathColor, xAxisDegs, yAxisDegs, retinalImage, spaceLimsDegs)
+    indices = find(timeAxis <= visualizationTime);
+    idx0 = indices(end);
+    offset = theEMpathDegs(idx0,:);
+    imagesc(ax,xAxisDegs + offset(1), yAxisDegs + offset(2), retinalImage.^0.7); hold(ax, 'on');
+    %plot([xAxisDegs(1) xAxisDegs(end)], [0 0], 'k-', 'LineWidth', 1.5);
+    %plot([0 0], [yAxisDegs(1) yAxisDegs(end)], 'k-', 'LineWidth', 1.5);
+    if (~showDots)
+        plot(ax,theEMpathDegs(indices,1), theEMpathDegs(indices,2), '-', 'LineWidth', 1.5, 'Color', 'k');
+        plot(ax, offset(1) + [-1 1], offset(2)*[1 1], 'k-', 'LineWidth', 1.0);
+        plot(ax, offset(1) * [1 1], offset(2)+[-1 1], 'k-', 'LineWidth', 1.0);
+    end
+    axis(ax, 'image'); axis(ax, 'xy')
+    set(ax, 'CLim', [0 1], 'XLim', spaceLimsDegs, 'YLim', spaceLimsDegs, 'FontSize', 14, ...
+        'XTick', [-0.4:0.05:0.4], 'YTick', [-0.4:0.05:0.4], 'XTickLabel', {}, 'YTickLabel', {});
+    box(ax, 'on'); grid(ax, 'on');
+    text(ax, spaceLimsDegs(1), spaceLimsDegs(1)*1.1, sprintf('%2.0f msec', visualizationTime), 'FontSize', 14);
 end
 
 function hFig = visualizeMosaicAndSomeEMpaths(theMosaic, stimData)
@@ -194,6 +504,7 @@ function hFig = visualizeMosaicAndSomeEMpaths(theMosaic, stimData)
     visualizedResponseInstances = 1:4;
     theEMpathMicrons = squeeze(stimData.responseInstanceArray.theMosaicEyeMovementsMicrons(visualizedResponseInstances,:,:));
     theEMpathMeters = theEMpathMicrons / 1e6;
+    
     hFig = figure(987); clf;
     set(hFig, 'Position', [10 10 513 600], 'Color', [1 1 1]);
     ax = subplot('Position', [0.01 0.12 0.98 0.895]);
@@ -220,7 +531,6 @@ function hFig = visualizeMosaicAndSomeEMpaths(theMosaic, stimData)
     set(gca, 'FontSize', 28);
     xlabel('\it space (deg)', 'FontWeight', 'normal', 'FontSize', 36);
     drawnow;
-    pause
 end
 
 
@@ -236,10 +546,11 @@ function hFig = plotImpulseResponseFunctions(stimData)
         plot(timeAxis, stimData.osImpulseResponses(:,1), 'r-', 'LineWidth', 1.5);
         plot(timeAxis, stimData.osImpulseResponses(:,2), 'g-', 'LineWidth', 1.5);
         plot(timeAxis, stimData.osImpulseResponses(:,3), 'b-', 'LineWidth', 1.5);
-        xlabel('time (msec)');
-        set(gca, 'FontSize', 14);
+        xlabel('\it time (msec)');
+        
+        set(gca, 'FontSize', 14, 'XTick', 0:50:300, 'XLim', [0 300]);
+        box on;
         grid on;
-        title(sprintf('os impulse response functions'));
         drawnow;
     else
         hFig = [];
@@ -726,7 +1037,7 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
     generateConeLinePlot(ax, theMosaic, ...
         stimDataNoiseFreeSignalAtPeakTime, ...
         noStimDataNoiseFreeSignalAtPeakTime, ...
-        signalRange, coneLinePlotType, signalName, yLabelTitle, true);
+        signalRange, coneLinePlotType, signalName, yLabelTitle, false);
     drawnow
 
     hFigTmp = figure(4+figNo); clf;
@@ -973,7 +1284,7 @@ function generateConeLinePlot(ax, theMosaic, activation, nullStimActivation, sig
     grid 'on'; box 'off';
     xlabel('\it space (deg)', 'FontWeight', 'normal', 'FontSize', 36);
     drawnow
-    pause
+
 end
 
 function isomerizationsRange = determineVisualizedIsomerizationsRange(theMosaic, stimData, timeBinOfPeakIsomerizationResponse)

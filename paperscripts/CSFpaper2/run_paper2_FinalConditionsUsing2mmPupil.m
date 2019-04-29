@@ -68,12 +68,21 @@ function run_paper2_FinalConditionsUsing2mmPupil
     condIndex = 0;
     
     
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'SVM-Temp-L, cone exc., noEM';
+%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+%     examinedCond(condIndex).performanceSignal = 'isomerizations';
+%     examinedCond(condIndex).emPathType = 'frozen0';
+%     examinedCond(condIndex).centeredEMPaths = true;
+    
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Temp-L, cone exc., noEM';
+    examinedCond(condIndex).label = 'SVM-Temp-L, pCurrent, noEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).performanceSignal = 'isomerizations';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = true;
     
@@ -114,6 +123,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
         
+        params.cyclesPerDegreeExamined = [4 8 12 16 24 32 50 60];
         % Update params
         cond = examinedCond(condIndex);
         params.performanceClassifier = cond.performanceClassifier;

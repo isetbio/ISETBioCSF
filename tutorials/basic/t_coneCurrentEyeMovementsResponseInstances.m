@@ -481,7 +481,7 @@ if (p.Results.compute)
         'noiseFreePhotocurrents', []);
     
     % Reassemble the responseInstanceArray for all trials from the blocked trials temporary datafiles
-    [noStimData.responseInstanceArray, noStimData.noiseFreeIsomerizations, noStimData.noiseFreePhotocurrents] = ...
+    [noStimData.responseInstanceArray, noStimData.noiseFreeIsomerizations, noStimData.noiseFreePhotocurrents, noStimData.thePeakOI] = ...
             formResponseInstanceArrayForAllTrials(rwObject, nParforTrialBlocks, paramsList, theProgram, blockDataPrefix, p.Results.displayTrialBlockPartitionDiagnostics);
     
     % Write the no cone contrast data and some extra facts we need
@@ -579,7 +579,7 @@ if (p.Results.compute)
             'noiseFreePhotocurrents', []);
         
         % Reassemble the responseInstanceArray for all trials from the blocked trials temporary datafiles
-        [stimData.responseInstanceArray, stimData.noiseFreeIsomerizations, stimData.noiseFreePhotocurrents] = ...
+        [stimData.responseInstanceArray, stimData.noiseFreeIsomerizations, stimData.noiseFreePhotocurrents, stimData.thePeakOI] = ...
             formResponseInstanceArrayForAllTrials(rwObject, nParforTrialBlocks, paramsList, theProgram, blockDataPrefix, p.Results.displayTrialBlockPartitionDiagnostics);
 
         % Save some data for validation in first loop
@@ -764,7 +764,7 @@ end
 
 end
 
-function [responseInstanceArray, noiseFreeIsomerizations, noiseFreePhotocurrents] = formResponseInstanceArrayForAllTrials(rwObject, nParforTrialBlocks, paramsList, theProgram, blockDataPrefix, displayTrialBlockPartitionDiagnostics)
+function [responseInstanceArray, noiseFreeIsomerizations, noiseFreePhotocurrents, thePeakOI] = formResponseInstanceArrayForAllTrials(rwObject, nParforTrialBlocks, paramsList, theProgram, blockDataPrefix, displayTrialBlockPartitionDiagnostics)
     if (displayTrialBlockPartitionDiagnostics)
         fprintf('Importing data from %d blocks to build up the responseInstanceArray.\n', nParforTrialBlocks);
     end
@@ -775,6 +775,7 @@ function [responseInstanceArray, noiseFreeIsomerizations, noiseFreePhotocurrents
         if (trialBlock == 1)
             noiseFreeIsomerizations = tmpData.noiseFreeIsomerizations;
             noiseFreePhotocurrents = tmpData.noiseFreePhotocurrents;
+            thePeakOI = tmpData.thePeakOI;
             responseInstanceArray = struct();
             responseInstanceArray.timeAxis = tmpData.responseInstanceArray.timeAxis;
             responseInstanceArray.photocurrentTimeAxis = tmpData.responseInstanceArray.photocurrentTimeAxis;
