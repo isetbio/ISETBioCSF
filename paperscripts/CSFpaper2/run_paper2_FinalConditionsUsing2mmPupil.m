@@ -68,23 +68,15 @@ function run_paper2_FinalConditionsUsing2mmPupil
     condIndex = 0;
     
     
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-Temp-L, cone exc., noEM';
-%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-%     examinedCond(condIndex).performanceSignal = 'isomerizations';
-%     examinedCond(condIndex).emPathType = 'frozen0';
-%     examinedCond(condIndex).centeredEMPaths = true;
-    
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Temp-L, pCurrent, noEM';
+    examinedCond(condIndex).label = 'SVM-Temp-L, cone exc., noEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).performanceSignal = 'isomerizations';
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = true;
+    
     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-Temp-L, pCurrent, noEM';
@@ -103,8 +95,6 @@ function run_paper2_FinalConditionsUsing2mmPupil
     examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = true;
-    
-    
     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-Temp-E., pCurrent, driftEM';
@@ -162,7 +152,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.23,0.885,0.75,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.23,0.86,0.75,0.08], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );

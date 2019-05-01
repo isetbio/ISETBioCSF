@@ -301,14 +301,28 @@ function hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData)
     samplingFrequency = 1/deltaT;
     noiseOnlyResponses = osAddNoise(zeros(1, nConesNum, nTimeSamples), 'sampTime', deltaT);
     noiseOnlyResponses = (squeeze(noiseOnlyResponses(1,:,:)))';
-    [noisePS, freq] = pspectrum(noiseOnlyResponses, samplingFrequency);
-    noisePS = mean(noisePS,2);
-    plot(freq, noisePS, 'k-', 'LineWidth', 1.5);
     
-    set(gca, 'FontSize', 14, 'XScale', 'log', 'YScale', 'log', 'XLim', [1 100],  'YTick', [0.01 0.03 0.10], 'YTickLabel', {'.01', '.03', '.10'}, 'XTick', [1 3 10 30 100 300 1000]);
-    xlabel('\it frequency (Hz)')
-    ylabel('\it pAmps^2 / Hz');
-
+    showNoiseSpectrum = ~true;
+    if (showNoiseSpectrum)
+        [noisePS, freq] = pspectrum(noiseOnlyResponses, samplingFrequency);
+    
+        noisePS = mean(noisePS,2);
+        plot(freq, noisePS, 'k-', 'LineWidth', 1.5);
+    
+        set(gca, 'FontSize', 14, 'XScale', 'log', 'YScale', 'log', 'XLim', [1 100],  'YTick', [0.01 0.03 0.10], 'YTickLabel', {'.01', '.03', '.10'}, 'XTick', [1 3 10 30 100 300 1000]);
+        xlabel('\it frequency (Hz)')
+        ylabel('\it pAmps^2 / Hz');
+    else
+        timeAxis2 = 1000*(1: nTimeSamples)*deltaT-deltaT/2;
+        hPlot = plot(timeAxis2, noiseOnlyResponses(:,1:512), 'k-', 'LineWidth', 1.5);
+        for k = 1:numel(hPlot)
+            hPlot(k).Color(4) = 0.2;  % 5% transparent
+        end
+        set(gca, 'XLim', timeLims, 'YLim', 15*[-1 1], 'XTIck', 0:50:500, 'YTick', [-20:5:20], 'FontSize', 14);
+        xlabel('\it time (msec)')
+        ylabel('\it pAmps');
+    end
+    
     axis 'square';
     box on; grid on;
     
