@@ -19,21 +19,21 @@ function simulatePowerSpectrumChangeDueToDrift
     gratingParams.sfCPD = 15;
     gratingParams.oriDegs = 85;
     gratingParams.sigmaArcMin = 10;
-    gratingParams.contrast = 0.7;
+    gratingParams.contrast = 0.5;
     
     % Noise params
-    alpha = -1;  % noise spectrum: sf^-alpha
-    
+    noiseParams.alpha = -1;  % noise spectrum: sf^-alpha
+    noiseParams.contrast = 1.0;
     % Generate stimulus
     [stimulusImage, spatialSupportDegs, spectrum, spatialFrequencySupport] = ...
-        generateStimulusImage(stimSizeArcMin, pixelSizeArcMin, stimRadiusArcMin, gratingParams, alpha);
+        generateStimulusImage(stimSizeArcMin, pixelSizeArcMin, stimRadiusArcMin, gratingParams, noiseParams);
     
     % Plot stimulus
     plotStimulusAndSpectrum(stimulusImage, spatialSupportDegs, spectrum, spatialFrequencySupport);
 end
 
 % Generate noise with spectrum f^{alpha}
-function [stimulusImage, spatialSupportDegs, spectrum, spatialFrequencySupport] = generateStimulusImage(stimSizeArcMin, pixelSizeArcMin, stimRadiusArcMin, gratingParams, alpha)
+function [stimulusImage, spatialSupportDegs, spectrum, spatialFrequencySupport] = generateStimulusImage(stimSizeArcMin, pixelSizeArcMin, stimRadiusArcMin, gratingParams, noiseParams)
     N = round(stimSizeArcMin / pixelSizeArcMin);
     if (mod(N,2) == 1)
         N = N + 1;
@@ -53,7 +53,7 @@ function [stimulusImage, spatialSupportDegs, spectrum, spatialFrequencySupport] 
 
     % Generate the power spectrum
     normalizedSpatialFrequencyGridFFTshift = sqrt(sfX.^2 + (sfX').^2);
-    noiseSpectrum = normalizedSpatialFrequencyGridFFTshift.^alpha;
+    noiseSpectrum = normalizedSpatialFrequencyGridFFTshift.^noiseParams.alpha;
 
     % Set any infinities to zero
     noiseSpectrum(noiseSpectrum==inf) = 0;
@@ -66,7 +66,7 @@ function [stimulusImage, spatialSupportDegs, spectrum, spatialFrequencySupport] 
 
     % Pick the real component
     noiseImage = real(noiseImage);
-    noiseImage = noiseImage / max(abs(noiseImage(:)));
+    noiseImage = noiseParams.contrast * noiseImage / max(abs(noiseImage(:)));
     
     % Add the grating
     gratingImage = gratingParams.contrast * sin(2*pi*gratingParams.sfCPD*(xx*cosd(gratingParams.oriDegs) + yy*sind(gratingParams.oriDegs)));
