@@ -2,7 +2,7 @@ function makeFixationalEyeMovementFigure()
     
     % Generate 512 3-second emPaths with a sample time of 1 msec
     emDurationSeconds = 3;
-    sampleTimeSeconds = 1 / 1000;
+    sampleTimeSeconds = 1.0 / 1000;
     nTrials = 1024;
     
     microSaccadeType = 'none'; % , 'heatmap/fixation based', 'none'
@@ -21,8 +21,11 @@ function makeFixationalEyeMovementFigure()
 end
 
 
-function plotData(fixEMobj, maxDurationSecondsForFixationSpan, emPosRange )
+function plotData(fixEMobj, maxDurationSecondsForFixationSpan, emPosRange)
 
+    timeStepSeconds = fixEMobj.timeAxis(2) - fixEMobj.timeAxis(1);
+    samplingRate = 1 / timeStepSeconds;
+    
     % Compute fixationMap
     emPosDelta = 0.6;
     [fixationMap, fixationMapSupportX, fixationMapSupportY, ...
@@ -34,15 +37,37 @@ function plotData(fixEMobj, maxDurationSecondsForFixationSpan, emPosRange )
     % Compute dispacements
     displacementMode = 'D2';
     nTrials = size(fixEMobj.emPosArcMin,1);
+    
     for trialNo = 1:nTrials
+        
         xPosArcMin = squeeze(fixEMobj.emPosArcMin(trialNo,:,1));
         yPosArcMin = squeeze(fixEMobj.emPosArcMin(trialNo,:,2));
-        [meanD(trialNo,:), ~, meanDscrambled(trialNo,:), ...
-             DrandomWalk, timeLagsMilliseconds] = ...
-        fixEMobj.performDisplacementAnalysis(yPosArcMin, fixEMobj.timeAxis, 'mode', displacementMode);
+        
+        [pSDX, frequencyAxis] = ...
+            periodogram(xPosArcMin, [], [], samplingRate);
+        [pSDY, ~] = periodogram(yPosArcMin, [], [], samplingRate);
+        
+        [D, ~, Dscrambled, ~, timeLagsMilliseconds] = ...
+           fixEMobj.performDisplacementAnalysis(yPosArcMin, fixEMobj.timeAxis, 'mode', displacementMode);
+       
+        if (trialNo == 1)
+            powerSpectralDensityX = zeros(nTrials, length(pSDX));
+            powerSpectralDensityY = zeros(nTrials, length(pSDX));
+            meanD = zeros(nTrials, length(D));
+            meanDscrambled = zeros(nTrials, length(Dscrambled));
+        end
+        
+        meanD(trialNo,:) = D;
+        meanDscrambled(trialNo,:) = Dscrambled;
+        powerSpectralDensityX(trialNo, :) = pSDX;
+        powerSpectralDensityY(trialNo, :) = pSDY;
+        
     end
+    
     meanD = mean(meanD,1);
     meanDscrambled = mean(meanDscrambled,1);
+    powerSpectralDensityX = mean(powerSpectralDensityX,1);
+    powerSpectralDensityY = mean(powerSpectralDensityY,1);
     
     % Make figure
     hFig = figure(1);
@@ -50,22 +75,26 @@ function plotData(fixEMobj, maxDurationSecondsForFixationSpan, emPosRange )
     set(hFig, 'Position', [0 0 840 500], 'Color', [1 1 1]);
     
     % The trajectories
-    ax = subplot('Position', [0.065 0.6 0.60 0.39]);
+    ax = subplot('Position', [0.057 0.60 0.60 0.39]);
     plotTrajectories(ax, fixEMobj, emPosRange, maxDurationSecondsForFixationSpan);
     
-    % The velocities
-    ax = subplot('Position', [0.065 0.1 0.60 0.39]);
-    plotVelocityDistributionPlot(ax, fixEMobj, maxDurationSecondsForFixationSpan)
-    
     % The fixation map
-    ax = subplot('Position', [0.725 0.6 0.28 0.39]);
+    ax = subplot('Position', [0.735 0.60 0.28 0.39]);
     tBins = find(fixEMobj.timeAxis<=maxDurationSecondsForFixationSpan);
     firstPath = squeeze(fixEMobj.emPosArcMin(1, tBins, :));
     plotFixationMap(ax, fixationMap, fixationMapSupportX, fixationMapSupportY, ...
         fixationMapXSlice, fixationMapYSlice, firstPath, emPosRange);
     
+    % The velocities
+    ax = subplot('Position', [0.052 0.1 0.28 0.39]);
+    plotVelocityDistributionPlot(ax, fixEMobj, maxDurationSecondsForFixationSpan);
+    
+    % The drift spectrum
+    ax = subplot('Position', [0.40 0.1 0.28 0.39]);
+    plotSpectrumPlot(ax, frequencyAxis, powerSpectralDensityX,powerSpectralDensityY);
+    
     % The displacement dynamics
-    ax = subplot('Position', [0.725 0.1 0.28 0.39]);
+    ax = subplot('Position', [0.735 0.1 0.28 0.39]);
     plotDisplacementPlot(ax,timeLagsMilliseconds, meanD, meanDscrambled, displacementMode);
     
     NicePlot.exportFigToPDF('FixationalEMmodelDemo.pdf', hFig, 300)
@@ -94,7 +123,17 @@ function plotVelocityDistributionPlot(ax, fixEMobj, maxDurationSecondsForFixatio
         'YTick', [], ...
         'FontSize', 16);
     xlabel('\it velocity (arc min / sec)');
+    
     box on; grid on
+end
+
+function plotSpectrumPlot(ax, frequencyAxis, powerSpectralDensityX,powerSpectralDensityY)
+    plot(frequencyAxis, 10*log10(powerSpectralDensityX), 'r-', 'LineWidth', 2); hold on;
+    plot(frequencyAxis, 10*log10(powerSpectralDensityY), 'b-', 'LineWidth', 2);
+    set(ax, 'XScale', 'log', 'FontSize', 16, 'XLim', [1 200], 'XTick', [1 3 10 30 100]);
+    grid on; box on; axis 'square';
+    xlabel('\it frequency (Hz)'); 
+    ylabel('\it power (dB)');
 end
 
 function plotDisplacementPlot(ax,timeLagsMilliseconds, meanD, meanDscrambled, displacementMode)
