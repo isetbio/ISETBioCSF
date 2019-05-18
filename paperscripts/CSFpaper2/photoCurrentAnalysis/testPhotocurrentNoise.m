@@ -41,7 +41,6 @@ function  displayResults(timeAxis, noise, freqAxis, noiseSPD, noiseSPDlowFreq, n
        'bottomMargin',   0.15, ...
        'topMargin',      0.1);
     
-    [cornerFreqLow cornerFreqHigh]
     subplot('Position', subplotPosVectors(1,1).v);
     plot(freqAxis, noiseSPDlowFreq, 'r-', 'LineWidth', 1.5); hold on;
     plot(freqAxis, noiseSPDhighFreq, 'b-', 'LineWidth', 1.5);
@@ -64,6 +63,9 @@ function  displayResults(timeAxis, noise, freqAxis, noiseSPD, noiseSPDlowFreq, n
     for k = 1:numel(hPlot)
        hPlot(k).Color(4) = 0.1;  % 5% transparent
     end
+    % Last instance in green
+    hPlot(numel(hPlot)).Color = [0 1 0 1];
+    hPlot(numel(hPlot)).LineWidth = 1.5;
     
     set(gca, 'YLim', visualizeAmplitudeRange*[-1 1], 'XTick', [0:25:500]);
     xlabel('\it time (msec)');
