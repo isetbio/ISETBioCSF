@@ -7,33 +7,70 @@ function simulatePowerSpectrumChangeDueToDrift
     % Make each pixel equal to 1 cone aperture
     coneApertureMicrons = 1.5;
     micronsPerDegree = 300;
-    pixelSizeArcMin = coneApertureMicrons / micronsPerDegree * 60;
+    pixelSizeArcMin = 1*coneApertureMicrons / micronsPerDegree * 60;
     
     % Stimulus size
-    stimSizeArcMin = 120;
+    stimSizeArcMin = 400;
     
-    % Stimulus radius
-    stimRadiusArcMin = 40;
-        
+    instancesNum = 25;
+    
     % Grating params
-    gratingParams.sfCPD = 15;
-    gratingParams.oriDegs = 85;
-    gratingParams.sigmaArcMin = 10;
-    gratingParams.contrast = 0.5;
+    gratingParams.oriDegs = 45;
+    gratingParams.sigmaArcMin = 12;
+    gratingParams.contrast = 0.2;
     
     % Noise params
-    noiseParams.alpha = -1;  % noise spectrum: sf^-alpha
-    noiseParams.contrast = 1.0;
+    % Noise params for low frequency stimulus
+    gratingParams.sfCPD = 4;
+    noiseParams.spectrumShape = 'highPassCornerFreq';
+    noiseParams.cornerFrequencyCPD = 10;  % relevant for 'lowPassCornerFreq' and 'lhighPassCornerFreq'
+    noiseParams.steepness = 2;
     % Generate stimulus
-    [stimulusImage, spatialSupportDegs, spectrum, spatialFrequencySupport] = ...
-        generateStimulusImage(stimSizeArcMin, pixelSizeArcMin, stimRadiusArcMin, gratingParams, noiseParams);
+    [lowFrequencyStimulusImage, spatialSupportDegs, lowFrequencySpectrum, spatialFrequencySupport] = ...
+        generateStimulusImage(stimSizeArcMin, pixelSizeArcMin,  gratingParams, noiseParams, instancesNum);
     
     % Plot stimulus
-    plotStimulusAndSpectrum(stimulusImage, spatialSupportDegs, spectrum, spatialFrequencySupport);
+    plotStimulusAndSpectrum(lowFrequencyStimulusImage, spatialSupportDegs, lowFrequencySpectrum, spatialFrequencySupport, 1);
+    
+    % Noise params for highfrequency stimulus
+    gratingParams.sfCPD = 11;
+    noiseParams.spectrumShape = 'lowPassCornerFreq';
+    noiseParams.cornerFrequencyCPD = 5;  % relevant for 'lowPassCornerFreq' and 'lhighPassCornerFreq'
+    % Generate stimulus
+    [highFrequencyStimulusImage, spatialSupportDegs, highFrequencySpectrum, spatialFrequencySupport] = ...
+        generateStimulusImage(stimSizeArcMin, pixelSizeArcMin,  gratingParams, noiseParams, instancesNum);
+    
+    % Plot stimulus
+    plotStimulusAndSpectrum(highFrequencyStimulusImage, spatialSupportDegs, highFrequencySpectrum, spatialFrequencySupport, 2);
+    
+    
+    % Noise params for zero stimulus
+    gratingParams.sfCPD = 0;
+    noiseParams.spectrumShape = '1overF';
+    % Generate stimulus
+    [highFrequencyStimulusImage, spatialSupportDegs, highFrequencySpectrum, spatialFrequencySupport] = ...
+        generateStimulusImage(stimSizeArcMin, pixelSizeArcMin,  gratingParams, noiseParams, instancesNum);
+    
+    % Plot stimulus
+    plotStimulusAndSpectrum(highFrequencyStimulusImage, spatialSupportDegs, highFrequencySpectrum, spatialFrequencySupport, 3);
+    
+    
+    % Noise params for zero stimulus
+    gratingParams.sfCPD = 11;
+    noiseParams.spectrumShape = 'none';
+    % Generate stimulus
+    [highFrequencyStimulusImage, spatialSupportDegs, highFrequencySpectrum, spatialFrequencySupport] = ...
+        generateStimulusImage(stimSizeArcMin, pixelSizeArcMin,  gratingParams, noiseParams, instancesNum);
+    
+    % Plot stimulus
+    plotStimulusAndSpectrum(highFrequencyStimulusImage, spatialSupportDegs, highFrequencySpectrum, spatialFrequencySupport, 4);
+    
+    
 end
 
 % Generate noise with spectrum f^{alpha}
-function [stimulusImage, spatialSupportDegs, spectrum, spatialFrequencySupport] = generateStimulusImage(stimSizeArcMin, pixelSizeArcMin, stimRadiusArcMin, gratingParams, noiseParams)
+function [stimulusImage, spatialSupportDegs, spectrum, spatialFrequencySupport] = ...
+    generateStimulusImage(stimSizeArcMin, pixelSizeArcMin,  gratingParams, noiseParams, instancesNum)
     N = round(stimSizeArcMin / pixelSizeArcMin);
     if (mod(N,2) == 1)
         N = N + 1;
@@ -43,20 +80,81 @@ function [stimulusImage, spatialSupportDegs, spectrum, spatialFrequencySupport] 
     xAxis = (1:N)*pixelSizeArcMin;
     xAxis = xAxis - mean(xAxis);
     spatialSupportDegs = xAxis / 60;
-    [xx,yy] = meshgrid(spatialSupportDegs, spatialSupportDegs);
+    
+    % Generate grating component
+    [gratingComponent,gaussianEnvelope] = generateGratingComponent(spatialSupportDegs, gratingParams);
+    
+    % Generate noise component
+    for instanceNo = 1:instancesNum
+        noiseComponent = generateNoiseComponent(spatialSupportDegs, noiseParams);
+ 
+        % Add components
+        stimulus = gaussianEnvelope .* (noiseComponent + gratingComponent);
+    
+        % Normalize to [-1 1]
+        stimulusNorm = stimulus / max(abs(stimulus(:)));
+    
+        % Scale to [0 .. 1]
+        stimulusImage(instanceNo,:,:) = 0.5*(1+stimulusNorm);
+    
+        % Compute stimulus spectrum and spatialFrequencySupport
+        spectrum(instanceNo,:,:) = fftshift(abs(fft2(squeeze(stimulusImage(instanceNo,:,:)))));
+        positiveSFindices = (N/2+1):N;
+        spacingDegs = pixelSizeArcMin/60;
+        sfMaxCPD = 1/(2*spacingDegs);
+        spatialFrequencySupport = (0:(numel(positiveSFindices)-1))/(numel(positiveSFindices)-1) * sfMaxCPD;
+    end
+    
+end
+
+
+function noiseImage = generateNoiseComponent(spatialSupportDegs, noiseParams)
+    N = length(spatialSupportDegs);
+    
+    % Determine max SF
+    spacingDegs = spatialSupportDegs(2)-spatialSupportDegs(1);
+    sfMaxCPD = 1/(2*spacingDegs);
     
     % Generate the grid of frequencies. First quadrant are positive frequencies.  
     % Zero frequency is at u(1,1).
     sf = [(0:floor(N/2)) -(ceil(N/2)-1:-1:1)]'/N;
-    % Reproduce these frequencies
+    % Replicate frequencies
     sfX = repmat(sf,1,N);
 
-    % Generate the power spectrum
+    % Generate the normalized spatial frequency grid (fftshifted)
     normalizedSpatialFrequencyGridFFTshift = sqrt(sfX.^2 + (sfX').^2);
-    noiseSpectrum = normalizedSpatialFrequencyGridFFTshift.^noiseParams.alpha;
-
+    
+    
+    % Generate oneOverFspectrum 1/(f^alpha)
+    oneOverFspectrum = normalizedSpatialFrequencyGridFFTshift .^(-1.0);
     % Set any infinities to zero
-    noiseSpectrum(noiseSpectrum==inf) = 0;
+    oneOverFspectrum(oneOverFspectrum==inf) = 0;
+    oneOverFspectrum = oneOverFspectrum / max(oneOverFspectrum(:));
+    oneOverFspectrum(1,1) = 1;
+            
+    % Generate the spectrum shape
+    switch(noiseParams.spectrumShape)
+        case '1overF'
+            noiseSpectrum = oneOverFspectrum;
+            
+        case 'none'
+            noiseSpectrum = oneOverFspectrum*0;
+            
+        case {'lowPassCornerFreq','highPassCornerFreq'}
+            
+            % generate low-pass or high-pass filter
+            xTerm = normalizedSpatialFrequencyGridFFTshift.^noiseParams.steepness;
+            x50Term = (noiseParams.cornerFrequencyCPD/sfMaxCPD)^noiseParams.steepness;
+            noiseSpectrumFilter = xTerm ./ (xTerm + x50Term);
+             
+            if (strcmp(noiseParams.spectrumShape,'lowPassCornerFreq'))
+                noiseSpectrumFilter = 1-noiseSpectrumFilter;
+            end
+            
+            % Apply filter to 1/F noise
+            noiseSpectrum = oneOverFspectrum .* noiseSpectrumFilter;
+    end
+    
 
     % Generate a grid of random phase shifts
     phi = rand(N);
@@ -66,65 +164,114 @@ function [stimulusImage, spatialSupportDegs, spectrum, spatialFrequencySupport] 
 
     % Pick the real component
     noiseImage = real(noiseImage);
-    noiseImage = noiseParams.contrast * noiseImage / max(abs(noiseImage(:)));
+    noiseImage = noiseImage / max(abs(noiseImage(:)));
     
-    % Add the grating
-    gratingImage = gratingParams.contrast * sin(2*pi*gratingParams.sfCPD*(xx*cosd(gratingParams.oriDegs) + yy*sind(gratingParams.oriDegs)));
-    gaussianEnvelope = exp(-0.5*((xx/(gratingParams.sigmaArcMin/60)).^2)) .* exp(-0.5*((yy/(gratingParams.sigmaArcMin/60)).^2));
-    gaborImage = gratingImage .* gaussianEnvelope;
-    noiseImage = 0.5*(noiseImage + gaborImage);
+    if (strcmp(noiseParams.spectrumShape,'none'))
+        disp('all zeros')
+        noiseImage = zeros(size(noiseImage));
+    end
+     
+    plotNoiseSpectrum = false;
+    if (plotNoiseSpectrum)
+        figure(222);
+        clf;
+        subplot(2,1,1);
+        sfXX = fftshift(sfX);
+        spatialFrequencySupportCPD = sfXX(2:end-1,1) * sfMaxCPD;
+        imagesc(spatialFrequencySupportCPD, spatialFrequencySupportCPD, log10(fftshift(noiseSpectrum/max(abs(noiseSpectrum(:))))));
+        axis 'image'
+        set(gca, 'XLim', 20*[-1 1], 'YLim',20*[-1 1]);
+
+        subplot(2,1,2);
+        spatialFrequencySupportCPD = sfX(1:N/2,1) * sfMaxCPD;
+        plot(spatialFrequencySupportCPD, log10(noiseSpectrum(1:N/2,1)), 'k-');
+        set(gca, 'XLim', 20*[-1 1]);
+        colormap(gray);
+        axis 'square';
+    end
     
-    % Scale to [0 .. 1]
-    stimulusImage = 0.5*(1+noiseImage / max(abs(noiseImage(:))));
-    
-    % Mask stimulus to 0.5 outside of stimRadiusArcMin
-    r = sqrt(xx.^2 + yy.^2);
-    idx = find(r > stimRadiusArcMin/60);
-    stimulusImage(idx) = 0.5;
-    
-    % Compute stimulus spectrum and spatialFrequencySupport
-    spectrum = fftshift(abs(fft2(stimulusImage)));
-    normalizedSpatialFrequencyGrid = ifftshift(normalizedSpatialFrequencyGridFFTshift);
-    positiveSFindices = (N/2+1):N;
-    spacingDegs = pixelSizeArcMin/60;
-    sfMaxCPD = 1/spacingDegs;
-    spatialFrequencySupport = normalizedSpatialFrequencyGrid(positiveSFindices, N/2+1) * sfMaxCPD;
 end
 
-function plotStimulusAndSpectrum(stimulusImage, spatialSupportDegs, spectrum, spatialFrequencySupport)
-    hFig = figure(1); clf;
-    set(hFig, 'Position', [500 500 900 400], 'Color', [1 1 1]);
-    
-    subplot(1,2,1);
-    spatialSupportArcMin = spatialSupportDegs*60;
-    imagesc(spatialSupportArcMin, spatialSupportArcMin,  stimulusImage.^0.5);
-    set(gca, 'CLim', [0 1], 'FontSize', 14);
-    xlabel('space (arc min)');
-    ylabel('space (arc min)');
-    axis 'image';
-    colormap(gray);
+function [gratingImage, gaussianEnvelope] = generateGratingComponent(spatialSupportDegs, gratingParams)
 
-    subplot(1,2,2);
-    N = size(spectrum,1);
+    N = length(spatialSupportDegs);
+    [xx,yy] = meshgrid(spatialSupportDegs, spatialSupportDegs);
+    gratingParams.sfCPD
+    gratingImage = gratingParams.contrast * cos(2*pi*gratingParams.sfCPD*(xx*cosd(gratingParams.oriDegs) + yy*sind(gratingParams.oriDegs)));
+    gaussianEnvelope = exp(-0.5*((xx/(gratingParams.sigmaArcMin/60)).^2)) .* exp(-0.5*((yy/(gratingParams.sigmaArcMin/60)).^2));
+end
+
+
+function plotStimulusAndSpectrum(stimulusImage, spatialSupportDegs, spectrum, spatialFrequencySupport, figNo)
+    hFig = figure(figNo); clf;
+    set(hFig, 'Position', [200 100+(figNo-1)*600 1500 600], 'Color', [1 1 1]);
+    colormap(gray(1024));
+    
+    instancesNum = size(spectrum,1);
+    N = size(spectrum,2);
     positiveSFindices = (N/2+1):N;
-    % 0 deg slice
-    spectrumSlice1 = squeeze(spectrum(N/2+1,positiveSFindices));
-    % 45 deg slice
-    diagonalSlice = diag(spectrum);
     diagonalFrequencySupport = sqrt(spatialFrequencySupport.^2+spatialFrequencySupport.^2);
-    spectrumSlice2 = squeeze(diagonalSlice(positiveSFindices));
+    spatialSupportArcMin = spatialSupportDegs*60;
+    
+    visualizedInstancesNum = 5;
+    for instanceNo = 1:visualizedInstancesNum
+        subplot(2,visualizedInstancesNum+1,instanceNo);
+        
+        imagesc(spatialSupportArcMin, spatialSupportArcMin,  (squeeze(stimulusImage(instanceNo,:,:))).^0.5);
+        axis 'image';
+        set(gca, 'CLim', [0 1], 'FontSize', 14, 'XLim', 60*[-1 1], 'YLim', 60*[-1 1]);
+        xlabel('space (arc min)');
+        if (instanceNo == 1)
+            ylabel('space (arc min)');
+        end
+        title(sprintf('instance %2.0f', instanceNo));
+        
+        subplot(2,visualizedInstancesNum+1,instanceNo+visualizedInstancesNum+1);
+        % 0 deg slice
+        spectrumSlice1 = squeeze(spectrum(instanceNo,N/2+1,positiveSFindices));
+        % 45 deg slice
+        diagonalSlice = diag(squeeze(spectrum(instanceNo,:,:)));
+        spectrumSlice2 = squeeze(diagonalSlice(positiveSFindices));
+        % 90 deg slice
+        spectrumSlice3 = squeeze(spectrum(instanceNo,positiveSFindices,N/2+1));
+        plot(spatialFrequencySupport, 10*log10(spectrumSlice1), 'k-', 'LineWidth', 1.5); hold on
+        plot(diagonalFrequencySupport, 10*log10(spectrumSlice2), 'b-', 'LineWidth', 1.5);
+        plot(spatialFrequencySupport, 10*log10(spectrumSlice3), 'r-', 'LineWidth', 1.5);
+        hl = legend({'0', '45', '90'});
+        set(gca, 'XScale', 'log', 'XLim', [0.5 60], 'YLim', [0 40]);
+        xlabel('spacial frequency (c/deg)');
+        if (instanceNo == 1)
+            ylabel('power (dB)');
+        end
+        grid on
+        set(gca, 'XTick', [0.5 1 2 3 5  10 20 50  100], 'FontSize', 14);
+        drawnow
+    end
+    
+    spectrum = squeeze(mean(spectrum,1));
+    % 0 deg slice
+    spectrumSlice1Mean = squeeze(spectrum(N/2+1,positiveSFindices));
+    % 45 deg slice
+    diagonalSlice = diag(squeeze(spectrum(:,:)));
+    spectrumSlice2Mean = squeeze(diagonalSlice(positiveSFindices));
     % 90 deg slice
-    spectrumSlice3 = squeeze(spectrum(positiveSFindices,N/2+1));
-    plot(spatialFrequencySupport, 10*log10(spectrumSlice1), 'r-', 'LineWidth', 1.5); hold on
-    plot(diagonalFrequencySupport, 10*log10(spectrumSlice2), 'b-', 'LineWidth', 1.5);
-    plot(spatialFrequencySupport, 10*log10(spectrumSlice3), 'm-', 'LineWidth', 1.5);
+    spectrumSlice3Mean = squeeze(spectrum(positiveSFindices,N/2+1));
+        
+    subplot(2,visualizedInstancesNum+1,visualizedInstancesNum*2+2);
+    % Mean spectra across instances
+    plot(spatialFrequencySupport, 10*log10(spectrumSlice1Mean), 'k-', 'LineWidth', 1.5); hold on
+    plot(diagonalFrequencySupport, 10*log10(spectrumSlice2Mean), 'b-', 'LineWidth', 1.5);
+    plot(spatialFrequencySupport, 10*log10(spectrumSlice3Mean), 'r-', 'LineWidth', 1.5);
     hl = legend({'0', '45', '90'});
-    set(gca, 'XScale', 'log', 'XLim', [0.5 100], 'YLim', [0 40]);
-    axis 'square';
+    set(gca, 'XScale', 'log', 'XLim', [0.5 60], 'YLim', [0 40]);
     xlabel('spacial frequency (c/deg)');
-    ylabel('power (dB)');
+    if (instanceNo == 1)
+        ylabel('power (dB)');
+    end
     grid on
-    set(gca, 'XTick', [0.7 1 2 3 5 7 10 20 30 50 70 100], 'FontSize', 14);
+    title('mean spectra');
+    set(gca, 'XTick', [0.5 1 2 3 5 10 20 50  100], 'FontSize', 14);
+    drawnow
 end
 
 function [emPosArcMin, timeAxis] = generateFEM()
@@ -154,7 +301,7 @@ function plotFEM(emPosArcMin, timeAxis)
     yPosArcMin = yPosArcMin - mean(yPosArcMin);
     posRange = max(abs(emPosArcMin(:)))*[-1 1];
     
-    hFig = figure(2); clf;
+    hFig = figure(1000); clf;
     set(hFig, 'Position', [10 10 900 400], 'Color', [1 1 1]);
     subplot(1,2,1);
     plot(timeAxis*1000, xPosArcMin, 'r-', 'LineWidth', 1.5); hold on
