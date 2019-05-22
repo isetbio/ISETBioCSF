@@ -9,8 +9,8 @@ function demonstratePhotocurrentModel
     
     doImpulseResponseAnalysis = ~true;
     doOnOffAsymmetryAnalysis = ~true;
-    doSignalToNoiseAnalysis = true;
-    doStepResponseAnalysis = ~true;                     % used to illustrate the different model components
+    doSignalToNoiseAnalysis = ~true;
+    doStepResponseAnalysis = true;                     % used to illustrate the different model components for methods figure
     doBipolarStepResponseAnalysis = ~true;
     
     figNo = 0;
@@ -169,7 +169,7 @@ function figNo = demoStepResponses(eccentricity, simulationTimeStepSeconds, adap
     photonCountDuringImpulse = adaptationPhotonRates*stepDurationSeconds*pulseWeberContrast;
     
     %false to visualize the internal model components
-    useDefaultPhotocurrentImplementation = true;
+    useDefaultPhotocurrentImplementation = ~true;
     
     % Compute the impulse response at different adaptation levels
     [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpectra, modelResponses, legends] = ...

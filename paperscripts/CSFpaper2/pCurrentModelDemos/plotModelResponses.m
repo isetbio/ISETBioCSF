@@ -59,7 +59,10 @@ function plotModelResponses(modelResponses, legends, figNo)
         else
             hFig = figure(); clf;
             figNo = figNo + 1;
-            set(hFig, 'Color', [1 1 1], 'Position', panelFigurePosition);
+            figPos = panelFigurePosition;
+            figPos(3) = 260;
+            figPos(4) = 220;
+            set(hFig, 'Color', [1 1 1], 'Position', figPos);
         end
         
         yLims = [max([0 (floor(min(model.pRate)/1000)-1)*1000]) ceil(max(model.pRate)/1000+1)*1000];
@@ -79,13 +82,12 @@ function plotModelResponses(modelResponses, legends, figNo)
         else
             deltaT = 20;
         end
-        yRange
-        deltaT
+
         yTicks = 0:deltaT:100000;
         yTickLabels = sprintf('%4.0f\n',yTicks);
         
         plotTemporalResponse(model.timeAxis, model.pRate, 'r', ...
-            sprintf('photon rate\n(photons/cone/sec)'), 'line', false, labelYaxis, ...
+            sprintf('excitation rate\n(photons/cone/sec)'), 'line', true, labelYaxis, ...
             yLims, yTicks, yTickLabels);
         %title(legends{iModel}, 'FontSize', 12);
         if (isempty(figNo))
@@ -252,8 +254,8 @@ function plotModelResponses(modelResponses, legends, figNo)
         yLims = [floor(min(model.membraneCurrent(:))/deltaTick)*deltaTick ceil(max(model.membraneCurrent(:))/deltaTick)*deltaTick];
         yLims = [floor(min(model.noisyMembraneCurrents(:))/deltaTick)*deltaTick ceil(max(model.noisyMembraneCurrents(:))/deltaTick)*deltaTick];
         
-        plotTemporalResponse(model.timeAxis, model.membraneCurrent, 'r', sprintf('photocurrent (pA)'), 'line', true, labelYaxis, ...
-            yLims, yTicks, yTickLabels);
+        plotTemporalResponse(model.timeAxis, model.membraneCurrent, 'r', sprintf('photocurrent (pA)'), 'line', false, labelYaxis, ...
+            yLims, yTicks, {});
         if (isempty(figNo))
             NicePlot.exportFigToPDF('pCurrent_response.pdf', hFig, 300);
         end
@@ -267,7 +269,10 @@ function plotModelResponses(modelResponses, legends, figNo)
             else
                 hFig = figure(); clf;
                 figNo = figNo + 1;
-                set(hFig, 'Color', [1 1 1], 'Position', panelFigurePosition);
+                figPos = panelFigurePosition;
+                figPos(3) = 240;
+                figPos(4) = 220;
+                set(hFig, 'Color', [1 1 1], 'Position', figPos);
             end
             plotTemporalResponse(model.timeAxis, squeeze(model.noisyMembraneCurrents), 'r', sprintf('photocurrent\n(pAmps)'), 'line', true, labelYaxis, ...
                 yLims, yTicks, yTickLabels);

@@ -53,7 +53,7 @@ function [timeAxis, impulseResponses, temporalFrequencyAxis, impulseResponseSpec
     % Initialize
     modelResponses = cell(1,numel(adaptationPhotonRates));
     legends = cell(1, numel(adaptationPhotonRates));
-    noisyInstancesNum = 0;
+    noisyInstancesNum = 1;
     
     
     % Run model for the different adaptation levels
