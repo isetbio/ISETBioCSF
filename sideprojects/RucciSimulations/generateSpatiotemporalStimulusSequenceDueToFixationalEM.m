@@ -1,4 +1,4 @@
-function stimulusSequence = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, stimulus)
+function stimulusSequence = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, stimulus, figNo)
     instancesNum = size(emPosArcMin,1);
     timeBins = size(emPosArcMin,2);
     extraBins = 0;  % zero padding in time domain
@@ -112,18 +112,18 @@ function stimulusSequence = generateSpatiotemporalStimulusSequenceDueToFixationa
     tfMaxHz = 1/(2*(timeAxis(2)-timeAxis(1)));
     tfSupport = ((-N):(N-1))*tfMaxHz*1/N;
     
-    hFig = figure(222); clf;
+    hFig = figure(figNo); clf;
     set(hFig, 'Position', [10 10 1100 320]);
     
     sfLims = [0 15];
-    tfLims = [-80 80];
-    logScaling = ~true;
+    tfLims = [-30 30];
+    logScaling = true;
     
     if (logScaling)
         powerSpectralDensityXT = 10*log10(powerSpectralDensityXT);
         powerSpectralDensityYT = 10*log10(powerSpectralDensityYT);
         powerSpectralDensityXY = 10*log10(powerSpectralDensityXY);
-        cLims = [0 60];
+        cLims = [-30 0] + max([max(powerSpectralDensityXT) max(powerSpectralDensityYT) max(powerSpectralDensityXY)]);
     else
         cLims = [0 max(powerSpectralDensity(:))];
     end
@@ -139,7 +139,7 @@ function stimulusSequence = generateSpatiotemporalStimulusSequenceDueToFixationa
     xlabel('temporal frequency (Hz)');
     ylabel('spatial frequency, X (c/deg)');
     set(gca, 'XLim', tfLims, 'YLim', sfLims ,  'FontSize', 14);
-    %set(gca, 'CLim', cLims);
+    set(gca, 'CLim', cLims);
     
     subplot(1,3,2);
     imagesc(tfSupport, spatialFrequencySupport, powerSpectralDensityYT'); hold on;
@@ -151,7 +151,7 @@ function stimulusSequence = generateSpatiotemporalStimulusSequenceDueToFixationa
     xlabel('temporal frequency (Hz)');
     ylabel('spatial frequency, Y (c/deg)');
     set(gca, 'XLim', tfLims, 'YLim', sfLims , 'FontSize', 14);
-    %set(gca, 'CLim', cLims);
+    set(gca, 'CLim', cLims);
     
     subplot(1,3,3);
     imagesc(spatialFrequencySupport, spatialFrequencySupport, powerSpectralDensityXY);
@@ -164,11 +164,10 @@ function stimulusSequence = generateSpatiotemporalStimulusSequenceDueToFixationa
     xlabel('spatial frequency, X (c/deg)');
     ylabel('spatial frequency, Y (c/deg)');
     set(gca, 'XLim', sfLims(2)*[-1 1], 'YLim', sfLims, 'FontSize', 14);
-    %set(gca, 'CLim', cLims);
+    set(gca, 'CLim', cLims);
     
     colormap(hot)
     drawnow;
-    pause
     
 end
 

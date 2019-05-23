@@ -10,11 +10,11 @@ function simulatePowerSpectrumChangeDueToDrift
     % Stimulus spatial params
     coneApertureMicrons = 2; micronsPerDegree = 300;
     stimulusPixelSizeArcMin = 1*coneApertureMicrons / micronsPerDegree * 60;
-    stimulusWidthArcMin = 150;
+    stimulusWidthArcMin = 200;
     
     % Grating params
     gratingParams.oriDegs = 90;
-    gratingParams.sigmaArcMin = 12;
+    gratingParams.sigmaArcMin = 20;
     gratingParams.contrast = 1;
     gratingParams.sfCPD = [];
     
@@ -44,27 +44,28 @@ function simulatePowerSpectrumChangeDueToDrift
     
     
     % Noise params for noise only stimulus
-    gratingParams.contrast = 0.0;
-    noiseParams.spectrumShape = '1overF';
+    %gratingParams.contrast = 0.0;
+    %noiseParams.spectrumShape = '1overF';
     
     % Generate stimulus
-    figNo = 3;
-    noiseOnlyStimulus = generateStimulusImage(stimulusWidthArcMin, stimulusPixelSizeArcMin,  gratingParams, noiseParams, nTrials, figNo);
+    %figNo = 3;
+    %noiseOnlyStimulus = generateStimulusImage(stimulusWidthArcMin, stimulusPixelSizeArcMin,  gratingParams, noiseParams, nTrials, figNo);
     
  
     % Noise params for grating only stimulus
-    gratingParams.contrast = 1.0;
-    noiseParams.spectrumShape = 'none';
+    %gratingParams.contrast = 1.0;
+    %noiseParams.spectrumShape = 'none';
     
     % Generate stimulus
-    figNo = 4;
-    gratingOnlyStimulus = generateStimulusImage(stimulusWidthArcMin, stimulusPixelSizeArcMin,  gratingParams, noiseParams, nTrials, figNo);
+    %figNo = 4;
+    %gratingOnlyStimulus = generateStimulusImage(stimulusWidthArcMin, stimulusPixelSizeArcMin,  gratingParams, noiseParams, nTrials, figNo);
     
 
     
-    %gratingStimulusSequence = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin*0, gratingOnlyStimulus);
-    highFrequencyStimulusSequence = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin*0, highFrequencyStimulus);
-    %lowFrequencyStimulusSequence = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, lowFrequencyStimulus);
+    
+    generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, highFrequencyStimulus, 100);
+    generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin*0, highFrequencyStimulus, 200);
+    
     
 end
 
