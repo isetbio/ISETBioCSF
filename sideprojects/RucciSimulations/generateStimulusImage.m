@@ -11,6 +11,12 @@ function stimulus = generateStimulusImage(stimSizeArcMin, pixelSizeArcMin,  grat
     xAxis = xAxis - mean(xAxis);
     spatialSupportDegs = xAxis / 60;
     
+    % Generate spatial frequency support
+    positiveSFindices = (N/2+1):N;
+    spacingDegs = pixelSizeArcMin/60;
+    sfMaxCPD = 1/(2*spacingDegs);
+    spatialFrequencySupport = (0:(numel(positiveSFindices)-1))/(numel(positiveSFindices)-1) * sfMaxCPD;
+        
     % Generate grating component
     [gratingComponent,gaussianEnvelope] = generateGratingComponent(spatialSupportDegs, gratingParams);
     
@@ -20,12 +26,12 @@ function stimulus = generateStimulusImage(stimSizeArcMin, pixelSizeArcMin,  grat
         gratingImagePower = computeImageTotalPower(gratingComponent);
     end
     
-    % Generate noise component
+    % Generate as many noise components as there are instances
     for instanceNo = 1:instancesNum
         noiseComponent = generateNoiseComponent(spatialSupportDegs, noiseParams);
  
+        % Compute total noise power
         if (computePower)
-            % Compute power
             noiseImagePower(instanceNo) = computeImageTotalPower(noiseComponent);
         end
         
@@ -33,17 +39,10 @@ function stimulus = generateStimulusImage(stimSizeArcMin, pixelSizeArcMin,  grat
         stimulus = gaussianEnvelope .* (noiseComponent + gratingComponent);
     
         % Normalize to [-1 1]
-        stimulusNorm = stimulus / max(abs(stimulus(:)));
-    
-        % Scale to [0 .. 1]
-        stimulusImage(instanceNo,:,:) = stimulusNorm; % 0.5*(1+stimulusNorm);
+        stimulusImage(instanceNo,:,:) = stimulus / max(abs(stimulus(:)));
     
         % Compute stimulus spectrum and spatialFrequencySupport
         spectrum(instanceNo,:,:) = fftshift(abs(fft2(squeeze(stimulusImage(instanceNo,:,:)))));
-        positiveSFindices = (N/2+1):N;
-        spacingDegs = pixelSizeArcMin/60;
-        sfMaxCPD = 1/(2*spacingDegs);
-        spatialFrequencySupport = (0:(numel(positiveSFindices)-1))/(numel(positiveSFindices)-1) * sfMaxCPD;
     end
     
     if (computePower)
@@ -149,7 +148,6 @@ function noiseImagePowerDB = computeImageTotalPower(img)
 end
 
 function [gratingImage, gaussianEnvelope] = generateGratingComponent(spatialSupportDegs, gratingParams)
-
     N = length(spatialSupportDegs);
     [xx,yy] = meshgrid(spatialSupportDegs, spatialSupportDegs);
     gratingImage = gratingParams.contrast * cos(2*pi*gratingParams.sfCPD*(xx*cosd(gratingParams.oriDegs) + yy*sind(gratingParams.oriDegs)));
@@ -167,20 +165,23 @@ function plotStimulusAndSpectrum(stimulus, figNo)
     spatialSupportArcMin = stimulus.spatialSupportDegs*60;
     
     visualizedInstancesNum = min([5 size(stimulus.image,1)]);
+    xRange = max(spatialSupportArcMin(:))*[-1 1];
     for instanceNo = 1:visualizedInstancesNum
-        subplot(2,visualizedInstancesNum+1,instanceNo);
         
+        % Plot the stimulus
+        subplot(2,visualizedInstancesNum+1,instanceNo);
         % exponent of 0.5 to gamma correct
         imagesc(spatialSupportArcMin, spatialSupportArcMin,  (0.5*(1+squeeze(stimulus.image(instanceNo,:,:)))).^0.5);
         
         axis 'image';
-        set(gca, 'CLim', [0 1], 'FontSize', 14, 'XLim', 60*[-1 1], 'YLim', 60*[-1 1]);
+        set(gca, 'CLim', [0 1], 'FontSize', 14, 'XLim', xRange, 'YLim', xRange);
         xlabel('space (arc min)');
         if (instanceNo == 1)
             ylabel('space (arc min)');
         end
         title(sprintf('instance %2.0f', instanceNo));
         
+        % Plot slices (different orientations) through the 2D stimulus spectrum
         subplot(2,visualizedInstancesNum+1,instanceNo+visualizedInstancesNum+1);
         % 0 deg slice
         spectrumSlice1 = squeeze(stimulus.spectrum(instanceNo,N/2+1,positiveSFindices));
@@ -194,7 +195,7 @@ function plotStimulusAndSpectrum(stimulus, figNo)
         plot(stimulus.spatialFrequencySupport, 10*log10(spectrumSlice3), 'r-', 'LineWidth', 1.5);
         hl = legend({'0', '45', '90'});
         set(gca, 'XScale', 'log', 'XLim', [0.5 60], 'YLim', [0 40]);
-        xlabel('spacial frequency (c/deg)');
+        xlabel('spatial frequency (c/deg)');
         if (instanceNo == 1)
             ylabel('power (dB)');
         end
@@ -203,13 +204,14 @@ function plotStimulusAndSpectrum(stimulus, figNo)
         drawnow
     end
     
+    % Compute the mean spectrum over all instances
     stimulus.spectrum = squeeze(mean(stimulus.spectrum,1));
-    % 0 deg slice
+    % 0 deg slice through the mean spectrum
     spectrumSlice1Mean = squeeze(stimulus.spectrum(N/2+1,positiveSFindices));
-    % 45 deg slice
+    % 45 deg slice through the mean spectrum
     diagonalSlice = diag(squeeze(stimulus.spectrum(:,:)));
     spectrumSlice2Mean = squeeze(diagonalSlice(positiveSFindices));
-    % 90 deg slice
+    % 90 deg slice through the mean spectrum
     spectrumSlice3Mean = squeeze(stimulus.spectrum(positiveSFindices,N/2+1));
         
     subplot(2,visualizedInstancesNum+1,visualizedInstancesNum*2+2);
@@ -219,7 +221,7 @@ function plotStimulusAndSpectrum(stimulus, figNo)
     plot(stimulus.spatialFrequencySupport, 10*log10(spectrumSlice3Mean), 'r-', 'LineWidth', 1.5);
     hl = legend({'0', '45', '90'});
     set(gca, 'XScale', 'log', 'XLim', [0.5 60], 'YLim', [0 40]);
-    xlabel('spacial frequency (c/deg)');
+    xlabel('spatial frequency (c/deg)');
     if (instanceNo == 1)
         ylabel('power (dB)');
     end

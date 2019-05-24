@@ -1,7 +1,7 @@
 function simulatePowerSpectrumChangeDueToDrift
 
     % Experiment params
-    nTrials = 10;
+    nTrials = 8;
     emDurationSeconds = 0.2;
     
     % Generate fixational eye movmeents
@@ -14,7 +14,7 @@ function simulatePowerSpectrumChangeDueToDrift
     
     % Grating params
     gratingParams.oriDegs = 90;
-    gratingParams.sigmaArcMin = 20;
+    gratingParams.sigmaArcMin = 30;
     gratingParams.contrast = 1;
     gratingParams.sfCPD = [];
     
@@ -60,11 +60,13 @@ function simulatePowerSpectrumChangeDueToDrift
     %figNo = 4;
     %gratingOnlyStimulus = generateStimulusImage(stimulusWidthArcMin, stimulusPixelSizeArcMin,  gratingParams, noiseParams, nTrials, figNo);
     
-
-    
     
     generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, highFrequencyStimulus, 100);
     generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin*0, highFrequencyStimulus, 200);
+    
+    generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, lowFrequencyStimulus, 300);
+    generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin*0, lowFrequencyStimulus, 400);
+    
     
     
 end
