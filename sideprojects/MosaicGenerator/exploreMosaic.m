@@ -3,39 +3,38 @@ function exploreMosaic
     [rootPath0,~] = fileparts(which(mfilename));
     rootPath = strrep(rootPath0, 'sideprojects/MosaicGenerator', 'FVM2018Scripts/resources');
     
-    mosaicFOV = 10;
-    posTolerance = 1.5;
-    mosaicFileName = sprintf('ConeMosaic_%2.1fDegs_PosTolerance%2.2f.mat', mosaicFOV,posTolerance);
-    load(mosaicFileName);
-    
+    mosaicFOV = 20;
+    mosaicFileName = sprintf('ConeMosaic_%2.1fDegs.mat', mosaicFOV);
+    %load(mosaicFileName, 'theConeMosaic');
+    load('/Volumes/SamsungT3/MATLAB/projects/ISETBioLiveScript/toolbox/resources/ConeMosaic20Degs.mat');
+    pause
     
     roiRect = struct(...
-        'xo', -0.3, 'yo', 0.3, ...
-        'width', 1.0, 'height', 0.6);
+        'xo', 6, 'yo',.0, ...
+        'width', 3.0, 'height', 2.0);
     
     roiRect2 = struct(...
-        'xo', 1.5, 'yo', -0.3, ...
-        'width', 1.0, 'height', 1.0);
+        'xo', -1.5, 'yo', -1.0, ...
+        'width', 2.0, 'height', 3.0);
     
     theDisplay = generateTheDisplay();
     theScene = generateTheScene(rootPath,theDisplay, mosaicFOV*1.5);
     theOI = generateTheOpticalImage(theScene);
     theOI = oiCompute(theOI, theScene);
+    save('OpticalImage20Degs.mat', 'theOI');
+    pause
     
-
     hFig = figure(2); clf;
-    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1693 1344]);
-    subplot(4,3,1);
-    visualizeScene(theScene, mosaicFOV, roiRect);
-    
-    subplot(4,3,2)
+    set(hFig, 'Color', [1 1 1], 'Position', [10 10 1620 840]);
+    subplot(2,5,3);
     visualizeOI(theOI, mosaicFOV, roiRect);
 
-    ax = subplot(4,3,3);
+    ax = subplot(2,5,[1 2 6 7]);
     theMosaic.visualizeGrid('axesHandle', ax, ...
         'apertureShape', 'disks', ...
         'visualizedConeAperture', 'geometricArea', ...
         'ticksInVisualDegs', true, ...
+        'tickInc', 5.0, ...
         'backgroundColor', [1 1 1]);
     drawnow;
     
@@ -44,23 +43,27 @@ function exploreMosaic
     
     % Compute isomerizations
     theIsomerizations =  theMosaic.compute(theOI, 'currentFlag',false);
-    maxIsometizations1 = max(theIsomerizations(:))
+    maxIsometizations1 = max(theIsomerizations(:));
     
-    ax = subplot(4,3,4);
+    ax = subplot(2,5,4);
     theMosaic.visualizeGrid('axesHandle', ax, ...
         'apertureShape', 'disks', ...
         'visualizedConeAperture', 'geometricArea', ...
         'visualizedFOV', roiRect, ...
+        'tickInc', 1.0, ...
         'ticksInVisualDegs', true, ...
         'backgroundColor', [1 1 1]);
     
-    ax = subplot(4,3,5);
+    ax = subplot(2,5,5);
     theMosaic.renderActivationMap(ax, theIsomerizations, ...
         'mapType', 'modulated disks', ...
         'visualizedConeAperture', 'geometricArea', ...
         'visualizedFOV', roiRect, ...
+        'tickInc', 1.0, ...
         'colorMap', gray(1024), ...
         'backgroundColor', [0 0 0]);
+    set(gca, 'XTickLabel', {}, 'YTickLabel', {});
+    ylabel('');
     
     % Reload mosaic
     load(mosaicFileName);
@@ -69,32 +72,34 @@ function exploreMosaic
     theMosaic.clipWithRect(roiRect2);
     
     
-    subplot(4,3,7);
-    visualizeScene(theScene, mosaicFOV, roiRect2);
+   % visualizeScene(theScene, mosaicFOV, roiRect2);
     
-    subplot(4,3,8)
+    subplot(2,5,8);
     visualizeOI(theOI, mosaicFOV, roiRect2);
 
     % Compute isomerizations
     theIsomerizations =  theMosaic.compute(theOI, 'currentFlag',false);
-    maxIsometizations2 = max(theIsomerizations(:))
+    maxIsometizations2 = max(theIsomerizations(:));
     
-    ax = subplot(4,3,10);
+    ax = subplot(2,5,9);
     theMosaic.visualizeGrid('axesHandle', ax, ...
         'apertureShape', 'disks', ...
         'visualizedConeAperture', 'geometricArea', ...
         'visualizedFOV', roiRect2, ...
+        'tickInc', 1.0, ...
         'ticksInVisualDegs', true, ...
         'backgroundColor', [1 1 1]);
     
-    ax = subplot(4,3,11);
+    ax = subplot(2,5,10);
     theMosaic.renderActivationMap(ax, theIsomerizations, ...
         'mapType', 'modulated disks', ...
         'visualizedConeAperture', 'geometricArea', ...
         'visualizedFOV', roiRect2, ...
+        'tickInc', 1.0, ...
         'colorMap', gray(1024), ...
         'backgroundColor', [0 0 0]);
-    
+    set(gca, 'XTickLabel', {}, 'YTickLabel', {});
+    ylabel('');
 end
 
 
@@ -122,6 +127,7 @@ function visualizeScene(theScene, mosaicFOV, roiRect)
     axis 'xy'
     axis 'image'
     set(gca, 'XLim', 0.5*max(mosaicFOV)*[-1 1], 'YLim', 0.5*max(mosaicFOV)*[-1 1]);
+    set(gca, 'XTick', -10:5:10, 'YTick', -10:5:10);
     set(gca, 'FontSize', 18);
     xlabel('space (degs)');
     ylabel('space (degs)');
@@ -146,6 +152,7 @@ function  visualizeOI(theOI, mosaicFOV, roiRect)
     axis 'xy'
     axis 'image'
     set(gca, 'XLim', 0.5*max(mosaicFOV)*[-1 1], 'YLim', 0.5*max(mosaicFOV)*[-1 1]);
+    set(gca, 'XTick', -10:5:10, 'YTick', -10:5:10);
     set(gca, 'FontSize', 18);
     xlabel('space (degs)');
     ylabel('space (degs)');
