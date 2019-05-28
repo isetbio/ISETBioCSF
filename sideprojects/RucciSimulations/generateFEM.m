@@ -30,7 +30,7 @@ function plotFEM(emPosArcMin, timeAxis)
     xPosArcMin = squeeze(emPosArcMin(trialNo,:,1));
     yPosArcMin = squeeze(emPosArcMin(trialNo,:,2));
     
-    maxPos = max(abs(emPosArcMin(:)));
+    maxPos = 20; % max(abs(emPosArcMin(:)));
     if (maxPos == 0)
         maxPos = 1;
     end

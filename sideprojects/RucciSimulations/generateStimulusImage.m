@@ -1,5 +1,5 @@
 % Generate noise with spectrum f^{alpha}
-function stimulus = generateStimulusImage(stimSizeArcMin, pixelSizeArcMin,  gratingParams, noiseParams, instancesNum, figNo)
+function [stimulus, noiseNorm] = generateStimulusImage(stimSizeArcMin, pixelSizeArcMin,  gratingParams, noiseParams, noiseNorm, instancesNum, figNo)
 
     N = round(stimSizeArcMin / pixelSizeArcMin);
     if (mod(N,2) == 1)
@@ -28,7 +28,7 @@ function stimulus = generateStimulusImage(stimSizeArcMin, pixelSizeArcMin,  grat
     
     % Generate as many noise components as there are instances
     for instanceNo = 1:instancesNum
-        noiseComponent = generateNoiseComponent(spatialSupportDegs, noiseParams);
+        [noiseComponent, noiseNorm] = generateNoiseComponent(spatialSupportDegs, noiseParams, noiseNorm);
  
         % Compute total noise power
         if (computePower)
@@ -60,12 +60,12 @@ function stimulus = generateStimulusImage(stimSizeArcMin, pixelSizeArcMin,  grat
     
 end
 
-function noiseImage = generateNoiseComponent(spatialSupportDegs, noiseParams)
+function [noiseImage, noiseNorm] = generateNoiseComponent(spatialSupportDegs, noiseParams, noiseNorm)
     N = length(spatialSupportDegs);
     
     % Determine max SF
     spacingDegs = spatialSupportDegs(2)-spatialSupportDegs(1);
-    sfMaxCPD = 1/(2*spacingDegs);
+    sfMaxCPD = 1/(spacingDegs);
     
     % Generate the grid of frequencies. First quadrant are positive frequencies.  
     % Zero frequency is at u(1,1).
@@ -78,7 +78,8 @@ function noiseImage = generateNoiseComponent(spatialSupportDegs, noiseParams)
     
     
     % Generate oneOverFspectrum 1/(f^alpha)
-    oneOverFspectrum = normalizedSpatialFrequencyGridFFTshift .^(-1.0);
+    alpha = 1;
+    oneOverFspectrum = 1 ./ (normalizedSpatialFrequencyGridFFTshift.^alpha);
     % Set any infinities to zero
     oneOverFspectrum(oneOverFspectrum==inf) = 0;
     oneOverFspectrum = oneOverFspectrum / max(oneOverFspectrum(:));
@@ -95,52 +96,85 @@ function noiseImage = generateNoiseComponent(spatialSupportDegs, noiseParams)
         case {'lowPassCornerFreq','highPassCornerFreq'}
             
             % generate low-pass or high-pass filter
-            xTerm = normalizedSpatialFrequencyGridFFTshift.^noiseParams.steepness;
-            x50Term = (noiseParams.cornerFrequencyCPD/sfMaxCPD)^noiseParams.steepness;
-            noiseSpectrumFilter = xTerm ./ (xTerm + x50Term);
-             
+            a = (normalizedSpatialFrequencyGridFFTshift).^noiseParams.steepness;
+            b = (noiseParams.cornerFrequencyCPD/sfMaxCPD)^noiseParams.steepness;
+            frequencyFilter = a ./ (a + b);
+            
             if (strcmp(noiseParams.spectrumShape,'lowPassCornerFreq'))
-                noiseSpectrumFilter = 1-noiseSpectrumFilter;
+                frequencyFilter = 1-frequencyFilter;
             end
             
             % Apply filter to 1/F noise
-            noiseSpectrum = oneOverFspectrum .* noiseSpectrumFilter;
+            noiseSpectrum = oneOverFspectrum .* frequencyFilter;
     end
     
+    % Generate a grid of random phases
+    phaseComponent = 2*pi*rand(size(noiseSpectrum));
 
-    % Generate a grid of random phase shifts
-    phi = rand(N);
-
+    % Generate full FFT
+    noiseFFT = noiseSpectrum .* (cos(phaseComponent)+1i*sin(phaseComponent));
+    
     % Inverse Fourier transform to obtain the the spatial pattern
-    noiseImage = ifft2(noiseSpectrum .* (cos(2*pi*phi)+1i*sin(2*pi*phi)));
+    noiseImage = ifft2(noiseFFT);
 
     % Pick the real component
     noiseImage = real(noiseImage);
-    noiseImage = noiseImage / max(abs(noiseImage(:)));
+    if (isnan(noiseNorm))
+        noiseNorm = sum(sum(noiseImage.^2));
+    end
+    noiseImage = noiseImage / noiseNorm;
     
     if (strcmp(noiseParams.spectrumShape,'none'))
         noiseImage = zeros(size(noiseImage));
     end
      
+    % Plot the noise spectrum for debug purposes
     plotNoiseSpectrum = false;
     if (plotNoiseSpectrum)
-        figure(222);
-        clf;
-        subplot(2,1,1);
+        figure(223); clf;
+        maxSFdisplayed = 20;
         sfXX = fftshift(sfX);
-        spatialFrequencySupportCPD = sfXX(2:end-1,1) * sfMaxCPD;
-        imagesc(spatialFrequencySupportCPD, spatialFrequencySupportCPD, log10(fftshift(noiseSpectrum/max(abs(noiseSpectrum(:))))));
-        axis 'image'
-        set(gca, 'XLim', 20*[-1 1], 'YLim',20*[-1 1]);
+        spatialFrequencySupportCPD = sfXX(2:end,1) * sfMaxCPD;
 
-        subplot(2,1,2);
-        spatialFrequencySupportCPD = sfX(1:N/2,1) * sfMaxCPD;
-        plot(spatialFrequencySupportCPD, log10(noiseSpectrum(1:N/2,1)), 'k-');
-        set(gca, 'XLim', 20*[-1 1]);
+        subplot(2,3,1);
+        m = fftshift(oneOverFspectrum);
+        imagesc(spatialFrequencySupportCPD, spatialFrequencySupportCPD, m);
+        axis 'image';
+        set(gca, 'XLim', maxSFdisplayed*[-1 1], 'YLim', maxSFdisplayed*[-1 1]);
+        title('1/F spectrum');
+        subplot(2,3,4);
+        plot(spatialFrequencySupportCPD, m(size(m,1)/2+1,2:end), 'rs-')
+        set(gca, 'YScale', 'log', 'YLim', 10.^[-3 0], 'XLim', maxSFdisplayed*[-1 1]);
+
+        subplot(2,3,2);
+        m = fftshift(frequencyFilter);
+        imagesc(spatialFrequencySupportCPD, spatialFrequencySupportCPD, m);
+        axis 'image';
+        set(gca, 'XLim', maxSFdisplayed*[-1 1], 'YLim', maxSFdisplayed*[-1 1]);
+
+        title('frequency filter');
+        subplot(2,3,5);
+        plot(spatialFrequencySupportCPD, m(size(m,1)/2+1,2:end), 'rs-')
+        set(gca, 'YScale', 'log', 'YLim', 10.^[-3 0], 'XLim', maxSFdisplayed*[-1 1]);
+
+        subplot(2,3,3);
+        m = fftshift(noiseSpectrum);
+        imagesc(spatialFrequencySupportCPD, spatialFrequencySupportCPD, m);
+        axis 'image';
+        set(gca, 'XLim', maxSFdisplayed*[-1 1], 'YLim', maxSFdisplayed*[-1 1]);
+
+        title('noise spectrum');
+        subplot(2,3,6);
+        plot(spatialFrequencySupportCPD, m(size(m,1)/2+1,2:end), 'rs-');
+        hold on;
+        m2 = abs(fftshift(fft2(noiseImage)));
+        m2 = m2 / max(m2(:)) * max(m(:));
+        plot(spatialFrequencySupportCPD, m2(size(m,1)/2+1,2:end), 'bs-');
+        set(gca, 'YScale', 'log', 'YLim', 10.^[-3 0], 'XLim', maxSFdisplayed*[-1 1]);
         colormap(gray);
-        axis 'square';
+        pause
     end
-    
+
 end
 
 function noiseImagePowerDB = computeImageTotalPower(img)
@@ -194,7 +228,7 @@ function plotStimulusAndSpectrum(stimulus, figNo)
         plot(diagonalFrequencySupport, 10*log10(spectrumSlice2), 'b-', 'LineWidth', 1.5);
         plot(stimulus.spatialFrequencySupport, 10*log10(spectrumSlice3), 'r-', 'LineWidth', 1.5);
         hl = legend({'0', '45', '90'});
-        set(gca, 'XScale', 'log', 'XLim', [0.5 60], 'YLim', [0 40]);
+        set(gca, 'XScale', 'log', 'XLim', [0.5 100], 'YLim', [0 40]);
         xlabel('spatial frequency (c/deg)');
         if (instanceNo == 1)
             ylabel('power (dB)');
