@@ -53,10 +53,10 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
                 nRows = size(stimulus.image,2);
                 mCols = size(stimulus.image,3);
         
-                spatialWindowOverlapFactor = 0.75;
-                temporalWindowOverlapFactor = 0.75;
+                spatialWindowOverlapFactor = 0.9;
+                temporalWindowOverlapFactor = 0.85;
                 spatialWindowSamples = round(nRows*0.7);
-                temporalWindowSamples = round(totalTimeBins*0.7);
+                temporalWindowSamples = round(totalTimeBins*0.5);
 
                 powerSpectralDensity(instanceNo,:,:,:) = ...
                     welchSpectrum(XYTstim, spatialWindowSamples, temporalWindowSamples,  ...
