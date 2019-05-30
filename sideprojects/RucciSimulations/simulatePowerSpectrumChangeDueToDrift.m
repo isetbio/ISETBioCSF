@@ -23,11 +23,7 @@ function simulatePowerSpectrumChangeDueToDrift
     noiseParams.spectrumShape = '';
     noiseParams.cornerFrequencyCPD = [];
     noiseParams.steepness = 100;
-    
-    
-    
 
-    
     
     figNo = 1;
     noiseNorm = nan;

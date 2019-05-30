@@ -59,10 +59,8 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
                 timeSegmentsNum = 6;
                 temporalSamples = round(totalTimeBins/(timeSegmentsNum/2));
 
-                oris = 0:45:315;
-                
                 powerSpectralDensity(instanceNo,:,:,:) = ...
-                    welchSpectrum(XYTstim, timeSegmentsNum, temporalSamples, spatialSamples, oris, totalTimeBins, nRows, mCols, fftSize);
+                    welchSpectrum(XYTstim, timeSegmentsNum, temporalSamples, spatialSamples, totalTimeBins, nRows, mCols, fftSize);
                 
             otherwise
                 error('Unknown PSD method: ''%s''. ', PSDmethod);
@@ -83,28 +81,43 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
     sData.tfSupport = ((-N):(N-1))/N * tfMaxHz;
 end
 
-function powerSpectralDensity = welchSpectrum(XYTstim, timeSegmentsNum, temporalSamples, spatialSamples, oris, totalTimeBins, nRows, mCols, fftSize)
+function powerSpectralDensity = welchSpectrum(XYTstim, timeSegmentsNum, temporalSamples, spatialSamples, totalTimeBins, nRows, mCols, fftSize)
 
-    radius = spatialSamples/2;
+    spatialOffset = spatialSamples/4;
     nEstimates = 0;
+    b1 = [1,0];
+    b2 = [1, sqrt(3)]/2;
+    coords = [];
+    ss = spatialSamples/2;
+    
+    for n1 = -10:10
+        for n2 = -10:10
+            newCoords = round((n1*b1 + n2*b2)*spatialOffset + [nRows mCols]/2);
+            if ((newCoords(1) < 1+ss) || (newCoords(2) < 1+ss) || ...
+               (newCoords(1) > nRows-ss) || (newCoords(2) > mCols-ss))
+                continue;
+            else
+                coords = cat(1, coords, newCoords);
+            end
+        end
+    end
+
+    spatialSegmentsNum = size(coords,1);
+    
+    figure(99); clf; hold on;
+    plot(coords(:,1), coords(:,2), 'ko');
+    pause
     
     for timeSegment = 1:timeSegmentsNum
         temporalOffset = (timeSegment-1)*floor(temporalSamples/2);
             
-        for orientation = 1:(numel(oris)+1)
-            fprintf('Computing spectral estimate %d/%d,  %d/%d\n', timeSegment, timeSegmentsNum, orientation, (numel(oris)+1));
-            
-            if (orientation < numel(oris)+1)
-                spatialOffset(1) = (nRows-spatialSamples)/2 + round(cosd(oris(orientation))*radius*0.8);
-                spatialOffset(2) = (mCols-spatialSamples)/2 + round(sind(oris(orientation))*radius*0.8);
-            else
-                spatialOffset = [nRows-spatialSamples mCols-spatialSamples]/2;
-            end
+        for spatialSegment = 1:spatialSegmentsNum
+            fprintf('Computing spectral estimate %d/%d,  %d/%d\n', timeSegment, timeSegmentsNum, spatialSegment, spatialSegmentsNum);
             
             [xytWelchWindow, wTemporal2, wSpatial2] = ...
-                spatioTemporalWelchWindow(temporalSamples, spatialSamples, temporalOffset, spatialOffset, totalTimeBins, nRows, mCols);
+                spatioTemporalWelchWindow(temporalSamples, spatialSamples, temporalOffset, coords(spatialSegment,:), totalTimeBins, nRows, mCols);
             
-            if (orientation == 1)
+            if (spatialSegment == 1)
                 figure(444);
                 subplot(timeSegmentsNum,1,timeSegment);
                 plot(wTemporal2);
@@ -113,7 +126,8 @@ function powerSpectralDensity = welchSpectrum(XYTstim, timeSegmentsNum, temporal
             
             if (timeSegment == 1)
                 figure(445);
-                subplot(4,4,orientation);
+                nn = ceil(sqrt(spatialSegmentsNum));
+                subplot(nn,nn,spatialSegment);
                 imagesc(wSpatial2);
                 axis 'image';
                 drawnow
@@ -144,6 +158,7 @@ function [xytWindow, wTemporal2, wSpatial2] = ...
 %
     wSpatial = (welchWindow(spatialSamples))' * welchWindow(spatialSamples);
     wSpatial2 = zeros(nRows, mCols);
+    spatialOffset + spatialSamples
     wSpatial2(spatialOffset(1)+(1:size(wSpatial,1)), spatialOffset(2)+(1:size(wSpatial,2))) = wSpatial;
     xytWindow = zeros(tBins, nRows, mCols);
 %
