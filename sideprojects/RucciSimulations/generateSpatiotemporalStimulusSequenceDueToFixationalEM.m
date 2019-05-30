@@ -11,62 +11,11 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
 
     pixelSizeDegs = stimulus.spatialSupportDegs(2)-stimulus.spatialSupportDegs(1);
     
-    m = nextpow2([totalTimeBins size(stimulus.image,2), size(stimulus.image,3)]);
-    powerSpectralDensity = zeros(instancesNum, 2^m(1), 2^m(2), 2^m(3));
+    fftSize = 2.^(nextpow2([totalTimeBins size(stimulus.image,2), size(stimulus.image,3)]));
+    powerSpectralDensity = zeros(instancesNum, fftSize(1), fftSize(2), fftSize(3));
                 
     PSDmethod = 'FFT';
-    PSDmethod = 'windowedFFT';
-    
-    if (strcmp(PSDmethod, 'windowedFFT'))
-        
-        nRows = size(stimulus.image,2);
-        mCols = size(stimulus.image,3);
-        radius = floor(nRows/4);
-        wSpatial = (welchWindow(2*radius))' * welchWindow(2*radius);
-
-        
-        nn = size(wSpatial,1);
-        mm = size(wSpatial,2);
-        oris = 0:45:315;
-        timeSegmentsNum = 6;
-        wTemporal = welchWindow(round(totalTimeBins/(timeSegmentsNum/2)));
-        ll = numel(wTemporal);
-        nEstimates = (length(oris)+1)*timeSegmentsNum
-        xytWindow = zeros(nEstimates,totalTimeBins, size(stimulus.image,2), size(stimulus.image,3), 'single');
-        
-        % Overlapping spatiotemporal windowing for different spectral estimates
-        
-        k = 0;
-        for timeSegment = 1:timeSegmentsNum
-            wTemporal2 = zeros(1,totalTimeBins);
-            wTemporal2((timeSegment-1)*floor(ll/2) + (1:ll)) = wTemporal;
-            figure(444);
-            subplot(timeSegmentsNum,1,timeSegment);
-            plot(wTemporal2);
-            drawnow;
-            for orientation = 1:(numel(oris)+1)
-                if (orientation < numel(oris)+1)
-                    center(1) = nRows/2 + round(cosd(oris(orientation))*radius*0.8 - size(wSpatial,1)/2);
-                    center(2) = mCols/2 + round(sind(oris(orientation))*radius*0.8 - size(wSpatial,2)/2);
-                else
-                    center = [nRows mCols]/2 - size(wSpatial)/2;
-                end
-                wSpatial2 = zeros(nRows, mCols);
-                wSpatial2(center(1)+(1:size(wSpatial,1)), center(2)+(1:size(wSpatial,2))) = wSpatial;
-                size(wSpatial2)
-                figure(445);
-                subplot(4,4,orientation);
-                imagesc(wSpatial2);
-                axis 'image';
-                drawnow
-                k = k + 1;
-                for tBin = 1:totalTimeBins
-                    xytWindow(k,tBin,:,:) = single(wSpatial2 * wTemporal2(tBin));
-                end
-            end
-        end
-        
-    end
+    PSDmethod = 'windowedFFT';   
     
     for instanceNo = 1:instancesNum
         % emPath for this instance
@@ -98,19 +47,22 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
         switch PSDmethod
             case 'FFT'
                 powerSpectralDensity(instanceNo,:,:,:) = ...
-                    1/(nRows*mCols*timeBins) * (abs(fftshift(fftn(XYTstim,2.^m)))).^2; 
+                    1/prod(fftSize) * (abs(fftshift(fftn(XYTstim,fftSize)))).^2; 
                 
             case 'windowedFFT'
-                for k = 1:nEstimates
-                    XYTstimTemp = XYTstim .* squeeze(double(xytWindow(k,:,:,:)));
-                    if (k == 1)
-                        spectralEstimate = 1/(nRows*mCols*timeBins) * (abs(fftshift(fftn(XYTstimTemp,2.^m)))).^2;
-                    else
-                        spectralEstimate = spectralEstimate + ...
-                                        1/(nRows*mCols*timeBins) * (abs(fftshift(fftn(XYTstimTemp,2.^m)))).^2;
-                    end
-                end
-                powerSpectralDensity(instanceNo,:,:,:) = spectralEstimate/nEstimates;
+                nRows = size(stimulus.image,2);
+                mCols = size(stimulus.image,3);
+        
+                radius = floor(nRows/4);
+                spatialSamples = 2*radius;
+
+                timeSegmentsNum = 6;
+                temporalSamples = round(totalTimeBins/(timeSegmentsNum/2));
+
+                oris = 0:45:315;
+                
+                powerSpectralDensity(instanceNo,:,:,:) = ...
+                    welchSpectrum(XYTstim, timeSegmentsNum, temporalSamples, spatialSamples, oris, totalTimeBins, nRows, mCols, fftSize);
                 
             otherwise
                 error('Unknown PSD method: ''%s''. ', PSDmethod);
@@ -129,6 +81,75 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
     N = N/2;
     tfMaxHz = 1/(2*(timeAxis(2)-timeAxis(1)));
     sData.tfSupport = ((-N):(N-1))/N * tfMaxHz;
+end
+
+function powerSpectralDensity = welchSpectrum(XYTstim, timeSegmentsNum, temporalSamples, spatialSamples, oris, totalTimeBins, nRows, mCols, fftSize)
+
+    radius = spatialSamples/2;
+    nEstimates = 0;
+    
+    for timeSegment = 1:timeSegmentsNum
+        temporalOffset = (timeSegment-1)*floor(temporalSamples/2);
+            
+        for orientation = 1:(numel(oris)+1)
+            fprintf('Computing spectral estimate %d/%d,  %d/%d\n', timeSegment, timeSegmentsNum, orientation, (numel(oris)+1));
+            
+            if (orientation < numel(oris)+1)
+                spatialOffset(1) = (nRows-spatialSamples)/2 + round(cosd(oris(orientation))*radius*0.8);
+                spatialOffset(2) = (mCols-spatialSamples)/2 + round(sind(oris(orientation))*radius*0.8);
+            else
+                spatialOffset = [nRows-spatialSamples mCols-spatialSamples]/2;
+            end
+            
+            [xytWelchWindow, wTemporal2, wSpatial2] = ...
+                spatioTemporalWelchWindow(temporalSamples, spatialSamples, temporalOffset, spatialOffset, totalTimeBins, nRows, mCols);
+            
+            if (orientation == 1)
+                figure(444);
+                subplot(timeSegmentsNum,1,timeSegment);
+                plot(wTemporal2);
+                drawnow;
+            end
+            
+            if (timeSegment == 1)
+                figure(445);
+                subplot(4,4,orientation);
+                imagesc(wSpatial2);
+                axis 'image';
+                drawnow
+            end
+            
+            % FFT of windowed spatiotemporal response
+            thisSpectralEstimate = 1/prod(fftSize) * (abs(fftshift(fftn((XYTstim .* xytWelchWindow),fftSize)))).^2;
+            
+            nEstimates = nEstimates + 1;
+            if (nEstimates == 1)
+                spectralEstimate = thisSpectralEstimate;
+            else
+                spectralEstimate = spectralEstimate + thisSpectralEstimate;
+            end
+            
+        end % orientation
+    end % timeSegment
+        
+    powerSpectralDensity = spectralEstimate / nEstimates;
+end
+
+function [xytWindow, wTemporal2, wSpatial2] = ...
+    spatioTemporalWelchWindow(temporalSamples, spatialSamples, temporalOffset, spatialOffset, tBins, nRows, mCols)
+%
+    wTemporal = welchWindow(temporalSamples);
+    wTemporal2 = zeros(1,tBins);
+    wTemporal2(temporalOffset + (1:length(wTemporal))) = wTemporal;
+%
+    wSpatial = (welchWindow(spatialSamples))' * welchWindow(spatialSamples);
+    wSpatial2 = zeros(nRows, mCols);
+    wSpatial2(spatialOffset(1)+(1:size(wSpatial,1)), spatialOffset(2)+(1:size(wSpatial,2))) = wSpatial;
+    xytWindow = zeros(tBins, nRows, mCols);
+%
+    for tBin = 1:tBins
+        xytWindow(tBin,:,:) = wSpatial2 * wTemporal2(tBin);
+    end
 end
 
 function w = welchWindow(N)
