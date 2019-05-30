@@ -1,7 +1,7 @@
 function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, stimulus)
     instancesNum = size(emPosArcMin,1);
     timeBins = size(emPosArcMin,2);
-    extraBins = 10;  % bins for zero padding in time domain
+    extraBins = 30;  % bins for zero padding in time domain
     totalTimeBins = timeBins+extraBins*2;
     
     % Preallocate memory
@@ -53,14 +53,15 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
                 nRows = size(stimulus.image,2);
                 mCols = size(stimulus.image,3);
         
-                radius = floor(nRows/4);
-                spatialSamples = 2*radius;
-
-                timeSegmentsNum = 6;
-                temporalSamples = round(totalTimeBins/(timeSegmentsNum/2));
+                spatialWindowOverlapFactor = 0.75;
+                temporalWindowOverlapFactor = 0.75;
+                spatialWindowSamples = round(nRows*0.7);
+                temporalWindowSamples = round(totalTimeBins*0.7);
 
                 powerSpectralDensity(instanceNo,:,:,:) = ...
-                    welchSpectrum(XYTstim, timeSegmentsNum, temporalSamples, spatialSamples, totalTimeBins, nRows, mCols, fftSize);
+                    welchSpectrum(XYTstim, spatialWindowSamples, temporalWindowSamples,  ...
+                    spatialWindowOverlapFactor, temporalWindowOverlapFactor, ...
+                    totalTimeBins, nRows, mCols, fftSize);
                 
             otherwise
                 error('Unknown PSD method: ''%s''. ', PSDmethod);
@@ -81,54 +82,76 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
     sData.tfSupport = ((-N):(N-1))/N * tfMaxHz;
 end
 
-function powerSpectralDensity = welchSpectrum(XYTstim, timeSegmentsNum, temporalSamples, spatialSamples, totalTimeBins, nRows, mCols, fftSize)
+function powerSpectralDensity = welchSpectrum(XYTstim, spatialSamples, temporalSamples, spatialWindowOverlapFactor, temporalWindowOverlapFactor, totalTimeBins, nRows, mCols, fftSize)
 
-    spatialOffset = spatialSamples/4;
-    nEstimates = 0;
+    
+    spatialDelta = round(spatialSamples*(1-spatialWindowOverlapFactor));
+    temporalDelta = round(temporalSamples*(1-temporalWindowOverlapFactor));
+    
+    temporalWindowOffset = [];
+    for n = -10:10
+        newCoords = n * temporalDelta;
+        if (newCoords < 1) || (newCoords > totalTimeBins - temporalSamples)
+            continue;
+        else
+            temporalWindowOffset = cat(1, temporalWindowOffset, newCoords);
+        end
+    end
+    timeSegmentsNum = size(temporalWindowOffset,1);
+    
+    
+    spatialWindowOffset = [];
     b1 = [1,0];
     b2 = [1, sqrt(3)]/2;
-    coords = [];
-    ss = spatialSamples/2;
-    
     for n1 = -10:10
         for n2 = -10:10
-            newCoords = round((n1*b1 + n2*b2)*spatialOffset + [nRows mCols]/2);
-            if ((newCoords(1) < 1+ss) || (newCoords(2) < 1+ss) || ...
-               (newCoords(1) > nRows-ss) || (newCoords(2) > mCols-ss))
+            newCoords = round((n1*b1 + n2*b2)*spatialDelta + [nRows mCols]/2 - (spatialSamples/2)*[1 1]) ;
+            if ((newCoords(1) < 1) || (newCoords(2) < 1) || ...
+               (newCoords(1) > nRows-spatialSamples) || (newCoords(2) > mCols-spatialSamples))
                 continue;
             else
-                coords = cat(1, coords, newCoords);
+                spatialWindowOffset = cat(1, spatialWindowOffset, newCoords);
             end
         end
     end
 
-    spatialSegmentsNum = size(coords,1);
+    spatialSegmentsNum = size(spatialWindowOffset,1);
     
     figure(99); clf; hold on;
-    plot(coords(:,1), coords(:,2), 'ko');
-    pause
+    plot(spatialWindowOffset(:,1), spatialWindowOffset(:,2), 'ko');
+    set(gca, 'XLim', [1 nRows], 'YLim', [1 mCols]);
+    axis 'equal'
     
-    for timeSegment = 1:timeSegmentsNum
-        temporalOffset = (timeSegment-1)*floor(temporalSamples/2);
-            
+   
+    nEstimates = 0;
+    for timeSegment = 1:timeSegmentsNum 
         for spatialSegment = 1:spatialSegmentsNum
             fprintf('Computing spectral estimate %d/%d,  %d/%d\n', timeSegment, timeSegmentsNum, spatialSegment, spatialSegmentsNum);
             
-            [xytWelchWindow, wTemporal2, wSpatial2] = ...
-                spatioTemporalWelchWindow(temporalSamples, spatialSamples, temporalOffset, coords(spatialSegment,:), totalTimeBins, nRows, mCols);
+            [xytWelchWindow, wTemporal2, wSpatial2] = spatioTemporalWelchWindow(temporalSamples, spatialSamples, ...
+                temporalWindowOffset(timeSegment), spatialWindowOffset(spatialSegment,:), totalTimeBins, nRows, mCols);
             
             if (spatialSegment == 1)
+                wSpatial2All = wSpatial2;
                 figure(444);
                 subplot(timeSegmentsNum,1,timeSegment);
                 plot(wTemporal2);
                 drawnow;
+            else
+                wSpatial2All = wSpatial2All + wSpatial2;
             end
             
             if (timeSegment == 1)
                 figure(445);
                 nn = ceil(sqrt(spatialSegmentsNum));
                 subplot(nn,nn,spatialSegment);
-                imagesc(wSpatial2);
+                imagesc(1:nRows, 1:mCols, wSpatial2);
+                set(gca, 'XLim', [1 nRows], 'YLim', [1 mCols]);
+                axis 'image';
+                
+                subplot(nn,nn,nn*nn);
+                imagesc(1:nRows, 1:mCols, wSpatial2All);
+                set(gca, 'XLim', [1 nRows], 'YLim', [1 mCols]);
                 axis 'image';
                 drawnow
             end
@@ -158,7 +181,6 @@ function [xytWindow, wTemporal2, wSpatial2] = ...
 %
     wSpatial = (welchWindow(spatialSamples))' * welchWindow(spatialSamples);
     wSpatial2 = zeros(nRows, mCols);
-    spatialOffset + spatialSamples
     wSpatial2(spatialOffset(1)+(1:size(wSpatial,1)), spatialOffset(2)+(1:size(wSpatial,2))) = wSpatial;
     xytWindow = zeros(tBins, nRows, mCols);
 %

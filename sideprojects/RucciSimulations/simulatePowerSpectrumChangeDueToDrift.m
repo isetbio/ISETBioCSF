@@ -1,9 +1,8 @@
 function simulatePowerSpectrumChangeDueToDrift
 
     % Experiment params
-    
-    nTrials = 8;
-    emDurationSeconds = 0.2;
+    nTrials = 2;
+    emDurationSeconds = 0.8;
     
     % Generate fixational eye movmeents
     [emPosArcMin, timeAxis] = generateFEM(nTrials, emDurationSeconds);
@@ -14,6 +13,7 @@ function simulatePowerSpectrumChangeDueToDrift
     stimulusWidthArcMin = 200;
     
     % Grating params
+    
     gratingParams.oriDegs = 90;
     gratingParams.sigmaArcMin = 30;
     gratingParams.contrast = 1;
@@ -38,14 +38,12 @@ function simulatePowerSpectrumChangeDueToDrift
     oneOverFnoiseStabilized = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin*0, oneOverFnoiseStimulus);
     figNo = figNo + 1;
     analyzeSpectra(oneOverFnoiseFEM, oneOverFnoiseStabilized, figNo);
-    pause;
-    
+    save('1overF.mat', 'oneOverFnoiseStimulus', 'oneOverFnoiseFEM', 'oneOverFnoiseStabilized', '-v7.3');
     
     % Generate low frequency stimulus with fixational EM
     % Params for low frequency stimulus
     gratingParams.sfCPD = 4;
     gratingParams.contrast = 1;
-    
     noiseParams.spectrumShape = 'highPassCornerFreq';
     noiseParams.cornerFrequencyCPD = 10;
     
@@ -54,6 +52,7 @@ function simulatePowerSpectrumChangeDueToDrift
     lowFreqStabilized = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin*0, lowFrequencyStimulus);
     figNo = figNo + 1;
     analyzeSpectra(lowFreqFEM, lowFreqStabilized, figNo);
+    save('lowFrequency.mat', 'lowFrequencyStimulus', 'lowFreqFEM', 'lowFreqStabilized', '-v7.3');
     
     
     
@@ -66,35 +65,13 @@ function simulatePowerSpectrumChangeDueToDrift
     noiseParams.spectrumShape = 'lowPassCornerFreq';
     noiseParams.cornerFrequencyCPD = 5;
     
-%     figNo = figNo + 1;
-%     highFrequencyStimulus = generateStimulusImage(stimulusWidthArcMin, stimulusPixelSizeArcMin,  gratingParams, noiseParams, noiseNorm, nTrials, figNo);
-%     highFreqFEM = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin*0.5, highFrequencyStimulus);
-%     highFreqStabilized = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin*0, highFrequencyStimulus);
-%     figNo = figNo + 1;
-%     analyzeSpectra(highFreqFEM, highFreqStabilized, figNo);
-    pause
-    
-    
-
-    
-    % Noise params for noise only stimulus
-    %gratingParams.contrast = 0.0;
-    %noiseParams.spectrumShape = '1overF';
-    
-    % Generate stimulus
-    %figNo = 3;
-    %noiseOnlyStimulus = generateStimulusImage(stimulusWidthArcMin, stimulusPixelSizeArcMin,  gratingParams, noiseParams, nTrials, figNo);
-    
- 
-    % Noise params for grating only stimulus
-    %gratingParams.contrast = 1.0;
-    %noiseParams.spectrumShape = 'none';
-    
-    % Generate stimulus
-    %figNo = 4;
-    %gratingOnlyStimulus = generateStimulusImage(stimulusWidthArcMin, stimulusPixelSizeArcMin,  gratingParams, noiseParams, nTrials, figNo);
-    
-    
+    figNo = figNo + 1;
+    [highFrequencyStimulus, noiseNorm] = generateStimulusImage(stimulusWidthArcMin, stimulusPixelSizeArcMin,  gratingParams, noiseParams, noiseNorm, nTrials, figNo);
+    highFreqFEM = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, highFrequencyStimulus);
+    highFreqStabilized = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin*0, highFrequencyStimulus);
+    figNo = figNo + 1;
+    analyzeSpectra(highFreqFEM, highFreqStabilized, figNo);
+    save('highFrequency.mat', 'highFrequencyStimulus', 'highFreqFEM', 'highFreqStabilized', '-v7.3');
     
 end
 
