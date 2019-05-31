@@ -1,7 +1,7 @@
 function simulatePowerSpectrumChangeDueToDrift
 
     % Experiment params
-    nTrials = 2;
+    nTrials = 10;
     emDurationSeconds = 0.8;
     
     % Generate fixational eye movmeents
