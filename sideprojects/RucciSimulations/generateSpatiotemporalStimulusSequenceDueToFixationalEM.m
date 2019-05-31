@@ -1,14 +1,17 @@
 function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, stimulus)
     instancesNum = size(emPosArcMin,1);
     timeBins = size(emPosArcMin,2);
-    extraBins = 30;  % bins for zero padding in time domain
+    extraBins = max([0 round((1024-timeBins)/2)]);  % bins for zero padding in time domain
     totalTimeBins = timeBins+extraBins*2;
     
-    % Preallocate memory
-    sData.stimulusSequences = zeros(instancesNum, totalTimeBins, ...
-        size(stimulus.image,2), size(stimulus.image,3), ...
-        'single');
-
+    saveStimulusSequences = ~true;
+    if (saveStimulusSequences)
+        % Preallocate memory
+        sData.stimulusSequences = zeros(instancesNum, totalTimeBins, ...
+            size(stimulus.image,2), size(stimulus.image,3), ...
+            'uint8');
+    end
+    
     pixelSizeDegs = stimulus.spatialSupportDegs(2)-stimulus.spatialSupportDegs(1);
     
     fftSize = 2.^(nextpow2([totalTimeBins size(stimulus.image,2), size(stimulus.image,3)]));
@@ -41,8 +44,10 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
             XYTstim(extraBins+tBin,:,:) = shiftImage(theStimulusImage, shiftAmountPixels);
         end
         
-        % spatiotemporal movie of this noise instance
-        sData.stimulusSequences(instanceNo, :,:,:) = single(XYTstim);
+        if (saveStimulusSequences)
+            % spatiotemporal movie of this noise instance
+            sData.stimulusSequences(instanceNo, :,:,:) = uint8(255.0*(0.5*(1+XYTstim)));
+        end
         
         switch PSDmethod
             case 'FFT'
