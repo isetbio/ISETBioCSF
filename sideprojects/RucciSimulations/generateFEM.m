@@ -14,10 +14,10 @@ function [emPosArcMin, timeAxis] = generateFEM(nTrials, emDurationSeconds)
     emPosArcMin = fixEMobj.emPosArcMin;
     
     % Center at (0,0)
-    meanEMPos = squeeze(mean(emPosArcMin,2));
+    meanEMPos = mean(emPosArcMin,2);
     for iTrial = 1:nTrials
-        emPosArcMin(iTrial,:,1) = emPosArcMin(iTrial,:,1) - meanEMPos(iTrial,1);
-        emPosArcMin(iTrial,:,2) = emPosArcMin(iTrial,:,2) - meanEMPos(iTrial,2);
+        emPosArcMin(iTrial,:,1) = emPosArcMin(iTrial,:,1) - meanEMPos(iTrial,1,1);
+        emPosArcMin(iTrial,:,2) = emPosArcMin(iTrial,:,2) - meanEMPos(iTrial,1,2);
     end
 
     % Plot the eye movements
