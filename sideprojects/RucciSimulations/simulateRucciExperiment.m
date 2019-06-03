@@ -1,6 +1,6 @@
 function simulateRucciExperiment
 
-    generateScenes = true;
+    generateScenes = ~true;
     generateOpticalImages = true;
     
     if (generateScenes)
@@ -15,13 +15,14 @@ function simulateRucciExperiment
         load('scenes.mat', 'lowFrequencyScenes', 'highFrequencyScenes', ...
              'lowFrequencyScenesOrtho', 'highFrequencyScenesOrtho', 'contrastLevels', 'noiseInstances');
         displayLuminanceProfiles(lowFrequencyScenes, highFrequencyScenes, contrastLevels, noiseInstances);
-        generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, contrastLevels, noiseInstances);
+        
+        generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, lowFrequencyScenesOrtho, highFrequencyScenesOrtho, contrastLevels, noiseInstances);
         
     end
     
 end
 
-function generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, contrastLevels, noiseInstances)
+function generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, lowFrequencyScenesOrtho, highFrequencyScenesOrtho, contrastLevels, noiseInstances)
     nContrasts = numel(contrastLevels);
     theOI = oiCreate('wvf human');
     
@@ -41,7 +42,7 @@ function generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, contr
         end
     end
     
-    save('ois.mat', 'lowFrequencySOIs', 'highFrequencyOIs', ...
+    save('ois.mat', 'lowFrequencyOIs', 'highFrequencyOIs', ...
          'lowFrequencyOIsOrtho', 'highFrequencyOIsOrtho', 'contrastLevels', 'noiseInstances', '-v7.3');        
 end
 
