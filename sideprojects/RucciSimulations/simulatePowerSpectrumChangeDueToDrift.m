@@ -13,7 +13,6 @@ function simulatePowerSpectrumChangeDueToDrift
     stimulusWidthArcMin = 200;
     
     % Grating params
-    
     gratingParams.oriDegs = 90;
     gratingParams.sigmaArcMin = 30;
     gratingParams.contrast = 1;
@@ -29,8 +28,8 @@ function simulatePowerSpectrumChangeDueToDrift
     noiseNorm = nan;
     
     
-    do_1overF_simulation = true;
-    do_lowFrequency_simulation = true;
+    do_1overF_simulation = ~true;
+    do_lowFrequency_simulation = ~true;
     do_highFrequency_simulation = true;
     
     if (do_1overF_simulation)
