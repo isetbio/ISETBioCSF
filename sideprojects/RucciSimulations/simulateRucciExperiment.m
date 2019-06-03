@@ -1,21 +1,48 @@
 function simulateRucciExperiment
 
     generateScenes = true;
+    generateOpticalImages = true;
     
     if (generateScenes)
-        noiseInstances = 2;
-        meanLuminanceCdPerM2 = 200;
-        stimulusSizeDegs = 2.5;
-        contrastLevels = [0.1 1.0]; % 0.1 0.5 1.0];
-        generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM2, contrastLevels );
-    else
-        load('scenes.mat', 'lowFrequencyScenes', 'highFrequencyScenes', ...
-             'lowFrequencyScenesOrtho', 'highFrequencyScenesOrtho', 'contrastLevels', 'noiseInstances');
-
-        displayLuminanceProfiles(lowFrequencyScenes, highFrequencyScenes, contrastLevels, noiseInstances)
+        noiseInstances = 16;
+        meanLuminanceCdPerM2 = 21;
+        stimulusSizeDegs = 1.5;
+        contrastLevels = [0.1 0.5];
+        generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM2, contrastLevels);  
     end
     
+    if (generateOpticalImages)
+        load('scenes.mat', 'lowFrequencyScenes', 'highFrequencyScenes', ...
+             'lowFrequencyScenesOrtho', 'highFrequencyScenesOrtho', 'contrastLevels', 'noiseInstances');
+        displayLuminanceProfiles(lowFrequencyScenes, highFrequencyScenes, contrastLevels, noiseInstances);
+        generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, contrastLevels, noiseInstances);
+        
+    end
     
+end
+
+function generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, contrastLevels, noiseInstances)
+    nContrasts = numel(contrastLevels);
+    theOI = oiCreate('wvf human');
+    
+    for theContrastLevel = 1:nContrasts
+        for theInstance = 1:noiseInstances       
+            lowFrequencyOIs{theContrastLevel, theInstance} = oiCompute(theOI, ...
+            lowFrequencyScenes{theContrastLevel, theInstance});
+        
+            lowFrequencyOIsOrtho{theContrastLevel, theInstance} = oiCompute(theOI, ...
+            lowFrequencyScenesOrtho{theContrastLevel, theInstance});
+        
+            highFrequencyOIs{theContrastLevel, theInstance} = oiCompute(theOI, ...
+            highFrequencyScenes{theContrastLevel, theInstance});
+        
+            highFrequencyOIsOrtho{theContrastLevel, theInstance} = oiCompute(theOI, ...
+            highFrequencyScenesOrtho{theContrastLevel, theInstance});
+        end
+    end
+    
+    save('ois.mat', 'lowFrequencySOIs', 'highFrequencyOIs', ...
+         'lowFrequencyOIsOrtho', 'highFrequencyOIsOrtho', 'contrastLevels', 'noiseInstances', '-v7.3');        
 end
 
 function generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM2, contrastLevels)
@@ -51,12 +78,10 @@ function generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM
                 squeeze(lowFrequencySpatialModulations(theInstance, theContrastLevel,:,:,:)), ...
                 presentationDisplay,stimulusSizeDegs, meanLuminanceCdPerM2);
             
-            
             lowFrequencyScenesOrtho{theContrastLevel, theInstance} = generateScene(...
                 squeeze(lowFrequencySpatialModulationsOrtho(theInstance, theContrastLevel,:,:,:)), ...
                 presentationDisplay,stimulusSizeDegs, meanLuminanceCdPerM2);
-            
-            
+             
             highFrequencyScenes{theContrastLevel, theInstance} = generateScene(...
                 squeeze(highFrequencySpatialModulations(theInstance, theContrastLevel,:,:,:)), ...
                 presentationDisplay,stimulusSizeDegs, meanLuminanceCdPerM2);
@@ -200,12 +225,12 @@ function [stimulusSpatialModulation, stimulusSpatialModulationOrtho, spatialSupp
     generateStimulusSpatialModulation(stimulusSizeDegs, noiseNorm, stimulusType, oriDegs, contrastLevels, noiseInstances)
 
     coneApertureMicrons = 2; micronsPerDegree = 300;
-    stimulusPixelSizeArcMin = 0.5*coneApertureMicrons / micronsPerDegree * 60;
+    stimulusPixelSizeArcMin = 0.75*coneApertureMicrons / micronsPerDegree * 60;
     stimulusWidthArcMin = stimulusSizeDegs * 60;
     
     % Grating params
     gratingParams.oriDegs = oriDegs;
-    gratingParams.sigmaArcMin = 25;
+    gratingParams.sigmaArcMin = stimulusSizeDegs/7*60;
     gratingParams.contrastLevels = contrastLevels;
     % Noise params
     noiseParams.steepness = 100;
