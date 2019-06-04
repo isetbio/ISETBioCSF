@@ -45,8 +45,9 @@ function generateAllMosaicResponses(lowFrequencyOIs, highFrequencyOIs, ...
                 lowFrequencyOIsOrtho, highFrequencyOIsOrtho, fixationDurationSeconds, contrastLevels, noiseInstances, nTrials, nTrialsPerBlock)
     % Load cone mosaic
    
+    %close all
     load('ConeMosaic_1.0Degs_Iterations_200_Tolerance_0.000250.mat', 'theMosaic')
-    %load('ConeMosaic_1.0Degs_Iterations_2000_Tolerance_0.000250.mat', 'theMosaic');
+    load('ConeMosaic_1.0Degs_Iterations_2000_Tolerance_0.000250.mat', 'theMosaic');
     
 
     % Set mosaic integration time and fixation duration
