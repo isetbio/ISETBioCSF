@@ -1,25 +1,144 @@
 function simulateRucciExperiment
 
-    generateScenes = ~true;
+    generateScenes = true;
     generateOpticalImages = true;
+    generateMosaicResponses = true;
     
     if (generateScenes)
-        noiseInstances = 16;
-        meanLuminanceCdPerM2 = 21;
-        stimulusSizeDegs = 1.5;
-        contrastLevels = [0.1 0.5];
+        noiseInstances = 2;         % only computing responses for 1 though
+        meanLuminanceCdPerM2 = 21;  % match Rucc 2007 paper
+        stimulusSizeDegs = 1.0;     % small enough to allow faster computations
+        contrastLevels = [1.0 0.3 0.1 0.03];  % exploring ...
         generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM2, contrastLevels);  
     end
     
     if (generateOpticalImages)
+        %Load previously computed scenes
         load('scenes.mat', 'lowFrequencyScenes', 'highFrequencyScenes', ...
              'lowFrequencyScenesOrtho', 'highFrequencyScenesOrtho', 'contrastLevels', 'noiseInstances');
+        % Display scene profiles
         displayLuminanceProfiles(lowFrequencyScenes, highFrequencyScenes, contrastLevels, noiseInstances);
+        % Compute ois
         generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, lowFrequencyScenesOrtho, highFrequencyScenesOrtho, contrastLevels, noiseInstances);
+    end
+    
+    if (generateMosaicResponses)
+        % Load previously computed optical images
+        load('ois.mat', 'lowFrequencyOIs', 'highFrequencyOIs', ...
+         'lowFrequencyOIsOrtho', 'highFrequencyOIsOrtho', 'contrastLevels', 'noiseInstances');
+     
+        % Only compute responses for the first instance of noise stimulus
+        noiseInstances = 1:1;
+        nTrials = 512;
+        nTrialsPerBlock = 2;  % for a 16 GB system
+        nTrialsPerBlock = 4;  % for a 32 GB system
+        %nTrialsPerBlock = 32; % for a 256 GB system
+        
+        fixationDurationSeconds = 0.8;
+        generateAllMosaicResponses(lowFrequencyOIs, highFrequencyOIs, ...
+                lowFrequencyOIsOrtho, highFrequencyOIsOrtho, fixationDurationSeconds, contrastLevels, noiseInstances, nTrials, nTrialsPerBlock);
     end
     
 end
 
+function generateAllMosaicResponses(lowFrequencyOIs, highFrequencyOIs, ...
+                lowFrequencyOIsOrtho, highFrequencyOIsOrtho, fixationDurationSeconds, contrastLevels, noiseInstances, nTrials, nTrialsPerBlock)
+    % Load cone mosaic
+   
+    load('ConeMosaic_1.0Degs_Iterations_200_Tolerance_0.000250.mat', 'theMosaic')
+    %load('ConeMosaic_1.0Degs_Iterations_2000_Tolerance_0.000250.mat', 'theMosaic');
+    
+
+    % Set mosaic integration time and fixation duration
+    theMosaic.integrationTime = 2.5/1000;
+    eyeMovementsNum = ceil(fixationDurationSeconds/theMosaic.integrationTime);
+
+
+    % Compute fixational eye movements for desired number of trials
+    [emPaths, fixEMOBJ] = theMosaic.emGenSequence(eyeMovementsNum, ...
+        'nTrials', nTrials, 'centerPaths', true);
+    visualizeConeMosaicAndEMPath(theMosaic, fixEMOBJ);
+
+
+    % Split in blocks to fit in memory
+    nBlocks = round(nTrials/nTrialsPerBlock);
+
+    % Compute mosaic responses for all ois
+    nContrasts = numel(contrastLevels);
+    for theContrastLevel = 1:nContrasts
+        for theInstance = 1:noiseInstances  
+
+            fname = sprintf('highFrequency_contrast_%2.4f_instance_%2.0f', contrastLevels(theContrastLevel), theInstance);
+            [coneExcitations, photoCurrents] = ...
+                computeResponses(theMosaic, emPaths, highFrequencyOIs{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
+            fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
+            save(fname, 'coneExcitations', 'photoCurrents', 'contrastLevels', 'theContrastLevel', '-v7.3');
+            
+            fname = sprintf('highFrequencyOrtho_contrast_%2.4f_instance_%2.0f', contrastLevels(theContrastLevel), theInstance);
+            [coneExcitations, photoCurrents] = ...
+                computeResponses(theMosaic, emPaths, highFrequencyOIsOrtho{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
+            fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
+            save(fname, 'coneExcitations', 'photoCurrents', 'contrastLevels', 'theContrastLevel', '-v7.3');
+            
+            fname = sprintf('lowFrequency_contrast_%2.4f_instance_%2.0f', contrastLevels(theContrastLevel), theInstance);
+            [coneExcitations, photoCurrents] = ...
+                computeResponses(theMosaic, emPaths, lowFrequencyOIs{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
+            fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
+            save(fname, 'coneExcitations', 'photoCurrents', 'contrastLevels', 'theContrastLevel','-v7.3');
+            
+            fname = sprintf('lowFrequencyOrtho_contrast_%2.4f_instance_%2.0f', contrastLevels(theContrastLevel), theInstance);
+            [coneExcitations, photoCurrents] = ...
+                computeResponses(theMosaic, emPaths, lowFrequencyOIsOrtho{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
+            fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
+            save(fname, 'coneExcitations', 'photoCurrents', 'contrastLevels', 'theContrastLevel', '-v7.3');
+            
+            %visualizeConeMosaicResponses(theMosaic, highFrequencyConeExcitations, 'R*/cone/tau');
+            %visualizeConeMosaicResponses(theMosaic, highFrequencyPhotoCurrents, 'pAmps');
+            
+        end
+    end
+        
+end
+
+function [coneExcitations, photoCurrents] = computeResponses(theMosaic, emPaths, theOI, nBlocks, nTrialsPerBlock)
+            
+    % Find the non-null cone indices
+    nonNullConeIndices = find(theMosaic.pattern > 1);
+
+    coneExcitations = zeros(nBlocks*nTrialsPerBlock, numel(nonNullConeIndices), size(emPaths,2));
+    photoCurrents = coneExcitations;
+    
+    for blockIndex = 1:nBlocks
+        % compute responses for this block's trials
+        trialIndicesForBlock = (blockIndex-1)*nTrialsPerBlock + (1:nTrialsPerBlock);
+        fprintf('Computing trials %d-%d of %d\n', trialIndicesForBlock(1), trialIndicesForBlock(end), nBlocks*nTrialsPerBlock);
+        [theConeExcitations, thePhotocurrents] = ...
+            theMosaic.compute(theOI, ...
+                'emPath', emPaths(trialIndicesForBlock,:,:), ...
+                'currentFlag', true);
+
+        % append to all trials matrix
+        coneExcitations(trialIndicesForBlock,:,:) = reformatAllTrialsMatrix(theConeExcitations, nonNullConeIndices);
+        photoCurrents(trialIndicesForBlock,:,:) = reformatAllTrialsMatrix(thePhotocurrents, nonNullConeIndices);
+    end
+
+end
+
+function allTrialsMatrix = reformatAllTrialsMatrix(allTrialsMatrix, nonNullConesIndices)
+
+    [trialsNum, coneRows, coneCols, timePointsNum] = size(allTrialsMatrix);
+
+    allTrialsMatrix = permute(allTrialsMatrix, [2 3 1 4]);
+    allTrialsMatrix = reshape(allTrialsMatrix, ...
+        [coneRows * coneCols, trialsNum, timePointsNum]);
+
+    % Only get the absorptions for the non-null cones
+    allTrialsMatrix = allTrialsMatrix(nonNullConesIndices, :, :);
+
+    % Reshape to [instances x cones x timePoints]
+    allTrialsMatrix = permute(allTrialsMatrix, [2 1 3]);
+end
+    
 function generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, lowFrequencyScenesOrtho, highFrequencyScenesOrtho, contrastLevels, noiseInstances)
     nContrasts = numel(contrastLevels);
     theOI = oiCreate('wvf human');
@@ -194,13 +313,11 @@ function displayLuminanceProfiles(lowFrequencyScenes, highFrequencyScenes, contr
         
         subplot('Position', subplotPosVectors(theContrastLevel,2).v);
         meanSpatialProfile = mean(squeeze(lumMap1(:, theContrastLevel, N, :)),1);
-        size(spatialSupportDegs)
-        size(meanSpatialProfile)
         
         plot(spatialSupportDegs, meanSpatialProfile, 'rs-');
         axis 'square'
         set(gca, 'YLim', CLim);
-         
+        drawnow
     end
     
     figure(666);
@@ -216,6 +333,7 @@ function displayLuminanceProfiles(lowFrequencyScenes, highFrequencyScenes, contr
         plot(spatialSupportDegs, meanSpatialProfile, 'rs-');
         axis 'square'
         set(gca, 'YLim', CLim);
+        drawnow
     end
     
 end
