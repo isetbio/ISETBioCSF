@@ -15,9 +15,7 @@ function simulateRucciExperiment
         load('scenes.mat', 'lowFrequencyScenes', 'highFrequencyScenes', ...
              'lowFrequencyScenesOrtho', 'highFrequencyScenesOrtho', 'contrastLevels', 'noiseInstances');
         displayLuminanceProfiles(lowFrequencyScenes, highFrequencyScenes, contrastLevels, noiseInstances);
-        
         generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, lowFrequencyScenesOrtho, highFrequencyScenesOrtho, contrastLevels, noiseInstances);
-        
     end
     
 end
