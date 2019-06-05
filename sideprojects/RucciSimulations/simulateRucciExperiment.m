@@ -6,11 +6,11 @@ function simulateRucciExperiment
     
     generateScenes = ~true;
     generateOpticalImages = ~true;
-    generateMosaicResponses = true;
-    visualizeReponses = ~true;
-    classifyResponses = ~true;
+    generateMosaicResponses = ~true;
+    visualizeMosaicResponses = true;
+    classifyMosaicResponses = ~true;
     
-    if (generateMosaicResponses || visualizeReponses || classifyResponses)
+    if (generateMosaicResponses || visualizeMosaicResponses || classifyMosaicResponses)
         % Load the mosaic
         load('ConeMosaic_1.0Degs_Iterations_2000_Tolerance_0.000250.mat', 'theMosaic');
     end
@@ -43,7 +43,7 @@ function simulateRucciExperiment
     if (generateMosaicResponses)
         % Load previously computed optical images
         load('ois.mat', 'lowFrequencyOIs', 'highFrequencyOIs', ...
-         'lowFrequencyOIsOrtho', 'highFrequencyOIsOrtho', 'contrastLevels', 'noiseInstances');
+         'lowFrequencyOIsOrtho', 'highFrequencyOIsOrtho', 'contrastLevels');
      
         fixationDurationSeconds = 0.8;
         nTrials = 512;
@@ -55,19 +55,19 @@ function simulateRucciExperiment
                 lowFrequencyOIsOrtho, highFrequencyOIsOrtho, fixationDurationSeconds, contrastLevels, analyzedNoiseInstances, nTrials, nTrialsPerBlock);
     end
     
-    if (visualizeResponses)
+    if (visualizeMosaicResponses)
         contrastLevel = 1.0;
-        visualizeMosaicResponses(theMosaic, contrastLevel, analyzedNoiseInstances);
+        visualizeTheResponses(theMosaic, contrastLevel, analyzedNoiseInstances);
     end
     
 end
 
-function visualizeMosaicResponses(theMosaic, contrastLevel, analyzedNoiseInstances)
+function visualizeTheResponses(theMosaic, contrastLevel, analyzedNoiseInstances)
     for theInstance = 1:analyzedNoiseInstances 
-            fname = sprintf('highFrequency_contrast_%2.4f_instance_%1.0f', contrastLevel, theInstance);
-            load(fname, 'coneExcitations', 'photoCurrents', 'emPaths');
+        fname = sprintf('highFrequency_contrast_%2.4f_instance_%1.0f.mat', contrastLevel, theInstance);
+        load(fname, 'coneExcitations', 'photoCurrents');
+        coneExcitations
     end
-    size('emPaths');
     
     visualizeConeMosaicResponses(theMosaic, coneExcitations, 'R*/cone/tau');
     visualizeConeMosaicResponses(theMosaic, photoCurrents, 'pAmps');
@@ -100,25 +100,25 @@ function generateAllMosaicResponses(theMosaic, lowFrequencyOIs, highFrequencyOIs
     for theContrastLevel = 1:nContrasts
         for theInstance = 1:analyzedNoiseInstances
 
-            fname = sprintf('highFrequency_contrast_%2.4f_instance_%1.0f', contrastLevels(theContrastLevel), theInstance);
+            fname = sprintf('highFrequency_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance);
             [coneExcitations, photoCurrents, eyeMovementPaths] = ...
                 computeResponses(theMosaic, emPaths, highFrequencyOIs{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
             save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths',  'contrastLevels', 'theContrastLevel', '-v7.3');
             
-            fname = sprintf('highFrequencyOrtho_contrast_%2.4f_instance_%1.0f', contrastLevels(theContrastLevel), theInstance);
+            fname = sprintf('highFrequencyOrtho_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance);
             [coneExcitations, photoCurrents, eyeMovementPaths] = ...
                 computeResponses(theMosaic, emPaths, highFrequencyOIsOrtho{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
             save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'contrastLevels', 'theContrastLevel', '-v7.3');
             
-            fname = sprintf('lowFrequency_contrast_%2.4f_instance_%1.0f', contrastLevels(theContrastLevel), theInstance);
+            fname = sprintf('lowFrequency_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance);
             [coneExcitations, photoCurrents, eyeMovementPaths] = ...
                 computeResponses(theMosaic, emPaths, lowFrequencyOIs{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
             save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'contrastLevels', 'theContrastLevel','-v7.3');
             
-            fname = sprintf('lowFrequencyOrtho_contrast_%2.4f_instance_%1.0f', contrastLevels(theContrastLevel), theInstance);
+            fname = sprintf('lowFrequencyOrtho_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance);
             [coneExcitations, photoCurrents, eyeMovementPaths] = ...
                 computeResponses(theMosaic, emPaths, lowFrequencyOIsOrtho{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
