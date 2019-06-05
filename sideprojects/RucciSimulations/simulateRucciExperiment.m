@@ -200,7 +200,7 @@ function [theConeExcitations, thePhotoCurrents, theEyeMovementsPaths] = computeR
         theEyeMovementsPaths(trialIndicesForBlock,:,:) = eyeMovementPaths{blockIndex}; eyeMovementPaths{blockIndex} = [];
     end
     size(theConeExcitations)
-    pause
+
     
 end
 
