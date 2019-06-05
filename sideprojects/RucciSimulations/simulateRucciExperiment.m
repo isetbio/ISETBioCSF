@@ -20,7 +20,8 @@ function simulateRucciExperiment
     
     
     % Only compute responses for the first instance of noise stimulus    
-    analyzedNoiseInstances = 1;
+    analyzedNoiseInstance = 1;
+    nTrials = 512;
     
     
     if (generateScenes)
@@ -46,31 +47,41 @@ function simulateRucciExperiment
          'lowFrequencyOIsOrtho', 'highFrequencyOIsOrtho', 'contrastLevels');
      
         fixationDurationSeconds = 0.8;
-        nTrials = 512;
         nTrialsPerBlock = 1;  % for a 16 GB system
         nTrialsPerBlock = 1;  % for a 32 GB system with 4 cores
         nTrialsPerBlock = 1; % for a 256 GB system with 20 cores
         
         generateAllMosaicResponses(theMosaic, lowFrequencyOIs, highFrequencyOIs, ...
-                lowFrequencyOIsOrtho, highFrequencyOIsOrtho, fixationDurationSeconds, contrastLevels, analyzedNoiseInstances, nTrials, nTrialsPerBlock);
+                lowFrequencyOIsOrtho, highFrequencyOIsOrtho, fixationDurationSeconds, contrastLevels, analyzedNoiseInstance, nTrials, nTrialsPerBlock);
     end
     
     if (visualizeMosaicResponses)
         contrastLevel = 1.0;
-        visualizeTheResponses(theMosaic, contrastLevel, analyzedNoiseInstances);
+        visualizeTheResponses(theMosaic, contrastLevel, analyzedNoiseInstance);
     end
     
 end
 
-function visualizeTheResponses(theMosaic, contrastLevel, analyzedNoiseInstances)
-    for theInstance = 1:analyzedNoiseInstances 
-        fname = sprintf('highFrequency_contrast_%2.4f_instance_%1.0f.mat', contrastLevel, theInstance);
-        load(fname, 'coneExcitations', 'photoCurrents');
-        coneExcitations
+function visualizeTheResponses(theMosaic, contrastLevel, theInstance)
+    
+    fname = sprintf('highFrequency_contrast_%2.4f_instance_%1.0f.mat', contrastLevel, theInstance);
+    load(fname, 'coneExcitations'); % , 'photoCurrents');
+    
+    nBlocks = length(coneExcitations);
+    [nTrialsPerBlock,conesNum, timeBinsNum] = size(coneExcitations{1});
+    
+    nTrials = nBlocks*nTrialsPerBlock;
+    theConeExcitations = zeros(nTrials, conesNum, timeBinsNum);
+    
+    % From cell array to array
+    for blockIndex = 1:nBlocks
+        % compute responses for this block's trials
+        trialIndicesForBlock = (blockIndex-1)*nTrialsPerBlock + (1:nTrialsPerBlock);
+        theConeExcitations(trialIndicesForBlock,:,:) = coneExcitations{blockIndex};
     end
     
-    visualizeConeMosaicResponses(theMosaic, coneExcitations, 'R*/cone/tau');
-    visualizeConeMosaicResponses(theMosaic, photoCurrents, 'pAmps');
+    visualizeConeMosaicResponses(theMosaic, theConeExcitations, 'R*/cone/tau');
+    %visualizeConeMosaicResponses(theMosaic, photoCurrents, 'pAmps');
             
 end
 
@@ -128,7 +139,7 @@ function generateAllMosaicResponses(theMosaic, lowFrequencyOIs, highFrequencyOIs
         
 end
 
-function [coneExcitations, photoCurrents, eyeMovementPaths] = computeResponses(theMosaic, emPaths, theOI, nBlocks, nTrialsPerBlock)
+function [theConeExcitations, thePhotoCurrents, theEyeMovementsPaths] = computeResponses(theMosaic, emPaths, theOI, nBlocks, nTrialsPerBlock)
             
     % Find the non-null cone indices
     nonNullConeIndices = find(theMosaic.pattern > 1);
@@ -146,12 +157,30 @@ function [coneExcitations, photoCurrents, eyeMovementPaths] = computeResponses(t
                 'emPath', emPaths(trialIndicesForBlock,:,:), ...
                 'currentFlag', true);
 
-        % append to all trials matrix
+        % store to cell array
         coneExcitations{blockIndex} = reformatAllTrialsMatrix(theConeExcitations, nonNullConeIndices);
         photoCurrents{blockIndex} = reformatAllTrialsMatrix(thePhotocurrents, nonNullConeIndices);
         eyeMovementPaths{blockIndex} = emPaths(trialIndicesForBlock,:,:);
     end
     
+    % From cell array to array
+    nTrials = nBlocks*nTrialsPerBlock;
+    conesNum = numel(nonNullConeIndices);
+    timeBinsNum = size(emPaths,2);
+    
+    % Preallocate memory
+    theConeExcitations = zeros(nTrials, conesNum, timeBinsNum);
+    thePhotoCurrents = theConeExcitations;
+    theEyeMovementsPaths = emPaths*0;
+    
+    for blockIndex = 1:nBlocks
+        % compute responses for this block's trials
+        trialIndicesForBlock = (blockIndex-1)*nTrialsPerBlock + (1:nTrialsPerBlock);
+        theConeExcitations(trialIndicesForBlock,:,:) = coneExcitations{blockIndex}; coneExcitations{blockIndex} = [];
+        thePhotoCurrents(trialIndicesForBlock,:,:) = photoCurrents{blockIndex}; photoCurrents{blockIndex} = [];
+        theEyeMovementsPaths(trialIndicesForBlock,:,:) = eyeMovementPaths{blockIndex}; eyeMovementPaths{blockIndex} = [];
+    end
+        
 end
 
 function allTrialsMatrix = reformatAllTrialsMatrix(allTrialsMatrix, nonNullConesIndices)
