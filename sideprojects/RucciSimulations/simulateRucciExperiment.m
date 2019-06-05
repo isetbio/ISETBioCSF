@@ -57,7 +57,7 @@ function simulateRucciExperiment
     
     if (visualizeResponses)
         contrastLevel = 1.0;
-        visualizeMosaicResponses(theMosaic, contrastLevel, analyzedNoiseInstances,);
+        visualizeMosaicResponses(theMosaic, contrastLevel, analyzedNoiseInstances);
     end
     
 end
