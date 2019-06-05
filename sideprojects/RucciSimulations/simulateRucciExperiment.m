@@ -1,5 +1,9 @@
 function simulateRucciExperiment
 
+    [rootDir,~] = fileparts(which(mfilename));
+    cd(rootDir);
+    pause(0.1);
+    
     generateScenes = ~true;
     generateOpticalImages = ~true;
     generateMosaicResponses = true;
@@ -31,8 +35,8 @@ function simulateRucciExperiment
         noiseInstances = 1:1;
         nTrials = 512;
         nTrialsPerBlock = 1;  % for a 16 GB system
-        nTrialsPerBlock = 1;  % for a 32 GB system
-        %nTrialsPerBlock = 16; % for a 256 GB system
+        nTrialsPerBlock = 1;  % for a 32 GB system with 4 cores
+        nTrialsPerBlock = 1; % for a 256 GB system with 20 cores
         
         fixationDurationSeconds = 0.8;
         generateAllMosaicResponses(lowFrequencyOIs, highFrequencyOIs, ...
