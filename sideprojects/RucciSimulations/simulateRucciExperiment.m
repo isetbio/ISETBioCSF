@@ -7,7 +7,7 @@ function simulateRucciExperiment
     generateScenes = ~true;
     generateOpticalImages = ~true;
     generateMosaicResponses = ~true;
-    visualizeMosaicResponses = true;
+    visualizeMosaicResponses = ~true;
     classifyMosaicResponses = ~true;
     
     if (generateMosaicResponses || visualizeMosaicResponses || classifyMosaicResponses)
@@ -22,6 +22,7 @@ function simulateRucciExperiment
     % Only compute responses for the first instance of noise stimulus    
     analyzedNoiseInstance = 1;
     nTrials = 512;
+    fixationDurationSeconds = 0.8;
     
     
     if (generateScenes)
@@ -46,7 +47,6 @@ function simulateRucciExperiment
         load('ois.mat', 'lowFrequencyOIs', 'highFrequencyOIs', ...
          'lowFrequencyOIsOrtho', 'highFrequencyOIsOrtho', 'contrastLevels');
      
-        fixationDurationSeconds = 0.8;
         nTrialsPerBlock = 1;  % for a 16 GB system
         nTrialsPerBlock = 1;  % for a 32 GB system with 4 cores
         nTrialsPerBlock = 1; % for a 256 GB system with 20 cores
@@ -80,9 +80,28 @@ function visualizeTheResponses(theMosaic, contrastLevel, theInstance)
         theConeExcitations(trialIndicesForBlock,:,:) = coneExcitations{blockIndex};
     end
     
-    visualizeConeMosaicResponses(theMosaic, theConeExcitations, 'R*/cone/tau');
+    visualizeDynamicResponse(theMosaic, theConeExcitations, 'R*/cone/tau');
     %visualizeConeMosaicResponses(theMosaic, photoCurrents, 'pAmps');
             
+end
+
+function visualizeDynamicResponse(theMosaic, allTrialResponses, responseSignalName)
+    
+    instanceNo = 1;
+    singleTrialResponse = squeeze(allTrialResponses(instanceNo,:,:));
+    responseRange = [min(singleTrialResponse(:)) max(singleTrialResponse(:))];
+    
+    hFig = figure(9988);
+    axHandle = subplot(1,2,1);
+    for timeBin = 1:size(singleTrialResponse,2)
+        theMosaic.renderActivationMap(axHandle, squeeze(singleTrialResponse(:,timeBin)), ...
+                'mapType', 'modulated disks', ...
+                'signalRange', responseRange, ...
+                'showColorBar', true, ...
+                'labelColorBarTicks', true, ...
+                'titleForColorBar', responseSignalName);
+        drawnow;
+    end
 end
 
 function findPerformance()
@@ -172,7 +191,7 @@ function [theConeExcitations, thePhotoCurrents, theEyeMovementsPaths] = computeR
     theConeExcitations = zeros(nTrials, conesNum, timeBinsNum);
     thePhotoCurrents = theConeExcitations;
     theEyeMovementsPaths = emPaths*0;
-    
+    size(theConeExcitations)
     for blockIndex = 1:nBlocks
         % compute responses for this block's trials
         trialIndicesForBlock = (blockIndex-1)*nTrialsPerBlock + (1:nTrialsPerBlock);
@@ -180,7 +199,9 @@ function [theConeExcitations, thePhotoCurrents, theEyeMovementsPaths] = computeR
         thePhotoCurrents(trialIndicesForBlock,:,:) = photoCurrents{blockIndex}; photoCurrents{blockIndex} = [];
         theEyeMovementsPaths(trialIndicesForBlock,:,:) = eyeMovementPaths{blockIndex}; eyeMovementPaths{blockIndex} = [];
     end
-        
+    size(theConeExcitations)
+    pause
+    
 end
 
 function allTrialsMatrix = reformatAllTrialsMatrix(allTrialsMatrix, nonNullConesIndices)
