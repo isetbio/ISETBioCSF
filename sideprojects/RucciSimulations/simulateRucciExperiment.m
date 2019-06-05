@@ -30,9 +30,9 @@ function simulateRucciExperiment
         % Only compute responses for the first instance of noise stimulus
         noiseInstances = 1:1;
         nTrials = 512;
-        nTrialsPerBlock = 2;  % for a 16 GB system
-        nTrialsPerBlock = 4;  % for a 32 GB system
-        %nTrialsPerBlock = 32; % for a 256 GB system
+        nTrialsPerBlock = 1;  % for a 16 GB system
+        nTrialsPerBlock = 1;  % for a 32 GB system
+        %nTrialsPerBlock = 16; % for a 256 GB system
         
         fixationDurationSeconds = 0.8;
         generateAllMosaicResponses(lowFrequencyOIs, highFrequencyOIs, ...
@@ -106,10 +106,10 @@ function [coneExcitations, photoCurrents] = computeResponses(theMosaic, emPaths,
     % Find the non-null cone indices
     nonNullConeIndices = find(theMosaic.pattern > 1);
 
-    coneExcitations = zeros(nBlocks*nTrialsPerBlock, numel(nonNullConeIndices), size(emPaths,2));
-    photoCurrents = coneExcitations;
+    coneExcitations = cell(1,nBlocks);
+    photoCurrents = cell(1,nBlocks);
     
-    for blockIndex = 1:nBlocks
+    parfor blockIndex = 1:nBlocks
         % compute responses for this block's trials
         trialIndicesForBlock = (blockIndex-1)*nTrialsPerBlock + (1:nTrialsPerBlock);
         fprintf('Computing trials %d-%d of %d\n', trialIndicesForBlock(1), trialIndicesForBlock(end), nBlocks*nTrialsPerBlock);
@@ -119,10 +119,10 @@ function [coneExcitations, photoCurrents] = computeResponses(theMosaic, emPaths,
                 'currentFlag', true);
 
         % append to all trials matrix
-        coneExcitations(trialIndicesForBlock,:,:) = reformatAllTrialsMatrix(theConeExcitations, nonNullConeIndices);
-        photoCurrents(trialIndicesForBlock,:,:) = reformatAllTrialsMatrix(thePhotocurrents, nonNullConeIndices);
+        coneExcitations{blockIndex} = reformatAllTrialsMatrix(theConeExcitations, nonNullConeIndices);
+        photoCurrents{blockIndex} = reformatAllTrialsMatrix(thePhotocurrents, nonNullConeIndices);
     end
-
+    
 end
 
 function allTrialsMatrix = reformatAllTrialsMatrix(allTrialsMatrix, nonNullConesIndices)
