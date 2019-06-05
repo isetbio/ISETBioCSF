@@ -1,12 +1,13 @@
 function simulateRucciExperiment
 
     [rootDir,~] = fileparts(which(mfilename));
+    resourcesDir = '/media/dropbox_disk/Dropbox (Aguirre-Brainard Lab)/IBIO_analysis/IBIOColorDetect/SideProjects/RucciSimulations';
     cd(rootDir);
     pause(0.1);
     
-    generateScenes = ~true;
-    generateOpticalImages = ~true;
-    generateMosaicResponses = ~true;
+    generateScenes = true;
+    generateOpticalImages = true;
+    generateMosaicResponses = true;
     visualizeMosaicResponses = ~true;
     classifyMosaicResponses = ~true;
     
@@ -29,22 +30,24 @@ function simulateRucciExperiment
         noiseInstances = 2;         % only computing responses for 1 though
         meanLuminanceCdPerM2 = 21;  % match Rucc 2007 paper
         stimulusSizeDegs = 1.0;     % small enough to allow faster computations
-        generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM2, contrastLevels);  
+        generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM2, contrastLevels, resourcesDir);  
     end
     
     if (generateOpticalImages)
         %Load previously computed scenes
-        load('scenes.mat', 'lowFrequencyScenes', 'highFrequencyScenes', ...
+        scenesFile = fullfile(resourcesDir, 'scenes.mat');
+        load(scenesFile, 'lowFrequencyScenes', 'highFrequencyScenes', ...
              'lowFrequencyScenesOrtho', 'highFrequencyScenesOrtho', 'contrastLevels', 'noiseInstances');
         % Display scene profiles
         displayLuminanceProfiles(lowFrequencyScenes, highFrequencyScenes, contrastLevels, noiseInstances);
         % Compute ois
-        generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, lowFrequencyScenesOrtho, highFrequencyScenesOrtho, contrastLevels, noiseInstances);
+        generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, lowFrequencyScenesOrtho, highFrequencyScenesOrtho, contrastLevels, noiseInstances, resourcesDir);
     end
     
     if (generateMosaicResponses)
         % Load previously computed optical images
-        load('ois.mat', 'lowFrequencyOIs', 'highFrequencyOIs', ...
+        oisFile = fullfile(resourcesDir, 'ois.mat');
+        load(oisFile, 'lowFrequencyOIs', 'highFrequencyOIs', ...
          'lowFrequencyOIsOrtho', 'highFrequencyOIsOrtho', 'contrastLevels');
      
         nTrialsPerBlock = 1;  % for a 16 GB system
@@ -52,7 +55,9 @@ function simulateRucciExperiment
         nTrialsPerBlock = 1; % for a 256 GB system with 20 cores
         
         generateAllMosaicResponses(theMosaic, lowFrequencyOIs, highFrequencyOIs, ...
-                lowFrequencyOIsOrtho, highFrequencyOIsOrtho, fixationDurationSeconds, contrastLevels, analyzedNoiseInstance, nTrials, nTrialsPerBlock);
+                lowFrequencyOIsOrtho, highFrequencyOIsOrtho, ...
+                fixationDurationSeconds, contrastLevels, analyzedNoiseInstance, ...
+                nTrials, nTrialsPerBlock, resourcesDir);
     end
     
     if (visualizeMosaicResponses)
@@ -109,7 +114,8 @@ function findPerformance()
 end
 
 function generateAllMosaicResponses(theMosaic, lowFrequencyOIs, highFrequencyOIs, ...
-                lowFrequencyOIsOrtho, highFrequencyOIsOrtho, fixationDurationSeconds, contrastLevels, analyzedNoiseInstances, nTrials, nTrialsPerBlock)
+                lowFrequencyOIsOrtho, highFrequencyOIsOrtho, fixationDurationSeconds, ...
+                contrastLevels, analyzedNoiseInstances, nTrials, nTrialsPerBlock, resourcesDir)
 
     % Set mosaic integration time and fixation duration
     theMosaic.integrationTime = 2.5/1000;
@@ -130,25 +136,25 @@ function generateAllMosaicResponses(theMosaic, lowFrequencyOIs, highFrequencyOIs
     for theContrastLevel = 1:nContrasts
         for theInstance = 1:analyzedNoiseInstances
 
-            fname = sprintf('highFrequency_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance);
+            fname = fullfile(resourcesDir, sprintf('highFrequency_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance));
             [coneExcitations, photoCurrents, eyeMovementPaths] = ...
                 computeResponses(theMosaic, emPaths, highFrequencyOIs{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
             save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths',  'contrastLevels', 'theContrastLevel', '-v7.3');
             
-            fname = sprintf('highFrequencyOrtho_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance);
+            fname = fullfile(resourcesDir, sprintf('highFrequencyOrtho_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance));
             [coneExcitations, photoCurrents, eyeMovementPaths] = ...
                 computeResponses(theMosaic, emPaths, highFrequencyOIsOrtho{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
             save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'contrastLevels', 'theContrastLevel', '-v7.3');
             
-            fname = sprintf('lowFrequency_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance);
+            fname = fullfile(resourcesDir, sprintf('lowFrequency_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance));
             [coneExcitations, photoCurrents, eyeMovementPaths] = ...
                 computeResponses(theMosaic, emPaths, lowFrequencyOIs{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
             save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'contrastLevels', 'theContrastLevel','-v7.3');
             
-            fname = sprintf('lowFrequencyOrtho_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance);
+            fname = fullfile(resourcesDir, sprintf('lowFrequencyOrtho_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance));
             [coneExcitations, photoCurrents, eyeMovementPaths] = ...
                 computeResponses(theMosaic, emPaths, lowFrequencyOIsOrtho{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
@@ -219,7 +225,7 @@ function allTrialsMatrix = reformatAllTrialsMatrix(allTrialsMatrix, nonNullCones
     allTrialsMatrix = permute(allTrialsMatrix, [2 1 3]);
 end
     
-function generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, lowFrequencyScenesOrtho, highFrequencyScenesOrtho, contrastLevels, noiseInstances)
+function generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, lowFrequencyScenesOrtho, highFrequencyScenesOrtho, contrastLevels, noiseInstances, resourcesDir)
     nContrasts = numel(contrastLevels);
     theOI = oiCreate('wvf human');
     
@@ -239,11 +245,12 @@ function generateAllOpticalImages(lowFrequencyScenes, highFrequencyScenes, lowFr
         end
     end
     
-    save('ois.mat', 'lowFrequencyOIs', 'highFrequencyOIs', ...
+    fName = fullfile(resourcesDir, 'ois.mat');
+    save(fName, 'lowFrequencyOIs', 'highFrequencyOIs', ...
          'lowFrequencyOIsOrtho', 'highFrequencyOIsOrtho', 'contrastLevels', 'noiseInstances', '-v7.3');        
 end
 
-function generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM2, contrastLevels)
+function generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM2, contrastLevels, resourcesDir)
    
     viewingDistance = 75/100;
     
@@ -290,7 +297,8 @@ function generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM
         end
     end
    
-    save('scenes.mat', 'lowFrequencyScenes', 'highFrequencyScenes', ...
+    fName = fullfile(resourcesDir, 'scenes.mat');
+    save(fName, 'lowFrequencyScenes', 'highFrequencyScenes', ...
          'lowFrequencyScenesOrtho', 'highFrequencyScenesOrtho', 'contrastLevels', 'noiseInstances', '-v7.3');
 end
 
