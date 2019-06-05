@@ -1,41 +1,60 @@
 function simulateRucciExperiment
 
     [rootDir,~] = fileparts(which(mfilename));
-    resourcesDir = '/media/dropbox_disk/Dropbox (Aguirre-Brainard Lab)/IBIO_analysis/IBIOColorDetect/SideProjects/RucciSimulations';
-    cd(rootDir);
-    pause(0.1);
     
-    generateScenes = true;
-    generateOpticalImages = true;
+    s = GetComputerInfo;
+    localHostName = lower(s.localHostName);
+    if (contains(localHostName, 'manta'))
+        dropboxRoot = '/Volumes/DropBoxDisk/Dropbox/Dropbox (Aguirre-Brainard Lab)';
+        parforWorkers = 2;
+    elseif (contains(localHostName, 'leviathan'))
+        parforWorkers = 12;
+        dropboxRoot = '/media/dropbox_disk/Dropbox (Aguirre-Brainard Lab)';
+    else
+        error('Unknown computer name: ''%s''.', s.localHostName);
+    end
+    
+    resourcesDir = fullfile(dropboxRoot, 'IBIO_analysis', 'IBIOColorDetect', 'SideProjects', 'RucciSimulations');
+    
+    generateScenes = ~true;
+    generateOpticalImages = ~true;
     generateMosaicResponses = true;
-    visualizeMosaicResponses = ~true;
-    classifyMosaicResponses = ~true;
+    visualizeMosaicResponses = true;
+    classifyMosaicResponses = true;
     
     if (generateMosaicResponses || visualizeMosaicResponses || classifyMosaicResponses)
         % Load the mosaic
-        load('ConeMosaic_1.0Degs_Iterations_2000_Tolerance_0.000250.mat', 'theMosaic');
+        load(fullfile(resourcesDir, 'ConeMosaic_1.0Degs_Iterations_2000_Tolerance_0.000250.mat'), 'theMosaic');
     end
     
     % Contrast levels (exploring ....)
     contrastLevels = [1.0 0.3 0.1 0.03];
-    
-    
-    % Only compute responses for the first instance of noise stimulus    
-    analyzedNoiseInstance = 1;
     nTrials = 512;
     fixationDurationSeconds = 0.8;
+    warmupTimeSeconds = 0.4;
+    mosaicIntegrationTimeSeconds = 2.5/1000;
+    meanLuminanceCdPerM2 = 21*4;  % match Rucc 2007 paper, which said 21 cd/m2
+    % Only compute responses for the first instance of noise stimulus    
+    analyzedNoiseInstance = 1;
+    
+    if (contains(localHostName, 'manta'))
+        % ----- ONLY FOR TESTING  -----
+        contrastLevels = [1 0.5];
+        nTrials = 4;
+        fixationDurationSeconds = 0.2;
+        % ----- ONLY FOR TESTING  -----
+    end
     
     
     if (generateScenes)
         noiseInstances = 2;         % only computing responses for 1 though
-        meanLuminanceCdPerM2 = 21;  % match Rucc 2007 paper
         stimulusSizeDegs = 1.0;     % small enough to allow faster computations
         generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM2, contrastLevels, resourcesDir);  
     end
     
     if (generateOpticalImages)
         %Load previously computed scenes
-        scenesFile = fullfile(resourcesDir, 'scenes.mat');
+        scenesFile = fullfile(resourcesDir, sprintf('scenes_luminance_%2.1f.mat', meanLuminanceCdPerM2));
         load(scenesFile, 'lowFrequencyScenes', 'highFrequencyScenes', ...
              'lowFrequencyScenesOrtho', 'highFrequencyScenesOrtho', 'contrastLevels', 'noiseInstances');
         % Display scene profiles
@@ -50,61 +69,182 @@ function simulateRucciExperiment
         load(oisFile, 'lowFrequencyOIs', 'highFrequencyOIs', ...
          'lowFrequencyOIsOrtho', 'highFrequencyOIsOrtho', 'contrastLevels');
      
-        nTrialsPerBlock = 1;  % for a 16 GB system
-        nTrialsPerBlock = 1;  % for a 32 GB system with 4 cores
-        nTrialsPerBlock = 1; % for a 256 GB system with 20 cores
+        nTrialsPerBlock = 1;
         
         generateAllMosaicResponses(theMosaic, lowFrequencyOIs, highFrequencyOIs, ...
                 lowFrequencyOIsOrtho, highFrequencyOIsOrtho, ...
-                fixationDurationSeconds, contrastLevels, analyzedNoiseInstance, ...
-                nTrials, nTrialsPerBlock, resourcesDir);
+                mosaicIntegrationTimeSeconds, fixationDurationSeconds, warmupTimeSeconds, contrastLevels, analyzedNoiseInstance, ...
+                nTrials, nTrialsPerBlock, parforWorkers, resourcesDir);
     end
     
     if (visualizeMosaicResponses)
-        contrastLevel = 1.0;
-        visualizeTheResponses(theMosaic, contrastLevel, analyzedNoiseInstance);
+        trialNo = 2;
+        contrastLevel = 1.0;  
+        
+        figNo = 1000;
+        visualizeTheResponses('highFrequency', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNo, resourcesDir, figNo);
+        
+        figNo = 1001;
+        visualizeTheResponses('highFrequencyOrtho', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNo, resourcesDir, figNo);
+        
+        
+        figNo = 2000;
+        visualizeTheResponses('lowFrequency', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNo, resourcesDir, figNo);
+        
+        figNo = 2001;
+        visualizeTheResponses('lowFrequencyOrtho', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNo, resourcesDir, figNo);
     end
     
 end
 
-function visualizeTheResponses(theMosaic, contrastLevel, theInstance)
+function visualizeTheResponses(stimDescriptor, theMosaic, contrastLevel, theInstance, nTrials, trialNo, resourcesDir, figNo)
     
-    fname = sprintf('highFrequency_contrast_%2.4f_instance_%1.0f.mat', contrastLevel, theInstance);
-    load(fname, 'coneExcitations'); % , 'photoCurrents');
-    
-    nBlocks = length(coneExcitations);
-    [nTrialsPerBlock,conesNum, timeBinsNum] = size(coneExcitations{1});
-    
-    nTrials = nBlocks*nTrialsPerBlock;
-    theConeExcitations = zeros(nTrials, conesNum, timeBinsNum);
-    
-    % From cell array to array
-    for blockIndex = 1:nBlocks
-        % compute responses for this block's trials
-        trialIndicesForBlock = (blockIndex-1)*nTrialsPerBlock + (1:nTrialsPerBlock);
-        theConeExcitations(trialIndicesForBlock,:,:) = coneExcitations{blockIndex};
-    end
-    
-    visualizeDynamicResponse(theMosaic, theConeExcitations, 'R*/cone/tau');
-    %visualizeConeMosaicResponses(theMosaic, photoCurrents, 'pAmps');
-            
+    fname = fullfile(resourcesDir, sprintf('%s_contrast_%2.4f_instance_%1.0f_nTrials_%d.mat', stimDescriptor, contrastLevel, theInstance, nTrials));
+    load(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths',  'emPathsDegs', 'timeAxis')
+
+    visualizeDynamicResponse(theMosaic, coneExcitations, photoCurrents, eyeMovementPaths, emPathsDegs, timeAxis, stimDescriptor, trialNo, figNo);    
+
 end
 
-function visualizeDynamicResponse(theMosaic, allTrialResponses, responseSignalName)
+function visualizeDynamicResponse(theMosaic, coneExcitations, photoCurrents, eyeMovementPaths, emPathsDegs, timeAxis, stimDescriptor, trialNo, figNo)
     
-    instanceNo = 1;
-    singleTrialResponse = squeeze(allTrialResponses(instanceNo,:,:));
-    responseRange = [min(singleTrialResponse(:)) max(singleTrialResponse(:))];
+    [idxOfConesAlongHorizMeridian, idxOfConesAlongVertMeridian, ...
+            eccDegsOfConesAlongHorizMeridian, ...
+            eccDegsOfConesAlongVertMeridian, ...
+            idxOfConesAlongHorizMeridianInSerializedList, idxOfConesAlongVertMeridianInSerializedList, ] = theMosaic.indicesForConesAlongMeridians();
+        
+    singleTrialConeExcitationResponse = squeeze(coneExcitations(trialNo,:,:));
+    coneExcitationResponseRange = prctile(singleTrialConeExcitationResponse(:), [5 95]);
     
-    hFig = figure(9988);
-    axHandle = subplot(1,2,1);
-    for timeBin = 1:size(singleTrialResponse,2)
-        theMosaic.renderActivationMap(axHandle, squeeze(singleTrialResponse(:,timeBin)), ...
-                'mapType', 'modulated disks', ...
-                'signalRange', responseRange, ...
-                'showColorBar', true, ...
-                'labelColorBarTicks', true, ...
-                'titleForColorBar', responseSignalName);
+    singleTrialPhotocurrentResponse = squeeze(photoCurrents(trialNo,:,:));
+    photocurrentResponseRange = prctile(singleTrialPhotocurrentResponse(:), [5 95]);
+    
+    singleTrialEyeMovement = squeeze(eyeMovementPaths(trialNo,:,:));
+    singleTrialEyeMovementDegs = squeeze(emPathsDegs(trialNo,:,:));
+    
+    hFig = figure(figNo);
+    
+    for timeBin = 1:size(singleTrialConeExcitationResponse,2)
+%         axHandle = subplot(1,2,1);
+%         theMosaic.renderActivationMap(axHandle, squeeze(singleTrialResponse(:,timeBin)), ...
+%                 'mapType', 'modulated disks', ...
+%                 'signalRange', responseRange, ...
+%                 'showColorBar', true, ...
+%                 'labelColorBarTicks', true, ...
+%                 'titleForColorBar', 'R*/cone/tau');
+
+        % The eye movement trajectory
+        subplot(2,5,1);
+        plot(singleTrialEyeMovementDegs(1:timeBin,1),  singleTrialEyeMovementDegs(1:timeBin,2), 'k-'); hold on;
+        plot(singleTrialEyeMovementDegs(timeBin,1)+ [-0.1 0.1],  singleTrialEyeMovementDegs(timeBin,2)*[1 1], 'b-', 'LineWidth', 1.5);
+        plot(singleTrialEyeMovementDegs(timeBin,1)*[1 1],  singleTrialEyeMovementDegs(timeBin,2)+ [-0.1 0.1], 'b-', 'LineWidth', 1.5); 
+        hold off;
+        axis 'square';
+        set(gca, 'YLim', [-0.2 0.2], 'XLim', [-0.2 0.2]);
+        xlabel('horizontal position (degs)');
+        ylabel('vertical position (degs)');
+        
+        % The cone excitations for cones along the vertical meridian
+        subplot(2,5,2);
+        responseVector = squeeze(singleTrialConeExcitationResponse(idxOfConesAlongVertMeridianInSerializedList,timeBin));
+        plot(eccDegsOfConesAlongVertMeridian, responseVector, 'ko', 'MarkerFaceColor', [0.8 0.8 0.8]);
+        axis 'square';
+        set(gca, 'YLim', coneExcitationResponseRange);
+        xlabel('vertical position (degs)');
+        ylabel('cone excitations (R*/cone/tau)');
+        title('cone excitation responses (vert meridian)');
+        
+         % The cone excitations for cones along the horizontal meridian
+        subplot(2,5,3);
+        responseVector = squeeze(singleTrialConeExcitationResponse(idxOfConesAlongHorizMeridianInSerializedList,timeBin));
+        plot(eccDegsOfConesAlongHorizMeridian, responseVector, 'ko', 'MarkerFaceColor', [0.8 0.8 0.8]);
+        axis 'square';
+        set(gca, 'YLim', coneExcitationResponseRange);
+        xlabel('horizontal position (degs)');
+        ylabel('cone excitations (R*/cone/tau)');
+        title('cone excitation responses (horiz meridian)');
+        
+        % XT plot of cone excitations along the horizontal meridian
+        subplot(2,5,4);
+        imagesc(eccDegsOfConesAlongHorizMeridian, timeAxis*1000, (singleTrialConeExcitationResponse(idxOfConesAlongHorizMeridianInSerializedList,:))');
+        hold on;
+         % superimpose x-eye movement trajectory
+        plot(singleTrialEyeMovementDegs(:,1), timeAxis*1000, 'r-', 'LineWidth', 1.5);
+        set(gca, 'YTick', 0:100:1000);
+        hold off
+        axis 'square';
+        axis 'xy'
+        xlabel('horizontal position (degs)');
+        ylabel('time (msec)');
+        colormap(gray);
+        title('cone excitations (horiz meridian)');
+        
+        % XT plot of cone excitations along the vertical meridian
+        subplot(2,5,5);
+        imagesc(eccDegsOfConesAlongVertMeridian, timeAxis*1000, (singleTrialConeExcitationResponse(idxOfConesAlongVertMeridianInSerializedList,:))');
+        hold on;
+        % superimpose y-eye movement trajectory
+        plot(-singleTrialEyeMovementDegs(:,2), timeAxis*1000, 'g-', 'LineWidth', 1.5);
+        set(gca, 'YTick', 0:100:1000);
+        hold off
+        axis 'square';
+        axis 'xy'
+        xlabel('vertical position (degs)');
+        ylabel('time (msec)');
+        colormap(gray);
+        title('cone excitations (vert meridian)');
+        
+        
+        % The photocurrents for cones along the vertical meridian
+        subplot(2,5,7);
+        responseVector = squeeze(singleTrialPhotocurrentResponse(idxOfConesAlongVertMeridianInSerializedList,timeBin));
+        plot(eccDegsOfConesAlongVertMeridian, responseVector, 'ko', 'MarkerFaceColor', [0.8 0.8 0.8]);
+        axis 'square';
+        set(gca, 'YLim', photocurrentResponseRange);
+        xlabel('vertical position (degs)');
+        ylabel('photocurrent (pAmps)');
+        title('photocurrent responses (vert meridian)');
+        
+        % The photocurrents for cones along the horizontal meridian
+        subplot(2,5,8);
+        responseVector = squeeze(singleTrialPhotocurrentResponse(idxOfConesAlongHorizMeridianInSerializedList,timeBin));
+        plot(eccDegsOfConesAlongHorizMeridian, responseVector, 'ko', 'MarkerFaceColor', [0.8 0.8 0.8]);
+        axis 'square';
+        set(gca, 'YLim', photocurrentResponseRange);
+        xlabel('horizontal position (degs)');
+        ylabel('photocurrent (pAmps)');
+        title('photocurrent responses (horiz meridian)');
+        
+        % XT plot of photocurrents along the horizontal meridian
+        subplot(2,5,9);
+        imagesc(eccDegsOfConesAlongHorizMeridian, timeAxis*1000, (singleTrialPhotocurrentResponse(idxOfConesAlongHorizMeridianInSerializedList,:))');
+        hold on;
+        % superimpose x-eye movement trajectory
+        plot(singleTrialEyeMovementDegs(:,1), timeAxis*1000, 'r-', 'LineWidth', 1.5);
+        set(gca, 'YTick', 0:100:1000);
+        hold off
+        axis 'square';
+        axis 'xy'
+        xlabel('horizontal position (degs)');
+        ylabel('time (msec)');
+        title('photocurrent (horiz meridian)');
+        
+        % XT plot of photocurrents along the vertical meridian
+        subplot(2,5,10);
+        imagesc(eccDegsOfConesAlongVertMeridian, timeAxis*1000, (singleTrialPhotocurrentResponse(idxOfConesAlongVertMeridianInSerializedList,:))');
+        hold on;
+        % superimpose y-eye movement trajectory
+        plot(-singleTrialEyeMovementDegs(:,2), timeAxis*1000, 'g-', 'LineWidth', 1.5);
+        set(gca, 'YTick', 0:100:1000);
+        hold off
+        axis 'square';
+        axis 'xy'
+        xlabel('vertical position (degs)');
+        ylabel('time (msec)');
+        title('photocurrent (vert meridian)');
+        
+        colormap(gray);
+        
         drawnow;
     end
 end
@@ -114,17 +254,20 @@ function findPerformance()
 end
 
 function generateAllMosaicResponses(theMosaic, lowFrequencyOIs, highFrequencyOIs, ...
-                lowFrequencyOIsOrtho, highFrequencyOIsOrtho, fixationDurationSeconds, ...
-                contrastLevels, analyzedNoiseInstances, nTrials, nTrialsPerBlock, resourcesDir)
+                lowFrequencyOIsOrtho, highFrequencyOIsOrtho, mosaicIntegrationTimeSeconds, fixationDurationSeconds, warmupTimeSeconds, ...
+                contrastLevels, analyzedNoiseInstances, nTrials, nTrialsPerBlock, parforWorkers, resourcesDir)
 
     % Set mosaic integration time and fixation duration
-    theMosaic.integrationTime = 2.5/1000;
+    theMosaic.integrationTime = mosaicIntegrationTimeSeconds;
     eyeMovementsNum = ceil(fixationDurationSeconds/theMosaic.integrationTime);
 
 
     % Compute fixational eye movements for desired number of trials
     [emPaths, fixEMOBJ] = theMosaic.emGenSequence(eyeMovementsNum, ...
-        'nTrials', nTrials, 'centerPaths', true);
+        'nTrials', nTrials, 'centerPaths', ~true);
+    timeAxis = fixEMOBJ.timeAxis;
+    emPathsDegs = fixEMOBJ.emPosMicrons / theMosaic.micronsPerDegree;
+    
     visualizeConeMosaicAndEMPath(theMosaic, fixEMOBJ);
 
 
@@ -136,35 +279,35 @@ function generateAllMosaicResponses(theMosaic, lowFrequencyOIs, highFrequencyOIs
     for theContrastLevel = 1:nContrasts
         for theInstance = 1:analyzedNoiseInstances
 
-            fname = fullfile(resourcesDir, sprintf('highFrequency_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance));
+            fname = fullfile(resourcesDir, sprintf('highFrequency_contrast_%2.4f_instance_%1.0f_nTrials_%d.mat', contrastLevels(theContrastLevel), theInstance, nTrials));
             [coneExcitations, photoCurrents, eyeMovementPaths] = ...
-                computeResponses(theMosaic, emPaths, highFrequencyOIs{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
+                computeResponses(theMosaic, emPaths, highFrequencyOIs{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock, warmupTimeSeconds, parforWorkers);
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
-            save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths',  'contrastLevels', 'theContrastLevel', '-v7.3');
+            save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'emPathsDegs',  'timeAxis', 'contrastLevels', 'theContrastLevel', '-v7.3');
             
-            fname = fullfile(resourcesDir, sprintf('highFrequencyOrtho_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance));
+            fname = fullfile(resourcesDir, sprintf('highFrequencyOrtho_contrast_%2.4f_instance_%1.0f_nTrials_%d.mat', contrastLevels(theContrastLevel), theInstance, nTrials));
             [coneExcitations, photoCurrents, eyeMovementPaths] = ...
-                computeResponses(theMosaic, emPaths, highFrequencyOIsOrtho{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
+                computeResponses(theMosaic, emPaths, highFrequencyOIsOrtho{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock, warmupTimeSeconds, parforWorkers );
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
-            save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'contrastLevels', 'theContrastLevel', '-v7.3');
+            save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'emPathsDegs', 'timeAxis', 'contrastLevels', 'theContrastLevel', '-v7.3');
             
-            fname = fullfile(resourcesDir, sprintf('lowFrequency_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance));
+            fname = fullfile(resourcesDir, sprintf('lowFrequency_contrast_%2.4f_instance_%1.0f_nTrials_%d.mat', contrastLevels(theContrastLevel), theInstance, nTrials));
             [coneExcitations, photoCurrents, eyeMovementPaths] = ...
-                computeResponses(theMosaic, emPaths, lowFrequencyOIs{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
+                computeResponses(theMosaic, emPaths, lowFrequencyOIs{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock, warmupTimeSeconds,parforWorkers );
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
-            save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'contrastLevels', 'theContrastLevel','-v7.3');
+            save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'emPathsDegs', 'timeAxis', 'contrastLevels', 'theContrastLevel','-v7.3');
             
-            fname = fullfile(resourcesDir, sprintf('lowFrequencyOrtho_contrast_%2.4f_instance_%1.0f.mat', contrastLevels(theContrastLevel), theInstance));
+            fname = fullfile(resourcesDir, sprintf('lowFrequencyOrtho_contrast_%2.4f_instance_%1.0f_nTrials_%d.mat', contrastLevels(theContrastLevel), theInstance, nTrials));
             [coneExcitations, photoCurrents, eyeMovementPaths] = ...
-                computeResponses(theMosaic, emPaths, lowFrequencyOIsOrtho{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
+                computeResponses(theMosaic, emPaths, lowFrequencyOIsOrtho{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock, warmupTimeSeconds,parforWorkers );
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
-            save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'contrastLevels', 'theContrastLevel', '-v7.3');
+            save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'emPathsDegs', 'timeAxis', 'contrastLevels', 'theContrastLevel', '-v7.3');
         end
     end
         
 end
 
-function [theConeExcitations, thePhotoCurrents, theEyeMovementsPaths] = computeResponses(theMosaic, emPaths, theOI, nBlocks, nTrialsPerBlock)
+function [theConeExcitations, thePhotoCurrents, theEyeMovementsPaths] = computeResponses(theMosaic, emPaths, theOI, nBlocks, nTrialsPerBlock, warmupTimeSeconds, parforWorkers )
             
     % Find the non-null cone indices
     nonNullConeIndices = find(theMosaic.pattern > 1);
@@ -173,31 +316,42 @@ function [theConeExcitations, thePhotoCurrents, theEyeMovementsPaths] = computeR
     photoCurrents = cell(1,nBlocks);
     eyeMovementPaths = cell(1, nBlocks);
     
-    parfor blockIndex = 1:nBlocks
+    
+    % Add 0.5 secosome time points 
+    nullEMPaths = zeros(size(emPaths,1),round(warmupTimeSeconds/theMosaic.integrationTime),2);
+    timePointsNum = size(nullEMPaths,2);
+    stimulusEMPaths = emPaths;
+    emPaths = cat(2, nullEMPaths, stimulusEMPaths);
+    
+    parfor (blockIndex = 1:nBlocks, parforWorkers)
         % compute responses for this block's trials
         trialIndicesForBlock = (blockIndex-1)*nTrialsPerBlock + (1:nTrialsPerBlock);
         fprintf('Computing trials %d-%d of %d\n', trialIndicesForBlock(1), trialIndicesForBlock(end), nBlocks*nTrialsPerBlock);
+            
         [theConeExcitations, thePhotocurrents] = ...
             theMosaic.compute(theOI, ...
                 'emPath', emPaths(trialIndicesForBlock,:,:), ...
                 'currentFlag', true);
+            
 
+        theConeExcitations = theConeExcitations(:,:,:,timePointsNum+1:end);
+        thePhotocurrents = thePhotocurrents(:,:,:,timePointsNum+1:end);
+        
         % store to cell array
         coneExcitations{blockIndex} = reformatAllTrialsMatrix(theConeExcitations, nonNullConeIndices);
         photoCurrents{blockIndex} = reformatAllTrialsMatrix(thePhotocurrents, nonNullConeIndices);
-        eyeMovementPaths{blockIndex} = emPaths(trialIndicesForBlock,:,:);
+        eyeMovementPaths{blockIndex} = emPaths(trialIndicesForBlock,timePointsNum+1:end,:);
     end
     
     % From cell array to array
     nTrials = nBlocks*nTrialsPerBlock;
     conesNum = numel(nonNullConeIndices);
-    timeBinsNum = size(emPaths,2);
+    timeBinsNum = size(stimulusEMPaths,2);
     
     % Preallocate memory
     theConeExcitations = zeros(nTrials, conesNum, timeBinsNum);
     thePhotoCurrents = theConeExcitations;
-    theEyeMovementsPaths = emPaths*0;
-    size(theConeExcitations)
+    theEyeMovementsPaths = stimulusEMPaths*0;
     for blockIndex = 1:nBlocks
         % compute responses for this block's trials
         trialIndicesForBlock = (blockIndex-1)*nTrialsPerBlock + (1:nTrialsPerBlock);
@@ -205,9 +359,7 @@ function [theConeExcitations, thePhotoCurrents, theEyeMovementsPaths] = computeR
         thePhotoCurrents(trialIndicesForBlock,:,:) = photoCurrents{blockIndex}; photoCurrents{blockIndex} = [];
         theEyeMovementsPaths(trialIndicesForBlock,:,:) = eyeMovementPaths{blockIndex}; eyeMovementPaths{blockIndex} = [];
     end
-    size(theConeExcitations)
 
-    
 end
 
 function allTrialsMatrix = reformatAllTrialsMatrix(allTrialsMatrix, nonNullConesIndices)
@@ -297,7 +449,7 @@ function generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM
         end
     end
    
-    fName = fullfile(resourcesDir, 'scenes.mat');
+    fName = fullfile(resourcesDir, sprintf('scenes_luminance_%2.1f.mat', meanLuminanceCdPerM2));
     save(fName, 'lowFrequencyScenes', 'highFrequencyScenes', ...
          'lowFrequencyScenesOrtho', 'highFrequencyScenesOrtho', 'contrastLevels', 'noiseInstances', '-v7.3');
 end
