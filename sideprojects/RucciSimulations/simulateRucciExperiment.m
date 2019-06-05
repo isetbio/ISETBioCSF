@@ -101,25 +101,25 @@ function generateAllMosaicResponses(lowFrequencyOIs, highFrequencyOIs, ...
     for theContrastLevel = 1:nContrasts
         for theInstance = 1:analyzedNoiseInstances
 
-            fname = sprintf('highFrequency_contrast_%2.4f_instance_%2.0f', contrastLevels(theContrastLevel), theInstance);
+            fname = sprintf('highFrequency_contrast_%2.4f_instance_%1.0f', contrastLevels(theContrastLevel), theInstance);
             [coneExcitations, photoCurrents, emPaths] = ...
                 computeResponses(theMosaic, emPaths, highFrequencyOIs{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
             save(fname, 'coneExcitations', 'photoCurrents', 'emPaths',  'contrastLevels', 'theContrastLevel', '-v7.3');
             
-            fname = sprintf('highFrequencyOrtho_contrast_%2.4f_instance_%2.0f', contrastLevels(theContrastLevel), theInstance);
+            fname = sprintf('highFrequencyOrtho_contrast_%2.4f_instance_%1.0f', contrastLevels(theContrastLevel), theInstance);
             [coneExcitations, photoCurrents, emPaths] = ...
                 computeResponses(theMosaic, emPaths, highFrequencyOIsOrtho{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
             save(fname, 'coneExcitations', 'photoCurrents', 'emPaths', 'contrastLevels', 'theContrastLevel', '-v7.3');
             
-            fname = sprintf('lowFrequency_contrast_%2.4f_instance_%2.0f', contrastLevels(theContrastLevel), theInstance);
+            fname = sprintf('lowFrequency_contrast_%2.4f_instance_%1.0f', contrastLevels(theContrastLevel), theInstance);
             [coneExcitations, photoCurrents, emPaths] = ...
                 computeResponses(theMosaic, emPaths, lowFrequencyOIs{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
             save(fname, 'coneExcitations', 'photoCurrents', 'emPaths', 'contrastLevels', 'theContrastLevel','-v7.3');
             
-            fname = sprintf('lowFrequencyOrtho_contrast_%2.4f_instance_%2.0f', contrastLevels(theContrastLevel), theInstance);
+            fname = sprintf('lowFrequencyOrtho_contrast_%2.4f_instance_%1.0f', contrastLevels(theContrastLevel), theInstance);
             [coneExcitations, photoCurrents, emPaths] = ...
                 computeResponses(theMosaic, emPaths, lowFrequencyOIsOrtho{theContrastLevel, theInstance}, nBlocks, nTrialsPerBlock);
             fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
