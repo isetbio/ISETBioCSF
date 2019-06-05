@@ -3,7 +3,7 @@ function simulateRucciExperiment
     [rootDir,~] = fileparts(which(mfilename));
     
     s = GetComputerInfo;
-    localHostName = lower(s.localHostName);
+    localHostName = lower(s.networkName);
     if (contains(localHostName, 'manta'))
         dropboxRoot = '/Volumes/DropBoxDisk/Dropbox/Dropbox (Aguirre-Brainard Lab)';
         parforWorkers = 2;
