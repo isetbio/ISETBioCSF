@@ -16,6 +16,21 @@ function spatialPoolingKernels = generateSpatialPoolingKernels(theMosaic, ...
     
     [~, idx] = pdist2(rfCoordsDegs, coneLocsDegs, 'euclidean', 'Smallest', 1);
     
+    size(lowFrequencyTemplate.linear)
+    figure(234234);
+    subplot(2,2,1)
+    imagesc(lowFrequencyTemplate.linear)
+    subplot(2,2,2);
+    imagesc(lowFrequencyTemplateOrtho.linear);
+    subplot(2,2,3)
+    imagesc(lowFrequencyTemplate.quadrature)
+    subplot(2,2,4);
+    imagesc(lowFrequencyTemplateOrtho.quadrature);
+    pause
+
+    max(abs(lowFrequencyTemplate.quadrature(:)))
+    max(abs(lowFrequencyTemplateOrtho.linear(:)))
+    pause
     
     spatialPoolingKernels.lowFrequencyPoolingWeightsLinear           = lowFrequencyTemplate.linear(idx);
     spatialPoolingKernels.lowFrequencyPoolingWeightsQuadrature       = lowFrequencyTemplate.quadrature(idx);

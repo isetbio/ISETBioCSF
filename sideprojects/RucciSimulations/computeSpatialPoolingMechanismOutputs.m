@@ -43,6 +43,8 @@ function computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescri
         % Compute modulated mosaic responses by subtracting the MEAN response to the null stimulus
         modulatedConeExcitations = bsxfun(@minus, coneExcitations, nullStimulusMeanConeExcitations);
         
+        visualizeResponseAndPoolingKernel(squeeze(mean(modulatedConeExcitations,1)), poolingKernelLinear);
+        
         % Comptute dot product along all cones (standard orientation filter)
         subunit1Responses = squeeze(sum(bsxfun(@times, poolingKernelLinear, modulatedConeExcitations),2));
         subunit2Responses = squeeze(sum(bsxfun(@times, poolingKernelQuadrature, modulatedConeExcitations),2));
@@ -64,3 +66,8 @@ function computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescri
 
 end
 
+
+function visualizeResponseAndPoolingKernel(response, poolingKernel)
+   
+    
+end

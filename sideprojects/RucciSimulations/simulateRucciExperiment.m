@@ -16,10 +16,10 @@ function simulateRucciExperiment
     
     resourcesDir = fullfile(dropboxRoot, 'IBIO_analysis', 'IBIOColorDetect', 'SideProjects', 'RucciSimulations');
     
-    generateScenes = true;
-    generateOpticalImages = true;
-    generateMosaicResponses = true;
-    visualizeMosaicResponses = true;
+    generateScenes = ~true;
+    generateOpticalImages = ~true;
+    generateMosaicResponses = ~true;
+    visualizeMosaicResponses = ~true;
     computeEnergyMechanismResponses = true;
     classifyMosaicResponses = true;
     
@@ -101,8 +101,8 @@ function simulateRucciExperiment
         
         
         % Compute outputs of energy mechanisms (tuned to standard and orthogonal orientation) to the high frequency standard orientation stimuli
-        %stimDescriptor = 'highFrequency';
-        %computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir);
+        stimDescriptor = 'highFrequency';
+        computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir);
         
         % Compute outputs of energy mechanisms (tuned to standard and orthogonal orientation) to the high frequency orthogonal orientation stimuli
         stimDescriptor = 'highFrequencyOrtho';
@@ -110,12 +110,12 @@ function simulateRucciExperiment
         
         
         % Compute outputs of energy mechanisms (tuned to standard and orthogonal orientation) to the low frequency standard orientation stimuli
-        %stimDescriptor = 'lowFrequency';
-        %computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir);
+        stimDescriptor = 'lowFrequency';
+        computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir);
         
         % Compute outputs of energy mechanisms (tuned to standard and orthogonal orientation) to the low frequency orthogonal orientation stimuli
-       % stimDescriptor = 'lowFrequencyOrtho';
-       % computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir); 
+        stimDescriptor = 'lowFrequencyOrtho';
+        computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir); 
     end
     
     

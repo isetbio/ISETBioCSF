@@ -207,11 +207,12 @@ function [gratingImages, gaussianEnvelope, template] = generateGratingComponents
     [xx,yy] = meshgrid(spatialSupportDegs, spatialSupportDegs);
     gaussianEnvelope = exp(-0.5*((xx/(gratingParams.sigmaArcMin/60)).^2)) .* exp(-0.5*((yy/(gratingParams.sigmaArcMin/60)).^2));
     gratingImages = zeros(numel(gratingParams.contrastLevels), size(gaussianEnvelope,1), size(gaussianEnvelope,2));
+    xxyy = xx*cosd(gratingParams.oriDegs) + yy*sind(gratingParams.oriDegs);
     for k = 1:numel(gratingParams.contrastLevels)
-        gratingImages(k,:,:) = gratingParams.contrastLevels(k) * cos(2*pi*gratingParams.sfCPD*(xx*cosd(gratingParams.oriDegs) + yy*sind(gratingParams.oriDegs)));
+        gratingImages(k,:,:) = gratingParams.contrastLevels(k) * cos(2*pi*gratingParams.sfCPD*xxyy);
     end
-    template.linear = cos(2*pi*gratingParams.sfCPD*(xx*cosd(gratingParams.oriDegs) + yy*sind(gratingParams.oriDegs))) .* gaussianEnvelope;
-    template.quadrature = sin(2*pi*gratingParams.sfCPD*(xx*cosd(gratingParams.oriDegs) + yy*sind(gratingParams.oriDegs))) .* gaussianEnvelope;
+    template.linear     = cos(2*pi*gratingParams.sfCPD*xxyy) .* gaussianEnvelope;
+    template.quadrature = sin(2*pi*gratingParams.sfCPD*xxyy) .* gaussianEnvelope;
 end
 
 function plotStimulusAndSpectrum(stimulus, figNo)
