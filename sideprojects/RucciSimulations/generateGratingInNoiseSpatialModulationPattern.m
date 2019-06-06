@@ -18,12 +18,12 @@ function [stimulus, noiseNorm] = generateGratingInNoiseSpatialModulationPattern(
     spatialFrequencySupport = (0:(numel(positiveSFindices)-1))/(numel(positiveSFindices)-1) * sfMaxCPD;
         
     % Generate grating components
-    [gratingComponents,gaussianEnvelope] = generateGratingComponents(spatialSupportDegs, gratingParams);
+    [gratingComponents,gaussianEnvelope, template] = generateGratingComponents(spatialSupportDegs, gratingParams);
     
     % Generate orthogonal grating component
     gratingParamsOrtho = gratingParams;
-    gratingParamsOrtho.oriDegs = gratingParams.oriDegs+ 90;
-    [gratingComponentsOrtho,~] = generateGratingComponents(spatialSupportDegs, gratingParamsOrtho);
+    gratingParamsOrtho.oriDegs = gratingParams.oriDegs + 90;
+    [gratingComponentsOrtho,~, templateOrtho] = generateGratingComponents(spatialSupportDegs, gratingParamsOrtho);
     
     computePower = false;
     
@@ -71,6 +71,8 @@ function [stimulus, noiseNorm] = generateGratingInNoiseSpatialModulationPattern(
     stimulus = struct(...
         'image', stimulusImage, ...
         'imageOrtho', stimulusImageOrtho, ...
+        'template', template, ...
+        'templateOrtho', templateOrtho, ...
         'spatialSupportDegs', spatialSupportDegs, ...
         'spectrum', spectrum, ...
         'spectrumOrtho', spectrumOrtho, ...
@@ -201,13 +203,15 @@ function noiseImagePowerDB = computeImageTotalPower(img)
      noiseImagePowerDB = 10*log10(sum(sum((abs(fft2(img))).^2)));
 end
 
-function [gratingImages, gaussianEnvelope] = generateGratingComponents(spatialSupportDegs, gratingParams)
+function [gratingImages, gaussianEnvelope, template] = generateGratingComponents(spatialSupportDegs, gratingParams)
     [xx,yy] = meshgrid(spatialSupportDegs, spatialSupportDegs);
     gaussianEnvelope = exp(-0.5*((xx/(gratingParams.sigmaArcMin/60)).^2)) .* exp(-0.5*((yy/(gratingParams.sigmaArcMin/60)).^2));
     gratingImages = zeros(numel(gratingParams.contrastLevels), size(gaussianEnvelope,1), size(gaussianEnvelope,2));
     for k = 1:numel(gratingParams.contrastLevels)
         gratingImages(k,:,:) = gratingParams.contrastLevels(k) * cos(2*pi*gratingParams.sfCPD*(xx*cosd(gratingParams.oriDegs) + yy*sind(gratingParams.oriDegs)));
     end
+    template.linear = cos(2*pi*gratingParams.sfCPD*(xx*cosd(gratingParams.oriDegs) + yy*sind(gratingParams.oriDegs))) .* gaussianEnvelope;
+    template.quadrature = sin(2*pi*gratingParams.sfCPD*(xx*cosd(gratingParams.oriDegs) + yy*sind(gratingParams.oriDegs))) .* gaussianEnvelope;
 end
 
 function plotStimulusAndSpectrum(stimulus, figNo)
