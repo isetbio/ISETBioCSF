@@ -8,11 +8,11 @@ function simulateRucciExperiment
     smallCompute = ~contains(localHostName, 'leviathan')
     
     % Actions
-    generateScenes = true;
-    generateOpticalImages = true;
-    generateMosaicResponses = true;
+    generateScenes = ~true;
+    generateOpticalImages = ~true;
+    generateMosaicResponses = ~true;
     visualizeMosaicResponses = ~true;
-    computeEnergyMechanismResponses = true;
+    computeEnergyMechanismResponses = ~true;
     classifyMosaicResponses = true;
     
     % Load the cone mosaic if needed
@@ -133,17 +133,33 @@ function simulateRucciExperiment
     
     
     if (classifyMosaicResponses) 
-        stimDescriptor = 'highFrequency'; figNo = 3000;
-        visualizeEnergyResponses(stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, resourcesDir, figNo);
+        % Load previously computed enery responses for the high frequency stimulus
         
-        stimDescriptor = 'highFrequencyOrtho'; figNo = figNo + 1;
-        visualizeEnergyResponses(stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, resourcesDir, figNo);
+        % The standard orientation
+        stimDescriptor = 'highFrequency';
+        fname = fullfile(resourcesDir, sprintf('energyResponse_%s_instance_%1.0f_nTrials_%d.mat', stimDescriptor, analyzedNoiseInstance, nTrials));
+        load(fname, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'timeAxis');
+        coneExcitationResponseStandardOriStimulus = energyConeExcitationResponse;
+        photoCurrentResponseStandardOriStimulus = energyPhotoCurrentResponse;
         
-        stimDescriptor = 'lowFrequency'; figNo = figNo + 1;
-        visualizeEnergyResponses(stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, resourcesDir, figNo);
+        % The orthogonal orientation
+        fname = fullfile(resourcesDir, sprintf('energyResponse_%s_instance_%1.0f_nTrials_%d.mat', sprintf('%sOrtho',stimDescriptor), analyzedNoiseInstance, nTrials));
+        load(fname, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'timeAxis');
+        coneExcitationResponseOrthogonalOriStimulus = energyConeExcitationResponse;
+        photoCurrentResponseOrthogonalOriStimulus = energyPhotoCurrentResponse;
         
-        stimDescriptor = 'lowFrequencyOrtho'; figNo = figNo + 1;
-        visualizeEnergyResponses(stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, resourcesDir, figNo);
+        % Find discriminability contrast threshold for the high frequency stimulus at the level of cone excitations
+        figNo = 3000;
+        computeDiscriminabilityContrastThreshold(stimDescriptor, 'cone excitations', ...
+            coneExcitationResponseStandardOriStimulus, coneExcitationResponseOrthogonalOriStimulus, ...
+            timeAxis, contrastLevels, figNo);
+        
+        figNo = 4000;
+        computeDiscriminabilityContrastThreshold(stimDescriptor, 'photocurrents', ...
+            photoCurrentResponseStandardOriStimulus, photoCurrentResponseOrthogonalOriStimulus, ...
+            timeAxis, contrastLevels, figNo);
+        
+        
     end
     
     

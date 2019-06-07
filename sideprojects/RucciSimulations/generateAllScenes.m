@@ -4,11 +4,9 @@ function generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM
     
     % Generate stimulus spatial modulations
     noiseNorm = nan;
-    
-    
+   
     nContrasts = numel(contrastLevels);
     oriDegs = 0;
-    
     
     [lowFrequencySpatialModulations, lowFrequencySpatialModulationsOrtho, lowFrequencyTemplate, lowFrequencyTemplateOrtho, spatialSupportDegs, noiseNorm] = ...
         generateStimulusSpatialModulation(stimulusSizeDegs, noiseNorm, 'low frequency', oriDegs, contrastLevels, noiseInstances);
@@ -130,7 +128,6 @@ function d = generateDisplay(viewingDistance, maxLuminance)
     end
     
     peakLum = displayGet(d,'peak luminance');
-    
 end
 
 function visualizeSpatialModulations(lowFrequencySpatialModulations, lowFrequencySpatialModulationsOrtho, ...
