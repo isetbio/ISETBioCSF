@@ -5,14 +5,14 @@ function simulateRucciExperiment
     [resourcesDir, parforWorkers, localHostName] = determineResources(rootDir);
     
     % if we are not on Leviathan do a small simulation
-    smallCompute = ~contains(localHostName, 'leviathan')
+    smallCompute = ~contains(localHostName, 'leviathan');
     
     % Actions
-    generateScenes = ~true;
-    generateOpticalImages = ~true;
-    generateMosaicResponses = ~true;
+    generateScenes = true;
+    generateOpticalImages = true;
+    generateMosaicResponses = true;
     visualizeMosaicResponses = ~true;
-    computeEnergyMechanismResponses = ~true;
+    computeEnergyMechanismResponses = true;
     classifyMosaicResponses = true;
     
     % Load the cone mosaic if needed
@@ -37,10 +37,11 @@ function simulateRucciExperiment
     
     if (smallCompute)
         % ----- ONLY FOR TESTING  -----
-        contrastLevels = [1 0.3 0.1 0.03 0.01];
-        nTrials = 4;
+        nContrastLevels = 5;
+        contrastLevels = logspace(log10(minContrast), log10(maxContrast), nContrastLevels);
+        nTrials = 128;
         warmupTimeSeconds = 0.1;
-        fixationDurationSeconds = 0.3;
+        fixationDurationSeconds = 0.2;
         % ----- ONLY FOR TESTING  -----
     end
     
