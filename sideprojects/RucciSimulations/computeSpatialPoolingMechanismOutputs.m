@@ -23,10 +23,10 @@ function computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescri
     end
     
     % Unit volume
-    poolingKernelLinear = poolingKernelLinear / sum(abs(poolingKernelLinear));
-    poolingKernelQuadrature = poolingKernelQuadrature / sum(abs(poolingKernelQuadrature));
-    poolingKernelOrthoLinear = poolingKernelOrthoLinear / sum(abs(poolingKernelOrthoLinear));
-    poolingKernelOrthoQuadrature = poolingKernelOrthoQuadrature / sum(abs(poolingKernelOrthoQuadrature));
+    %poolingKernelLinear = poolingKernelLinear / sum(abs(poolingKernelLinear));
+    %poolingKernelQuadrature = poolingKernelQuadrature / sum(abs(poolingKernelQuadrature));
+    %poolingKernelOrthoLinear = poolingKernelOrthoLinear / sum(abs(poolingKernelOrthoLinear));
+    %poolingKernelOrthoQuadrature = poolingKernelOrthoQuadrature / sum(abs(poolingKernelOrthoQuadrature));
     
     % Compute modulated mosaic responses for all other OIs and all contrast levels
     nContrasts = numel(contrastLevels);
@@ -35,7 +35,20 @@ function computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescri
     energyResponse.output = zeros(nContrasts, nTrials, size(coneExcitations,3));
     energyResponse.orthoOutput = zeros(nContrasts, nTrials, size(coneExcitations,3));
     
-    for theContrastLevel = 1:nContrasts
+    figure(9876); clf;
+    spatialSupportDegs = 0.5;
+    ax = subplot(2,2,1);
+    visualizePoolingKernel(ax, spatialPoolingKernels.coneLocsDegs, ...
+        spatialPoolingKernels.coneAperture, poolingKernelLinear, spatialSupportDegs, true)
+    
+    ax = subplot(2,2,2);
+    visualizePoolingKernel(ax, spatialPoolingKernels.coneLocsDegs, ...
+        spatialPoolingKernels.coneAperture, poolingKernelOrthoLinear, spatialSupportDegs, true)
+    
+    stimDescriptor
+    pause
+    
+    for theContrastLevel = 1:1 % nContrasts
         % Load mosaic responses
         fname = fullfile(resourcesDir, sprintf('%s_contrast_%2.4f_instance_%1.0f_nTrials_%d.mat', stimDescriptor, contrastLevels(theContrastLevel), analyzedNoiseInstance, nTrials));
         load(fname, 'coneExcitations');
@@ -43,8 +56,22 @@ function computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescri
         % Compute modulated mosaic responses by subtracting the MEAN response to the null stimulus
         modulatedConeExcitations = bsxfun(@minus, coneExcitations, nullStimulusMeanConeExcitations);
         
-        visualizeResponseAndPoolingKernel(squeeze(mean(modulatedConeExcitations,1)), poolingKernelLinear);
+
         
+        for timeBin = 1:80
+        ax = subplot(2,2,3)
+        visualizePoolingKernel(ax, spatialPoolingKernels.coneLocsDegs, ...
+            spatialPoolingKernels.coneAperture, squeeze(modulatedConeExcitations(1,:,timeBin)), spatialSupportDegs, true)
+        title(sprintf('time: %d of %d', timeBin,80));
+        
+        ax = subplot(2,2,4)
+        visualizePoolingKernel(ax, spatialPoolingKernels.coneLocsDegs, ...
+            spatialPoolingKernels.coneAperture, squeeze(coneExcitations(1,:,timeBin)), spatialSupportDegs, true)
+        drawnow;
+        pause(0.1);
+        end
+    
+    
         % Comptute dot product along all cones (standard orientation filter)
         subunit1Responses = squeeze(sum(bsxfun(@times, poolingKernelLinear, modulatedConeExcitations),2));
         subunit2Responses = squeeze(sum(bsxfun(@times, poolingKernelQuadrature, modulatedConeExcitations),2));
@@ -67,7 +94,3 @@ function computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescri
 end
 
 
-function visualizeResponseAndPoolingKernel(response, poolingKernel)
-   
-    
-end

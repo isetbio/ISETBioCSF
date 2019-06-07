@@ -7,7 +7,7 @@ function generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM
     
     
     nContrasts = numel(contrastLevels);
-    oriDegs = 90;
+    oriDegs = 0;
     
     
     [lowFrequencySpatialModulations, lowFrequencySpatialModulationsOrtho, lowFrequencyTemplate, lowFrequencyTemplateOrtho, spatialSupportDegs, noiseNorm] = ...
