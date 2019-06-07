@@ -1,12 +1,12 @@
-function visualizeSceneLuminanceProfiles(nullScene, lowFrequencyScenes, highFrequencyScenes, contrastLevels, noiseInstances)
+function visualizeSceneLuminanceProfiles(nullScene, sceneSet1, sceneSet2, contrastLevels, noiseInstances)
 
     nContrasts = numel(contrastLevels);
     for theContrastLevel = 1:nContrasts
         for theInstance = 1:noiseInstances 
-            realizedScene = lowFrequencyScenes{theContrastLevel, theInstance};
+            realizedScene = sceneSet1{theContrastLevel, theInstance};
             lumMap1(theInstance, theContrastLevel,:,:) = sceneGet(realizedScene, 'luminance');
 
-            realizedScene = highFrequencyScenes{theContrastLevel, theInstance};
+            realizedScene = sceneSet2{theContrastLevel, theInstance};
             lumMap2(theInstance, theContrastLevel,:,:) = sceneGet(realizedScene, 'luminance');
         end
     end
@@ -32,7 +32,7 @@ function visualizeSceneLuminanceProfiles(nullScene, lowFrequencyScenes, highFreq
    
     
     N = round(size(lumMap1,3)/2);
-    CLim = [0 max([max(lumMap1(:)) max(lumMap2(:))])];
+    CLim = [0 40];
     
 
     figure(444); clf;

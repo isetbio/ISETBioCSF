@@ -100,13 +100,15 @@ function [theConeExcitations, thePhotoCurrents, theEyeMovementsPaths] = computeR
             theMosaic.compute(theOI, ...
                 'emPath', squeeze(emPaths(trialIndex,:,:)), ...
                 'currentFlag', true);
-            
-        coneExcitations = reshape(coneExcitations, [allConesNum  allTimePointsNum]);
-        photocurrents = reshape(photocurrents, [allConesNum  allTimePointsNum]);
         
-        % store to cell array
-        theConeExcitations(trialIndex,:,:) = coneExcitations(nonNullConeIndices,timePointsNum+(1:stimulusTimePointsNum));
-        thePhotoCurrents(trialIndex,:,:) = photocurrents(nonNullConeIndices,timePointsNum+(1:stimulusTimePointsNum));
+        % Reshape full 3D hex activation map (coneRows x coneCols x time]
+        % to 2D map (non-null cones x time)
+        coneExcitations = theMosaic.reshapeHex3DmapToHex2Dmap(coneExcitations);
+        photocurrents = theMosaic.reshapeHex3DmapToHex2Dmap(photocurrents);
+        
+        % store only causal time bins
+        theConeExcitations(trialIndex,:,:) = coneExcitations(:,timePointsNum+(1:stimulusTimePointsNum));
+        thePhotoCurrents(trialIndex,:,:) = photocurrents(:,timePointsNum+(1:stimulusTimePointsNum));
         theEyeMovementsPaths(trialIndex,:,:) = emPaths(trialIndex,timePointsNum+(1:stimulusTimePointsNum),:);
     end
 end

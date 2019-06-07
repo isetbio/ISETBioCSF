@@ -6,9 +6,9 @@ function simulateRucciExperiment
     
     % Actions
     smallCompute = true;
-    generateScenes = ~true;
-    generateOpticalImages = ~true;
-    generateMosaicResponses = ~true;
+    generateScenes = true;
+    generateOpticalImages = true;
+    generateMosaicResponses = true;
     visualizeMosaicResponses = ~true;
     computeEnergyMechanismResponses = true;
     classifyMosaicResponses = true;
@@ -19,7 +19,10 @@ function simulateRucciExperiment
     end
     
     % Simulation parameters
-    contrastLevels = [1.0 0.3 0.1 0.03];
+    minContrast = 1/100;
+    maxContrast = 20/100;
+    nContrastLevels = 10;
+    contrastLevels = logspace(log10(minContrast), log10(maxContrast), nContrastLevels);
     nTrials = 512;
     fixationDurationSeconds = 0.8;
     warmupTimeSeconds = 0.4;
@@ -30,12 +33,12 @@ function simulateRucciExperiment
     analyzedNoiseInstance = 1;
     
     
-    if (smallCompute )
+    if (smallCompute)
         % ----- ONLY FOR TESTING  -----
-        contrastLevels = [1 0.5];
+        contrastLevels = [1 0.3 0.1 0.03 0.01];
         nTrials = 4;
         warmupTimeSeconds = 0.1;
-        fixationDurationSeconds = 0.2;
+        fixationDurationSeconds = 0.3;
         % ----- ONLY FOR TESTING  -----
     end
     
@@ -55,7 +58,7 @@ function simulateRucciExperiment
         load(scenesFile, 'nullScene', 'lowFrequencyScenes', 'highFrequencyScenes', ...
              'lowFrequencyScenesOrtho', 'highFrequencyScenesOrtho', 'contrastLevels', 'noiseInstances');
         % Display scene profiles
-        visualizeSceneLuminanceProfiles(nullScene, lowFrequencyScenes, highFrequencyScenes, contrastLevels, noiseInstances);
+        visualizeSceneLuminanceProfiles(nullScene, highFrequencyScenes, highFrequencyScenesOrtho, contrastLevels, noiseInstances);
         % Compute ois
         generateAllOpticalImages(nullScene, lowFrequencyScenes, highFrequencyScenes, lowFrequencyScenesOrtho, highFrequencyScenesOrtho, contrastLevels, noiseInstances, meanLuminanceCdPerM2, resourcesDir);
     end
@@ -66,7 +69,7 @@ function simulateRucciExperiment
         % Load previously computed optical images
         oisFile = fullfile(resourcesDir, sprintf('ois_luminance_%2.1f.mat', meanLuminanceCdPerM2));
         load(oisFile, 'nullSceneOI', 'lowFrequencyOIs', 'highFrequencyOIs', ...
-         'lowFrequencyOIsOrtho', 'highFrequencyOIsOrtho', 'contrastLevels');
+            'lowFrequencyOIsOrtho', 'highFrequencyOIsOrtho', 'contrastLevels');
      
         visualizeOpticalImages(nullSceneOI, lowFrequencyOIs, highFrequencyOIs, lowFrequencyOIsOrtho, highFrequencyOIsOrtho, contrastLevels, analyzedNoiseInstance);
         
@@ -81,9 +84,10 @@ function simulateRucciExperiment
         fprintf('COMPUTING ENERGY MECHANISM RESPONSES ...\n');
         % Load spatial pooling templates from the scenesFile
         scenesFile = fullfile(resourcesDir, sprintf('scenes_luminance_%2.1f.mat', meanLuminanceCdPerM2));
-        load(scenesFile, 'lowFrequencyScenes', 'highFrequencyScenes', ...
-            'lowFrequencyScenesOrtho', 'highFrequencyScenesOrtho', ...
-            'lowFrequencyTemplate', 'lowFrequencyTemplateOrtho', ...
+        
+        % Load the stimulus-derived templates, which are used in conjuction
+        % with the coneMosaic to derive the spatial pooling weights
+        load(scenesFile, 'lowFrequencyTemplate', 'lowFrequencyTemplateOrtho', ...
             'highFrequencyTemplate', 'highFrequencyTemplateOrtho', ...
             'spatialSupportDegs', 'contrastLevels');
         
@@ -93,20 +97,27 @@ function simulateRucciExperiment
             highFrequencyTemplate, highFrequencyTemplateOrtho, spatialSupportDegs); 
         
         % Visualize pooling kernels together with the stimuli
-        [~,maxContrastIndex] = max(contrastLevels); noiseInstance = 1;
-        visualizeSpatialPoolingKernelsAndStimuli(spatialPoolingKernels, ...
-            lowFrequencyScenes{maxContrastIndex,noiseInstance}, ...
-            lowFrequencyScenesOrtho{maxContrastIndex,noiseInstance}, ...
-            highFrequencyScenes{maxContrastIndex,noiseInstance}, ...
-            highFrequencyScenesOrtho{maxContrastIndex,noiseInstance}, ...
-            spatialSupportDegs);
+        visualizePoolingKernelsAndStimuli = ~true;
+        if (visualizePoolingKernelsAndStimuli) 
+            % Load the scenes
+            load(scenesFile, 'lowFrequencyScenes', 'highFrequencyScenes', ...
+                'lowFrequencyScenesOrtho', 'highFrequencyScenesOrtho');
         
-        % Compute responses of energy mechanisms to the high frequency standard orientation stimuli
-        stimDescriptor = 'highFrequencyOrtho';
-        computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir);
+            [~,maxContrastIndex] = max(contrastLevels); noiseInstance = 1;
+            visualizeSpatialPoolingKernelsAndStimuli(spatialPoolingKernels, ...
+                lowFrequencyScenes{maxContrastIndex,noiseInstance}, ...
+                lowFrequencyScenesOrtho{maxContrastIndex,noiseInstance}, ...
+                highFrequencyScenes{maxContrastIndex,noiseInstance}, ...
+                highFrequencyScenesOrtho{maxContrastIndex,noiseInstance}, ...
+                spatialSupportDegs);
+        end
         
         % Compute responses of energy mechanisms  to the high frequency orthogonal orientation stimuli
         stimDescriptor = 'highFrequency';
+        computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir);
+        
+        % Compute responses of energy mechanisms to the high frequency standard orientation stimuli
+        stimDescriptor = 'highFrequencyOrtho';
         computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir);
         
         % Compute responses of energy mechanisms to the low frequency standard orientation stimuli
@@ -116,7 +127,7 @@ function simulateRucciExperiment
         % Compute responses of energy mechanisms  to the low frequency orthogonal orientation stimuli
         stimDescriptor = 'lowFrequencyOrtho';
         computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir); 
-    end
+     end
     
     
     if (classifyMosaicResponses) 
@@ -135,21 +146,22 @@ function simulateRucciExperiment
     
     
     if (visualizeMosaicResponses)
-        trialNoToVisualize = 1; contrastLevel = 1.0;  
-        figNo = 1000;
-        visualizeAllResponses('zeroContrast', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNoToVisualize, resourcesDir, figNo);
+        trialNoToVisualize = 1; 
+        contrastLevel = 1.0;  
+        %figNo = 1000;
+        %visualizeAllResponses('zeroContrast', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNoToVisualize, resourcesDir, figNo);
         
-        figNo = 1001;
-        visualizeAllResponses('highFrequency', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNoToVisualize, resourcesDir, figNo);
+        %figNo = 1001;
+        %visualizeAllResponses('highFrequency', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNoToVisualize, resourcesDir, figNo);
         
         figNo = 1002;
         visualizeAllResponses('highFrequencyOrtho', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNoToVisualize, resourcesDir, figNo);
         
-        figNo = 2001;
-        visualizeAllResponses('lowFrequency', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNoToVisualize, resourcesDir, figNo);
+        %figNo = 2001;
+        %visualizeAllResponses('lowFrequency', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNoToVisualize, resourcesDir, figNo);
         
-        figNo = 2002;
-        visualizeAllResponses('lowFrequencyOrtho', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNoToVisualize, resourcesDir, figNo);
+        %figNo = 2002;
+        %visualizeAllResponses('lowFrequencyOrtho', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNoToVisualize, resourcesDir, figNo);
     end 
 end
 
@@ -159,7 +171,7 @@ function [resourcesDir, parforWorkers, localHostName] = determineResources(rootD
     if (contains(localHostName, 'manta'))
         dropboxRoot = '/Volumes/DropBoxDisk/Dropbox/Dropbox (Aguirre-Brainard Lab)';
         resourcesDir = fullfile(dropboxRoot, 'IBIO_analysis', 'IBIOColorDetect', 'SideProjects', 'RucciSimulations');
-        parforWorkers = 2;
+        parforWorkers = 4;
     elseif (contains(localHostName, 'leviathan'))
         parforWorkers = 12;
         dropboxRoot = '/media/dropbox_disk/Dropbox (Aguirre-Brainard Lab)';

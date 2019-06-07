@@ -1,5 +1,7 @@
 function  visualizePoolingKernel(ax, coneLocsDegs, coneAperture, poolingWeights, spatialSupportDegs, showXLabel)
     
+    poolingWeights = poolingWeights / max(abs(poolingWeights));
+    
     quantizationLevels = 1024;
     cmap = brewermap(quantizationLevels, '*RdBu');
     faceColorsNormalizedValues = round(quantizationLevels * (1+poolingWeights));
