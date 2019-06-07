@@ -2,10 +2,12 @@ function simulateRucciExperiment
 
     % Determine resources
     [rootDir,~] = fileparts(which(mfilename));
-    [resourcesDir, parforWorkers] = determineResources(rootDir);
+    [resourcesDir, parforWorkers, localHostName] = determineResources(rootDir);
+    
+    % if we are not on Leviathan do a small simulation
+    smallCompute = ~contains(localHostName, 'leviathan')
     
     % Actions
-    smallCompute = true;
     generateScenes = true;
     generateOpticalImages = true;
     generateMosaicResponses = true;
