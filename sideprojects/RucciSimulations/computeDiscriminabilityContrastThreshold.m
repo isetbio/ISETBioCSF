@@ -1,4 +1,4 @@
-function computeDiscriminabilityContrastThreshold(stimDescriptor, signalName, responseStandardOriStimulus, responseOrthogonalOriStimulus, timeAxis, contrastLevels, figNo)
+function contrastThreshold = computeDiscriminabilityContrastThreshold(stimDescriptor, signalName, responseStandardOriStimulus, responseOrthogonalOriStimulus, timeAxis, contrastLevels, figNo)
     
     %visualizeEnergyResponses(stimDescriptor, signalName, responseStandardOriStimulus, responseOrthogonalOriStimulus, contrastLevels, timeAxis, figNo);
         
@@ -7,9 +7,14 @@ function computeDiscriminabilityContrastThreshold(stimDescriptor, signalName, re
     nTrials = size(responseStandardOriStimulus.output,2);
     nTimeBins = size(responseStandardOriStimulus.output,3);
     
+    % Use all time bins for now
     timeBinsIncludedInClassification = 1:nTimeBins;
-    taskIntervals = 2;
     
+    % The psychometric function
+    rawPsychometricFunction.contrast = contrastLevels;
+    rawPsychometricFunction.performance = zeros(1, nContrasts);
+    
+    taskIntervals = 2;
     for theContrastLevel = 1:nContrasts
         % The standard and orthogonal tuned mechanism responses to the standard stimulus
         r11 = squeeze(responseStandardOriStimulus.output(theContrastLevel,1:nTrials,timeBinsIncludedInClassification));
@@ -26,9 +31,6 @@ function computeDiscriminabilityContrastThreshold(stimDescriptor, signalName, re
         % Make classification matrix
         [classificationMatrix, classLabels] = assembleBinaryClassificationMatrix(taskIntervals, r1, r2);
         
-        size(classificationMatrix)
-        size(classLabels)
-        
         % Train a binary SVM classifier 
         svm = fitcsvm(classificationMatrix,classLabels);
 
@@ -40,15 +42,70 @@ function computeDiscriminabilityContrastThreshold(stimDescriptor, signalName, re
         fractionCorrect = 1 - kfoldLoss(CVSVM,'lossfun','classiferror','mode','individual');
         
         % Average percent correct across all folds 
-        percentCorrect(theContrastLevel) = mean(fractionCorrect)*100;
+        rawPsychometricFunction.performance(theContrastLevel) = mean(fractionCorrect)*100;
     end % theContrastLevel
     
-    figure(figNo+1); clf;
-    plot(contrastLevels, percentCorrect);
+
+    nTrialsForPsychometricFunction = nTrials/kFold;
+    performanceThreshold = 0.71;
+    [contrastThreshold, smoothPsychometricFunction] = fitWeibulToPsychometricFunction(rawPsychometricFunction.contrast, rawPsychometricFunction.performance, performanceThreshold, nTrialsForPsychometricFunction);
+
+    % Plot the raw and fitted psychometric function
+    hFig = figure(figNo+1); clf;
+    set(hFig, 'Color', [1 1 1]);
+    
+    % The smooth (fitted) psychometric function
+    plot(smoothPsychometricFunction.contrast, smoothPsychometricFunction.performance, 'r-', 'LineWidth', 1.5); hold on;
+    % The raw (measured) psychometric function
+    plot(rawPsychometricFunction.contrast, rawPsychometricFunction.performance, 'ko', 'MarkerSize', 12, ...
+        'MarkerFaceColor', [0.8 0.5 0.5], 'MarkerEdgeColor', [1 0 0], 'LineWidth', 1.0);
+    % The contrast threshold
+    plot(contrastThreshold*[1 1], [0 performanceThreshold], 'b-', 'LineWidth', 1.5);
+    plot([0.001 contrastThreshold], performanceThreshold*[1 1], 'b-', 'LineWidth', 1.5);
+    set(gca, 'XLim', [0.01 0.4], 'YLim', [0.4 1.0], 'XScale', 'log', 'FontSize', 14);
     xlabel('contrast');
     ylabel('classification accuracy');
-    title(stimDescriptor);
+    title(sprintf('%s (%s)', stimDescriptor, signalName));
     
+end
+
+
+function [contrastThreshold, smoothPsychometricFunction] = fitWeibulToPsychometricFunction(contrasts, rawPsychometricFunction, performanceThreshold, nTrials)
+    % Set up psychometric function model. Here we use a cumulative Weibull function
+    psychometricFunctionModel = @PAL_Weibull;
+
+    % Set up search grid
+    gridLevels = 100;
+    searchGridParams.alpha = logspace(log10(min(contrasts)),log10(max(contrasts)),gridLevels);
+    searchGridParams.beta = 10.^linspace(-4,4,gridLevels);
+    searchGridParams.gamma = 0.5;
+    searchGridParams.lambda = 0.0;
+
+    % Optimization settings for the fit
+    optionsParams             = optimset('fminsearch');
+    optionsParams.TolFun      = 1e-09;
+    optionsParams.MaxFunEvals = 1000;
+    optionsParams.MaxIter     = 1000;
+    optionsParams.Display     = 'off';
+
+    % Parameters for the curve fitting
+    % Parameters that are allowed to vary
+    % The parameters are: threshold, slope, guess-rate, lapse-rate
+    paramsFree = [1 1 0 0];
+    trialsNumCorrectPerContrastLevel = round(nTrials*rawPsychometricFunction);
+    trialsNumPerContrastLevel = repmat(nTrials,1,length(rawPsychometricFunction));
+    
+    % Fit the data and get the best fit params
+    paramsValues = PAL_PFML_Fit(contrasts(:), trialsNumCorrectPerContrastLevel(:), trialsNumPerContrastLevel(:), ...
+            searchGridParams, paramsFree, psychometricFunctionModel, 'SearchOptions', optionsParams);
+        
+    % Obtain the threshold at which performance cross a threshold performance
+    contrastThreshold = psychometricFunctionModel(paramsValues, performanceThreshold, 'inverse');
+    
+    % Obtain a high resolution version of the fitted function
+    smoothPsychometricFunction.contrast = searchGridParams.alpha;
+    smoothPsychometricFunction.performance = PAL_Weibull(paramsValues, hiResContrasts);
+
 end
 
 

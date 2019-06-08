@@ -8,11 +8,11 @@ function simulateRucciExperiment
     smallCompute = ~contains(localHostName, 'leviathan');
     
     % Actions
-    generateScenes = true;
-    generateOpticalImages = true;
-    generateMosaicResponses = true;
+    generateScenes = ~true;
+    generateOpticalImages = ~true;
+    generateMosaicResponses = ~true;
     visualizeMosaicResponses = ~true;
-    computeEnergyMechanismResponses = true;
+    computeEnergyMechanismResponses = ~true;
     classifyMosaicResponses = true;
     
     % Load the cone mosaic if needed
@@ -135,30 +135,30 @@ function simulateRucciExperiment
     
     if (classifyMosaicResponses) 
         % Load previously computed enery responses for the high frequency stimulus
-        
-        % The standard orientation
         stimDescriptor = 'highFrequency';
+        
+        % Load energy mechanism responses to the standard orientation stimulus
         fname = fullfile(resourcesDir, sprintf('energyResponse_%s_instance_%1.0f_nTrials_%d.mat', stimDescriptor, analyzedNoiseInstance, nTrials));
         load(fname, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'timeAxis');
         coneExcitationResponseStandardOriStimulus = energyConeExcitationResponse;
         photoCurrentResponseStandardOriStimulus = energyPhotoCurrentResponse;
         
-        % The orthogonal orientation
+        % Load energy mechanism responses to the orthogonal orientation stimulus
         fname = fullfile(resourcesDir, sprintf('energyResponse_%s_instance_%1.0f_nTrials_%d.mat', sprintf('%sOrtho',stimDescriptor), analyzedNoiseInstance, nTrials));
         load(fname, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'timeAxis');
         coneExcitationResponseOrthogonalOriStimulus = energyConeExcitationResponse;
         photoCurrentResponseOrthogonalOriStimulus = energyPhotoCurrentResponse;
         
-        % Find discriminability contrast threshold for the high frequency stimulus at the level of cone excitations
+        % Find discriminability contrast threshold at the level of cone excitations
         figNo = 3000;
         computeDiscriminabilityContrastThreshold(stimDescriptor, 'cone excitations', ...
             coneExcitationResponseStandardOriStimulus, coneExcitationResponseOrthogonalOriStimulus, ...
             timeAxis, contrastLevels, figNo);
         
-        figNo = 4000;
-        computeDiscriminabilityContrastThreshold(stimDescriptor, 'photocurrents', ...
-            photoCurrentResponseStandardOriStimulus, photoCurrentResponseOrthogonalOriStimulus, ...
-            timeAxis, contrastLevels, figNo);
+%         figNo = 4000;
+%         computeDiscriminabilityContrastThreshold(stimDescriptor, 'photocurrents', ...
+%             photoCurrentResponseStandardOriStimulus, photoCurrentResponseOrthogonalOriStimulus, ...
+%             timeAxis, contrastLevels, figNo);
         
         
     end
