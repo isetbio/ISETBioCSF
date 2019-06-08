@@ -13,7 +13,7 @@ function simulateRucciExperiment
     generateMosaicResponses = ~true;
     visualizeMosaicResponses = ~true;
     computeEnergyMechanismResponses = ~true;
-    classifyMosaicResponses = true;
+    estimatePerformance = true;
     
     % Load the cone mosaic if needed
     if (generateMosaicResponses || visualizeMosaicResponses || computeEnergyMechanismResponses)
@@ -29,7 +29,7 @@ function simulateRucciExperiment
     eyePosition = 'dynamic';
     %eyePosition = 'stabilized';
     fixationDurationSeconds = 0.8;
-    warmupTimeSeconds = 0.4;
+    warmupTimeSeconds = 0.5;
     mosaicIntegrationTimeSeconds = 2.5/1000;
     meanLuminanceCdPerM2 = 21;  % match Rucci 2007 paper, which said 21 cd/m2
     
@@ -39,11 +39,13 @@ function simulateRucciExperiment
     
     if (smallCompute)
         % ----- ONLY FOR TESTING  -----
-        nContrastLevels = 5;
+        nContrastLevels = 2;
+        minContrast = 99/100;
+        maxContrast = 100/100;
         contrastLevels = logspace(log10(minContrast), log10(maxContrast), nContrastLevels);
-        nTrials = 8;
-        warmupTimeSeconds = 0.05;
-        fixationDurationSeconds = 0.1;
+        nTrials = 2;
+        warmupTimeSeconds = 0.5;
+        fixationDurationSeconds = 0.3;
         % ----- ONLY FOR TESTING  -----
     end
     
@@ -135,35 +137,17 @@ function simulateRucciExperiment
      end
     
     
-    if (classifyMosaicResponses) 
-        % Load previously computed enery responses for the high frequency stimulus
+    if (estimatePerformance) 
+        % Estimate performance for the high frequency stimulus
         stimDescriptor = 'highFrequency';
-        
-        % Load energy mechanism responses to the standard orientation stimulus
-        fName = energyResponsesDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
-        load(fName, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'timeAxis');
-        coneExcitationResponseStandardOriStimulus = energyConeExcitationResponse;
-        photoCurrentResponseStandardOriStimulus = energyPhotoCurrentResponse;
-        
-        % Load energy mechanism responses to the orthogonal orientation stimulus
-        stimDescriptor = 'highFrequencyOrtho';
-        fName = energyResponsesDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
-        load(fName, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'timeAxis');
-        coneExcitationResponseOrthogonalOriStimulus = energyConeExcitationResponse;
-        photoCurrentResponseOrthogonalOriStimulus = energyPhotoCurrentResponse;
-        
-        % Find discriminability contrast threshold at the level of cone excitations
         figNo = 3000;
-        computeDiscriminabilityContrastThreshold(stimDescriptor, 'cone excitations', ...
-            coneExcitationResponseStandardOriStimulus, coneExcitationResponseOrthogonalOriStimulus, ...
-            timeAxis, contrastLevels, figNo);
-        
-%         figNo = 4000;
-%         computeDiscriminabilityContrastThreshold(stimDescriptor, 'photocurrents', ...
-%             photoCurrentResponseStandardOriStimulus, photoCurrentResponseOrthogonalOriStimulus, ...
-%             timeAxis, contrastLevels, figNo);
+        estimatePerformanceForStimulus(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir, figNo);
         
         
+        % Estimate performance for the low frequency stimulus
+        stimDescriptor = 'lowFrequency';
+        figNo = 4000;
+        estimatePerformanceForStimulus(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir, figNo);
     end
     
     

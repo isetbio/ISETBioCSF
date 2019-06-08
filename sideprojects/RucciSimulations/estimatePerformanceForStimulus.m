@@ -1,8 +1,34 @@
+function estimatePerformanceForStimulus(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir, figNo);
+        
+    % Load energy mechanism responses to the standard orientation stimulus
+    fName = energyResponsesDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
+    load(fName, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'timeAxis');
+    coneExcitationResponseStandardOriStimulus = energyConeExcitationResponse;
+    photoCurrentResponseStandardOriStimulus = energyPhotoCurrentResponse;
+
+    % Load energy mechanism responses to the orthogonal orientation stimulus
+    stimDescriptor = 'highFrequencyOrtho';
+    fName = energyResponsesDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
+    load(fName, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'timeAxis');
+    coneExcitationResponseOrthogonalOriStimulus = energyConeExcitationResponse;
+    photoCurrentResponseOrthogonalOriStimulus = energyPhotoCurrentResponse;
+
+    % Find discriminability contrast threshold at the level of cone excitations
+    computeDiscriminabilityContrastThreshold(stimDescriptor, 'cone excitations', ...
+        coneExcitationResponseStandardOriStimulus, coneExcitationResponseOrthogonalOriStimulus, ...
+        timeAxis, contrastLevels, figNo);
+    
+    % Find discriminability contrast threshold at the level of photocurrents
+    computeDiscriminabilityContrastThreshold(stimDescriptor, 'photocurrents', ...
+        photoCurrentResponseStandardOriStimulus , photoCurrentResponseOrthogonalOriStimulus, ...
+        timeAxis, contrastLevels, figNo+100);
+    
+end
+
 function contrastThreshold = computeDiscriminabilityContrastThreshold(stimDescriptor, signalName, responseStandardOriStimulus, responseOrthogonalOriStimulus, timeAxis, contrastLevels, figNo)
     
     %visualizeEnergyResponses(stimDescriptor, signalName, responseStandardOriStimulus, responseOrthogonalOriStimulus, contrastLevels, timeAxis, figNo);
         
-    
     nContrasts = size(responseStandardOriStimulus.output,1);
     nTrials = size(responseStandardOriStimulus.output,2);
     nTimeBins = size(responseStandardOriStimulus.output,3);

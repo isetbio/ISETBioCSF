@@ -12,6 +12,7 @@ end
 
 function visualizeDynamicResponse(theMosaic, coneExcitations, photoCurrents, eyeMovementPaths, emPathsDegs, timeAxis, stimDescriptor, trialNo, figNo)
     
+
     [idxOfConesAlongHorizMeridian, idxOfConesAlongVertMeridian, ...
             eccDegsOfConesAlongHorizMeridian, ...
             eccDegsOfConesAlongVertMeridian, ...
@@ -73,7 +74,7 @@ function visualizeDynamicResponse(theMosaic, coneExcitations, photoCurrents, eye
         subplot(2,5,4);
         imagesc(eccDegsOfConesAlongHorizMeridian, timeAxis*1000, (singleTrialConeExcitationResponse(idxOfConesAlongHorizMeridianInSerializedList,:))');
         hold on;
-         % superimpose x-eye movement trajectory
+        % superimpose x-eye movement trajectory
         plot(singleTrialEyeMovementDegs(:,1), timeAxis*1000, 'r-', 'LineWidth', 1.5);
         set(gca, 'YTick', 0:100:1000);
         hold off
