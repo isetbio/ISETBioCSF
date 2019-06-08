@@ -26,6 +26,8 @@ function simulateRucciExperiment
     nContrastLevels = 10;
     contrastLevels = logspace(log10(minContrast), log10(maxContrast), nContrastLevels);
     nTrials = 512;
+    eyePosition = 'dynamic';
+    %eyePosition = 'stabilized';
     fixationDurationSeconds = 0.8;
     warmupTimeSeconds = 0.4;
     mosaicIntegrationTimeSeconds = 2.5/1000;
@@ -39,9 +41,9 @@ function simulateRucciExperiment
         % ----- ONLY FOR TESTING  -----
         nContrastLevels = 5;
         contrastLevels = logspace(log10(minContrast), log10(maxContrast), nContrastLevels);
-        nTrials = 128;
-        warmupTimeSeconds = 0.1;
-        fixationDurationSeconds = 0.2;
+        nTrials = 8;
+        warmupTimeSeconds = 0.05;
+        fixationDurationSeconds = 0.1;
         % ----- ONLY FOR TESTING  -----
     end
     
@@ -79,7 +81,7 @@ function simulateRucciExperiment
         generateAllMosaicResponses(theMosaic, nullSceneOI, lowFrequencyOIs, highFrequencyOIs, ...
                 lowFrequencyOIsOrtho, highFrequencyOIsOrtho, ...
                 mosaicIntegrationTimeSeconds, fixationDurationSeconds, warmupTimeSeconds, contrastLevels, analyzedNoiseInstance, ...
-                nTrials, parforWorkers, resourcesDir);
+                nTrials, eyePosition, parforWorkers, resourcesDir);
     end
     
     % Compute the energy mechanism responses
@@ -117,19 +119,19 @@ function simulateRucciExperiment
         
         % Compute responses of energy mechanisms  to the high frequency orthogonal orientation stimuli
         stimDescriptor = 'highFrequency';
-        computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir);
+        computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, eyePosition, parforWorkers, resourcesDir);
         
         % Compute responses of energy mechanisms to the high frequency standard orientation stimuli
         stimDescriptor = 'highFrequencyOrtho';
-        computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir);
+        computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, eyePosition, parforWorkers, resourcesDir);
         
         % Compute responses of energy mechanisms to the low frequency standard orientation stimuli
         stimDescriptor = 'lowFrequency';
-        computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir);
+        computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, eyePosition, parforWorkers, resourcesDir);
         
         % Compute responses of energy mechanisms  to the low frequency orthogonal orientation stimuli
         stimDescriptor = 'lowFrequencyOrtho';
-        computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir); 
+        computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, eyePosition, parforWorkers, resourcesDir); 
      end
     
     
@@ -138,14 +140,15 @@ function simulateRucciExperiment
         stimDescriptor = 'highFrequency';
         
         % Load energy mechanism responses to the standard orientation stimulus
-        fname = fullfile(resourcesDir, sprintf('energyResponse_%s_instance_%1.0f_nTrials_%d.mat', stimDescriptor, analyzedNoiseInstance, nTrials));
-        load(fname, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'timeAxis');
+        fName = energyResponsesDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
+        load(fName, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'timeAxis');
         coneExcitationResponseStandardOriStimulus = energyConeExcitationResponse;
         photoCurrentResponseStandardOriStimulus = energyPhotoCurrentResponse;
         
         % Load energy mechanism responses to the orthogonal orientation stimulus
-        fname = fullfile(resourcesDir, sprintf('energyResponse_%s_instance_%1.0f_nTrials_%d.mat', sprintf('%sOrtho',stimDescriptor), analyzedNoiseInstance, nTrials));
-        load(fname, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'timeAxis');
+        stimDescriptor = 'highFrequencyOrtho';
+        fName = energyResponsesDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
+        load(fName, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'timeAxis');
         coneExcitationResponseOrthogonalOriStimulus = energyConeExcitationResponse;
         photoCurrentResponseOrthogonalOriStimulus = energyPhotoCurrentResponse;
         
@@ -166,21 +169,21 @@ function simulateRucciExperiment
     
     if (visualizeMosaicResponses)
         trialNoToVisualize = 1; 
-        contrastLevel = 1.0;  
+        contrastLevel = max(contrastLevels);  
         %figNo = 1000;
-        %visualizeAllResponses('zeroContrast', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNoToVisualize, resourcesDir, figNo);
+        %visualizeAllResponses('zeroContrast', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, eyePosition, trialNoToVisualize, resourcesDir, figNo);
         
         %figNo = 1001;
-        %visualizeAllResponses('highFrequency', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNoToVisualize, resourcesDir, figNo);
+        %visualizeAllResponses('highFrequency', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, eyePosition, trialNoToVisualize, resourcesDir, figNo);
         
         figNo = 1002;
-        visualizeAllResponses('highFrequencyOrtho', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNoToVisualize, resourcesDir, figNo);
+        visualizeAllResponses('highFrequencyOrtho', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, eyePosition, trialNoToVisualize, resourcesDir, figNo);
         
         %figNo = 2001;
-        %visualizeAllResponses('lowFrequency', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNoToVisualize, resourcesDir, figNo);
+        %visualizeAllResponses('lowFrequency', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, eyePosition, trialNoToVisualize, resourcesDir, figNo);
         
         %figNo = 2002;
-        %visualizeAllResponses('lowFrequencyOrtho', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, trialNoToVisualize, resourcesDir, figNo);
+        %visualizeAllResponses('lowFrequencyOrtho', theMosaic, contrastLevel, analyzedNoiseInstance, nTrials, eyePosition, trialNoToVisualize, resourcesDir, figNo);
     end 
 end
 

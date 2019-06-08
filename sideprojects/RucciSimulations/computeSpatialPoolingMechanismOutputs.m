@@ -1,8 +1,8 @@
-function computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir)
+function computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescriptor, contrastLevels, analyzedNoiseInstance, nTrials, eyePosition, parforWorkers, resourcesDir)
     
     % Load responses to null (zero contrast) stimulus
-    fname = fullfile(resourcesDir, sprintf('%s_nTrials_%d.mat', 'zeroContrast',  nTrials));
-    load(fname, 'coneExcitations', 'photoCurrents', 'emPathsDegs', 'timeAxis');
+    fName = fullfile(resourcesDir, sprintf('%s_nTrials_%d.mat', 'zeroContrast',  nTrials));
+    load(fName, 'coneExcitations', 'photoCurrents', 'emPathsDegs', 'timeAxis');
 
     % Get the last time point at the mean response
     nullStimulusMeanConeExcitations = coneExcitations(1,:,end);
@@ -40,8 +40,8 @@ function computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescri
     
     for theContrastLevel = 1:nContrasts
         % Load mosaic responses
-        fname = fullfile(resourcesDir, sprintf('%s_contrast_%2.4f_instance_%1.0f_nTrials_%d.mat', stimDescriptor, contrastLevels(theContrastLevel), analyzedNoiseInstance, nTrials));
-        load(fname, 'coneExcitations', 'photoCurrents');
+        fName = coneMosaicResponsesDataFileName(stimDescriptor, contrastLevels(theContrastLevel), analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
+        load(fName, 'coneExcitations', 'photoCurrents');
         
         % Compute cone excitation energy response for the standard orientation filter
         energyConeExcitationResponse.output(theContrastLevel,:,:) = ...
@@ -64,9 +64,9 @@ function computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescri
             poolingKernelOrthoLinear, poolingKernelOrthoQuadrature);  
     end
     
-    fname = fullfile(resourcesDir, sprintf('energyResponse_%s_instance_%1.0f_nTrials_%d.mat', stimDescriptor, analyzedNoiseInstance, nTrials));
-    fprintf('Saving energy responses from %d trials for %s stimulus to %s\n', nTrials, stimDescriptor, fname);
-    save(fname, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'emPathsDegs', 'timeAxis', '-v7.3');
+    fName = energyResponsesDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
+    fprintf('Saving energy responses from %d trials for %s stimulus to %s\n', nTrials, stimDescriptor, fName);
+    save(fName, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'emPathsDegs', 'timeAxis', '-v7.3');
 
 end
 

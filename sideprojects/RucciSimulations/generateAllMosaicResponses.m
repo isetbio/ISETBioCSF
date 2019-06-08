@@ -1,6 +1,6 @@
 function generateAllMosaicResponses(theMosaic, nullSceneOI, lowFrequencyOIs, highFrequencyOIs, ...
                 lowFrequencyOIsOrtho, highFrequencyOIsOrtho, mosaicIntegrationTimeSeconds, fixationDurationSeconds, warmupTimeSeconds, ...
-                contrastLevels, analyzedNoiseInstance, nTrials, parforWorkers, resourcesDir)
+                contrastLevels, analyzedNoiseInstance, nTrials, eyePosition, parforWorkers, resourcesDir)
 
     % Set mosaic integration time and fixation duration
     theMosaic.integrationTime = mosaicIntegrationTimeSeconds;
@@ -12,8 +12,16 @@ function generateAllMosaicResponses(theMosaic, nullSceneOI, lowFrequencyOIs, hig
         'nTrials', nTrials, 'centerPaths', ~true);
     timeAxis = fixEMOBJ.timeAxis;
     emPathsDegs = fixEMOBJ.emPosMicrons / theMosaic.micronsPerDegree;
+    emPathsMicrons = fixEMOBJ.emPosMicrons;
+    clear 'fixEMOBJ';
     
-    visualizeConeMosaicAndEMPath(theMosaic, fixEMOBJ);
+    if (strcmp(eyePosition, 'stabilized'))
+        emPaths = 0*emPaths;
+        emPathsDegs = 0*emPathsDegs;
+        emPathsMicrons = 0*emPathsMicrons;
+    end
+    
+    visualizeConeMosaicWithEMPath(theMosaic,  emPathsMicrons);
 
 
     % Compute noise-free mosaic responses for the nullOI
@@ -25,12 +33,12 @@ function generateAllMosaicResponses(theMosaic, nullSceneOI, lowFrequencyOIs, hig
     theMosaic.noiseFlag = 'none';
     theMosaic.os.noiseFlag = 'none';
 
-    fname = fullfile(resourcesDir, sprintf('zeroContrast_nTrials_%d.mat',  nTrials));
+    fName = fullfile(resourcesDir, sprintf('zeroContrast_nTrials_%d.mat',  nTrials));
     theContrastLevel = 0;
     [coneExcitations, photoCurrents, eyeMovementPaths] = ...
          computeResponses(theMosaic, 0*emPaths, nullSceneOI, 1, warmupTimeSeconds, parforWorkers);
-    fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
-    save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'emPathsDegs',  'timeAxis', 'contrastLevels', 'theContrastLevel', '-v7.3');
+    fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fName);
+    save(fName, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'emPathsDegs',  'timeAxis', 'contrastLevels', 'theContrastLevel', '-v7.3');
     
     % Reset noiseFlags 
     theMosaic.noiseFlag = originalIsomerizationNoiseFlag;
@@ -42,29 +50,33 @@ function generateAllMosaicResponses(theMosaic, nullSceneOI, lowFrequencyOIs, hig
     theInstance = analyzedNoiseInstance;
     
     for theContrastLevel = 1:nContrasts
-        fname = fullfile(resourcesDir, sprintf('highFrequency_contrast_%2.4f_instance_%1.0f_nTrials_%d.mat', contrastLevels(theContrastLevel), theInstance, nTrials));
+        stimDescriptor = 'highFrequency';
+        fName = coneMosaicResponsesDataFileName(stimDescriptor, contrastLevels(theContrastLevel), theInstance, nTrials, eyePosition, resourcesDir);
         [coneExcitations, photoCurrents, eyeMovementPaths] = ...
             computeResponses(theMosaic, emPaths, highFrequencyOIs{theContrastLevel, theInstance}, nTrials, warmupTimeSeconds, parforWorkers);
-        fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
-        save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'emPathsDegs',  'timeAxis', 'contrastLevels', 'theContrastLevel', '-v7.3');
+        fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fName);
+        save(fName, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'emPathsDegs',  'timeAxis', 'contrastLevels', 'theContrastLevel', '-v7.3');
 
-        fname = fullfile(resourcesDir, sprintf('highFrequencyOrtho_contrast_%2.4f_instance_%1.0f_nTrials_%d.mat', contrastLevels(theContrastLevel), theInstance, nTrials));
+        stimDescriptor = 'highFrequencyOrtho';
+        fName = coneMosaicResponsesDataFileName(stimDescriptor, contrastLevels(theContrastLevel), theInstance, nTrials, eyePosition, resourcesDir);
         [coneExcitations, photoCurrents, eyeMovementPaths] = ...
             computeResponses(theMosaic, emPaths, highFrequencyOIsOrtho{theContrastLevel, theInstance}, nTrials, warmupTimeSeconds, parforWorkers );
-        fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
-        save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'emPathsDegs', 'timeAxis', 'contrastLevels', 'theContrastLevel', '-v7.3');
+        fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fName);
+        save(fName, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'emPathsDegs', 'timeAxis', 'contrastLevels', 'theContrastLevel', '-v7.3');
 
-        fname = fullfile(resourcesDir, sprintf('lowFrequency_contrast_%2.4f_instance_%1.0f_nTrials_%d.mat', contrastLevels(theContrastLevel), theInstance, nTrials));
+        stimDescriptor = 'lowFrequency';
+        fName = coneMosaicResponsesDataFileName(stimDescriptor, contrastLevels(theContrastLevel), theInstance, nTrials, eyePosition, resourcesDir);
         [coneExcitations, photoCurrents, eyeMovementPaths] = ...
             computeResponses(theMosaic, emPaths, lowFrequencyOIs{theContrastLevel, theInstance}, nTrials, warmupTimeSeconds,parforWorkers );
-        fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
-        save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'emPathsDegs', 'timeAxis', 'contrastLevels', 'theContrastLevel','-v7.3');
+        fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fName);
+        save(fName, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'emPathsDegs', 'timeAxis', 'contrastLevels', 'theContrastLevel','-v7.3');
 
-        fname = fullfile(resourcesDir, sprintf('lowFrequencyOrtho_contrast_%2.4f_instance_%1.0f_nTrials_%d.mat', contrastLevels(theContrastLevel), theInstance, nTrials));
+        stimDescriptor = 'lowFrequencyOrtho';
+        fName = coneMosaicResponsesDataFileName(stimDescriptor, contrastLevels(theContrastLevel), theInstance, nTrials, eyePosition, resourcesDir);
         [coneExcitations, photoCurrents, eyeMovementPaths] = ...
             computeResponses(theMosaic, emPaths, lowFrequencyOIsOrtho{theContrastLevel, theInstance}, nTrials, warmupTimeSeconds,parforWorkers );
-        fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fname);
-        save(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'emPathsDegs', 'timeAxis', 'contrastLevels', 'theContrastLevel', '-v7.3');
+        fprintf('Saving mosaic responses from %d trials to %s\n', size(coneExcitations,1), fName);
+        save(fName, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths', 'emPathsDegs', 'timeAxis', 'contrastLevels', 'theContrastLevel', '-v7.3');
     end
         
 end
@@ -111,5 +123,44 @@ function [theConeExcitations, thePhotoCurrents, theEyeMovementsPaths] = computeR
         thePhotoCurrents(trialIndex,:,:) = photocurrents(:,timePointsNum+(1:stimulusTimePointsNum));
         theEyeMovementsPaths(trialIndex,:,:) = emPaths(trialIndex,timePointsNum+(1:stimulusTimePointsNum),:);
     end
+end
+
+function visualizeConeMosaicWithEMPath(theConeMosaic, emPosMicrons)
+
+    figure(); clf;
+    ax = subplot('Position', [0.1 0.05 0.35 0.95]);
+    theConeMosaic.visualizeGrid(...
+        'axesHandle', ax, ...
+        'labelConeTypes', false, ...
+        'backgroundColor', [1 1 1], ...
+        'ticksInVisualDegs', true);
+    set(ax, 'FontSize', 18);
+    xlabel(ax,'\it space (degs)')
+    ylabel(ax,'\it space (degs)');
+    
+    % Get the emPath in meters so we can plot it on the same scale as the cone
+    % mosaic.
+    emPathsMeters = emPosMicrons * 1e-6;
+    hold on;
+    trialNo = 1;
+    plot(emPathsMeters(trialNo,:,1),emPathsMeters(trialNo,:,2), 'c-', 'LineWidth', 3.0);
+    plot(emPathsMeters(trialNo,:,1),emPathsMeters(trialNo,:,2), 'b-', 'LineWidth', 1.5);
+
+    
+    ax = subplot('Position', [0.60 0.05 0.35 0.95]);
+    nTimePoints = size(emPathsMeters,2);
+    timeAxis = theConeMosaic.integrationTime*(1:nTimePoints);
+    emPathDegs = emPathsMeters*1e6/theConeMosaic.micronsPerDegree;
+    plot(timeAxis, emPathDegs(trialNo,:,1), 'r-', 'LineWidth', 1.5); hold on;
+    plot(timeAxis, emPathDegs(trialNo,:,2), 'b-', 'LineWidth', 1.5);
+    legend({'x-pos', 'y-pos'});
+    set(gca, 'FontSize', 18);
+    xlabel('\it time (seconds)');
+    ylabel('\it space (degrees)');
+    set(gca, 'YLim', 0.5*max(theConeMosaic.fov)*[-1 1]);
+    axis 'square'
+    set(gca, 'XTick', [0:0.1:1], 'YTick', [-0.3:0.1:0.3]);
+    box on; grid on;
+    
 end
 

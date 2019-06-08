@@ -1,11 +1,11 @@
-function visualizeAllResponses(stimDescriptor, theMosaic, contrastLevel, theInstance, nTrials, trialNo, resourcesDir, figNo)
+function visualizeAllResponses(stimDescriptor, theMosaic, contrastLevel, theInstance, nTrials, eyePosition, trialNo, resourcesDir, figNo)
     
     if (strcmp(stimDescriptor, 'zeroContrast'))
-        fname = fullfile(resourcesDir, sprintf('zeroContrast_nTrials_%d.mat',  nTrials));
+        fName = fullfile(resourcesDir, sprintf('zeroContrast_nTrials_%d.mat',  nTrials));
     else
-        fname = fullfile(resourcesDir, sprintf('%s_contrast_%2.4f_instance_%1.0f_nTrials_%d.mat', stimDescriptor, contrastLevel, theInstance, nTrials));
+        fName = coneMosaicResponsesDataFileName(stimDescriptor, contrastLevel, theInstance, nTrials, eyePosition, resourcesDir);
     end
-    load(fname, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths',  'emPathsDegs', 'timeAxis')
+    load(fName, 'coneExcitations', 'photoCurrents', 'eyeMovementPaths',  'emPathsDegs', 'timeAxis')
 
     visualizeDynamicResponse(theMosaic, coneExcitations, photoCurrents, eyeMovementPaths, emPathsDegs, timeAxis, stimDescriptor, trialNo, figNo);    
 end
