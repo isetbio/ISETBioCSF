@@ -1,4 +1,4 @@
-function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, stimulus)
+function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, stimulus, parforWorkersNum)
     instancesNum = size(emPosArcMin,1);
     timeBins = size(emPosArcMin,2);
     extraBins = max([0 round((1024-timeBins)/2)]);  % bins for zero padding in time domain
@@ -20,7 +20,7 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
     PSDmethod = 'FFT';
     PSDmethod = 'windowedFFT';   
     
-    for instanceNo = 1:instancesNum
+    parfor (instanceNo = 1:instancesNum, parforWorkersNum)
         fprintf('Computing spatiotemporal analysis for instance %d of %d\n', instanceNo, instancesNum);
         % emPath for this instance
         theEMPosPathDegs = squeeze(emPosArcMin(instanceNo,:,:))/60;
