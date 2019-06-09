@@ -141,12 +141,12 @@ function simulateRucciExperiment
         % Estimate performance for the high frequency stimulus
         stimDescriptor = 'highFrequency';
         figNo = 3000;
-        estimatePerformanceForStimulus(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir, figNo);
+        estimatePerformanceForStimulus(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, contrastLevels, resourcesDir,  figNo);
         
         % Estimate performance for the low frequency stimulus
         stimDescriptor = 'lowFrequency';
         figNo = 4000;
-        estimatePerformanceForStimulus(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir, figNo);
+        estimatePerformanceForStimulus(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, contrastLevels, resourcesDir,  figNo);
     end
     
     
