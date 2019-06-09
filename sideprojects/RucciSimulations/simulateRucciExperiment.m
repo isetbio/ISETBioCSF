@@ -44,8 +44,8 @@ function simulateRucciExperiment
         maxContrast = 100/100;
         contrastLevels = logspace(log10(minContrast), log10(maxContrast), nContrastLevels);
         nTrials = 2;
-        warmupTimeSeconds = 0.5;
-        fixationDurationSeconds = 0.3;
+        warmupTimeSeconds = 0.1;
+        fixationDurationSeconds = 0.2;
         % ----- ONLY FOR TESTING  -----
     end
     
@@ -61,8 +61,8 @@ function simulateRucciExperiment
     if (generateOpticalImages)
         fprintf('GENERATING OPTICAL IMAGES ...\n');
         %Load previously computed scenes
-        scenesFile = fullfile(resourcesDir, sprintf('scenes_luminance_%2.1f.mat', meanLuminanceCdPerM2));
-        load(scenesFile, 'nullScene', 'lowFrequencyScenes', 'highFrequencyScenes', ...
+        scenesFileName = scenesDataFileName(meanLuminanceCdPerM2, contrastLevels, resourcesDir);
+        load(scenesFileName, 'nullScene', 'lowFrequencyScenes', 'highFrequencyScenes', ...
              'lowFrequencyScenesOrtho', 'highFrequencyScenesOrtho', 'contrastLevels', 'noiseInstances');
         % Display scene profiles
         visualizeSceneLuminanceProfiles(nullScene, highFrequencyScenes, highFrequencyScenesOrtho, contrastLevels, noiseInstances);
@@ -74,8 +74,8 @@ function simulateRucciExperiment
     if (generateMosaicResponses)
         fprintf('GENERATING CONE MOSAIC RESPONSES ...\n');
         % Load previously computed optical images
-        oisFile = fullfile(resourcesDir, sprintf('ois_luminance_%2.1f.mat', meanLuminanceCdPerM2));
-        load(oisFile, 'nullSceneOI', 'lowFrequencyOIs', 'highFrequencyOIs', ...
+        oisFileName = oisDataFileName(meanLuminanceCdPerM2, contrastLevels, resourcesDir);
+        load(oisFileName, 'nullSceneOI', 'lowFrequencyOIs', 'highFrequencyOIs', ...
             'lowFrequencyOIsOrtho', 'highFrequencyOIsOrtho', 'contrastLevels');
      
         visualizeOpticalImages(nullSceneOI, lowFrequencyOIs, highFrequencyOIs, lowFrequencyOIsOrtho, highFrequencyOIsOrtho, contrastLevels, analyzedNoiseInstance);
@@ -90,7 +90,7 @@ function simulateRucciExperiment
     if (computeEnergyMechanismResponses)
         fprintf('COMPUTING ENERGY MECHANISM RESPONSES ...\n');
         % Load spatial pooling templates from the scenesFile
-        scenesFile = fullfile(resourcesDir, sprintf('scenes_luminance_%2.1f.mat', meanLuminanceCdPerM2));
+        scenesFile = scenesDataFileName(meanLuminanceCdPerM2, contrastLevels, resourcesDir);
         
         % Load the stimulus-derived templates, which are used in conjuction
         % with the coneMosaic to derive the spatial pooling weights
@@ -142,7 +142,6 @@ function simulateRucciExperiment
         stimDescriptor = 'highFrequency';
         figNo = 3000;
         estimatePerformanceForStimulus(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir, figNo);
-        
         
         % Estimate performance for the low frequency stimulus
         stimDescriptor = 'lowFrequency';

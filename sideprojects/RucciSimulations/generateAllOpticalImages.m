@@ -22,7 +22,7 @@
         end
     end
     
-    fName = fullfile(resourcesDir, sprintf('ois_luminance_%2.1f.mat', meanLuminanceCdPerM2));
+    fName = oisDataFileName(meanLuminanceCdPerM2, contrastLevels, resourcesDir);
     save(fName, 'nullSceneOI', 'lowFrequencyOIs', 'highFrequencyOIs', ...
          'lowFrequencyOIsOrtho', 'highFrequencyOIsOrtho', 'contrastLevels', 'noiseInstances', '-v7.3');        
 end
