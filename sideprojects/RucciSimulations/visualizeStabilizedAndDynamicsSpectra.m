@@ -9,7 +9,7 @@ function visualizeStabilizedAndDynamicsSpectra(sData, sDataStabilized, figNo)
     set(hFig, 'Position', [10 10 2250 625]);
     plotSlices(sDataStabilized,'STABILIZED', sfLims, tfLims, cLims,0);
     plotSlices(sData,'DYNAMIC', sfLims, tfLims, cLims,1);
-    
+    drawnow;
 end
 
 function plotSlices(sData, dataLabel, sfLims, tfLims, cLims, row)

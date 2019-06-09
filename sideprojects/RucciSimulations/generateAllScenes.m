@@ -62,35 +62,13 @@ end
 function [stimulusSpatialModulation, stimulusSpatialModulationOrtho, template, templateOrtho, spatialSupportDegs, noiseNorm] = ...
     generateStimulusSpatialModulation(stimulusSizeDegs, noiseNorm, stimulusType, oriDegs, contrastLevels, noiseInstances)
 
-    coneApertureMicrons = 2; micronsPerDegree = 300;
-    stimulusPixelSizeArcMin = 0.75*coneApertureMicrons / micronsPerDegree * 60;
-    stimulusWidthArcMin = stimulusSizeDegs * 60;
-    
-    % Grating params
-    gratingParams.oriDegs = oriDegs;
-    gratingParams.sigmaArcMin = stimulusSizeDegs/7*60;
-    gratingParams.contrastLevels = contrastLevels;
-    % Noise params
-    noiseParams.steepness = 100;
-
-    switch (stimulusType)
-        case 'low frequency'
-            gratingParams.sfCPD = 4;
-            noiseParams.spectrumShape = 'highPassCornerFreq';
-            noiseParams.cornerFrequencyCPD = 10;
-        case 'high frequency'
-            gratingParams.sfCPD = 11;
-            noiseParams.spectrumShape = 'lowPassCornerFreq';
-            noiseParams.cornerFrequencyCPD = 5;
-        otherwise
-            error('Unknown stimulus type: ''%s''.', stimulusType);
-    end
-    
+    [gratingParams, noiseParams, stimulusPixelSizeArcMin] = ...
+        RucciStimulusParams(stimulusType, stimulusSizeDegs, oriDegs, contrastLevels);
     
     figNo = 1;
     [stimStruct, noiseNorm] = ...
         generateGratingInNoiseSpatialModulationPattern(...
-        stimulusWidthArcMin, stimulusPixelSizeArcMin,  ...
+        stimulusSizeDegs*60, stimulusPixelSizeArcMin,  ...
         gratingParams, noiseParams, noiseNorm, noiseInstances, figNo);
     
     spatialSupportDegs = stimStruct.spatialSupportDegs;

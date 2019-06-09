@@ -8,11 +8,12 @@ function simulateRucciExperiment
     smallCompute = ~contains(localHostName, 'leviathan');
     
     % Actions
-    generateScenes = ~true;
-    generateOpticalImages = ~true;
-    generateMosaicResponses = ~true;
+    analyzeStimulusSpatioTemporalSpectra = ~true;
+    generateScenes = true;
+    generateOpticalImages = true;
+    generateMosaicResponses = true;
     visualizeMosaicResponses = ~true;
-    computeEnergyMechanismResponses = ~true;
+    computeEnergyMechanismResponses = true;
     estimatePerformance = true;
     
     % Load the cone mosaic if needed
@@ -21,10 +22,11 @@ function simulateRucciExperiment
     end
     
     % Simulation parameters
-    minContrast = 1/100;
-    maxContrast = 20/100;
-    nContrastLevels = 10;
+    minContrast = 0.03/100;
+    maxContrast = 3/100;
+    nContrastLevels = 6;
     contrastLevels = logspace(log10(minContrast), log10(maxContrast), nContrastLevels);
+    stimulusSizeDegs = 1.0;
     nTrials = 512;
     eyePosition = 'dynamic';
     %eyePosition = 'stabilized';
@@ -49,11 +51,17 @@ function simulateRucciExperiment
         % ----- ONLY FOR TESTING  -----
     end
     
+    if (analyzeStimulusSpatioTemporalSpectra) 
+        noiseInstances = 3;
+        reComputeSpectralAnalyses = true;
+        analyzeStabilizedAndDynamicSpectra(stimulusSizeDegs, fixationDurationSeconds, noiseInstances, reComputeSpectralAnalyses);
+        return;
+    end
+    
     % Generate the scenes
     if (generateScenes)
         fprintf('GENERATING SCENES ...\n');
         noiseInstances = 2;         % only computing responses for 1 though
-        stimulusSizeDegs = 1.0;     % small enough to allow faster computations
         generateAllScenes(noiseInstances, stimulusSizeDegs, meanLuminanceCdPerM2, contrastLevels, resourcesDir);  
     end
     
@@ -178,7 +186,7 @@ function [resourcesDir, parforWorkers, localHostName] = determineResources(rootD
         resourcesDir = fullfile(dropboxRoot, 'IBIO_analysis', 'IBIOColorDetect', 'SideProjects', 'RucciSimulations');
         parforWorkers = 4;
     elseif (contains(localHostName, 'leviathan'))
-        parforWorkers = 12;
+        parforWorkers = 14;
         dropboxRoot = '/media/dropbox_disk/Dropbox (Aguirre-Brainard Lab)';
         resourcesDir = fullfile(dropboxRoot, 'IBIO_analysis', 'IBIOColorDetect', 'SideProjects', 'RucciSimulations');
     else

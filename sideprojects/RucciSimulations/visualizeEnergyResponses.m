@@ -1,25 +1,32 @@
-function visualizeEnergyResponses(stimDescriptor, signalName, responseStandardOriStimulus, responseOrthogonalOriStimulus, contrastLevels, timeAxis, figNo)
+function visualizeEnergyResponses(stimDescriptor, signalName, ...
+    standardOriStimulusResponse, standardOriStimulusOrthoResponse, ...
+    orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, ...
+    contrastLevels, timeAxis, figNo)
 
     hFig = figure(figNo); clf;
     set(hFig, 'Position', [10 10 2500 700]);
     
-    plotEnergyResponses(stimDescriptor, 'stardard orientation', signalName, contrastLevels, timeAxis, responseStandardOriStimulus, 0);
-    plotEnergyResponses(stimDescriptor, 'orthogonal orientation', signalName, contrastLevels, timeAxis, responseOrthogonalOriStimulus, 1);
-    plotEnergyResponseCombo(responseStandardOriStimulus, responseOrthogonalOriStimulus, signalName, 2);
+    plotEnergyResponses(stimDescriptor, 'stardard orientation', signalName, contrastLevels, timeAxis, ...
+        standardOriStimulusResponse, standardOriStimulusOrthoResponse, 0);
+    plotEnergyResponses(stimDescriptor, 'orthogonal orientation', signalName, contrastLevels, timeAxis, ...
+        orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, 1);
+    plotEnergyResponseCombo(standardOriStimulusResponse, standardOriStimulusOrthoResponse, ...
+        orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, signalName, 2);
 end
 
-function plotEnergyResponseCombo(energyResponseStandardOriStimulus, energyResponseOrthogonalOriStimulus, signalName, row)
-    nContrasts = size(energyResponseStandardOriStimulus.output,1);
-    nTrials = size(energyResponseStandardOriStimulus.output,2);
-    nTimeBins = size(energyResponseStandardOriStimulus.output,3);
+function plotEnergyResponseCombo(energyResponseStandardOriStimulusOutput, energyResponseStandardOriStimulusOrthoOutput, ...
+    energyResponseOrthogonalOriStimulusOutput, energyResponseOrthogonalOriStimulusOrthoOutput, signalName, row)
+    nContrasts = size(energyResponseStandardOriStimulusOutput,1);
+    nTrials = size(energyResponseStandardOriStimulusOutput,2);
+    nTimeBins = size(energyResponseStandardOriStimulusOutput.output,3);
     
     for theContrastLevel = 1:nContrasts
         subplot(3, nContrasts, theContrastLevel + row*nContrasts);
         
-        r1 = energyResponseStandardOriStimulus.output(theContrastLevel,1:nTrials,1:nTimeBins);
-        r2 = energyResponseStandardOriStimulus.orthoOutput(theContrastLevel,1:nTrials,1:nTimeBins);
-        r3 = energyResponseOrthogonalOriStimulus.output(theContrastLevel,1:nTrials,1:nTimeBins);
-        r4 = energyResponseOrthogonalOriStimulus.orthoOutput(theContrastLevel,1:nTrials,1:nTimeBins);
+        r1 = energyResponseStandardOriStimulusOutput(theContrastLevel,1:nTrials,1:nTimeBins);
+        r2 = energyResponseStandardOriStimulusOrthoOutput(theContrastLevel,1:nTrials,1:nTimeBins);
+        r3 = energyResponseOrthogonalOriStimulusOutput(theContrastLevel,1:nTrials,1:nTimeBins);
+        r4 = energyResponseOrthogonalOriStimulusOrthoOutput(theContrastLevel,1:nTrials,1:nTimeBins);
         
         r1 = r1(:);
         r2 = r2(:);
@@ -42,15 +49,15 @@ function plotEnergyResponseCombo(energyResponseStandardOriStimulus, energyRespon
     end
 end
 
-function plotEnergyResponses(stimDescriptor, stimOrientation, signalName, contrastLevels, timeAxis, energyResponse, row)
-    nContrasts = size(energyResponse.output,1);
-    nTrials = size(energyResponse.output,2);
+function plotEnergyResponses(stimDescriptor, stimOrientation, signalName, contrastLevels, timeAxis, energyResponseOutput, energyResponseOrthoOutput, row)
+    nContrasts = size(energyResponseOutput,1);
+    nTrials = size(energyResponseOutput,2);
     for theContrastLevel = 1:nContrasts
         subplot(3, nContrasts, theContrastLevel + row*nContrasts);
-        energyResponse.outputMean = squeeze(mean(energyResponse.output,2));
-        energyResponse.outputStd = squeeze(std(energyResponse.output,0,2));
-        energyResponse.orthoOutputMean = squeeze(mean(energyResponse.orthoOutput,2));
-        energyResponse.orthoOutputStd = squeeze(std(energyResponse.orthoOutput,0,2));
+        energyResponse.outputMean = squeeze(mean(energyResponseOutput,2));
+        energyResponse.outputStd = squeeze(std(energyResponseOutput,0,2));
+        energyResponse.orthoOutputMean = squeeze(mean(energyResponseOrthoOutput,2));
+        energyResponse.orthoOutputStd = squeeze(std(energyResponseOrthoOutput,0,2));
         hold on;
         for trialIndex = 1:nTrials
             plot(timeAxis*1000, energyResponse.outputMean(theContrastLevel,:), 'r-', 'LineWidth', 1.5);

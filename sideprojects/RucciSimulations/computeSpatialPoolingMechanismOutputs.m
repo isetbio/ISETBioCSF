@@ -33,41 +33,49 @@ function computeSpatialPoolingMechanismOutputs(spatialPoolingKernels, stimDescri
     nContrasts = numel(contrastLevels);
     
     % Preallocate memory for results
-    energyConeExcitationResponse.output = zeros(nContrasts, nTrials, size(coneExcitations,3));
-    energyConeExcitationResponse.orthoOutput = zeros(nContrasts, nTrials, size(coneExcitations,3));
-    energyPhotoCurrentResponse.output = zeros(nContrasts, nTrials, size(photoCurrents,3));
-    energyPhotoCurrentResponse.orthoOutput = zeros(nContrasts, nTrials, size(photoCurrents,3));
+    energyConeExcitationResponseOutput = zeros(nContrasts, nTrials, size(coneExcitations,3));
+    energyConeExcitationResponseOrthoOutput = zeros(nContrasts, nTrials, size(coneExcitations,3));
+    energyPhotoCurrentResponseOutput = zeros(nContrasts, nTrials, size(photoCurrents,3));
+    energyPhotoCurrentResponseOrthoOutput = zeros(nContrasts, nTrials, size(photoCurrents,3));
     
-    for theContrastLevel = 1:nContrasts
+    parfor theContrastLevel = 1:nContrasts
+        fprintf('Computing energy response for contrast %d\n', theContrastLevel);
         % Load mosaic responses
-        fName = coneMosaicResponsesDataFileName(stimDescriptor, contrastLevels(theContrastLevel), analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
-        load(fName, 'coneExcitations', 'photoCurrents');
+        [coneExcitations, photoCurrents] = ...
+            retrieveData(stimDescriptor, contrastLevels(theContrastLevel), analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
         
         % Compute cone excitation energy response for the standard orientation filter
-        energyConeExcitationResponse.output(theContrastLevel,:,:) = ...
+        energyConeExcitationResponseOutput(theContrastLevel,:,:) = ...
             computeEnergyResponse(coneExcitations, nullStimulusMeanConeExcitations, ...
             poolingKernelLinear, poolingKernelQuadrature);
         
         % Compute cone excitation energy response for the orthogonal orientation filter
-        energyConeExcitationResponse.orthoOutput(theContrastLevel,:,:) = ...
+        energyConeExcitationResponseOrthoOutput(theContrastLevel,:,:) = ...
             computeEnergyResponse(coneExcitations, nullStimulusMeanConeExcitations, ...
             poolingKernelOrthoLinear, poolingKernelOrthoQuadrature);
         
         % Compute photocurrent energy response for the standard orientation filter
-        energyPhotoCurrentResponse.output(theContrastLevel,:,:) = ...
+        energyPhotoCurrentResponseOutput(theContrastLevel,:,:) = ...
             computeEnergyResponse(photoCurrents, nullStimulusMeanPhotocurrents, ...
             poolingKernelLinear, poolingKernelQuadrature);
         
         % Compute photocurrent energy response for the orthogonal orientation filter
-        energyPhotoCurrentResponse.orthoOutput(theContrastLevel,:,:) = ...
+        energyPhotoCurrentResponseOrthoOutput(theContrastLevel,:,:) = ...
             computeEnergyResponse(photoCurrents, nullStimulusMeanPhotocurrents, ...
             poolingKernelOrthoLinear, poolingKernelOrthoQuadrature);  
     end
     
     fName = energyResponsesDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
     fprintf('Saving energy responses from %d trials for %s stimulus to %s\n', nTrials, stimDescriptor, fName);
-    save(fName, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'emPathsDegs', 'timeAxis', '-v7.3');
+    save(fName, 'energyConeExcitationResponseOutput', 'energyConeExcitationResponseOrthoOutput', ...
+                'energyPhotoCurrentResponseOutput', 'energyPhotoCurrentResponseOrthoOutput', ...
+                'emPathsDegs', 'timeAxis', '-v7.3');
 
+end
+
+function [coneExcitations, photoCurrents] = retrieveData(stimDescriptor, theContrastLevel, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir)
+    fName = coneMosaicResponsesDataFileName(stimDescriptor, theContrastLevel, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
+    load(fName, 'coneExcitations', 'photoCurrents'); 
 end
 
 

@@ -2,36 +2,50 @@ function estimatePerformanceForStimulus(stimDescriptor, analyzedNoiseInstance, n
         
     % Load energy mechanism responses to the standard orientation stimulus
     fName = energyResponsesDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
-    load(fName, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'timeAxis');
-    coneExcitationResponseStandardOriStimulus = energyConeExcitationResponse;
-    photoCurrentResponseStandardOriStimulus = energyPhotoCurrentResponse;
-
+    load(fName, 'energyConeExcitationResponseOutput', 'energyConeExcitationResponseOrthoOutput', ...
+                'energyPhotoCurrentResponseOutput', 'energyPhotoCurrentResponseOrthoOutput', 'timeAxis');
+    
+    coneExcitationResponseStandardOriStimulusOutput = energyConeExcitationResponseOutput;
+    coneExcitationResponseStandardOriStimulusOrthoOutput = energyConeExcitationResponseOrthoOutput;
+    photoCurrentResponseStandardOriStimulusOutput = energyPhotoCurrentResponseOutput;
+    photoCurrentResponseStandardOriStimulusOrthoOutput = energyPhotoCurrentResponseOrthoOutput;
+    
     % Load energy mechanism responses to the orthogonal orientation stimulus
     stimDescriptor = 'highFrequencyOrtho';
     fName = energyResponsesDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
-    load(fName, 'energyConeExcitationResponse', 'energyPhotoCurrentResponse', 'timeAxis');
-    coneExcitationResponseOrthogonalOriStimulus = energyConeExcitationResponse;
-    photoCurrentResponseOrthogonalOriStimulus = energyPhotoCurrentResponse;
-
+    load(fName, 'energyConeExcitationResponseOutput', 'energyConeExcitationResponseOrthoOutput', ...
+                'energyPhotoCurrentResponseOutput', 'energyPhotoCurrentResponseOrthoOutput', 'timeAxis');
+    coneExcitationResponseOrthogonalOriStimulusOutput = energyConeExcitationResponseOutput;
+    coneExcitationResponseOrthogonalOriStimulusOrthoOutput = energyConeExcitationResponseOrthoOutput;
+    photoCurrentResponseOrthogonalOriStimulusOutput = energyPhotoCurrentResponseOutput;
+    photoCurrentResponseOrthogonalOriStimulusOrthoOutput = energyPhotoCurrentResponseOrthoOutput;
+    
     % Find discriminability contrast threshold at the level of cone excitations
     computeDiscriminabilityContrastThreshold(stimDescriptor, 'cone excitations', ...
-        coneExcitationResponseStandardOriStimulus, coneExcitationResponseOrthogonalOriStimulus, ...
+        coneExcitationResponseStandardOriStimulusOutput, coneExcitationResponseStandardOriStimulusOrthoOutput, ...
+        coneExcitationResponseOrthogonalOriStimulusOutput, coneExcitationResponseOrthogonalOriStimulusOrthoOutput, ...
         timeAxis, contrastLevels, figNo);
     
     % Find discriminability contrast threshold at the level of photocurrents
     computeDiscriminabilityContrastThreshold(stimDescriptor, 'photocurrents', ...
-        photoCurrentResponseStandardOriStimulus , photoCurrentResponseOrthogonalOriStimulus, ...
+        photoCurrentResponseStandardOriStimulusOutput , photoCurrentResponseStandardOriStimulusOrthoOutput, ...
+        photoCurrentResponseOrthogonalOriStimulusOutput, photoCurrentResponseOrthogonalOriStimulusOrthoOutput, ...
         timeAxis, contrastLevels, figNo+100);
     
 end
 
-function contrastThreshold = computeDiscriminabilityContrastThreshold(stimDescriptor, signalName, responseStandardOriStimulus, responseOrthogonalOriStimulus, timeAxis, contrastLevels, figNo)
+function contrastThreshold = computeDiscriminabilityContrastThreshold(stimDescriptor, signalName, ...
+    standardOriStimulusResponse, standardOriStimulusOrthoResponse, ...
+    orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, timeAxis, contrastLevels, figNo)
     
-    %visualizeEnergyResponses(stimDescriptor, signalName, responseStandardOriStimulus, responseOrthogonalOriStimulus, contrastLevels, timeAxis, figNo);
+    visualizeEnergyResponses(stimDescriptor, signalName, ...
+        standardOriStimulusResponse, standardOriStimulusOrthoResponse, ...
+        orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, ...
+        contrastLevels, timeAxis, figNo);
         
-    nContrasts = size(responseStandardOriStimulus.output,1);
-    nTrials = size(responseStandardOriStimulus.output,2);
-    nTimeBins = size(responseStandardOriStimulus.output,3);
+    nContrasts = size(standardOriStimulusResponse,1);
+    nTrials = size(standardOriStimulusResponse,2);
+    nTimeBins = size(standardOriStimulusResponse,3);
     
     % Use all time bins for now
     timeBinsIncludedInClassification = 1:nTimeBins;
@@ -41,16 +55,17 @@ function contrastThreshold = computeDiscriminabilityContrastThreshold(stimDescri
     rawPsychometricFunction.performance = zeros(1, nContrasts);
     
     taskIntervals = 2;
+    kFold = 10;
     for theContrastLevel = 1:nContrasts
         % The standard and orthogonal tuned mechanism responses to the standard stimulus
-        r11 = squeeze(responseStandardOriStimulus.output(theContrastLevel,1:nTrials,timeBinsIncludedInClassification));
-        r12 = squeeze(responseStandardOriStimulus.orthoOutput(theContrastLevel,1:nTrials,timeBinsIncludedInClassification));
+        r11 = squeeze(standardOriStimulusResponse(theContrastLevel,1:nTrials,timeBinsIncludedInClassification));
+        r12 = squeeze(standardOriStimulusOrthoResponse(theContrastLevel,1:nTrials,timeBinsIncludedInClassification));
         % Concatenate responses from 2 mechanisms in 1 long response
         r1 = [r11 r12];
 
         % The standard and orthogonal tuned mechanism responses to the orthogonal stimulus
-        r21 = squeeze(responseOrthogonalOriStimulus.output(theContrastLevel,1:nTrials,timeBinsIncludedInClassification));
-        r22 = squeeze(responseOrthogonalOriStimulus.orthoOutput(theContrastLevel,1:nTrials,timeBinsIncludedInClassification));
+        r21 = squeeze(orthogonalOriStimulusResponse(theContrastLevel,1:nTrials,timeBinsIncludedInClassification));
+        r22 = squeeze(orthogonalOriStimulusOrthoResponse(theContrastLevel,1:nTrials,timeBinsIncludedInClassification));
         % Concatenate responses from 2 mechanisms in 1 long response
         r2 = [r21 r22];
 
@@ -61,7 +76,6 @@ function contrastThreshold = computeDiscriminabilityContrastThreshold(stimDescri
         svm = fitcsvm(classificationMatrix,classLabels);
 
         % Perform a 10-fold cross-validation on the trained SVM model
-        kFold = 10;
         CVSVM = crossval(svm,'KFold',kFold);
 
         % Compute classification loss for the in-sample responses using a model trained on out-of-sample responses
