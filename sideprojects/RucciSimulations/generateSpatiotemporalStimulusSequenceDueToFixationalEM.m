@@ -21,7 +21,7 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
     PSDmethod = 'windowedFFT';   
     
     parfor (instanceNo = 1:instancesNum, parforWorkersNum)
-        fprintf('Computing spatiotemporal analysis for instance %d of %d\n', instanceNo, instancesNum);
+        fprintf('\tInstance %d of %d\n', instanceNo, instancesNum);
         % emPath for this instance
         theEMPosPathDegs = squeeze(emPosArcMin(instanceNo,:,:))/60;
         

@@ -29,9 +29,9 @@ function analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fix
             stimStruct.image = squeeze(stimStruct.image(:,1,:,:));
 
             % Generate spatiotemporal stimulus sequence and spectra due to fixational EM
-            fprintf('Computing spatiotemporal analysis for dynamic ''%s'' stimulus.\n', stimulusTypes{stimIndex});
+            fprintf('Computing spatiotemporal analysis for DYNAMIC ''%s'' stimulus.\n', stimulusTypes{stimIndex});
             xtStimStructFEM = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, stimStruct, parforWorkersNum);
-            fprintf('Computing spatiotemporal analysis for stabilized ''%s'' stimulus.\n', stimulusTypes{stimIndex});
+            fprintf('Computing spatiotemporal analysis for STABILIZED ''%s'' stimulus.\n', stimulusTypes{stimIndex});
             xtStimStructStabilized = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin*0, stimStruct, parforWorkersNum);
 
             fName = spectralAnalysisFileName(stimulusTypes{stimIndex}, stimulusSizeDegs);
