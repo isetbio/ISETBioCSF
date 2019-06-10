@@ -11,8 +11,7 @@ function estimatePerformanceForStimulus(stimDescriptor, analyzedNoiseInstance, n
     photoCurrentResponseStandardOriStimulusOrthoOutput = energyPhotoCurrentResponseOrthoOutput;
     
     % Load energy mechanism responses to the orthogonal orientation stimulus
-    stimDescriptor = 'highFrequencyOrtho';
-    fName = energyResponsesDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
+    fName = energyResponsesDataFileName(sprintf('%sOrtho',stimDescriptor), analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
     load(fName, 'energyConeExcitationResponseOutput', 'energyConeExcitationResponseOrthoOutput', ...
                 'energyPhotoCurrentResponseOutput', 'energyPhotoCurrentResponseOrthoOutput', 'timeAxis');
     coneExcitationResponseOrthogonalOriStimulusOutput = energyConeExcitationResponseOutput;
