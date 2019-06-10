@@ -8,13 +8,13 @@ function simulateRucciExperiment
     smallCompute = ~contains(localHostName, 'leviathan');
     
     % Actions
-    analyzeStimulusSpatioTemporalSpectra = true;
+    analyzeStimulusSpatioTemporalSpectra = ~true;
     generateScenes = ~true;
     generateOpticalImages = ~true;
-    generateMosaicResponses = ~true;
-    visualizeMosaicResponses = ~true;
-    computeEnergyMechanismResponses = ~true;
-    estimatePerformance = ~true;
+    generateMosaicResponses = true;
+    visualizeMosaicResponses = true;
+    computeEnergyMechanismResponses = true;
+    estimatePerformance = true;
     
     % Load the cone mosaic if needed
     if (generateMosaicResponses || visualizeMosaicResponses || computeEnergyMechanismResponses)
@@ -22,14 +22,14 @@ function simulateRucciExperiment
     end
     
     % Simulation parameters
-    minContrast = 0.03/100;
+    minContrast = 0.2/100;
     maxContrast = 3/100;
-    nContrastLevels = 6;
+    nContrastLevels = 5;
     contrastLevels = logspace(log10(minContrast), log10(maxContrast), nContrastLevels);
     stimulusSizeDegs = 1.0;
-    nTrials = 512;
+    nTrials = 400;
     eyePosition = 'dynamic';
-    %eyePosition = 'stabilized';
+    eyePosition = 'stabilized';
     fixationDurationSeconds = 0.8;
     warmupTimeSeconds = 0.5;
     mosaicIntegrationTimeSeconds = 2.5/1000;
@@ -55,9 +55,9 @@ function simulateRucciExperiment
         noiseInstances = 8;
         stimulusSizeDegs = 2.0;
         fixationDurationSeconds = 1.0;
-        reComputeSpectralAnalyses = true;
+        reComputeSpectralAnalyses = ~true;
         parforWorkersNum = 1;
-        stimulusTypes = {'high frequency'}; % , '1 over F', 'low frequency', 'high frequency'};
+        stimulusTypes = {'1 over F'}; % , '1 over F', 'low frequency', 'high frequency'};
         analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fixationDurationSeconds, noiseInstances, reComputeSpectralAnalyses, parforWorkersNum);
         return;
     end
@@ -190,7 +190,7 @@ function [resourcesDir, parforWorkers, localHostName] = determineResources(rootD
         resourcesDir = fullfile(dropboxRoot, 'IBIO_analysis', 'IBIOColorDetect', 'SideProjects', 'RucciSimulations');
         parforWorkers = 4;
     elseif (contains(localHostName, 'leviathan'))
-        parforWorkers = 14;
+        parforWorkers = 16;
         dropboxRoot = '/media/dropbox_disk/Dropbox (Aguirre-Brainard Lab)';
         resourcesDir = fullfile(dropboxRoot, 'IBIO_analysis', 'IBIOColorDetect', 'SideProjects', 'RucciSimulations');
     else
