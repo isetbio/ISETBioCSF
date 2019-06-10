@@ -15,7 +15,7 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
     if (strcmp(mosaicParams.conePacking,'rect'))
         coneLocsInMeters = theMosaic.coneLocs;
     else
-        coneLocsInMeters = theMosaic.coneLocsHexGrid;
+        coneLocsInMeters = theMosaic.coneLocsHexGridAlignedWithSerializedConeMosaicResponse();  % OLD, incorrect way: coneLocsHexGrid; 
     end
     coneLocsDegs(:,1) = coneLocsInMeters(:,1) / theMosaic.width * theMosaic.fov(1);
     coneLocsDegs(:,2) = coneLocsInMeters(:,2) / theMosaic.height * theMosaic.fov(2);

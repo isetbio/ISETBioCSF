@@ -10,7 +10,7 @@ function [spatialPoolingFilter, hFig] = generateSpatialPoolingKernel(spatialPara
     if (strcmp(mosaicParams.conePacking,'rect'))
         coneLocsInMeters = theMosaic.coneLocs;
     else
-        coneLocsInMeters = theMosaic.coneLocsHexGrid;
+        coneLocsInMeters = theMosaic.coneLocsHexGridAlignedWithSerializedConeMosaicResponse(); % OLD, incorrect way: coneLocsHexGrid;
     end
     coneLocsInDegs(:,1) = coneLocsInMeters(:,1) / theMosaic.width * theMosaic.fov(1);
     coneLocsInDegs(:,2) = coneLocsInMeters(:,2) / theMosaic.height * theMosaic.fov(2);

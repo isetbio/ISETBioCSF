@@ -8,13 +8,13 @@ function simulateRucciExperiment
     smallCompute = ~contains(localHostName, 'leviathan');
     
     % Actions
-    analyzeStimulusSpatioTemporalSpectra = ~true;
-    generateScenes = true;
-    generateOpticalImages = true;
-    generateMosaicResponses = true;
+    analyzeStimulusSpatioTemporalSpectra = true;
+    generateScenes = ~true;
+    generateOpticalImages = ~true;
+    generateMosaicResponses = ~true;
     visualizeMosaicResponses = ~true;
-    computeEnergyMechanismResponses = true;
-    estimatePerformance = true;
+    computeEnergyMechanismResponses = ~true;
+    estimatePerformance = ~true;
     
     % Load the cone mosaic if needed
     if (generateMosaicResponses || visualizeMosaicResponses || computeEnergyMechanismResponses)
@@ -52,9 +52,13 @@ function simulateRucciExperiment
     end
     
     if (analyzeStimulusSpatioTemporalSpectra) 
-        noiseInstances = 3;
+        noiseInstances = 8;
+        stimulusSizeDegs = 2.0;
+        fixationDurationSeconds = 1.0;
         reComputeSpectralAnalyses = true;
-        analyzeStabilizedAndDynamicSpectra(stimulusSizeDegs, fixationDurationSeconds, noiseInstances, reComputeSpectralAnalyses);
+        parforWorkersNum = 1;
+        stimulusTypes = {'high frequency'}; % , '1 over F', 'low frequency', 'high frequency'};
+        analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fixationDurationSeconds, noiseInstances, reComputeSpectralAnalyses, parforWorkersNum);
         return;
     end
     
