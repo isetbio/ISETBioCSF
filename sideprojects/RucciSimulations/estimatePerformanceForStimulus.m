@@ -38,10 +38,10 @@ function contrastThreshold = computeDiscriminabilityContrastThreshold(stimDescri
     standardOriStimulusResponse, standardOriStimulusOrthoResponse, ...
     orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, timeAxis, contrastLevels, figNo)
     
-    visualizeEnergyResponses(stimDescriptor, signalName, ...
-        standardOriStimulusResponse, standardOriStimulusOrthoResponse, ...
-        orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, ...
-        contrastLevels, timeAxis, figNo);
+%     visualizeEnergyResponses(stimDescriptor, signalName, ...
+%         standardOriStimulusResponse, standardOriStimulusOrthoResponse, ...
+%         orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, ...
+%         contrastLevels, timeAxis, figNo);
         
     nContrasts = size(standardOriStimulusResponse,1);
     nTrials = size(standardOriStimulusResponse,2);
@@ -95,15 +95,16 @@ function contrastThreshold = computeDiscriminabilityContrastThreshold(stimDescri
     set(hFig, 'Color', [1 1 1]);
     
     % The smooth (fitted) psychometric function
-    plot(smoothPsychometricFunction.contrast, smoothPsychometricFunction.performance, 'r-', 'LineWidth', 1.5); hold on;
+    plot(smoothPsychometricFunction.contrast*100, smoothPsychometricFunction.performance, 'r-', 'LineWidth', 1.5); hold on;
     % The raw (measured) psychometric function
-    plot(rawPsychometricFunction.contrast, rawPsychometricFunction.performance, 'ko', 'MarkerSize', 12, ...
+    plot(rawPsychometricFunction.contrast*100, rawPsychometricFunction.performance, 'ko', 'MarkerSize', 12, ...
         'MarkerFaceColor', [0.8 0.5 0.5], 'MarkerEdgeColor', [1 0 0], 'LineWidth', 1.0);
     % The contrast threshold
-    plot(contrastThreshold*[1 1], [0 performanceThreshold], 'b-', 'LineWidth', 1.5);
-    plot([0.001 contrastThreshold], performanceThreshold*[1 1], 'b-', 'LineWidth', 1.5);
-    set(gca, 'XLim', [0.01 0.4], 'YLim', [0.4 1.0], 'XScale', 'log', 'FontSize', 14);
-    xlabel('contrast');
+    plot(contrastThreshold*[1 1]*100, [0 performanceThreshold]*100, 'b-', 'LineWidth', 1.5);
+    plot([0.0001 contrastThreshold]*100, performanceThreshold*[1 1]*100, 'b-', 'LineWidth', 1.5);
+    contrastLims = [min(rawPsychometricFunction.contrast) max(rawPsychometricFunction.contrast)]*100;
+    set(gca, 'XScale', 'log', 'XLim', contrastLims, 'YLim', [0.4 1.0]*100, 'XScale', 'log', 'FontSize', 14);
+    xlabel('contrast (%)');
     ylabel('classification accuracy');
     title(sprintf('%s (%s)', stimDescriptor, signalName));
     
@@ -113,7 +114,7 @@ end
 function [contrastThreshold, smoothPsychometricFunction] = fitWeibulToPsychometricFunction(contrasts, rawPsychometricFunction, performanceThreshold, nTrials)
     % Set up psychometric function model. Here we use a cumulative Weibull function
     psychometricFunctionModel = @PAL_Weibull;
-
+    rawPsychometricFunction = rawPsychometricFunction/100;
     % Set up search grid
     gridLevels = 100;
     searchGridParams.alpha = logspace(log10(min(contrasts)),log10(max(contrasts)),gridLevels);
@@ -144,7 +145,7 @@ function [contrastThreshold, smoothPsychometricFunction] = fitWeibulToPsychometr
     
     % Obtain a high resolution version of the fitted function
     smoothPsychometricFunction.contrast = searchGridParams.alpha;
-    smoothPsychometricFunction.performance = PAL_Weibull(paramsValues, hiResContrasts);
+    smoothPsychometricFunction.performance = PAL_Weibull(paramsValues, searchGridParams.alpha)*100;
 
 end
 
