@@ -3,7 +3,7 @@ function visualizeStabilizedAndDynamicsSpectra(sData, sDataStabilized, figNo)
     % Limits
     sfLims = [0 30];
     tfLims = [-100 100];
-    cLims = [-110 45]; % max(sData.meanSpatioTemporalSpectalDensity(:)) + [-40 0];
+    cLims = [-60 45]; % in dB
     
     hFig = figure(figNo+100); clf;
     plotSummarySlices(sDataStabilized, sData, cLims);
@@ -60,7 +60,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     title('stabilized stimulus');
     set(gca, 'XScale', 'log', 'YScale', 'log', 'XLim', sfLims, 'YLim', tfLims, 'CLim', cLims, 'ZLim', cLims);
     set(gca, 'XTick', [0.1 1 3 10 30 100], 'YTick', [0.1 1 3 10 30 100], 'FontSize', 14);
-    axis 'square';
+    %axis 'square';
     cBar = colorbar('horizontal', 'Location', 'northoutside');
     cBar.Label.String = 'power (dB)';
     colormap(ax, hot(1024));
@@ -77,7 +77,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     title('dynamic stimulus');
     set(gca, 'XScale', 'log', 'YScale', 'log', 'XLim', sfLims, 'YLim', tfLims, 'CLim', cLims, 'ZLim', cLims);
     set(gca, 'XTick', [0.1 1 3 10 30 100], 'YTick', [0.1 1 3 10 30 100], 'FontSize', 14);
-    axis 'square';
+    %axis 'square';
     cBar = colorbar('horizontal', 'Location', 'northoutside');
     cBar.Label.String = 'power (dB)';
     colormap(ax, hot(1024));
@@ -128,7 +128,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     for k = 1:sampledTFsNum
         plot(sfSupport, 10*log10(averageXTspectraStabilized(tfIndex(k),:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
     end
-    axis 'square'
+    %axis 'square'
     title('stabilized stimulus');
     box on; grid on;
     hL = legend(legendsTF, 'NumColumns',2, 'Location', 'northoutside');
@@ -154,7 +154,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     for k = 1:sampledTFsNum
         plot(sfSupport, 10*log10(averageXTspectraDynamic(tfIndex(k),:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
     end
-    axis 'square'
+    %axis 'square'
     title('dynamic stimulus');
     box on; grid on;
     hL = legend(legendsTF, 'NumColumns',2, 'Location', 'northoutside');
@@ -177,7 +177,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     for k = 1:sampledTFsNum
         plot(sfSupport, squeeze(diffEnergyAsAFunctionOfSF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
     end
-    axis 'square'
+    %axis 'square'
     box on; grid on;
     hL = legend(legendsTF, 'NumColumns',2, 'Location', 'northoutside');
     set(gca, 'XLim', sfLims, 'YLim', [-30 70], 'XScale', 'log', 'FontSize', 14);
@@ -198,7 +198,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     for k = 1:sampledSFsNum
         plot(tfSupport, squeeze(diffEnergyAsAFunctionOfTF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
     end
-    axis 'square'
+    %axis 'square'
     box on; grid on;
     hL = legend(legendsSF, 'NumColumns',2, 'Location', 'northoutside');
     set(gca, 'XLim', tfLims, 'YLim', [-30 70], 'XScale', 'log', 'FontSize', 14);
