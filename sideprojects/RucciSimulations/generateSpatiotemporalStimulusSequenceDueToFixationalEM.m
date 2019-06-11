@@ -1,7 +1,7 @@
 function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, stimulus, parforWorkersNum)
     instancesNum = size(emPosArcMin,1);
     timeBins = size(emPosArcMin,2);
-    extraBins = max([0 round((1024-timeBins)/2)]);  % bins for zero padding in time domain
+    extraBins = 0; % max([0 round((1024-timeBins)/2)]);  % bins for zero padding in time domain
     totalTimeBins = timeBins+extraBins*2;
     
     saveStimulusSequences = ~true;
@@ -14,13 +14,14 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
     
     pixelSizeDegs = stimulus.spatialSupportDegs(2)-stimulus.spatialSupportDegs(1);
     
-    fftSize = 2.^(nextpow2([totalTimeBins size(stimulus.image,2), size(stimulus.image,3)]));
-    powerSpectralDensity = zeros(instancesNum, fftSize(1), fftSize(2), fftSize(3));
+    fftSize =  2.^(nextpow2([totalTimeBins size(stimulus.image,2), size(stimulus.image,3)]));
+    sData.meanSpatioTemporalSpectalDensity = zeros(fftSize(1), fftSize(2), fftSize(3));
                 
     PSDmethod = 'FFT';
     PSDmethod = 'windowedFFT';   
     
-    parfor (instanceNo = 1:instancesNum, parforWorkersNum)
+    
+    for instanceNo = 1:instancesNum
         fprintf('\tInstance %d of %d\n', instanceNo, instancesNum);
         % emPath for this instance
         theEMPosPathDegs = squeeze(emPosArcMin(instanceNo,:,:))/60;
@@ -52,8 +53,7 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
         
         switch PSDmethod
             case 'FFT'
-                powerSpectralDensity(instanceNo,:,:,:) = ...
-                    1/prod(fftSize) * (abs(fftshift(fftn(XYTstim,fftSize)))).^2; 
+                ppp = 1/prod(fftSize) * (abs(fftshift(fftn(XYTstim,fftSize)))).^2; 
                 
             case 'windowedFFT'
                 nRows = size(stimulus.image,2);
@@ -65,18 +65,24 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
                 spatialWindowOverlapFactor = 0.95;
                 temporalWindowOverlapFactor = 0.9;
                 
-                powerSpectralDensity(instanceNo,:,:,:) = ...
-                    welchSpectrum(XYTstim, spatialWindowSamples, temporalWindowSamples,  ...
+                ppp = welchSpectrum(XYTstim, spatialWindowSamples, temporalWindowSamples,  ...
                     spatialWindowOverlapFactor, temporalWindowOverlapFactor, ...
                     totalTimeBins, nRows, mCols, fftSize);
                 
             otherwise
                 error('Unknown PSD method: ''%s''. ', PSDmethod);
         end % switch
+        
+        if (instanceNo == 1)
+            sData.meanSpatioTemporalSpectalDensity = ppp;
+        else
+            sData.meanSpatioTemporalSpectalDensity = sData.meanSpatioTemporalSpectalDensity + ppp;
+        end
+        
     end % for
     
     % mean spectral density over instances
-    sData.meanSpatioTemporalSpectalDensity = squeeze(mean(powerSpectralDensity,1));
+    sData.meanSpatioTemporalSpectalDensity = sData.meanSpatioTemporalSpectalDensity /instancesNum;
     
     N = size(sData.meanSpatioTemporalSpectalDensity,3);
     N = N/2;
