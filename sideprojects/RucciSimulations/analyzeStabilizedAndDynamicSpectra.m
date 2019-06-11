@@ -31,26 +31,32 @@ function analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fix
             % Generate spatiotemporal stimulus sequence and spectra due to fixational EM
             fprintf('Computing spatiotemporal analysis for DYNAMIC ''%s'' stimulus.\n', stimulusTypes{stimIndex});
             xtStimStructFEM = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, stimStruct, parforWorkersNum);
+            
+            fName = spectralAnalysisFileName(stimulusTypes{stimIndex}, stimulusSizeDegs);
+            fprintf('Saving DYNAMIC spatiotemporal analysis to %s\n', fName);
+            save(fName, 'xtStimStructFEM', '-v7.3');
+            clear 'xtStimStructFEM';
+            
             fprintf('Computing spatiotemporal analysis for STABILIZED ''%s'' stimulus.\n', stimulusTypes{stimIndex});
             xtStimStructStabilized = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin*0, stimStruct, parforWorkersNum);
-
-            fName = spectralAnalysisFileName(stimulusTypes{stimIndex}, stimulusSizeDegs);
-            fprintf('Saving spatiotemporal analyses to %s\n', fName);
-            save(fName, 'xtStimStructFEM', 'xtStimStructStabilized', '-v7.3');
+            fprintf('Saving STABILIZED spatiotemporal analysis to %s\n', fName);
+            save(fName, 'xtStimStructStabilized', '-append');
         else
             fName = spectralAnalysisFileName(stimulusTypes{stimIndex}, stimulusSizeDegs);
             load(fName, 'xtStimStructFEM', 'xtStimStructStabilized');
+            % Visualize spatiomporal spectra
+            figNo = 1000 + stimIndex*1000;
+            visualizeStabilizedAndDynamicsSpectra(xtStimStructFEM, xtStimStructStabilized, figNo);
         end
         
-        % Visualize spatiomporal spectra
-        figNo = 1000 + stimIndex*1000;
-        visualizeStabilizedAndDynamicsSpectra(xtStimStructFEM, xtStimStructStabilized, figNo);
+        
     end
     
 end
 
 function fName = spectralAnalysisFileName(stimulusType,stimulusSizeDegs)
     fName = sprintf('SpectralAnalyses_%s_%2.1fdegs.mat', strrep(stimulusType, ' ', '_'), stimulusSizeDegs);
+    fName = fullfile('SpectralAnalyses', fName);
 end
 
 
