@@ -19,61 +19,17 @@ end
 function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
 
     % organization is [TF, SFy, SFx]
-    targetYSF = 0;
-    [~,sfYIndex] = min(abs(sDataDynamic.spatialFrequencySupport)-targetYSF);
+    % Get the slice corresponding to sfY  0 c/deg
+    targetSFy = 0;
+    [~,sfYIndex] = min(abs(sDataDynamic.spatialFrequencySupport)-targetSFy);
     XTspectraDynamic = squeeze(sDataDynamic.meanSpatioTemporalSpectalDensity(:,sfYIndex,:));
     XTspectraStabilized = squeeze(sDataStabilized.meanSpatioTemporalSpectalDensity(:,sfYIndex,:));
     
-    targetSF = 0;
-    [~,sfIndex0] = min(abs(sDataDynamic.spatialFrequencySupport)-targetSF);
-    
-    targetTF = 0;
-    [~, tfIndex0] = min(abs(sDataDynamic.tfSupport)-targetTF);
-    
-    
-    sfIndices = (sfIndex0+1):numel(sDataDynamic.spatialFrequencySupport);
-    tfIndices = (tfIndex0+1):numel(sDataDynamic.tfSupport);
-    
-    
-    averageXTspectraDynamic = zeros(numel(tfIndices)+1, numel(sfIndices)+1);
-    averageXTspectraStabilized = zeros(numel(tfIndices)+1, numel(sfIndices)+1);
-    
-    averageXTspectraDynamic(1,:) = XTspectraDynamic(tfIndex0,sfIndex0:end);
-    averageXTspectraDynamic(:,1) = XTspectraDynamic(tfIndex0:end,sfIndex0);
-    averageXTspectraStabilized(1,:) = XTspectraStabilized(tfIndex0,sfIndex0:end);
-    averageXTspectraStabilized(:,1) = XTspectraStabilized(tfIndex0:end,sfIndex0);
-    
-    for sf = 1:numel(sfIndices)
-        sfIndex = sfIndices(sf);
-        sfIndex2 = sfIndex0 - (sfIndex-sfIndex0);
-        for tf = 1:numel(tfIndices)
-            tfIndex = tfIndices(tf);
-            tfIndex2 = tfIndex0 - (tfIndex-tfIndex0);
-            averageXTspectraDynamic(tf+1,sf+1) = 0.25*(...
-                XTspectraDynamic(tfIndex, sfIndex) + ...
-                XTspectraDynamic(tfIndex2, sfIndex) + ...
-                XTspectraDynamic(tfIndex2, sfIndex2) + ...
-                XTspectraDynamic(tfIndex, sfIndex2));
-            averageXTspectraStabilized(tf+1,sf+1) = 0.25*(...
-                XTspectraStabilized(tfIndex, sfIndex) + ...
-                XTspectraStabilized(tfIndex2, sfIndex) + ...
-                XTspectraStabilized(tfIndex2, sfIndex2) + ...
-                XTspectraStabilized(tfIndex, sfIndex2));
-        end
-    end
-    
-    
-    sfIndices = sfIndex0:numel(sDataDynamic.spatialFrequencySupport);
-    tfIndices = tfIndex0:numel(sDataDynamic.tfSupport);
-    
-    sfAxis = sDataDynamic.spatialFrequencySupport(sfIndices);
-    tfAxis = sDataDynamic.tfSupport(tfIndices);
-    [X,Y] = meshgrid(sfAxis, tfAxis);
-    
-    % Do not let 0, so we can plot in log coords
-    sfAxis(1) = sfAxis(2)-0.1;
-    tfAxis(1) = tfAxis(2)-0.1;
-
+    % Average along 4 quadrants
+    [averageXTspectraDynamic, sfSupport, tfSupport] = ...
+        averageAcrossQuadrantsSpectum(sDataDynamic.spatialFrequencySupport, sDataDynamic.tfSupport, XTspectraDynamic);
+    [averageXTspectraStabilized, ~,~] = ...
+        averageAcrossQuadrantsSpectum(sDataDynamic.spatialFrequencySupport, sDataDynamic.tfSupport, XTspectraStabilized);
     
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
@@ -86,57 +42,51 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
        'bottomMargin',   0.08, ...
        'topMargin',      0.05);
 
-    sfLims = [sfAxis(2) 80];
-    tfLims = [tfAxis(2) 100];
+    sfLims = [sfSupport(1) 80];
+    tfLims = [tfSupport(1) 100];
+    [X,Y] = meshgrid(sfSupport, tfSupport);
+    
     figure(22); clf;
-    subplot('Position', subplotPosVectors(1,1).v);
-    [c, h] = contourf(X,Y,10*log10(averageXTspectraDynamic), [cLims(1):2:cLims(end)]);
-    set(h,'LineColor','none')
-    xlabel('spatial frequency (c/deg)');
-    ylabel('temporal frequency (Hz)');
-    title('dynamic stimulus');
-    set(gca, 'XScale', 'log', 'YScale', 'log', 'XLim', sfLims, 'YLim', tfLims, 'CLim', cLims, 'ZLim', cLims);
-    set(gca, 'XTick', [0.1 1 3 10 30 100], 'YTick', [0.1 1 3 10 30 100], 'FontSize', 14);
-    axis 'square';
-    cBar = colorbar('horizontal');
-    cBar.Label.String = 'power (dB)';
     
-    subplot('Position', subplotPosVectors(2,1).v);
-    tfIndices = find(tfAxis> tfAxis(1));
-    [~,tfIndex0] = min(abs(tfAxis));
-    plot(sfAxis, 10*log10(squeeze(averageXTspectraDynamic(tfIndex0,:))), 'r-', 'LineWidth', 1.5); hold on
-    plot(sfAxis, 10*log10(squeeze(averageXTspectraStabilized(tfIndex0,:))), 'k--', 'LineWidth', 1.5); 
-    axis 'square'
-    legend({'dynamic', 'stabilized'}, 'Location', 'NorthWest');
-    set(gca, 'XScale', 'log',  'XLim', sfLims, 'YLim', [0 45], 'FontSize', 14);
-    xlabel('spatial frequency (c/deg)');
-    ylabel('power (dB)');
-    title('power at tf = 0 Hz');
-    
-    subplot('Position', subplotPosVectors(1,2).v);
-    [c, h] = contourf(X,Y,10*log10(averageXTspectraStabilized), [cLims(1):2:cLims(end)]);
+    % The spatiotemporal spectrum of the stabilized stimulus
+    ax = subplot('Position', subplotPosVectors(1,1).v);
+    dbSpectrum = 10*log10(averageXTspectraStabilized);
+    dbSpectrum(dbSpectrum<cLims(1)) = cLims(1);
+    dbSpectrum(dbSpectrum>cLims(2)) = cLims(2);
+    [c, h] = contourf(X,Y,dbSpectrum, [cLims(1):2:cLims(end)]);
     set(h,'LineColor','none')
-    xlabel('spatial frequency (c/deg)');
+    xlabel('spatial frequency, X (c/deg)');
     ylabel('temporal frequency (Hz)');
     title('stabilized stimulus');
     set(gca, 'XScale', 'log', 'YScale', 'log', 'XLim', sfLims, 'YLim', tfLims, 'CLim', cLims, 'ZLim', cLims);
     set(gca, 'XTick', [0.1 1 3 10 30 100], 'YTick', [0.1 1 3 10 30 100], 'FontSize', 14);
     axis 'square';
-    cBar = colorbar('horizontal');
+    cBar = colorbar('horizontal', 'Location', 'northoutside');
     cBar.Label.String = 'power (dB)';
+    colormap(ax, hot(1024));
     
+    % The spatiotemporal spectrum of the dynamic stimulus
+    ax = subplot('Position', subplotPosVectors(1,2).v);
+    dbSpectrum = 10*log10(averageXTspectraDynamic);
+    dbSpectrum(dbSpectrum<cLims(1)) = cLims(1);
+    dbSpectrum(dbSpectrum>cLims(2)) = cLims(2);
+    [c, h] = contourf(X,Y,dbSpectrum, [cLims(1):2:cLims(end)]);
+    set(h,'LineColor','none')
+    xlabel('spatial frequency, X (c/deg)');
+    ylabel('temporal frequency (Hz)');
+    title('dynamic stimulus');
+    set(gca, 'XScale', 'log', 'YScale', 'log', 'XLim', sfLims, 'YLim', tfLims, 'CLim', cLims, 'ZLim', cLims);
+    set(gca, 'XTick', [0.1 1 3 10 30 100], 'YTick', [0.1 1 3 10 30 100], 'FontSize', 14);
+    axis 'square';
+    cBar = colorbar('horizontal', 'Location', 'northoutside');
+    cBar.Label.String = 'power (dB)';
+    colormap(ax, hot(1024));
 
-    subplot('Position', subplotPosVectors(2,2).v);
-    plot(sfAxis, 10*log10(sum(averageXTspectraDynamic(tfIndices,:),1)), 'r-', 'LineWidth', 1.5); hold on
-    plot(sfAxis, 10*log10(sum(averageXTspectraStabilized(tfIndices,:),1)), 'k--', 'LineWidth', 1.5); 
-    axis 'square'
-    legend({'dynamic', 'stabilized'}, 'Location', 'NorthWest');
-    set(gca, 'XScale',  'log', 'XLim', sfLims, 'YLim', [0 45], 'FontSize', 14);
-    xlabel('spatial frequency (c/deg)');
-    ylabel('power (dB)');
-    title('total power at tf > 0 Hz');
     
-    sampledTFs = [0 5 10 20 50 100];
+    
+    
+    
+    sampledTFs = [0 2 5 7 10 20 50 100];
     sampledTFsNum = numel(sampledTFs);
     
     sampledSFs = [0 3 10 20 40 60];
@@ -146,50 +96,158 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     
     legendsTF = {};
     for k = 1:sampledTFsNum
-        [~, tfIndex(k)] = min(abs(tfAxis-sampledTFs(k)));
+        [~, tfIndex(k)] = min(abs(tfSupport-sampledTFs(k)));
         diffEnergyAsAFunctionOfSF(k,:) =  10*log10(averageXTspectraDynamic(tfIndex(k),:)) - 10*log10(averageXTspectraStabilized(tfIndex(k),:));
-        legendsTF{k} = sprintf('%2.0fHz', tfAxis(tfIndex(k)));
+        legendsTF{k} = sprintf('%2.0fHz', tfSupport(tfIndex(k)));
     end
     
     legendsSF = {};
     for k = 1:sampledSFsNum
-        [~, sfIndex(k)] = min(abs(sfAxis-sampledSFs(k)));
+        [~, sfIndex(k)] = min(abs(sfSupport-sampledSFs(k)));
         diffEnergyAsAFunctionOfTF(k,:) =  10*log10(averageXTspectraDynamic(:,sfIndex(k))) - 10*log10(averageXTspectraStabilized(:,sfIndex(k)));
-        legendsSF{k} = sprintf('%2.0fc/deg', sfAxis(sfIndex(k)));
+        legendsSF{k} = sprintf('%2.0fc/deg', sfSupport(sfIndex(k)));
     end
     
-    subplot('Position', subplotPosVectors(1,3).v); hold on
+    
+    lowSFs = find(sfSupport<=5);
+    stimSFs = find(sfSupport>10 & sfSupport < 12);
+    tfs = find(tfSupport > sfSupport(1) & tfSupport < 100)
+    
+    noisePowerStabilized = sum(sum(averageXTspectraStabilized(tfs, lowSFs)))
+    stimulusPowerStabilized = sum(sum(averageXTspectraStabilized(tfs, stimSFs)))
+    snrStabilized =  stimulusPowerStabilized/noisePowerStabilized
+    
+    % Spectral slices at different TFs of the stabilized stimulus
+    subplot('Position', subplotPosVectors(2,1).v); hold on
     for k = 1:sampledTFsNum
-        plot(sfAxis, squeeze(diffEnergyAsAFunctionOfSF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:))*0.7, 'LineWidth', 4);
+        plot(sfSupport, 10*log10(averageXTspectraStabilized(tfIndex(k),:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
     end
     for k = 1:sampledTFsNum
-        plot(sfAxis, squeeze(diffEnergyAsAFunctionOfSF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
+        plot(sfSupport, 10*log10(averageXTspectraStabilized(tfIndex(k),:)), 'k-', 'Color', squeeze(lineColors(k,:))*0.7, 'LineWidth', 4);
+    end
+    for k = 1:sampledTFsNum
+        plot(sfSupport, 10*log10(averageXTspectraStabilized(tfIndex(k),:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
+    end
+    axis 'square'
+    title('stabilized stimulus');
+    box on; grid on;
+    hL = legend(legendsTF, 'NumColumns',2, 'Location', 'northoutside');
+    set(gca, 'XLim', sfLims, 'YLim', cLims, 'XScale', 'log', 'FontSize', 14);
+    set(gca, 'XTick', [1 3 10 30 60 100]);
+    xlabel('spatial frequency, X (c/deg)');
+    ylabel('power (dB)');
+    
+    
+    
+    noisePowerDynamic = sum(sum(averageXTspectraDynamic(tfs, lowSFs)))
+    stimulusPowerDynamic = sum(sum(averageXTspectraDynamic(tfs, stimSFs)))
+    snrDynamic =  stimulusPowerDynamic/noisePowerDynamic
+    
+    % Spectral (sf) slices at different TFs of the dynamic stimulus
+    subplot('Position', subplotPosVectors(2,2).v); hold on
+    for k = 1:sampledTFsNum
+        plot(sfSupport, 10*log10(averageXTspectraDynamic(tfIndex(k),:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
+    end
+    for k = 1:sampledTFsNum
+        plot(sfSupport, 10*log10(averageXTspectraDynamic(tfIndex(k),:)), 'k-', 'Color', squeeze(lineColors(k,:))*0.7, 'LineWidth', 4);
+    end
+    for k = 1:sampledTFsNum
+        plot(sfSupport, 10*log10(averageXTspectraDynamic(tfIndex(k),:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
+    end
+    axis 'square'
+    title('dynamic stimulus');
+    box on; grid on;
+    hL = legend(legendsTF, 'NumColumns',2, 'Location', 'northoutside');
+    set(gca, 'XLim', sfLims, 'YLim', cLims, 'XScale', 'log', 'FontSize', 14);
+    set(gca, 'XTick', [1 3 10 30 60 100]);
+    xlabel('spatial frequency, X (c/deg)');
+    ylabel('power (dB)');
+
+    
+    
+
+    % Spectral (sf) slices of differential power (dynamic-stabilized) stimulus
+    subplot('Position', subplotPosVectors(2,3).v); hold on
+    for k = 1:sampledTFsNum
+        plot(sfSupport, squeeze(diffEnergyAsAFunctionOfSF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
+    end
+    for k = 1:sampledTFsNum
+        plot(sfSupport, squeeze(diffEnergyAsAFunctionOfSF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:))*0.7, 'LineWidth', 4);
+    end
+    for k = 1:sampledTFsNum
+        plot(sfSupport, squeeze(diffEnergyAsAFunctionOfSF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
     end
     axis 'square'
     box on; grid on;
-    hL = legend(legendsTF, 'Location', 'NorthWest');
+    hL = legend(legendsTF, 'NumColumns',2, 'Location', 'northoutside');
     set(gca, 'XLim', sfLims, 'YLim', [-30 70], 'XScale', 'log', 'FontSize', 14);
     set(gca, 'XTick', [1 3 10 30 60 100]);
-    xlabel('spatial frequency (c/deg)');
+    xlabel('spatial frequency, X (c/deg)');
     ylabel('dynamic-stabilized diff power (dB)');
-   
+    title('power re-distribution');
     
-    subplot('Position', subplotPosVectors(1,4).v);
+    % Spectral (tf) slices of differential power (dynamic-stabilized) stimulus
+    subplot('Position', subplotPosVectors(2,4).v);
+    for k = 1:sampledSFsNum
+        plot(tfSupport, squeeze(diffEnergyAsAFunctionOfTF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
+    end
     hold on
     for k = 1:sampledSFsNum
-        plot(tfAxis, squeeze(diffEnergyAsAFunctionOfTF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:))*0.7, 'LineWidth', 4);
+        plot(tfSupport, squeeze(diffEnergyAsAFunctionOfTF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:))*0.7, 'LineWidth', 4);
     end
     for k = 1:sampledSFsNum
-        plot(tfAxis, squeeze(diffEnergyAsAFunctionOfTF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
+        plot(tfSupport, squeeze(diffEnergyAsAFunctionOfTF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
     end
     axis 'square'
     box on; grid on;
-    hL = legend(legendsSF, 'Location', 'NorthWest');
+    hL = legend(legendsSF, 'NumColumns',2, 'Location', 'northoutside');
     set(gca, 'XLim', tfLims, 'YLim', [-30 70], 'XScale', 'log', 'FontSize', 14);
     set(gca, 'XTick', [1 3 10 30 100]);
     xlabel('temporal frequency (Hz)');
     ylabel('dynamic-stabilized diff power (dB)');
-    colormap(hot)
+    title('power re-distribution');
+    
+end
+
+function [averageSpectra, sfAxis, tfAxis] = averageAcrossQuadrantsSpectum(sfSupport, tfSupport, xtSpectra)
+    targetSFx = 0;
+    [~,sfIndex0] = min(abs(sfSupport)-targetSFx);
+    sfIndices = (sfIndex0+1):numel(sfSupport);
+    targetTF = 0;
+    [~, tfIndex0] = min(abs(tfSupport)-targetTF);
+    tfIndices = (tfIndex0+1):numel(tfSupport);
+    
+    averageSpectra = zeros(numel(tfIndices)+1, numel(sfIndices)+1);
+    % The sf = 0, tf = 0 slices
+    averageSpectra(1,:) = xtSpectra(tfIndex0,sfIndex0:end);
+    averageSpectra(:,1) = xtSpectra(tfIndex0:end,sfIndex0);
+    
+    % average the remaining slices across 4 quadrants
+    for sf = 1:numel(sfIndices)
+        sfIndex = sfIndices(sf);
+        sfIndex2 = sfIndex0 - (sfIndex-sfIndex0);
+        for tf = 1:numel(tfIndices)
+            tfIndex = tfIndices(tf);
+            tfIndex2 = tfIndex0 - (tfIndex-tfIndex0);
+            averageSpectra(tf+1,sf+1) = 0.25*(...
+                xtSpectra(tfIndex, sfIndex) + ...
+                xtSpectra(tfIndex2, sfIndex) + ...
+                xtSpectra(tfIndex2, sfIndex2) + ...
+                xtSpectra(tfIndex, sfIndex2));
+        end
+    end
+    
+    sfIndices = sfIndex0:numel(sfSupport);
+    tfIndices = tfIndex0:numel(tfSupport);
+    
+    sfAxis = sfSupport(sfIndices);
+    tfAxis = tfSupport(tfIndices);
+    
+    % no zero
+    deltaSF = sfAxis(2)-sfAxis(1);
+    deltaTF = tfAxis(2)-tfAxis(1);
+    sfAxis(1) = sfAxis(2)-deltaSF/2;
+    tfAxis(1) = tfAxis(2)-deltaTF/2;
     
 end
 
