@@ -120,13 +120,19 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     % Spectral slices at different TFs of the stabilized stimulus
     subplot('Position', subplotPosVectors(2,1).v); hold on
     for k = 1:sampledTFsNum
+%        if (k == 3)
         plot(sfSupport, 10*log10(averageXTspectraStabilized(tfIndex(k),:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
+%        end
     end
     for k = 1:sampledTFsNum
+%        if (k == 3)
         plot(sfSupport, 10*log10(averageXTspectraStabilized(tfIndex(k),:)), 'k-', 'Color', squeeze(lineColors(k,:))*0.7, 'LineWidth', 4);
+%        end
     end
     for k = 1:sampledTFsNum
+%        if (k == 3)
         plot(sfSupport, 10*log10(averageXTspectraStabilized(tfIndex(k),:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
+%        end
     end
     %axis 'square'
     title('stabilized stimulus');
@@ -146,13 +152,19 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     % Spectral (sf) slices at different TFs of the dynamic stimulus
     subplot('Position', subplotPosVectors(2,2).v); hold on
     for k = 1:sampledTFsNum
+%        if (k == 3)
         plot(sfSupport, 10*log10(averageXTspectraDynamic(tfIndex(k),:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
+%        end
     end
     for k = 1:sampledTFsNum
+%        if (k == 3)
         plot(sfSupport, 10*log10(averageXTspectraDynamic(tfIndex(k),:)), 'k-', 'Color', squeeze(lineColors(k,:))*0.7, 'LineWidth', 4);
+%        end
     end
     for k = 1:sampledTFsNum
+%        if (k == 3)
         plot(sfSupport, 10*log10(averageXTspectraDynamic(tfIndex(k),:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
+%        end
     end
     %axis 'square'
     title('dynamic stimulus');
