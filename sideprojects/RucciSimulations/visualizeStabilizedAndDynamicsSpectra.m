@@ -176,10 +176,23 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     ylabel('power (dB)');
 
     
-    
-
     % Spectral (sf) slices of differential power (dynamic-stabilized) stimulus
     subplot('Position', subplotPosVectors(2,3).v); hold on
+    % integrate over TF
+    totalDynamicPower = sum(averageXTspectraDynamic,1);
+    totalStabilizedPower = sum(averageXTspectraStabilized,1);
+    plot(sfSupport, 10*log10(totalDynamicPower), 'r-', 'LineWidth', 1.5);
+    hold on
+    plot(sfSupport, 10*log10(totalStabilizedPower), 'k-', 'LineWidth', 1.5);
+    hL = legend({'dynamic', 'stabilized'}, 'NumColumns',2, 'Location', 'northoutside');
+    set(gca, 'XLim', sfLims, 'XScale', 'log', 'FontSize', 14);
+    set(gca, 'XTick', [1 3 10 30 60 100]);
+    xlabel('spatial frequency, X (c/deg)');
+    ylabel('power (dB)');
+    
+    
+    % Spectral (sf) slices of differential power (dynamic-stabilized) stimulus
+    subplot('Position', subplotPosVectors(2,4).v); hold on
     for k = 1:sampledTFsNum
         plot(sfSupport, squeeze(diffEnergyAsAFunctionOfSF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
     end
@@ -198,26 +211,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     ylabel('dynamic-stabilized diff power (dB)');
     title('power re-distribution');
     
-    % Spectral (tf) slices of differential power (dynamic-stabilized) stimulus
-    subplot('Position', subplotPosVectors(2,4).v);
-    for k = 1:sampledSFsNum
-        plot(tfSupport, squeeze(diffEnergyAsAFunctionOfTF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
-    end
-    hold on
-    for k = 1:sampledSFsNum
-        plot(tfSupport, squeeze(diffEnergyAsAFunctionOfTF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:))*0.7, 'LineWidth', 4);
-    end
-    for k = 1:sampledSFsNum
-        plot(tfSupport, squeeze(diffEnergyAsAFunctionOfTF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
-    end
-    %axis 'square'
-    box on; grid on;
-    hL = legend(legendsSF, 'NumColumns',2, 'Location', 'northoutside');
-    set(gca, 'XLim', tfLims, 'YLim', [-30 70], 'XScale', 'log', 'FontSize', 14);
-    set(gca, 'XTick', [1 3 10 30 100]);
-    xlabel('temporal frequency (Hz)');
-    ylabel('dynamic-stabilized diff power (dB)');
-    title('power re-distribution');
+    
     
 end
 
