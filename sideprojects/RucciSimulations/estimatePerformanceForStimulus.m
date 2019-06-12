@@ -31,19 +31,22 @@ function estimatePerformanceForStimulus(stimDescriptor, analyzedNoiseInstance, n
         photoCurrentResponseOrthogonalOriStimulusOutput, photoCurrentResponseOrthogonalOriStimulusOrthoOutput, ...
         timeAxis, contrastLevels, figNo+100);
     
-    fName = fullfile(resourcesDir, sprintf('performance_%s_instance_%1.0f_nTrials_%d.mat', stimDescriptor, analyzedNoiseInstance, nTrials));
+    fName = performanceDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
     save(fName, 'performanceAtConeExcitations', 'performanceAtPhotocurrents');
     fprintf('Saved performance for %s to %s\n', stimDescriptor, fName);
+    
+    figNo = 4000;
+    plotPerformance(performanceAtConeExcitations, stimDescriptor, eyePosition, 'cone excitations', figNo);
 end
 
 function performance = computeDiscriminabilityContrastThreshold(stimDescriptor, signalName, ...
     standardOriStimulusResponse, standardOriStimulusOrthoResponse, ...
     orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, timeAxis, contrastLevels, figNo)
     
-%     visualizeEnergyResponses(stimDescriptor, signalName, ...
-%         standardOriStimulusResponse, standardOriStimulusOrthoResponse, ...
-%         orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, ...
-%         contrastLevels, timeAxis, figNo);
+    visualizeEnergyResponses(stimDescriptor, signalName, ...
+        standardOriStimulusResponse, standardOriStimulusOrthoResponse, ...
+        orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, ...
+        contrastLevels, timeAxis, figNo);
         
     nContrasts = size(standardOriStimulusResponse,1);
     nTrials = size(standardOriStimulusResponse,2);
@@ -89,28 +92,29 @@ function performance = computeDiscriminabilityContrastThreshold(stimDescriptor, 
     
 
     nTrialsForPsychometricFunction = nTrials/kFold;
-    performanceThreshold = 0.71;
-    [contrastThreshold, smoothPsychometricFunction] = fitWeibulToPsychometricFunction(rawPsychometricFunction.contrast, rawPsychometricFunction.performance, performanceThreshold, nTrialsForPsychometricFunction);
+    performanceCriterion = 0.75;
+    [contrastThreshold, smoothPsychometricFunction] = fitWeibulToPsychometricFunction(rawPsychometricFunction.contrast, rawPsychometricFunction.performance, performanceCriterion, nTrialsForPsychometricFunction);
 
-    % Plot the raw and fitted psychometric function
-    hFig = figure(figNo+1); clf;
-    set(hFig, 'Color', [1 1 1]);
-    
-    % The smooth (fitted) psychometric function
-    plot(smoothPsychometricFunction.contrast*100, smoothPsychometricFunction.performance, 'r-', 'LineWidth', 1.5); hold on;
-    % The raw (measured) psychometric function
-    plot(rawPsychometricFunction.contrast*100, rawPsychometricFunction.performance, 'ko', 'MarkerSize', 12, ...
-        'MarkerFaceColor', [0.8 0.5 0.5], 'MarkerEdgeColor', [1 0 0], 'LineWidth', 1.0);
-    % The contrast threshold
-    plot(contrastThreshold*[1 1]*100, [0 performanceThreshold]*100, 'b-', 'LineWidth', 1.5);
-    plot([0.0001 contrastThreshold]*100, performanceThreshold*[1 1]*100, 'b-', 'LineWidth', 1.5);
-    contrastLims = [min(rawPsychometricFunction.contrast) max(rawPsychometricFunction.contrast)]*100;
-    set(gca, 'XScale', 'log', 'XLim', contrastLims, 'YLim', [0.4 1.0]*100, 'XScale', 'log', 'FontSize', 14);
-    xlabel('contrast (%)');
-    ylabel('classification accuracy');
-    title(sprintf('%s (%s)', stimDescriptor, signalName));
+%     % Plot the raw and fitted psychometric function
+%     hFig = figure(figNo+1); clf;
+%     set(hFig, 'Color', [1 1 1]);
+%     
+%     % The smooth (fitted) psychometric function
+%     plot(smoothPsychometricFunction.contrast*100, smoothPsychometricFunction.performance, 'r-', 'LineWidth', 1.5); hold on;
+%     % The raw (measured) psychometric function
+%     plot(rawPsychometricFunction.contrast*100, rawPsychometricFunction.performance, 'ko', 'MarkerSize', 12, ...
+%         'MarkerFaceColor', [0.8 0.5 0.5], 'MarkerEdgeColor', [1 0 0], 'LineWidth', 1.0);
+%     % The contrast threshold
+%     plot(contrastThreshold*[1 1]*100, [0 performanceThreshold]*100, 'b-', 'LineWidth', 1.5);
+%     plot([0.0001 contrastThreshold]*100, performanceThreshold*[1 1]*100, 'b-', 'LineWidth', 1.5);
+%     contrastLims = [min(rawPsychometricFunction.contrast) max(rawPsychometricFunction.contrast)]*100;
+%     set(gca, 'XScale', 'log', 'XLim', contrastLims, 'YLim', [0.4 1.0]*100, 'XScale', 'log', 'FontSize', 14);
+%     xlabel('contrast (%)');
+%     ylabel('classification accuracy');
+%     title(sprintf('%s (%s)', stimDescriptor, signalName));
     
     performance = struct(...
+        'performanceCriterion', performanceCriterion, ...
         'contrastThreshold', contrastThreshold, ...
         'smoothPsychometricFunction', smoothPsychometricFunction, ...
         'rawPsychometricFunction', rawPsychometricFunction);

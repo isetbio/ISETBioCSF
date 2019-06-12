@@ -3,7 +3,7 @@ function visualizeStabilizedAndDynamicsSpectra(sData, sDataStabilized, figNo)
     % Limits
     sfLims = [0 30];
     tfLims = [-100 100];
-    cLims = [-15 55]; %  [-60 45]; % in dB
+    cLims = [-20 55]; %  [-60 45]; % in dB
     
     hFig = figure(figNo+100); clf;
     plotSummarySlices(sDataStabilized, sData, cLims);
@@ -35,14 +35,14 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
        'rowsNum', 2, ...
        'colsNum', 4, ...
-       'heightMargin',  0.06, ...
+       'heightMargin',  0.1, ...
        'widthMargin',    0.05, ...
-       'leftMargin',     0.07, ...
+       'leftMargin',     0.04, ...
        'rightMargin',    0.03, ...
        'bottomMargin',   0.08, ...
-       'topMargin',      0.05);
+       'topMargin',      0.03);
 
-    sfLims = [sfSupport(1) 80];
+    sfLims = [1 80];
     tfLims = [tfSupport(1) 100];
     [X,Y] = meshgrid(sfSupport, tfSupport);
     
@@ -137,7 +137,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     %axis 'square'
     title('stabilized stimulus');
     box on; grid on;
-    hL = legend(legendsTF, 'NumColumns',2, 'Location', 'northoutside');
+    hL = legend(legendsTF, 'NumColumns',2, 'Location', 'northeast');
     set(gca, 'XLim', sfLims, 'YLim', cLims, 'XScale', 'log', 'FontSize', 14);
     set(gca, 'XTick', [1 3 10 30 60 100]);
     xlabel('spatial frequency, X (c/deg)');
@@ -169,7 +169,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     %axis 'square'
     title('dynamic stimulus');
     box on; grid on;
-    hL = legend(legendsTF, 'NumColumns',2, 'Location', 'northoutside');
+    hL = legend(legendsTF, 'NumColumns',2, 'Location', 'northeast');
     set(gca, 'XLim', sfLims, 'YLim', cLims, 'XScale', 'log', 'FontSize', 14);
     set(gca, 'XTick', [1 3 10 30 60 100]);
     xlabel('spatial frequency, X (c/deg)');
@@ -179,17 +179,18 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     % Spectral (sf) slices of differential power (dynamic-stabilized) stimulus
     subplot('Position', subplotPosVectors(2,3).v); hold on
     % integrate over TF
-    totalDynamicPower = sum(averageXTspectraDynamic,1);
+    tfBands = find(tfSupport >= sfSupport(1) & tfSupport < 100);
+    totalDynamicPower = sum(averageXTspectraDynamic(tfBands,:),1);
     totalStabilizedPower = sum(averageXTspectraStabilized,1);
     plot(sfSupport, 10*log10(totalDynamicPower), 'r-', 'LineWidth', 1.5);
     hold on
     plot(sfSupport, 10*log10(totalStabilizedPower), 'k-', 'LineWidth', 1.5);
-    hL = legend({'dynamic', 'stabilized'}, 'NumColumns',2, 'Location', 'northoutside');
-    set(gca, 'XLim', sfLims, 'XScale', 'log', 'FontSize', 14);
+    hL = legend({'dynamic', 'stabilized'},  'Location', 'northeast');
+    set(gca, 'XLim', sfLims, 'YLim', cLims, 'XScale',  'log', 'FontSize', 14);
     set(gca, 'XTick', [1 3 10 30 60 100]);
     xlabel('spatial frequency, X (c/deg)');
     ylabel('power (dB)');
-    
+    box on; grid on
     
     % Spectral (sf) slices of differential power (dynamic-stabilized) stimulus
     subplot('Position', subplotPosVectors(2,4).v); hold on
