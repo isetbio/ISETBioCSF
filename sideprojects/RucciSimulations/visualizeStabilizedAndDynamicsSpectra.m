@@ -3,7 +3,7 @@ function visualizeStabilizedAndDynamicsSpectra(sData, sDataStabilized, figNo)
     % Limits
     sfLims = [0 30];
     tfLims = [-100 100];
-    cLims = [-60 45]; % in dB
+    cLims = [-15 55]; %  [-60 45]; % in dB
     
     hFig = figure(figNo+100); clf;
     plotSummarySlices(sDataStabilized, sData, cLims);
@@ -53,7 +53,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     dbSpectrum = 10*log10(averageXTspectraStabilized);
     dbSpectrum(dbSpectrum<cLims(1)) = cLims(1);
     dbSpectrum(dbSpectrum>cLims(2)) = cLims(2);
-    [c, h] = contourf(X,Y,dbSpectrum, [cLims(1):2:cLims(end)]);
+    [c, h] = contourf(X,Y,dbSpectrum, [cLims(1):cLims(end)]);
     set(h,'LineColor','none')
     xlabel('spatial frequency, X (c/deg)');
     ylabel('temporal frequency (Hz)');
@@ -70,7 +70,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     dbSpectrum = 10*log10(averageXTspectraDynamic);
     dbSpectrum(dbSpectrum<cLims(1)) = cLims(1);
     dbSpectrum(dbSpectrum>cLims(2)) = cLims(2);
-    [c, h] = contourf(X,Y,dbSpectrum, [cLims(1):2:cLims(end)]);
+    [c, h] = contourf(X,Y,dbSpectrum, [cLims(1):cLims(end)]);
     set(h,'LineColor','none')
     xlabel('spatial frequency, X (c/deg)');
     ylabel('temporal frequency (Hz)');
