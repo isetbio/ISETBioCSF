@@ -126,6 +126,8 @@ function [theConeExcitations, thePhotoCurrents, theEyeMovementsPaths, timeAxis] 
     %for trialIndex = 1:nTrials
         fprintf('Computing trial %d of %d\n', trialIndex, nTrials);
           
+        %%% REDO WITH COMPUTE FOR OI SEQUENCE
+        
         % OLD COMPUTE
 %         [coneExcitations, photocurrents] = ...
 %             theMosaic.compute(theOI, ...
