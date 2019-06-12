@@ -13,9 +13,8 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
     end
     
     pixelSizeDegs = stimulus.spatialSupportDegs(2)-stimulus.spatialSupportDegs(1);
-    fftSize = [totalTimeBins size(stimulus.image,2), size(stimulus.image,3)];
-    %fftSize =  2.^(nextpow2(fftSize))
-    %pause
+    fftSize = [totalTimeBins size(stimulus.image,2), size(stimulus.image,3)]
+    fftSize =  2.^(nextpow2(fftSize))
     sData.meanSpatioTemporalSpectalDensity = zeros(fftSize(1), fftSize(2), fftSize(3));
                 
     PSDmethod = 'FFT';

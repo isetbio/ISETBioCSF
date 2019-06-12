@@ -22,8 +22,9 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     % Get the slice corresponding to sfY  0 c/deg
     targetSFy = 0;
     [~,sfYIndex] = min(abs(sDataDynamic.spatialFrequencySupport)-targetSFy);
-    XTspectraDynamic = squeeze(sDataDynamic.meanSpatioTemporalSpectalDensity(:,sfYIndex,:));
     XTspectraStabilized = squeeze(sDataStabilized.meanSpatioTemporalSpectalDensity(:,sfYIndex,:));
+    XTspectraDynamic = squeeze(sDataDynamic.meanSpatioTemporalSpectalDensity(:,sfYIndex,:));
+    
     
     % Average along 4 quadrants
     [averageXTspectraDynamic, sfSupport, tfSupport] = ...
@@ -117,6 +118,21 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     stimulusPowerStabilized = sum(sum(averageXTspectraStabilized(tfs, stimSFs)))
     snrStabilized =  stimulusPowerStabilized/noisePowerStabilized
     
+    sum(averageXTspectraStabilized(:)) 
+    sum(averageXTspectraDynamic(:))
+    pause
+    
+    subplot('Position', subplotPosVectors(1,3).v); hold on
+    plot(sfSupport, sum(averageXTspectraStabilized,1), 'k-');
+    hold on;
+    plot(sfSupport, sum(averageXTspectraDynamic,1), 'r-');
+    hL = legend({'stabilized', 'dynamic'},  'Location', 'northeast');
+    set(gca, 'XLim', sfLims, 'XScale',  'log', 'FontSize', 14);
+    set(gca, 'XTick', [1 3 10 30 60 100]);
+    xlabel('spatial frequency, X (c/deg)');
+    ylabel('power (dB)');
+    box on; grid on
+    
     % Spectral slices at different TFs of the stabilized stimulus
     subplot('Position', subplotPosVectors(2,1).v); hold on
     for k = 1:sampledTFsNum
@@ -192,25 +208,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  cLims)
     ylabel('power (dB)');
     box on; grid on
     
-    % Spectral (sf) slices of differential power (dynamic-stabilized) stimulus
-    subplot('Position', subplotPosVectors(2,4).v); hold on
-    for k = 1:sampledTFsNum
-        plot(sfSupport, squeeze(diffEnergyAsAFunctionOfSF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
-    end
-    for k = 1:sampledTFsNum
-        plot(sfSupport, squeeze(diffEnergyAsAFunctionOfSF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:))*0.7, 'LineWidth', 4);
-    end
-    for k = 1:sampledTFsNum
-        plot(sfSupport, squeeze(diffEnergyAsAFunctionOfSF(k,:)), 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
-    end
-    %axis 'square'
-    box on; grid on;
-    hL = legend(legendsTF, 'NumColumns',2, 'Location', 'northoutside');
-    set(gca, 'XLim', sfLims, 'YLim', [-30 70], 'XScale', 'log', 'FontSize', 14);
-    set(gca, 'XTick', [1 3 10 30 60 100]);
-    xlabel('spatial frequency, X (c/deg)');
-    ylabel('dynamic-stabilized diff power (dB)');
-    title('power re-distribution');
+    
     
     
     
@@ -229,6 +227,18 @@ function [averageSpectra, sfAxis, tfAxis] = averageAcrossQuadrantsSpectum(sfSupp
     averageSpectra(1,:) = xtSpectra(tfIndex0,sfIndex0:end);
     averageSpectra(:,1) = xtSpectra(tfIndex0:end,sfIndex0);
     
+    [~,idx] = max(xtSpectra(:));
+    [midRow, midCol] = ind2sub(size(xtSpectra), idx)
+    [tfIndex0, sfIndex0 ]
+    size(tfSupport) 
+    size(sfSupport)
+    figure()
+    imagesc(xtSpectra(midRow+(-3:3), midCol+(-3:3)))
+    size(xtSpectra)
+    axis 'image';
+    drawnow;
+    pause
+    
     % average the remaining slices across 4 quadrants
     for sf = 1:numel(sfIndices)
         sfIndex = sfIndices(sf);
@@ -243,6 +253,10 @@ function [averageSpectra, sfAxis, tfAxis] = averageAcrossQuadrantsSpectum(sfSupp
                 xtSpectra(tfIndex, sfIndex2));
         end
     end
+    
+    sum(xtSpectra(:))
+    sum(averageSpectra(:))
+    pause
     
     sfIndices = sfIndex0:numel(sfSupport);
     tfIndices = tfIndex0:numel(tfSupport);
