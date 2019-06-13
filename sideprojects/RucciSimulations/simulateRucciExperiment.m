@@ -3,13 +3,13 @@ function simulateRucciExperiment
     % Determine resources
     [rootDir,~] = fileparts(which(mfilename));
     [resourcesDir, parforWorkers, localHostName] = determineResources(rootDir);
-    
+    addpath(genpath(rootDir));
     
     
     % Actions
     analyzeStimulusSpatioTemporalSpectra = true;
-    generateScenes = ~true;
-    generateOpticalImages = ~true;
+    generateScenes = true;
+    generateOpticalImages = true;
     generateMosaicResponses = ~true;
     visualizeMosaicResponses = ~true;
     computeEnergyMechanismResponses = ~true;
@@ -60,8 +60,8 @@ function simulateRucciExperiment
     
     if (analyzeStimulusSpatioTemporalSpectra) 
         noiseInstances = 2;
-        stimulusSizeDegs = 2.5;
-        fixationDurationSeconds = 4.0;
+        stimulusSizeDegs = 5;
+        fixationDurationSeconds = 8.0;
         reComputeSpectralAnalyses = true;
         parforWorkersNum = 1;
         stimulusTypes = {'high frequency'}; % , '1 over F', 'low frequency', 'high frequency'};

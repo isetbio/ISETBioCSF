@@ -7,6 +7,7 @@ function analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fix
         % Generate fixational eye movmeents
         nTrials = noiseInstances;
         [emPosArcMin, timeAxis] = generateFEMs(nTrials, fixationDurationSeconds);
+        emPosArcMin = emPosArcMin * 0.5;
     end
     
     
@@ -27,10 +28,11 @@ function analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fix
 
             % Only one contrast level so squeeze it out
             stimStruct.image = squeeze(stimStruct.image(:,1,:,:));
-
+            
             % Generate spatiotemporal stimulus sequence and spectra due to fixational EM
             fprintf('Computing spatiotemporal analysis for DYNAMIC ''%s'' stimulus.\n', stimulusTypes{stimIndex});
-            xtStimStructFEM = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, stimStruct, parforWorkersNum);
+            xtStimStructFEM = generateSpatiotemporalStimulusSequenceDueToFixationalEM(...
+                timeAxis, emPosArcMin, stimStruct, parforWorkersNum);
             
             fName = spectralAnalysisFileName(stimulusTypes{stimIndex}, stimulusSizeDegs);
             fprintf('Saving DYNAMIC spatiotemporal analysis to %s\n', fName);

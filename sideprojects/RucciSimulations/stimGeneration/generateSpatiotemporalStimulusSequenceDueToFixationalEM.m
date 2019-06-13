@@ -3,6 +3,9 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
     timeBins = size(emPosArcMin,2);
     extraBins = 0; % max([0 round((1024-timeBins)/2)]);  % bins for zero padding in time domain
     totalTimeBins = timeBins+extraBins*2;
+    pixelSizeDegs = stimulus.spatialSupportDegs(2)-stimulus.spatialSupportDegs(1);
+    fftSize = [totalTimeBins size(stimulus.image,2), size(stimulus.image,3)]
+    fftSize =  2.^(nextpow2(fftSize))
     
     saveStimulusSequences = ~true;
     if (saveStimulusSequences)
@@ -12,14 +15,9 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
             'uint8');
     end
     
-    pixelSizeDegs = stimulus.spatialSupportDegs(2)-stimulus.spatialSupportDegs(1);
-    fftSize = [totalTimeBins size(stimulus.image,2), size(stimulus.image,3)]
-    fftSize =  2.^(nextpow2(fftSize))
-    sData.meanSpatioTemporalSpectalDensity = zeros(fftSize(1), fftSize(2), fftSize(3));
-                
+           
     PSDmethod = 'FFT';
-    PSDmethod = 'windowedFFT';   
-    
+    PSDmethod = 'WelchWindowFFT';   
     
     for instanceNo = 1:instancesNum
         fprintf('\tInstance %d of %d\n', instanceNo, instancesNum);
@@ -55,7 +53,7 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
             case 'FFT'
                 ppp = 1/prod(fftSize) * (abs(fftshift(fftn(XYTstim,fftSize)))).^2; 
                 
-            case 'windowedFFT'
+            case 'WelchWindowFFT'
                 nRows = size(stimulus.image,2);
                 mCols = size(stimulus.image,3);
         
@@ -74,32 +72,36 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
         end % switch
         
         if (instanceNo == 1)
-            sData.meanSpatioTemporalSpectalDensity = ppp;
+            meanSpatioTemporalSpectrum = ppp;
         else
-            sData.meanSpatioTemporalSpectalDensity = sData.meanSpatioTemporalSpectalDensity + ppp;
-        end
-        
+            meanSpatioTemporalSpectrum = meanSpatioTemporalSpectrum + ppp;
+        end 
     end % for
     
-    % mean spectral density over instances
-    sData.meanSpatioTemporalSpectalDensity = sData.meanSpatioTemporalSpectalDensity /instancesNum;
+    % mean spectrum over instances
+    meanSpatioTemporalSpectrum = meanSpatioTemporalSpectrum / instancesNum;
     
-    N = size(sData.meanSpatioTemporalSpectalDensity,3);
+    N = size(meanSpatioTemporalSpectrum,3);
     N = N/2;
     sfMaxCPD = 1/(2*pixelSizeDegs);
     sData.spatialFrequencySupport = ((-N):(N-1))/N * sfMaxCPD;
     
-    N = size(sData.meanSpatioTemporalSpectalDensity,1);
+    N = size(meanSpatioTemporalSpectrum,1);
     N = N/2;
     tfMaxHz = 1/(2*(timeAxis(2)-timeAxis(1)));
     sData.tfSupport = ((-N):(N-1))/N * tfMaxHz;
+    
+    % Convert spectrum to spectral density by dividing by SFbin and TFbin
+    deltaSF = sData.spatialFrequencySupport(2)-sData.spatialFrequencySupport(1);
+    deltaTF = sData.tfSupport(2)-sData.tfSupport(1);
+    sData.meanSpatioTemporalSpectalDensity = meanSpatioTemporalSpectrum / (deltaSF*deltaTF);
     
     if (saveStimulusSequences)
         sData.stimulusSequences = stimulusSequences;
     end
 end
 
-function powerSpectralDensity = welchSpectrum(XYTstim, spatialSamples, temporalSamples, spatialWindowOverlapFactor, temporalWindowOverlapFactor, totalTimeBins, nRows, mCols, fftSize)
+function spectralEstimate = welchSpectrum(XYTstim, spatialSamples, temporalSamples, spatialWindowOverlapFactor, temporalWindowOverlapFactor, totalTimeBins, nRows, mCols, fftSize)
 
     
     spatialDelta = round(spatialSamples*(1-spatialWindowOverlapFactor));
@@ -185,7 +187,7 @@ function powerSpectralDensity = welchSpectrum(XYTstim, spatialSamples, temporalS
         end % orientation
     end % timeSegment
         
-    powerSpectralDensity = spectralEstimate / nEstimates;
+    spectralEstimate = spectralEstimate / nEstimates;
 end
 
 function [xytWindow, wTemporal2, wSpatial2] = ...
