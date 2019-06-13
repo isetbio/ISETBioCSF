@@ -99,7 +99,7 @@ function [noiseImage, noiseNorm] = generateNoiseComponent(spatialSupportDegs, no
     normalizedSpatialFrequencyGridFFTshift = sqrt(sfX.^2 + (sfX').^2);
     
     
-    % Generate oneOverFspectrum 1/(f^alpha)
+    % Generate oneOverFspectrum 1/(f^alpha) amplitude spectrum
     alpha = 1;
     oneOverFspectrum = 1 ./ (normalizedSpatialFrequencyGridFFTshift.^alpha);
     % Set any infinities to zero
