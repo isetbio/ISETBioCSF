@@ -4,24 +4,41 @@ function visualizeEnergyResponses(stimDescriptor, signalName, ...
     contrastLevels, timeAxis, figNo)
 
     hFig = figure(figNo); clf;
-    set(hFig, 'Position', [10 10 2500 700]);
-    
-    plotEnergyResponses(stimDescriptor, 'stardard orientation', signalName, contrastLevels, timeAxis, ...
-        standardOriStimulusResponse, standardOriStimulusOrthoResponse, 0);
-    plotEnergyResponses(stimDescriptor, 'orthogonal orientation', signalName, contrastLevels, timeAxis, ...
-        orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, 1);
+    set(hFig, 'Position', [61 22 2500 700]);
+    signalName
+    %plotEnergyResponses(stimDescriptor, 'stardard orientation', signalName, contrastLevels, timeAxis, ...
+    %    standardOriStimulusResponse, standardOriStimulusOrthoResponse, 0);
+    %plotEnergyResponses(stimDescriptor, 'orthogonal orientation', signalName, contrastLevels, timeAxis, ...
+    %    orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, 1);
     plotEnergyResponseCombo(standardOriStimulusResponse, standardOriStimulusOrthoResponse, ...
-        orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, signalName, 2);
+        orthogonalOriStimulusResponse, orthogonalOriStimulusOrthoResponse, signalName, contrastLevels, stimDescriptor, 2);
+    pause
 end
 
 function plotEnergyResponseCombo(energyResponseStandardOriStimulusOutput, energyResponseStandardOriStimulusOrthoOutput, ...
-    energyResponseOrthogonalOriStimulusOutput, energyResponseOrthogonalOriStimulusOrthoOutput, signalName, row)
+    energyResponseOrthogonalOriStimulusOutput, energyResponseOrthogonalOriStimulusOrthoOutput, signalName, contrastLevels, stimDescriptor, row)
     nContrasts = size(energyResponseStandardOriStimulusOutput,1);
     nTrials = size(energyResponseStandardOriStimulusOutput,2);
-    nTimeBins = size(energyResponseStandardOriStimulusOutput.output,3);
+    nTimeBins = size(energyResponseStandardOriStimulusOutput,3);
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+       'rowsNum', 1, ...
+       'colsNum', nContrasts, ...
+       'heightMargin',  0.01, ...
+       'widthMargin',   0.01, ...
+       'leftMargin',    0.03, ...
+       'rightMargin',   0.01, ...
+       'bottomMargin',  0.05, ...
+       'topMargin',     0.03);
+   
+    maxAll = 0.8*max([...
+        max(energyResponseStandardOriStimulusOutput(:))
+        max(energyResponseStandardOriStimulusOrthoOutput(:))
+        max(energyResponseOrthogonalOriStimulusOutput(:))
+        max(energyResponseOrthogonalOriStimulusOrthoOutput(:))]);
     
     for theContrastLevel = 1:nContrasts
-        subplot(3, nContrasts, theContrastLevel + row*nContrasts);
+        subplot('Position', subplotPosVectors(1, theContrastLevel).v);
         
         r1 = energyResponseStandardOriStimulusOutput(theContrastLevel,1:nTrials,1:nTimeBins);
         r2 = energyResponseStandardOriStimulusOrthoOutput(theContrastLevel,1:nTrials,1:nTimeBins);
@@ -41,11 +58,19 @@ function plotEnergyResponseCombo(energyResponseStandardOriStimulusOutput, energy
         plot(responseRange(1)*[1 1], responseRange(2)*[1 1], 'k-');
         
         set(gca, 'XLim', responseRange, 'YLim', responseRange);
-        xlabel('standard ori mechanism');
-        ylabel('orthogonal ori mechanism'); 
-        legend({'standard ori stimulus', 'orthogonal ori stimulus'});
+        xlabel('\it 0 deg mechanism energy');
+        axis 'square'
+        set(gca, 'FontSize', 16, 'XLim', [0 maxAll], 'XTick', 0:0.01:0.1, 'YTick', 0:0.01:0.1, 'YLim', [0 maxAll]);
+        if (theContrastLevel>1)
+            set(gca, 'YTickLabel', {});
+        else
+            ylabel('\it 90 deg mechanism energy'); 
+        end
+        
+        legend({'0 deg stimulus', '90 deg stimulus'});
         axis 'square';
-        title(signalName);
+        title(sprintf('c = %2.2f%% (%s,%s)', contrastLevels(theContrastLevel)*100, stimDescriptor, signalName));
+        drawnow
     end
 end
 
@@ -73,6 +98,7 @@ function plotEnergyResponses(stimDescriptor, stimOrientation, signalName, contra
         ylabel(sprintf('energy response\n(%s)', signalName));
         legend({'standard ori mechanism', 'orthogonal ori mechanism'});
         title(sprintf('c = %2.3f (%s, %s)', contrastLevels(theContrastLevel),stimDescriptor, stimOrientation));
+        drawnow;
     end
 end
     

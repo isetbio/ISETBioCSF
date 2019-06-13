@@ -3,18 +3,19 @@ function simulateRucciExperiment
     % Determine resources
     [rootDir,~] = fileparts(which(mfilename));
     [resourcesDir, parforWorkers, localHostName] = determineResources(rootDir);
+    addpath(genpath(rootDir));
     
-    % if we are not on Leviathan do a small simulation
-    smallCompute = ~contains(localHostName, 'leviathan');
     
     % Actions
-    analyzeStimulusSpatioTemporalSpectra = ~true;
-    generateScenes = ~true;
-    generateOpticalImages = ~true;
-    generateMosaicResponses = true;
-    visualizeMosaicResponses = true;
-    computeEnergyMechanismResponses = true;
-    estimatePerformance = true;
+    analyzeStimulusSpatioTemporalSpectra = true;
+    generateScenes = true;
+    generateOpticalImages = true;
+    generateMosaicResponses = ~true;
+    visualizeMosaicResponses = ~true;
+    computeEnergyMechanismResponses = ~true;
+    estimatePerformance = ~true;
+    visualizedPerformance = ~true;
+    visualizePerformanceComparison =~true;
     
     % Load the cone mosaic if needed
     if (generateMosaicResponses || visualizeMosaicResponses || computeEnergyMechanismResponses)
@@ -25,19 +26,24 @@ function simulateRucciExperiment
     minContrast = 0.2/100;
     maxContrast = 3/100;
     nContrastLevels = 5;
+    
     contrastLevels = logspace(log10(minContrast), log10(maxContrast), nContrastLevels);
     stimulusSizeDegs = 1.0;
-    nTrials = 400;
+    nTrials = 300;
     eyePosition = 'dynamic';
     eyePosition = 'stabilized';
-    fixationDurationSeconds = 0.8;
-    warmupTimeSeconds = 0.5;
+    fixationDurationSeconds = 0.4;
+    warmupTimeSeconds = 0.1;
     mosaicIntegrationTimeSeconds = 2.5/1000;
     meanLuminanceCdPerM2 = 21;  % match Rucci 2007 paper, which said 21 cd/m2
     
     % Only compute responses for the first instance of noise stimulus    
     analyzedNoiseInstance = 1;
     
+    
+    % if we are not on Leviathan do a small simulation
+    smallCompute = ~contains(localHostName, 'leviathan');
+    %smallCompute = false;
     
     if (smallCompute)
         % ----- ONLY FOR TESTING  -----
@@ -46,18 +52,19 @@ function simulateRucciExperiment
         maxContrast = 100/100;
         contrastLevels = logspace(log10(minContrast), log10(maxContrast), nContrastLevels);
         nTrials = 2;
-        warmupTimeSeconds = 0.1;
+        warmupTimeSeconds = 0.5;
         fixationDurationSeconds = 0.2;
         % ----- ONLY FOR TESTING  -----
     end
+        
     
     if (analyzeStimulusSpatioTemporalSpectra) 
-        noiseInstances = 8;
-        stimulusSizeDegs = 2.0;
-        fixationDurationSeconds = 1.0;
-        reComputeSpectralAnalyses = ~true;
+        noiseInstances = 2;
+        stimulusSizeDegs = 5;
+        fixationDurationSeconds = 8.0;
+        reComputeSpectralAnalyses = true;
         parforWorkersNum = 1;
-        stimulusTypes = {'1 over F'}; % , '1 over F', 'low frequency', 'high frequency'};
+        stimulusTypes = {'high frequency'}; % , '1 over F', 'low frequency', 'high frequency'};
         analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fixationDurationSeconds, noiseInstances, reComputeSpectralAnalyses, parforWorkersNum);
         return;
     end
@@ -116,7 +123,7 @@ function simulateRucciExperiment
             highFrequencyTemplate, highFrequencyTemplateOrtho, spatialSupportDegs); 
         
         % Visualize pooling kernels together with the stimuli
-        visualizePoolingKernelsAndStimuli = ~true;
+        visualizePoolingKernelsAndStimuli = true;
         if (visualizePoolingKernelsAndStimuli) 
             % Load the scenes
             load(scenesFile, 'lowFrequencyScenes', 'highFrequencyScenes', ...
@@ -128,8 +135,9 @@ function simulateRucciExperiment
                 lowFrequencyScenesOrtho{maxContrastIndex,noiseInstance}, ...
                 highFrequencyScenes{maxContrastIndex,noiseInstance}, ...
                 highFrequencyScenesOrtho{maxContrastIndex,noiseInstance}, ...
-                spatialSupportDegs);
+                spatialSupportDegs, contrastLevels(maxContrastIndex));
         end
+        pause
         
         % Compute responses of energy mechanisms  to the high frequency orthogonal orientation stimuli
         stimDescriptor = 'highFrequency';
@@ -161,6 +169,39 @@ function simulateRucciExperiment
         estimatePerformanceForStimulus(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, contrastLevels, resourcesDir,  figNo);
     end
     
+    if (visualizedPerformance)
+         stimDescriptor = 'lowFrequency'; figNo = 4000;
+         fName = performanceDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
+         load(fName, 'performanceAtConeExcitations', 'performanceAtPhotocurrents');
+         plotPerformance(performanceAtConeExcitations, stimDescriptor, eyePosition,'cone excitations', figNo);
+         plotPerformance(performanceAtPhotocurrents, stimDescriptor, eyePosition,'photocurrents', figNo+1);
+         
+         stimDescriptor = 'highFrequency'; figNo = 5000;
+         fName = performanceDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, eyePosition, resourcesDir);
+         load(fName, 'performanceAtConeExcitations', 'performanceAtPhotocurrents');
+         plotPerformance(performanceAtConeExcitations, stimDescriptor, eyePosition, 'cone excitations', figNo);
+         plotPerformance(performanceAtPhotocurrents, stimDescriptor, eyePosition, 'photocurrents', figNo+1);
+    end
+    
+    if (visualizePerformanceComparison)
+        stimDescriptor = 'lowFrequency'; figNo = 4444;
+        fName = performanceDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, 'stabilized', resourcesDir);
+        load(fName, 'performanceAtConeExcitations', 'performanceAtPhotocurrents');
+        performanceSTABILIZEDAtConeExcitations = performanceAtConeExcitations;
+        performanceSTABILIZEDAtPhotocurrents = performanceAtPhotocurrents;
+        fName = performanceDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, 'dynamic', resourcesDir);
+        load(fName, 'performanceAtConeExcitations', 'performanceAtPhotocurrents');
+        plotPerformanceComparison(performanceAtConeExcitations, performanceSTABILIZEDAtConeExcitations, stimDescriptor, 'cone excitations', figNo);
+        
+        stimDescriptor = 'highFrequency'; figNo = 5555;
+        fName = performanceDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, 'stabilized', resourcesDir);
+        load(fName, 'performanceAtConeExcitations', 'performanceAtPhotocurrents');
+        performanceSTABILIZEDAtConeExcitations = performanceAtConeExcitations;
+        performanceSTABILIZEDAtPhotocurrents = performanceAtPhotocurrents;
+        fName = performanceDataFileName(stimDescriptor, analyzedNoiseInstance, nTrials, 'dynamic', resourcesDir);
+        load(fName, 'performanceAtConeExcitations', 'performanceAtPhotocurrents');
+        plotPerformanceComparison(performanceAtConeExcitations, performanceSTABILIZEDAtConeExcitations, stimDescriptor, 'cone excitations', figNo);
+    end
     
     if (visualizeMosaicResponses)
         trialNoToVisualize = 1; 

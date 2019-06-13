@@ -49,7 +49,7 @@ function visualizeRetinalImage(ax, opticalImage, lumMapRange)
     XYZmap = oiGet(opticalImage, 'xyz');
     lumMap = squeeze(XYZmap(:,:,2));
     
-    imagesc(ax, spatialSupportDegs, spatialSupportDegs, lumMap);
+    imagesc(ax, spatialSupportDegs, spatialSupportDegs, lumMap/max(abs(lumMap(:))).^(1/2.25));
     axis 'image'
     axis 'xy'
     ticks = max(abs(spatialSupportDegs(:)))*[-1 0 1];
