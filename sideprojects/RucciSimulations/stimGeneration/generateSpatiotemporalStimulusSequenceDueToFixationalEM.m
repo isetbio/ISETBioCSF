@@ -51,6 +51,7 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
         
         switch PSDmethod
             case 'FFT'
+                % Compute power spectrum directly
                 ppp = 1/prod(fftSize) * (abs(fftshift(fftn(XYTstim,fftSize)))).^2; 
                 
             case 'WelchWindowFFT'
@@ -63,7 +64,7 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
                 spatialWindowOverlapFactor = 0.95;
                 temporalWindowOverlapFactor = 0.9;
                 
-                ppp = welchSpectrum(XYTstim, spatialWindowSamples, temporalWindowSamples,  ...
+                ppp = welchPowerSpectrum(XYTstim, spatialWindowSamples, temporalWindowSamples,  ...
                     spatialWindowOverlapFactor, temporalWindowOverlapFactor, ...
                     totalTimeBins, nRows, mCols, fftSize);
                 
@@ -72,21 +73,21 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
         end % switch
         
         if (instanceNo == 1)
-            meanSpatioTemporalSpectrum = ppp;
+            meanSpatioTemporalPowerSpectrum = ppp;
         else
-            meanSpatioTemporalSpectrum = meanSpatioTemporalSpectrum + ppp;
+            meanSpatioTemporalPowerSpectrum = meanSpatioTemporalPowerSpectrum + ppp;
         end 
     end % for
     
     % mean spectrum over instances
-    meanSpatioTemporalSpectrum = meanSpatioTemporalSpectrum / instancesNum;
+    meanSpatioTemporalPowerSpectrum = meanSpatioTemporalPowerSpectrum / instancesNum;
     
-    N = size(meanSpatioTemporalSpectrum,3);
+    N = size(meanSpatioTemporalPowerSpectrum,3);
     N = N/2;
     sfMaxCPD = 1/(2*pixelSizeDegs);
     sData.spatialFrequencySupport = ((-N):(N-1))/N * sfMaxCPD;
     
-    N = size(meanSpatioTemporalSpectrum,1);
+    N = size(meanSpatioTemporalPowerSpectrum,1);
     N = N/2;
     tfMaxHz = 1/(2*(timeAxis(2)-timeAxis(1)));
     sData.tfSupport = ((-N):(N-1))/N * tfMaxHz;
@@ -94,14 +95,14 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
     % Convert spectrum to spectral density by dividing by SFbin and TFbin
     deltaSF = sData.spatialFrequencySupport(2)-sData.spatialFrequencySupport(1);
     deltaTF = sData.tfSupport(2)-sData.tfSupport(1);
-    sData.meanSpatioTemporalSpectalDensity = meanSpatioTemporalSpectrum / (deltaSF*deltaTF);
+    sData.meanSpatioTemporalPowerSpectalDensity = meanSpatioTemporalPowerSpectrum / (deltaSF*deltaTF);
     
     if (saveStimulusSequences)
         sData.stimulusSequences = stimulusSequences;
     end
 end
 
-function spectralEstimate = welchSpectrum(XYTstim, spatialSamples, temporalSamples, spatialWindowOverlapFactor, temporalWindowOverlapFactor, totalTimeBins, nRows, mCols, fftSize)
+function spectralPowerEstimate = welchPowerSpectrum(XYTstim, spatialSamples, temporalSamples, spatialWindowOverlapFactor, temporalWindowOverlapFactor, totalTimeBins, nRows, mCols, fftSize)
 
     
     spatialDelta = round(spatialSamples*(1-spatialWindowOverlapFactor));
@@ -134,13 +135,7 @@ function spectralEstimate = welchSpectrum(XYTstim, spatialSamples, temporalSampl
         end
     end
 
-    spatialSegmentsNum = size(spatialWindowOffset,1);
-    
-    figure(99); clf; hold on;
-    plot(spatialWindowOffset(:,1), spatialWindowOffset(:,2), 'ko');
-    set(gca, 'XLim', [1 nRows], 'YLim', [1 mCols]);
-    axis 'equal'
-    
+    spatialSegmentsNum = size(spatialWindowOffset,1);  
    
     nEstimates = 0;
     for timeSegment = 1:timeSegmentsNum 
@@ -174,7 +169,7 @@ function spectralEstimate = welchSpectrum(XYTstim, spatialSamples, temporalSampl
                 drawnow
             end
             
-            % FFT of windowed spatiotemporal response
+            % power of FFT of windowed stimulus
             thisSpectralEstimate = 1/prod(fftSize) * (abs(fftshift(fftn((XYTstim .* xytWelchWindow),fftSize)))).^2;
             
             nEstimates = nEstimates + 1;
@@ -187,7 +182,7 @@ function spectralEstimate = welchSpectrum(XYTstim, spatialSamples, temporalSampl
         end % orientation
     end % timeSegment
         
-    spectralEstimate = spectralEstimate / nEstimates;
+    spectralPowerEstimate = spectralEstimate / nEstimates;
 end
 
 function [xytWindow, wTemporal2, wSpatial2] = ...

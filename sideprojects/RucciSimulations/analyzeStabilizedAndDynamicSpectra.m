@@ -63,7 +63,7 @@ end
 
 
 function [emPosArcMin, timeAxis] = generateFEMs(nTrials, emDurationSeconds)
-    sampleTimeSeconds = 1.0 / 1000;
+    sampleTimeSeconds = 2.0 / 1000;
 
     microSaccadeType = 'none'; % , 'heatmap/fixation based', 'none'
     fixEMobj = fixationalEM();
