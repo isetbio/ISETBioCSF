@@ -22,8 +22,12 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange )
     % Get the slice corresponding to sfY  0 c/deg
     targetSFy = 0;
     [~,sfYIndex] = min(abs(sDataDynamic.spatialFrequencySupport)-targetSFy);
-    XTpowerSpectralDensityStabilized = squeeze(sDataStabilized.meanSpatioTemporalPowerSpectalDensity(:,sfYIndex,:));
-    XTpowerSpectralDensityDynamic = squeeze(sDataDynamic.meanSpatioTemporalPowerSpectalDensity(:,sfYIndex,:));
+    
+    %XTpowerSpectralDensityStabilized = squeeze(sDataStabilized.meanSpatioTemporalPowerSpectalDensity(:,sfYIndex,:));
+    %XTpowerSpectralDensityDynamic = squeeze(sDataDynamic.meanSpatioTemporalPowerSpectalDensity(:,sfYIndex,:));
+    
+    XTpowerSpectralDensityStabilized = squeeze(sum(sDataStabilized.meanSpatioTemporalPowerSpectalDensity,2));
+    XTpowerSpectralDensityDynamic = squeeze(sum(sDataDynamic.meanSpatioTemporalPowerSpectalDensity,2));
     
     
     % Average along 4 quadrants
@@ -37,6 +41,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange )
     deltaTF = tfSupport(2)-tfSupport(1);
     totalPowerOfDynamicStimulusDB = 10*log10(deltaSF*deltaTF*sum(averageXTpowerSpectralDensityDynamic(:)))
     totalPowerOfStabilizedStimulusDB = 10*log10(deltaSF*deltaTF*sum(averageXTpowerSpectralDensityStabilized(:)))
+    pause
     
     % Compute sums along SF, TF
     sumStabilizedAcrossSFs = sum(averageXTpowerSpectralDensityStabilized, 2);
@@ -44,6 +49,18 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange )
     sumDynamicAcrossSFs = sum(averageXTpowerSpectralDensityDynamic, 2);
     sumDynamicAcrossTFs = sum(averageXTpowerSpectralDensityDynamic, 1);
      
+    idx = find(tfSupport < 0.4);
+    sumDynamicAcrossSFsLowTF = sum(sumDynamicAcrossSFs(idx));
+    sumStabilizedAcrossSFsLowTF = sum(sumStabilizedAcrossSFs(idx));
+    diffLowTF = sumDynamicAcrossSFsLowTF-sumStabilizedAcrossSFsLowTF
+    
+    idx = find(tfSupport >=0.4);
+    sumDynamicAcrossSFsHighTF = sum(sumDynamicAcrossSFs(idx));
+    sumStabilizedAcrossSFsHighTF = sum(sumStabilizedAcrossSFs(idx));
+    diffHighTF = sumDynamicAcrossSFsHighTF - sumStabilizedAcrossSFsHighTF
+    
+    [sum(sumDynamicAcrossSFs) sum(sumStabilizedAcrossSFs)]
+    
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
        'rowsNum', 2, ...
        'colsNum', 4, ...
@@ -79,15 +96,14 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange )
     
      % Visualized summed spectrum across the TF axis
     subplot('Position', subplotPosVectors(1,3).v); 
-    visualizeMarginalSpectra(sfSupport, sumStabilizedAcrossTFs, sumDynamicAcrossTFs, sfLims, 'spatial frequency (c/deg)', logPlot);
+    marginalLimsDB = [-20 75];
+    visualizeMarginalSpectra(sfSupport, sumStabilizedAcrossTFs, sumDynamicAcrossTFs, sfLims, marginalLimsDB, [tfSupport(1) tfSupport(end)], 'Hz', 'spatial frequency (c/deg)', logPlot);
     
     
     % Visualize summed spectrum across the SF axis 
     subplot('Position', subplotPosVectors(1,4).v); 
-    visualizeMarginalSpectra(tfSupport, sumStabilizedAcrossSFs, sumDynamicAcrossSFs, tfLims, 'temporal frequency (Hz)', logPlot);
+    visualizeMarginalSpectra(tfSupport, sumStabilizedAcrossSFs, sumDynamicAcrossSFs, tfLims, marginalLimsDB, [sfSupport(1) sfSupport(end)], 'c/deg', 'temporal frequency (Hz)', logPlot);
     
-    
-   
     
     
     sampledTFs = [0 2 5 7 10 20 50 100];
@@ -112,12 +128,13 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange )
 
     subplot('Position', subplotPosVectors(2,3).v);
     tfRangeOverWhichToSumSlices = [1 30];
-    visualizeSummedSpectralSlices(sfSupport, sfLims, 'spatial frequency, X (c/deg)', ...
-        tfSupport, tfRangeOverWhichToSumSlices, 'Hz', samplingDimension, averageXTpowerSpectralDensityStabilized, dbRange, lineColors, 'stabilized', logPlot);
+    legends = {};
+    legends = visualizeSummedSpectralSlices(sfSupport, sfLims, 'spatial frequency, X (c/deg)', ...
+        tfSupport, tfRangeOverWhichToSumSlices, 'Hz', samplingDimension, averageXTpowerSpectralDensityStabilized, dbRange,  [0 0 0], legends, 'stabilized', logPlot);
     
-    subplot('Position', subplotPosVectors(2,4).v);
-    visualizeSummedSpectralSlices(sfSupport, sfLims, 'spatial frequency, X (c/deg)', ...
-        tfSupport, tfRangeOverWhichToSumSlices, 'Hz', samplingDimension, averageXTpowerSpectralDensityDynamic, dbRange, lineColors, 'dynamic', logPlot);
+    %subplot('Position', subplotPosVectors(2,4).v);
+    legends = visualizeSummedSpectralSlices(sfSupport, sfLims, 'spatial frequency, X (c/deg)', ...
+        tfSupport, tfRangeOverWhichToSumSlices, 'Hz', samplingDimension, averageXTpowerSpectralDensityDynamic, dbRange, [1 0 0], legends,'dynamic', logPlot);
     
     
 
@@ -170,161 +187,6 @@ function [averageSpectra, sfAxis, tfAxis] = averageAcrossQuadrantsSpectum(sfSupp
     end 
 end
 
-function plotSlices(sData, dataLabel, sfLims, tfLims, cLims, row)
-
-    [maxPower,idx] = max(sData.meanSpatioTemporalSpectalDensity(:));
-    [maxTFindex, maxSFYindex, maxSFXindex] = ind2sub(size(sData.meanSpatioTemporalSpectalDensity),idx);
-    fprintf('Max PSD is %2.2f dB at %2.1f Hz, %2.1f c/deg (x), %2.1f c/deg (y)\n', ...
-        maxPower,sData.tfSupport(maxTFindex), sData.spatialFrequencySupport(maxSFXindex), sData.spatialFrequencySupport(maxSFYindex));
-    fprintf('Total power (%s): %g\n', dataLabel, 10*log10(sum(sData.meanSpatioTemporalSpectalDensity(:))));
-    
-    % Spatiotemporal spectra at peak SFY
-    XTspectra = squeeze(sData.meanSpatioTemporalSpectalDensity(:,maxSFYindex,:))';
-    % Spatiotemporal spectra at peak SFX
-    YTspectra = squeeze(sData.meanSpatioTemporalSpectalDensity(:,:,maxSFXindex))';
-    % Spatiotemporal spectra at peak TFX
-    XYspectra = squeeze(sData.meanSpatioTemporalSpectalDensity(maxTFindex,:,:));
-    
-    sampledSFsNum = 15;
-    sampledTFsNum = 15;
-    
-    lineColors = brewermap(sampledSFsNum , 'Spectral');
-    
-    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
-       'rowsNum', 2, ...
-       'colsNum', 6, ...
-       'heightMargin',  0.10, ...
-       'widthMargin',   0.03, ...
-       'leftMargin',    0.02, ...
-       'rightMargin',   0.03, ...
-       'bottomMargin',  0.10, ...
-       'topMargin',     0.03);
-
-    subplot('Position', subplotPosVectors(1+row,1).v);
-    imagesc(sData.spatialFrequencySupport, sData.spatialFrequencySupport, 10*log10(XYspectra));
-    axis 'square';
-    set(gca, 'XLim', max(sfLims)*[-1/2 1/2], 'YLim', sfLims , 'FontSize', 14);
-    set(gca, 'CLim', cLims);
-    if (row == 1)
-        xlabel('spatial frequency, X (c/deg)');
-    end
-    ylabel('spatial frequency, Y (c/deg)');
-    title(sprintf('%s (tf = %2.1f Hz)', dataLabel, sData.tfSupport(maxTFindex)));
-    
-    subplot('Position', subplotPosVectors(1+row,2).v);
-    imagesc(sData.tfSupport, sData.spatialFrequencySupport, 10*log10(XTspectra));
-    axis 'square';
-    set(gca, 'XLim', tfLims, 'YLim', sfLims , 'FontSize', 14);
-    set(gca, 'CLim', cLims);
-    ylabel('spatial frequency, X (c/deg)');
-    if (row == 1)
-        xlabel('temporal frequency (Hz)');
-    end
-    title(sprintf('sfY = %2.1f c/deg', sData.spatialFrequencySupport(maxSFYindex)));
-    
-    
-    subplot('Position', subplotPosVectors(1+row,3).v);
-    imagesc(sData.tfSupport, sData.spatialFrequencySupport, 10*log10(YTspectra));
-    axis 'square';
-    set(gca, 'XLim', tfLims, 'YLim', sfLims , 'FontSize', 14);
-    set(gca, 'CLim', cLims);
-    ylabel('spatial frequency, Y (c/deg)');
-    if (row == 1)
-        xlabel('temporal frequency (Hz)');
-    end
-    title(sprintf('sfX = %2.1f c/deg', sData.spatialFrequencySupport(maxSFXindex)));
-    
-    subplot('Position', subplotPosVectors(1+row,4).v);
-    hold on
-    for k = 1:sampledSFsNum 
-        targetSF = k-1;
-        [~,sfYindex] = min(abs(sData.spatialFrequencySupport-targetSF));
-        legends{k} = sprintf('%2.1fcpd', sData.spatialFrequencySupport(sfYindex));
-        tfProfile = squeeze(YTspectra(sfYindex,:));
-        tfProfile = 0.5*(tfProfile + fliplr(tfProfile));
-        plot(sData.tfSupport, squeeze(10*log10(tfProfile)), 'r-', 'LineWidth', 1.5, 'Color', squeeze(lineColors(k,:)));
-    end
-    axis 'square'
-    box on; grid on;
-    set(gca, 'XTick', [1 3 10 30 100], 'XScale', 'log', 'XLim', [0.5 max(sData.tfSupport)], 'YLim', cLims, 'FontSize', 14);
-    if (row == 1)
-        xlabel('temporal frequency (Hz)');
-    end
-    ylabel('power (dB)');
-    hL = legend(legends);
-    set(hL, 'units', 'normalized');
-    p = get(hL, 'Position');
-    p(1) = p(1) + 0.05;
-    p(2) = p(2) + 0.01;
-    set(hL, 'Position', p);
-    
-    
-    subplot('Position', subplotPosVectors(1+row,5).v);
-    hold on
-    for k = 1:(sampledTFsNum+1)
-        targetHz = 2*(k-1);
-        [~,tfIndex] = min(abs(sData.tfSupport-targetHz));
-        if (k == sampledTFsNum + 1)
-            legends{k} = sprintf('total');
-            sfProfile = squeeze(mean(YTspectra,2));
-            lineColor = [0 0 0];
-        else
-            legends{k} = sprintf('%2.1fHz', sData.tfSupport(tfIndex));
-            sfProfile = squeeze(YTspectra(:,tfIndex));
-            lineColor = squeeze(lineColors(k,:));
-        end
-        sfProfile = 0.5*(sfProfile + fliplr(sfProfile));
-        plot(sData.spatialFrequencySupport, squeeze(10*log10(sfProfile)), 'r-', 'LineWidth', 1.5, 'Color', lineColor);
-    end
-    axis 'square'
-    box on; grid on;
-    set(gca, 'XTick', [1 3 10 30 100],'XScale', 'log', 'XLim', [0.5 max(sData.spatialFrequencySupport)], 'YLim', cLims, 'FontSize', 14);
-    if (row == 1)
-        xlabel('spatial frequency, Y (c/deg)');
-    end
-    
-    hL = legend(legends);
-    set(hL, 'units', 'normalized');
-    p = get(hL, 'Position');
-    p(1) = p(1) + 0.05;
-    p(2) = p(2) + 0.01;
-    set(hL, 'Position', p);
-    
-    
-    
-    subplot('Position', subplotPosVectors(1+row,6).v);
-    hold on
-    for k = 1:(sampledTFsNum + 1)
-        targetHz = 2*(k-1);
-        [~,tfIndex] = min(abs(sData.tfSupport-targetHz));
-        if (k == sampledTFsNum + 1)
-            legends{k} = sprintf('total');
-            sfProfile = squeeze(mean(XTspectra,2));
-            lineColor = [0 0 0];
-        else
-            legends{k} = sprintf('%2.1fHz', sData.tfSupport(tfIndex));
-            sfProfile = squeeze(XTspectra(:,tfIndex));
-            lineColor = squeeze(lineColors(k,:));
-        end
-        sfProfile = 0.5*(sfProfile + fliplr(sfProfile));
-        plot(sData.spatialFrequencySupport, squeeze(10*log10(sfProfile)), 'r-', 'LineWidth', 1.5, 'Color', lineColor);
-    end
-    axis 'square'
-    box on; grid on;
-    set(gca, 'XTick', [1 3 10 30 100],'XScale', 'log', 'XLim', [0.5 max(sData.spatialFrequencySupport)], 'YLim', cLims, 'FontSize', 14);
-    if (row == 1)
-        xlabel('spatial frequency, X (c/deg)');
-    end
-    hL = legend(legends);
-    set(hL, 'units', 'normalized');
-    p = get(hL, 'Position');
-    p(1) = p(1) + 0.05;
-    p(2) = p(2) + 0.01;
-    set(hL, 'Position', p);
-    
-    colormap(hot(1024));
-end
-
 
 function visualize2Dspectrum(ax, sfSupport, tfSupport, spectrum2D, sfLims, tfLims, dbRange, figureTitle, logPlot )
     [X,Y] = meshgrid(sfSupport, tfSupport);
@@ -364,17 +226,17 @@ function visualizeSpectralSlices(xAxisSupport, xAxisLims, xAxisLabel, sampledAxi
         lineColors, figureTitle, logPlot);
 end
 
-function visualizeSummedSpectralSlices(xAxisSupport, xAxisLims, xAxisLabel, sampledAxisSupport, sampledPointsRange, samplePointUnit, samplingDimension, spectrum2D, dbRange, ...
-    lineColors, figureTitle, logPlot)
+function legends = visualizeSummedSpectralSlices(xAxisSupport, xAxisLims, xAxisLabel, sampledAxisSupport, sampledPointsRange, samplePointUnit, samplingDimension, spectrum2D, dbRange, ...
+    lineColor, legends, setTitle, logPlot)
 
     theZeroSlice = squeeze(spectrum2D(1,:));
     indicesOfSampledSlices = find((sampledAxisSupport >= sampledPointsRange(1)) & (sampledAxisSupport <= sampledPointsRange(2)));
     theSummedSlices = sum(spectrum2D(indicesOfSampledSlices,:),samplingDimension);
     
-    plot(xAxisSupport, 10*log10(theZeroSlice), 'k--', 'LineWidth', 2); hold on
-    plot(xAxisSupport, 10*log10(theSummedSlices), 'k-', 'LineWidth', 2);
-    legends{1} = sprintf('%2.1f%s', sampledAxisSupport(1), samplePointUnit);
-    legends{2} = sprintf('%2.1f - %2.1f %s', sampledAxisSupport(indicesOfSampledSlices(1)), sampledAxisSupport(indicesOfSampledSlices(end)), samplePointUnit);
+    plot(xAxisSupport, 10*log10(theZeroSlice), 'k--', 'LineWidth', 2, 'Color', lineColor); hold on
+    plot(xAxisSupport, 10*log10(theSummedSlices), 'k-', 'LineWidth', 2, 'Color', lineColor);
+    legends{numel(legends)+1} = sprintf('%2.1f%s (%s)', sampledAxisSupport(1), samplePointUnit, setTitle);
+    legends{numel(legends)+1} = sprintf('%2.1f - %2.1f %s (%s)', sampledAxisSupport(indicesOfSampledSlices(1)), sampledAxisSupport(indicesOfSampledSlices(end)), samplePointUnit, setTitle);
     
     %axis 'square'
     box on; grid on;
@@ -386,7 +248,6 @@ function visualizeSummedSpectralSlices(xAxisSupport, xAxisLims, xAxisLabel, samp
     set(gca, 'XTick', [1 3 10 30 60 100]);
     xlabel(xAxisLabel);
     ylabel('power (dB)');
-    title(figureTitle);
     
 end
 
@@ -435,19 +296,20 @@ function visualizeSlices(xAxisSupport, xAxisLims, xAxisLabel, sampledAxisSupport
     title(figureTitle);
 end
 
-function visualizeMarginalSpectra(support, sumStabilized, sumDynamic, xAxisLims, xAxisLabel, logPlot)
+function visualizeMarginalSpectra(support, sumStabilized, sumDynamic, xAxisLims, dbRange, integrationLimits, integrationAxisUnit, xAxisLabel, logPlot)
     plot(support, 10*log10(sumStabilized), 'k-', 'LineWidth', 1.5);
     hold on;
     plot(support, 10*log10(sumDynamic), 'r--', 'LineWidth', 1.5);
     plot(support, 10*log10(sumDynamic)-10*log10(sumStabilized), 'b-', 'LineWidth', 1.5);
-    hL = legend({'stabilized', 'dynamic', 'dynamic-stabilized'},  'Location', 'northeast');
-    set(gca, 'XLim', xAxisLims,'FontSize', 14);
+    hL = legend({'stabilized', 'dynamic', 'dynamic-stabilized'},  'Location', 'southwest');
+    set(gca, 'XLim', xAxisLims, 'YLim', dbRange, 'FontSize', 14);
     if (logPlot)
         set(gca, 'XScale', 'log');
     end
     set(gca, 'XTick', [0 1 3 10 30 60 100]);
     xlabel(xAxisLabel);
     ylabel('power (dB)');
+    title(sprintf('integrated power from %2.1f-%2.1f %s', integrationLimits(1), integrationLimits(2), integrationAxisUnit));
     box on; grid on
 end
     
