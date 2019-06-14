@@ -1,6 +1,6 @@
 function [gratingParams, noiseParams, stimulusPixelSizeArcMin] = RucciStimulusParams(stimulusType, stimulusSizeDegs, oriDegs, contrastLevels)
     coneApertureMicrons = 2; micronsPerDegree = 300;
-    stimulusPixelSizeArcMin = 0.75*coneApertureMicrons / micronsPerDegree * 60;
+    stimulusPixelSizeArcMin = 1.5*coneApertureMicrons / micronsPerDegree * 60;
     
     % Grating params
     gratingParams.oriDegs = oriDegs;
