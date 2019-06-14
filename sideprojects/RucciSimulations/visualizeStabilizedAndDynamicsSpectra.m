@@ -15,7 +15,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange)
     
     spatiotemporalSpectrumMethod = 'select sfY=0';
     spatiotemporalSpectrumMethod = 'sum over sfY';
-    spatiotemporalSpectrumMethod = 'radial averaging';
+    %spatiotemporalSpectrumMethod = 'radial averaging';
     
     switch (spatiotemporalSpectrumMethod)
         case 'sum over sfY'
@@ -31,14 +31,9 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange)
         case 'radial averaging' 
             sDataStabilized.meanSpatioTemporalPowerSpectalDensity = makeRotationallySymmetric(sDataStabilized.meanSpatioTemporalPowerSpectalDensity);
             sDataDynamic.meanSpatioTemporalPowerSpectalDensity = makeRotationallySymmetric(sDataDynamic.meanSpatioTemporalPowerSpectalDensity);
-            
-%             for tfIndex = 1:numel(sDataDynamic.tfSupport)
-%                 tmp = squeeze(sDataStabilized.meanSpatioTemporalPowerSpectalDensity(tfIndex,:,:));
-%                 figure(223)
-%                 imagesc(tmp)
-%                 axis 'square';
-%                 drawnow;
-%             end % tfIndex
+            XTpowerSpectralDensityStabilized = squeezeOneQudrant(sDataStabilized.meanSpatioTemporalPowerSpectalDensity);
+            XTpowerSpectralDensityDynamic = squeezeOneQudrant(sDataDynamic.meanSpatioTemporalPowerSpectalDensity);
+            % Still need work to extraxt XT here
         otherwise
             error('Unknown XT spectral method: ''%s''.', spatiotemporalSpectrumMethod)
     end
@@ -208,6 +203,7 @@ function xytSpectra = makeRotationallySymmetric(xytSpectra)
         end
     end 
 end
+
 
 function [averageSpectra, sfAxis, tfAxis] = averageAcrossQuadrantsSpectum(sfSupport, tfSupport, xtSpectra)
 
