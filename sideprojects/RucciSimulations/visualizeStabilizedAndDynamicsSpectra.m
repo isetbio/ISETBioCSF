@@ -1,7 +1,7 @@
 function visualizeStabilizedAndDynamicsSpectra(sData, sDataStabilized, figNo)
 
     % Limits
-    sfLims = [0 30];
+    sfLims = [0 100];
     tfLims = [-100 100];
     dbRange = [-20 65]; %  [-60 45]; % in dB
     
@@ -61,7 +61,7 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange )
         tfSupport(1) = 0.1;
     end
     
-    sfLims = [sfSupport(1) 50];
+    sfLims = [sfSupport(1) 100];
     tfLims = [tfSupport(1) 100];
     
     
@@ -367,15 +367,18 @@ end
 function visualizeSummedSpectralSlices(xAxisSupport, xAxisLims, xAxisLabel, sampledAxisSupport, sampledPointsRange, samplePointUnit, samplingDimension, spectrum2D, dbRange, ...
     lineColors, figureTitle, logPlot)
 
+    theZeroSlice = squeeze(spectrum2D(1,:));
     indicesOfSampledSlices = find((sampledAxisSupport >= sampledPointsRange(1)) & (sampledAxisSupport <= sampledPointsRange(2)));
-    theSlice = sum(spectrum2D(indicesOfSampledSlices,:),samplingDimension);
+    theSummedSlices = sum(spectrum2D(indicesOfSampledSlices,:),samplingDimension);
     
-    plot(xAxisSupport, 10*log10(theSlice), 'k-', 'LineWidth', 2);
-    legends{1} = sprintf('%2.1f - %2.1f %s', sampledAxisSupport(indicesOfSampledSlices(1)), sampledAxisSupport(indicesOfSampledSlices(2)), samplePointUnit);
+    plot(xAxisSupport, 10*log10(theZeroSlice), 'k--', 'LineWidth', 2); hold on
+    plot(xAxisSupport, 10*log10(theSummedSlices), 'k-', 'LineWidth', 2);
+    legends{1} = sprintf('%2.1f%s', sampledAxisSupport(1), samplePointUnit);
+    legends{2} = sprintf('%2.1f - %2.1f %s', sampledAxisSupport(indicesOfSampledSlices(1)), sampledAxisSupport(indicesOfSampledSlices(end)), samplePointUnit);
     
     %axis 'square'
     box on; grid on;
-    hL = legend(legends, 'NumColumns',2, 'Location', 'northeast');
+    hL = legend(legends, 'Location', 'northeast');
     set(gca, 'XLim', xAxisLims, 'YLim', dbRange, 'FontSize', 14);
     if (logPlot)
         set(gca, 'XScale', 'log');
