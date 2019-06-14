@@ -1,4 +1,4 @@
-function analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fixationDurationSeconds, noiseInstances, reComputeSpectralAnalyses, parforWorkersNum)
+function analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fixationDurationSeconds, noiseInstances, reComputeSpectralAnalyses)
     noiseNorm = nan;
     oriDegs = 0;
     contrastLevels = [1];
@@ -32,7 +32,7 @@ function analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fix
             % Generate spatiotemporal stimulus sequence and spectra due to fixational EM
             fprintf('Computing spatiotemporal analysis for DYNAMIC ''%s'' stimulus.\n', stimulusTypes{stimIndex});
             xtStimStructFEM = generateSpatiotemporalStimulusSequenceDueToFixationalEM(...
-                timeAxis, emPosArcMin, stimStruct, parforWorkersNum);
+                timeAxis, emPosArcMin, stimStruct);
             
             fName = spectralAnalysisFileName(stimulusTypes{stimIndex}, stimulusSizeDegs);
             fprintf('Saving DYNAMIC spatiotemporal analysis to %s\n', fName);
@@ -40,7 +40,7 @@ function analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fix
             clear 'xtStimStructFEM';
             
             fprintf('Computing spatiotemporal analysis for STABILIZED ''%s'' stimulus.\n', stimulusTypes{stimIndex});
-            xtStimStructStabilized = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin*0, stimStruct, parforWorkersNum);
+            xtStimStructStabilized = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin*0, stimStruct);
             fprintf('Saving STABILIZED spatiotemporal analysis to %s\n', fName);
             save(fName, 'xtStimStructStabilized', '-append');
         else

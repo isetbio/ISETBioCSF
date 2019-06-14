@@ -1,4 +1,4 @@
-function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, stimulus, parforWorkersNum)
+function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxis, emPosArcMin, stimulus)
     instancesNum = size(emPosArcMin,1);
     timeBins = size(emPosArcMin,2);
     extraBins = 0; % max([0 round((1024-timeBins)/2)]);  % bins for zero padding in time domain
@@ -59,10 +59,10 @@ function sData = generateSpatiotemporalStimulusSequenceDueToFixationalEM(timeAxi
                 mCols = size(stimulus.image,3);
         
                 spatialWindowSamples = round(nRows*0.85);
-                temporalWindowSamples = round(totalTimeBins*0.75);
+                temporalWindowSamples = round(totalTimeBins*0.5);
                 
                 spatialWindowOverlapFactor = 0.95;
-                temporalWindowOverlapFactor = 0.9;
+                temporalWindowOverlapFactor = 0.8;
                 
                 ppp = welchPowerSpectrum(XYTstim, spatialWindowSamples, temporalWindowSamples,  ...
                     spatialWindowOverlapFactor, temporalWindowOverlapFactor, ...
