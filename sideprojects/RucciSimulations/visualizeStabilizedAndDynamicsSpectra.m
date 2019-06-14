@@ -6,28 +6,44 @@ function visualizeStabilizedAndDynamicsSpectra(sData, sDataStabilized, figNo)
     dbRange = [-20 65]; %  [-60 45]; % in dB
     
     hFig = figure(figNo+100); clf;
-    plotSummarySlices(sDataStabilized, sData, dbRange );
-    pause
-    
-    hFig = figure(figNo+100); clf;
-    set(hFig, 'Position', [10 10 2250 625]);
-    plotSlices(sDataStabilized,'STABILIZED', sfLims, tfLims, dbRange ,0);
-    plotSlices(sData,'DYNAMIC', sfLims, tfLims, dbRange ,1);
-    drawnow;
+    plotSummarySlices(sDataStabilized, sData, dbRange);
 end
 
-function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange )
+function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange)
 
-    % organization is [TF, SFy, SFx]
-    % Get the slice corresponding to sfY  0 c/deg
-    targetSFy = 0;
-    [~,sfYIndex] = min(abs(sDataDynamic.spatialFrequencySupport)-targetSFy);
+    % organization of sDataStabilized.meanSpatioTemporalPowerSpectalDensity is [TF, SFy, SFx]
     
-    %XTpowerSpectralDensityStabilized = squeeze(sDataStabilized.meanSpatioTemporalPowerSpectalDensity(:,sfYIndex,:));
-    %XTpowerSpectralDensityDynamic = squeeze(sDataDynamic.meanSpatioTemporalPowerSpectalDensity(:,sfYIndex,:));
+    spatiotemporalSpectrumMethod = 'select sfY=0';
+    spatiotemporalSpectrumMethod = 'sum over sfY';
+    spatiotemporalSpectrumMethod = 'radial averaging';
     
-    XTpowerSpectralDensityStabilized = squeeze(sum(sDataStabilized.meanSpatioTemporalPowerSpectalDensity,2));
-    XTpowerSpectralDensityDynamic = squeeze(sum(sDataDynamic.meanSpatioTemporalPowerSpectalDensity,2));
+    switch (spatiotemporalSpectrumMethod)
+        case 'sum over sfY'
+            % Sum over the ySF axis
+            XTpowerSpectralDensityStabilized = squeeze(sum(sDataStabilized.meanSpatioTemporalPowerSpectalDensity,2));
+            XTpowerSpectralDensityDynamic = squeeze(sum(sDataDynamic.meanSpatioTemporalPowerSpectalDensity,2));
+        case 'select sfY=0'
+            % Select the ySF = 0 slice
+            targetSF = 0;
+            [~,sfYIndex] = min(abs(sDataDynamic.spatialFrequencySupport-targetSF));
+            XTpowerSpectralDensityStabilized = squeeze(sDataStabilized.meanSpatioTemporalPowerSpectalDensity(:,sfYIndex,:));
+            XTpowerSpectralDensityDynamic = squeeze(sDataDynamic.meanSpatioTemporalPowerSpectalDensity(:,sfYIndex,:));
+        case 'radial averaging' 
+            sDataStabilized.meanSpatioTemporalPowerSpectalDensity = makeRotationallySymmetric(sDataStabilized.meanSpatioTemporalPowerSpectalDensity);
+            sDataDynamic.meanSpatioTemporalPowerSpectalDensity = makeRotationallySymmetric(sDataDynamic.meanSpatioTemporalPowerSpectalDensity);
+            
+%             for tfIndex = 1:numel(sDataDynamic.tfSupport)
+%                 tmp = squeeze(sDataStabilized.meanSpatioTemporalPowerSpectalDensity(tfIndex,:,:));
+%                 figure(223)
+%                 imagesc(tmp)
+%                 axis 'square';
+%                 drawnow;
+%             end % tfIndex
+        otherwise
+            error('Unknown XT spectral method: ''%s''.', spatiotemporalSpectrumMethod)
+    end
+    
+    
     
     
     % Average along 4 quadrants
@@ -136,8 +152,61 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange )
     legends = visualizeSummedSpectralSlices(sfSupport, sfLims, 'spatial frequency, X (c/deg)', ...
         tfSupport, tfRangeOverWhichToSumSlices, 'Hz', samplingDimension, averageXTpowerSpectralDensityDynamic, dbRange, [1 0 0], legends,'dynamic', logPlot);
     
-    
+end
 
+function xytSpectra = makeRotationallySymmetric(xytSpectra)
+
+    indexOfZeroSFx = floor(size(xytSpectra,3)/2)+1;
+    indexOfZeroSFy = floor(size(xytSpectra,2)/2)+1;
+    
+    sfXIndices = indexOfZeroSFx:size(xytSpectra,3);
+    sfYIndices = indexOfZeroSFy:size(xytSpectra,2);
+    
+    for sfY = 1:numel(sfYIndices)
+        sfYIndex = sfYIndices(sfY);
+        sfYIndexSymmetric = indexOfZeroSFy - (sfYIndex - indexOfZeroSFy);
+        for sfX = 1:numel(sfXIndices)
+            sfXIndex = sfXIndices(sfX);
+            sfXIndexSymmetric = indexOfZeroSFx - (sfXIndex - indexOfZeroSFx);
+            if ((sfY == 1) && (sfX  == 1))
+                % (0,0) frequency
+                % Do nothing, already assigned during initialization
+            else
+                if (sfY == 1) && (sfX > 1)
+                    % at zero SFy axis, sum corresponding points from 2
+                    % SFx frequencies
+                    m = 0.5 * ( ...
+                            xytSpectra(:,sfYIndex,sfXIndex) + ...
+                            xytSpectra(:,sfYIndex,sfXIndexSymmetric)...
+                            );
+                    xytSpectra(:,sfYIndex,sfXIndex) = m;
+                    xytSpectra(:,sfYIndex,sfXIndexSymmetric) = m;
+                    
+                elseif (sfX  == 1) && (sfY > 1)
+                    % at zero SFx axis, sum corresponding points from 2
+                    % SFy frequencies
+                    m = 0.5*(...
+                            xytSpectra(:, sfYIndex,sfXIndex) + ...
+                            xytSpectra(:, sfYIndexSymmetric,sfXIndex)...
+                            );
+                    xytSpectra(:,sfYIndex,sfXIndex) = m;
+                    xytSpectra(:,sfYIndexSymmetric,sfXIndex) = m;
+                else
+                    % sum corresponding points from 4 quadrants
+                    m = 0.25 * (...
+                            xytSpectra(:, sfYIndex,sfXIndex) + ...
+                            xytSpectra(:, sfYIndexSymmetric,sfXIndex) + ...
+                            xytSpectra(:, sfYIndex,sfXIndexSymmetric) + ...
+                            xytSpectra(:, sfYIndexSymmetric,sfXIndexSymmetric)...
+                            );
+                    xytSpectra(:, sfYIndex,sfXIndex)  = m;
+                    xytSpectra(:, sfYIndexSymmetric,sfXIndex) = m;
+                    xytSpectra(:, sfYIndex,sfXIndexSymmetric) = m;
+                    xytSpectra(:, sfYIndexSymmetric,sfXIndexSymmetric) = m;
+                end
+            end
+        end
+    end 
 end
 
 function [averageSpectra, sfAxis, tfAxis] = averageAcrossQuadrantsSpectum(sfSupport, tfSupport, xtSpectra)
