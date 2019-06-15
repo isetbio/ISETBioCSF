@@ -61,11 +61,10 @@ function simulateRucciExperiment
     if (analyzeStimulusSpatioTemporalSpectra) 
         noiseInstances = 2;
         stimulusSizeDegs = 5;
-        fixationDurationSeconds = 8.0;
-        reComputeSpectralAnalyses = true;
-        parforWorkersNum = 1;
-        stimulusTypes = {'high frequency'}; % , '1 over F', 'low frequency', 'high frequency'};
-        analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fixationDurationSeconds, noiseInstances, reComputeSpectralAnalyses, parforWorkersNum);
+        fixationDurationSeconds = 2.5;
+        reComputeSpectralAnalyses = ~true;
+        stimulusTypes = {'1 over F'}; % , '1 over F', 'low frequency', 'high frequency'};
+        analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fixationDurationSeconds, noiseInstances, reComputeSpectralAnalyses);
         return;
     end
     
