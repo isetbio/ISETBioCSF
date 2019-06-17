@@ -85,10 +85,42 @@ function temporalKernels = computeTemporalKernel(timeAxis)
     N = 5;
     temporalKernels(2,:) = (kT.^N) .* (exp(-kT)) .* (1/factorial(N) - (kT.^2)/factorial(N+2));
     
-%     figure()
-%     plot(temporalSupport, temporalKernels(1,:), 'r-'); hold on
-%     plot(temporalSupport, temporalKernels(2,:), 'b-');
-%     pause
+    ft = abs(fftshift(fft(squeeze(temporalKernels(1,:)),4096)));
+    maxTF = 1 / (2*dt);
+    temporalFreqSupport = ((1:numel(ft))/numel(ft) -0.5)*2 * maxTF;
+        
+    xticks = [0:100:500];
+    xTickLabels = sprintf('%2.0f\n', xticks);
+    figure()
+    subplot(1,2,1)
+    plot(temporalSupport*1000, temporalKernels(1,:), 'r-', 'LineWidth', 1.5); hold on
+    plot(temporalSupport*1009, temporalKernels(2,:), 'b-', 'LineWidth', 1.5);
+    
+    set(gca, 'YTickLabel', {}, 'XTick', xticks, 'XTickLabel', xTickLabels, 'XLim', [0 400], 'FontSize', 14);
+    xlabel('\it time (msec)');
+    ylabel('');
+    axis 'square';
+    grid on; box on
+    
+    xticks = [0.3 1 3 10 30 100];
+    xTickLabels = cell(1, numel(xticks));
+    for k = 1:numel(xticks)
+        if (xticks(k) < 1)
+            xTickLabels{k} = sprintf('%2.1f', xticks(k));
+        else
+            xTickLabels{k} = sprintf('%2.0f', xticks(k));
+        end
+    end
+    
+    subplot(1,2,2)
+    plot(temporalFreqSupport, ft, 'r-', 'LineWidth', 1.5);
+    axis 'square';
+    set(gca, 'XScale', 'log', 'XLim', [0.1 100]);
+    set(gca, 'YTickLabel', {}, 'XTick', xticks, 'XTickLabel', xTickLabels,'FontSize', 14);
+    xlabel('\it temporal frequency (Hz)');
+    ylabel('');
+    grid on; box on
+    pause
     
 end
 

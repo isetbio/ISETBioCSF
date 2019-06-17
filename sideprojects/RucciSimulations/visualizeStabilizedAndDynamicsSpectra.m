@@ -1,15 +1,15 @@
 function visualizeStabilizedAndDynamicsSpectra(sData, sDataStabilized, figNo)
 
     % Limits
-    sfLims = [0 100];
-    tfLims = [-100 100];
-    dbRange = [-20 65]; %  [-60 45]; % in dB
+    sfLims = [0 50];
+    tfLims = [0 200];
+    dbRange = [0 65]; %  [-60 45]; % in dB
     
     hFig = figure(figNo+100); clf;
-    plotSummarySlices(sDataStabilized, sData, dbRange);
+    plotSummarySlices(sDataStabilized, sData, dbRange, sfLims, tfLims);
 end
 
-function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange)
+function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange, sfLims, tfLims)
 
     % organization of sDataStabilized.meanSpatioTemporalPowerSpectalDensity is [TF, SFy, SFx]
     
@@ -89,8 +89,8 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange)
         tfSupport(1) = 0.1;
     end
     
-    sfLims = [sfSupport(1) 100];
-    tfLims = [tfSupport(1) 100];
+    sfLims = [sfSupport(1) sfLims(2)];
+    tfLims = [tfSupport(1) tfLims(2)];
     
     
     figure(22); clf;
@@ -298,8 +298,8 @@ function legends = visualizeSummedSpectralSlices(xAxisSupport, xAxisLims, xAxisL
     indicesOfSampledSlices = find((sampledAxisSupport >= sampledPointsRange(1)) & (sampledAxisSupport <= sampledPointsRange(2)));
     theSummedSlices = sum(spectrum2D(indicesOfSampledSlices,:),samplingDimension);
     
-    plot(xAxisSupport, 10*log10(theZeroSlice), 'k--', 'LineWidth', 2, 'Color', lineColor); hold on
-    plot(xAxisSupport, 10*log10(theSummedSlices), 'k-', 'LineWidth', 2, 'Color', lineColor);
+    plot(xAxisSupport, 10*log10(theZeroSlice), 'k--', 'LineWidth', 3, 'Color', lineColor*0.8); hold on
+    plot(xAxisSupport, 10*log10(theSummedSlices), 'k-', 'LineWidth', 3, 'Color', lineColor*0.8);
     legends{numel(legends)+1} = sprintf('%2.1f%s (%s)', sampledAxisSupport(1), samplePointUnit, setTitle);
     legends{numel(legends)+1} = sprintf('%2.1f - %2.1f %s (%s)', sampledAxisSupport(indicesOfSampledSlices(1)), sampledAxisSupport(indicesOfSampledSlices(end)), samplePointUnit, setTitle);
     
@@ -343,9 +343,18 @@ function visualizeSlices(xAxisSupport, xAxisLims, xAxisLabel, sampledAxisSupport
         if (numel(xAxisSupport) ~= numel(slice))
             error('inconsistent sampling dimension');
         end
-        plot(xAxisSupport, slice, 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 2);
+        plot(xAxisSupport, slice, 'k-', 'Color', squeeze(lineColors(k,:))*0.8, 'LineWidth', 3);
         hold on;
         legends{k} = sprintf('%2.1f %s', sampledAxisSupport(idx), samplePointUnit);
+    end
+    
+    for k = 1:numel(sampledPoints)
+        [~,idx] = min(abs(sampledAxisSupport-sampledPoints(k)));
+        slice = squeeze(slices(k,:));
+        if (numel(xAxisSupport) ~= numel(slice))
+            error('inconsistent sampling dimension');
+        end
+        plot(xAxisSupport, slice, 'k-', 'Color', squeeze(lineColors(k,:)), 'LineWidth', 1.5);
     end
     
     %axis 'square'
@@ -362,10 +371,12 @@ function visualizeSlices(xAxisSupport, xAxisLims, xAxisLabel, sampledAxisSupport
 end
 
 function visualizeMarginalSpectra(support, sumStabilized, sumDynamic, xAxisLims, dbRange, integrationLimits, integrationAxisUnit, xAxisLabel, logPlot)
-    plot(support, 10*log10(sumStabilized), 'k-', 'LineWidth', 1.5);
     hold on;
-    plot(support, 10*log10(sumDynamic), 'r--', 'LineWidth', 1.5);
-    plot(support, 10*log10(sumDynamic)-10*log10(sumStabilized), 'b-', 'LineWidth', 1.5);
+    plot(support, 10*log10(sumStabilized), 'k-', 'LineWidth',3, 'Color', [ 0 0 0]);
+    plot(support, 10*log10(sumDynamic), 'r-', 'LineWidth', 3);
+    plot(support, 10*log10(sumDynamic)-10*log10(sumStabilized), 'c-', 'LineWidth', 3);
+    plot(support, 10*log10(sumDynamic)-10*log10(sumStabilized), 'b-', 'LineWidth', 3);
+    plot(support, 10*log10(sumDynamic)-10*log10(sumStabilized), 'c-', 'LineWidth', 1.5);
     hL = legend({'stabilized', 'dynamic', 'dynamic-stabilized'},  'Location', 'southwest');
     set(gca, 'XLim', xAxisLims, 'YLim', dbRange, 'FontSize', 14);
     if (logPlot)
