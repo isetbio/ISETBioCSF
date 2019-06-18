@@ -10,15 +10,9 @@ function [stimulus, noiseNorm] = generateGratingInNoiseSpatialModulationPattern(
     xAxis = (1:N)*pixelSizeArcMin;
     xAxis = xAxis - mean(xAxis);
     spatialSupportDegs = xAxis / 60;
-    
-    % Generate spatial frequency support
-    positiveSFindices = (N/2+1):N;
-    spacingDegs = pixelSizeArcMin/60;
-    sfMaxCPD = 1/(2*spacingDegs);
-    spatialFrequencySupport = (0:(numel(positiveSFindices)-1))/(numel(positiveSFindices)-1) * sfMaxCPD;
         
     % Generate grating components
-    [gratingComponents,gaussianEnvelope, template] = generateGratingComponents(spatialSupportDegs, gratingParams);
+    [gratingComponents, gaussianEnvelope, template] = generateGratingComponents(spatialSupportDegs, gratingParams);
     
     % Generate orthogonal grating component
     gratingParamsOrtho = gratingParams;
@@ -56,12 +50,19 @@ function [stimulus, noiseNorm] = generateGratingInNoiseSpatialModulationPattern(
         stimulusImage(instanceNo,:,:,:) = stimulus / maxAll;
         stimulusImageOrtho(instanceNo,:,:,:) = stimulusOrtho / maxAll;
         
-        % Compute stimulus spectrum and spatialFrequencySupport
+        % Compute amplitude spectrum and spatialFrequencySupport
+        N = 2.^(nextpow2(size(squeeze(stimulus))));
+
         for iContrast = 1:nContrastLevels
-            spectrum(instanceNo,iContrast,:,:) = fftshift(abs(fft2(squeeze(stimulusImage(instanceNo,iContrast,:,:)))));
-            spectrumOrtho(instanceNo,iContrast,:,:) = fftshift(abs(fft2(squeeze(stimulusImageOrtho(instanceNo,iContrast,:,:)))));
+            spectrum(instanceNo,iContrast,:,:) = fftshift(abs(fft2(squeeze(stimulusImage(instanceNo,iContrast,:,:)),N(1),N(2))));
+            spectrumOrtho(instanceNo,iContrast,:,:) = fftshift(abs(fft2(squeeze(stimulusImageOrtho(instanceNo,iContrast,:,:)),N(1),N(2))));
         end
     end
+    
+    positiveSFindices = (N/2+1):N;
+    spacingDegs = pixelSizeArcMin/60;
+    sfMaxCPD = 1/(2*spacingDegs);
+    spatialFrequencySupport = (0:(numel(positiveSFindices)-1))/(numel(positiveSFindices)-1) * sfMaxCPD;
     
     if (computePower)
         fprintf('Noise image power: %f\n', mean(noiseImagePower));
@@ -74,11 +75,11 @@ function [stimulus, noiseNorm] = generateGratingInNoiseSpatialModulationPattern(
         'template', template, ...
         'templateOrtho', templateOrtho, ...
         'spatialSupportDegs', spatialSupportDegs, ...
-        'spectrum', spectrum, ...
-        'spectrumOrtho', spectrumOrtho, ...
+        'amplitudeSpectrum', spectrum, ...
+        'amplitudeSpectrumOrtho', spectrumOrtho, ...
         'spatialFrequencySupport', spatialFrequencySupport);
     
-    plotStimulusAndSpectrum(stimulus, figNo);
+    plotStimulusAndSpectrum(stimulus, gratingParams.contrastLevels, instancesNum, figNo);
     
 end
 
@@ -97,7 +98,6 @@ function [noiseImage, noiseNorm] = generateNoiseComponent(spatialSupportDegs, no
 
     % Generate the normalized spatial frequency grid (fftshifted)
     normalizedSpatialFrequencyGridFFTshift = sqrt(sfX.^2 + (sfX').^2);
-    
     
     % Generate oneOverFspectrum 1/(f^alpha) amplitude spectrum
     alpha = 1;
@@ -149,53 +149,6 @@ function [noiseImage, noiseNorm] = generateNoiseComponent(spatialSupportDegs, no
     if (strcmp(noiseParams.spectrumShape,'none'))
         noiseImage = zeros(size(noiseImage));
     end
-     
-    % Plot the noise spectrum for debug purposes
-    plotNoiseSpectrum = false;
-    if (plotNoiseSpectrum)
-        figure(223); clf;
-        maxSFdisplayed = 20;
-        sfXX = fftshift(sfX);
-        spatialFrequencySupportCPD = sfXX(2:end,1) * sfMaxCPD;
-
-        subplot(2,3,1);
-        m = fftshift(oneOverFspectrum);
-        imagesc(spatialFrequencySupportCPD, spatialFrequencySupportCPD, m);
-        axis 'image';
-        set(gca, 'XLim', maxSFdisplayed*[-1 1], 'YLim', maxSFdisplayed*[-1 1]);
-        title('1/F spectrum');
-        subplot(2,3,4);
-        plot(spatialFrequencySupportCPD, m(size(m,1)/2+1,2:end), 'rs-')
-        set(gca, 'YScale', 'log', 'YLim', 10.^[-3 0], 'XLim', maxSFdisplayed*[-1 1]);
-
-        subplot(2,3,2);
-        m = fftshift(frequencyFilter);
-        imagesc(spatialFrequencySupportCPD, spatialFrequencySupportCPD, m);
-        axis 'image';
-        set(gca, 'XLim', maxSFdisplayed*[-1 1], 'YLim', maxSFdisplayed*[-1 1]);
-
-        title('frequency filter');
-        subplot(2,3,5);
-        plot(spatialFrequencySupportCPD, m(size(m,1)/2+1,2:end), 'rs-')
-        set(gca, 'YScale', 'log', 'YLim', 10.^[-3 0], 'XLim', maxSFdisplayed*[-1 1]);
-
-        subplot(2,3,3);
-        m = fftshift(noiseSpectrum);
-        imagesc(spatialFrequencySupportCPD, spatialFrequencySupportCPD, m);
-        axis 'image';
-        set(gca, 'XLim', maxSFdisplayed*[-1 1], 'YLim', maxSFdisplayed*[-1 1]);
-
-        title('noise spectrum');
-        subplot(2,3,6);
-        plot(spatialFrequencySupportCPD, m(size(m,1)/2+1,2:end), 'rs-');
-        hold on;
-        m2 = abs(fftshift(fft2(noiseImage)));
-        m2 = m2 / max(m2(:)) * max(m(:));
-        plot(spatialFrequencySupportCPD, m2(size(m,1)/2+1,2:end), 'bs-');
-        set(gca, 'YScale', 'log', 'YLim', 10.^[-3 0], 'XLim', maxSFdisplayed*[-1 1]);
-        colormap(gray);
-        pause
-    end
 
 end
 
@@ -215,12 +168,13 @@ function [gratingImages, gaussianEnvelope, template] = generateGratingComponents
     template.quadrature = sin(2*pi*gratingParams.sfCPD*xxyy) .* gaussianEnvelope;
 end
 
-function plotStimulusAndSpectrum(stimulus, figNo)
+function plotStimulusAndSpectrum(stimulus, contrastLevels, instancesNum, figNo)
+
     hFig = figure(figNo); clf;
     set(hFig, 'Position', [200 100+(figNo-1)*600 1500 600], 'Color', [1 1 1]);
     colormap(gray(1024));
     
-    N = size(stimulus.spectrum,3);
+    N = size(stimulus.amplitudeSpectrum,3);
     positiveSFindices = (N/2+1):N;
     diagonalFrequencySupport = sqrt(stimulus.spatialFrequencySupport.^2+stimulus.spatialFrequencySupport.^2);
     spatialSupportArcMin = stimulus.spatialSupportDegs*60;
@@ -263,7 +217,7 @@ function plotStimulusAndSpectrum(stimulus, figNo)
             % Plot slices (different orientations) through the 2D stimulus spectrum
             subplot('Position', subplotPosVectors(2+(kk-1)*2,instanceNo).v);
             
-            spectrum = squeeze(stimulus.spectrum(instanceNo,iContrastLevel ,:,:));
+            spectrum = squeeze(stimulus.amplitudeSpectrum(instanceNo,iContrastLevel ,:,:));
             % 0 deg slice
             spectrumSlice1 = squeeze(spectrum(N/2+1,positiveSFindices));
             % 45 deg slice
@@ -289,7 +243,7 @@ function plotStimulusAndSpectrum(stimulus, figNo)
     
     for kk = 1:visualizedContrastLevelsNum
         iContrastLevel = visualizedContrastLevels(kk);
-        spectrum = squeeze(stimulus.spectrum(:,iContrastLevel ,:,:));
+        spectrum = squeeze(stimulus.amplitudeSpectrum(:,iContrastLevel ,:,:));
         
         if (ndims(spectrum) > 2)
             % Compute the mean spectrum over all instances

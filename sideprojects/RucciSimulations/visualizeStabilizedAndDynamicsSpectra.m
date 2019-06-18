@@ -3,7 +3,7 @@ function visualizeStabilizedAndDynamicsSpectra(sData, sDataStabilized, figNo)
     % Limits
     sfLims = [0 50];
     tfLims = [0 200];
-    dbRange = [0 65]; %  [-60 45]; % in dB
+    dbRange = [-20 65]; %  [-60 45]; % in dB
     
     hFig = figure(figNo+100); clf;
     plotSummarySlices(sDataStabilized, sData, dbRange, sfLims, tfLims);
@@ -22,30 +22,63 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange, sfLims, tfLi
             % Sum over the ySF axis
             XTpowerSpectralDensityStabilized = squeeze(sum(sDataStabilized.meanSpatioTemporalPowerSpectalDensity,2));
             XTpowerSpectralDensityDynamic = squeeze(sum(sDataDynamic.meanSpatioTemporalPowerSpectalDensity,2));
+            
+            % Average along 4 quadrants
+            [averageXTpowerSpectralDensityDynamic, sfSupport, tfSupport] = ...
+                averageAcrossQuadrantsSpectum(sDataDynamic.spatialFrequencySupport, sDataDynamic.tfSupport, XTpowerSpectralDensityDynamic);
+            [averageXTpowerSpectralDensityStabilized, ~,~] = ...
+                averageAcrossQuadrantsSpectum(sDataDynamic.spatialFrequencySupport, sDataDynamic.tfSupport, XTpowerSpectralDensityStabilized);
+            
         case 'select sfY=0'
             % Select the ySF = 0 slice
             targetSF = 0;
             [~,sfYIndex] = min(abs(sDataDynamic.spatialFrequencySupport-targetSF));
             XTpowerSpectralDensityStabilized = squeeze(sDataStabilized.meanSpatioTemporalPowerSpectalDensity(:,sfYIndex,:));
             XTpowerSpectralDensityDynamic = squeeze(sDataDynamic.meanSpatioTemporalPowerSpectalDensity(:,sfYIndex,:));
+            
+            % Average along 4 quadrants
+            [averageXTpowerSpectralDensityDynamic, sfSupport, tfSupport] = ...
+                averageAcrossQuadrantsSpectum(sDataDynamic.spatialFrequencySupport, sDataDynamic.tfSupport, XTpowerSpectralDensityDynamic);
+            [averageXTpowerSpectralDensityStabilized, ~,~] = ...
+                averageAcrossQuadrantsSpectum(sDataDynamic.spatialFrequencySupport, sDataDynamic.tfSupport, XTpowerSpectralDensityStabilized);
+    
         case 'radial averaging' 
-            sDataStabilized.meanSpatioTemporalPowerSpectalDensity = makeRotationallySymmetric(sDataStabilized.meanSpatioTemporalPowerSpectalDensity);
-            sDataDynamic.meanSpatioTemporalPowerSpectalDensity = makeRotationallySymmetric(sDataDynamic.meanSpatioTemporalPowerSpectalDensity);
-            XTpowerSpectralDensityStabilized = squeezeOneQudrant(sDataStabilized.meanSpatioTemporalPowerSpectalDensity);
-            XTpowerSpectralDensityDynamic = squeezeOneQudrant(sDataDynamic.meanSpatioTemporalPowerSpectalDensity);
-            % Still need work to extraxt XT here
+            m = numel(sDataDynamic.spatialFrequencySupport)/2+1;
+            sfSupport = sDataDynamic.spatialFrequencySupport(m:end);
+            m = numel(sDataDynamic.tfSupport)/2+1;
+            tfSupport = sDataDynamic.tfSupport(m:end);
+    
+            indexOfZeroTF = floor(size(sDataDynamic.meanSpatioTemporalPowerSpectalDensity,1)/2)+1;
+            tfIndices = indexOfZeroTF:size(sDataDynamic.meanSpatioTemporalPowerSpectalDensity,1);
+
+            for tf = 1:numel(tfIndices)
+                tfIndex = tfIndices(tf);
+                tfIndexSymmetric = indexOfZeroTF - (tfIndex - indexOfZeroTF);
+                if (tf == 1)
+                    spectrumXY = squeeze(sDataDynamic.meanSpatioTemporalPowerSpectalDensity(tfIndex,:,:));
+                else
+                    spectrumXY = squeeze(sDataDynamic.meanSpatioTemporalPowerSpectalDensity(tfIndex,:,:)) + ...
+                             squeeze(sDataDynamic.meanSpatioTemporalPowerSpectalDensity(tfIndexSymmetric,:,:));
+                end
+                meanSlice = radiallyAveragedSpectrum(spectrumXY);
+                
+                if (tf == 1)
+                    averageXTpowerSpectralDensityDynamic = zeros(numel(tfIndices), length(meanSlice));
+                    averageXTpowerSpectralDensityStabilized = zeros(numel(tfIndices), length(meanSlice));
+                end
+                averageXTpowerSpectralDensityDynamic(tf,:) = meanSlice;
+                if (tf == 1)
+                    spectrumXY = squeeze(sDataStabilized.meanSpatioTemporalPowerSpectalDensity(tfIndex,:,:));
+                else
+                    spectrumXY = squeeze(sDataStabilized.meanSpatioTemporalPowerSpectalDensity(tfIndex,:,:)) + ...
+                                squeeze(sDataStabilized.meanSpatioTemporalPowerSpectalDensity(tfIndexSymmetric,:,:));
+                end
+                averageXTpowerSpectralDensityStabilized(tf,:) = radiallyAveragedSpectrum(spectrumXY);
+            end
         otherwise
             error('Unknown XT spectral method: ''%s''.', spatiotemporalSpectrumMethod)
     end
-    
-    
-    
-    
-    % Average along 4 quadrants
-    [averageXTpowerSpectralDensityDynamic, sfSupport, tfSupport] = ...
-        averageAcrossQuadrantsSpectum(sDataDynamic.spatialFrequencySupport, sDataDynamic.tfSupport, XTpowerSpectralDensityDynamic);
-    [averageXTpowerSpectralDensityStabilized, ~,~] = ...
-        averageAcrossQuadrantsSpectum(sDataDynamic.spatialFrequencySupport, sDataDynamic.tfSupport, XTpowerSpectralDensityStabilized);
+
     
     % Report total power
     deltaSF = sfSupport(2)-sfSupport(1);
@@ -147,61 +180,6 @@ function plotSummarySlices(sDataStabilized, sDataDynamic,  dbRange, sfLims, tfLi
     legends = visualizeSummedSpectralSlices(sfSupport, sfLims, 'spatial frequency, X (c/deg)', ...
         tfSupport, tfRangeOverWhichToSumSlices, 'Hz', samplingDimension, averageXTpowerSpectralDensityDynamic, dbRange, [1 0 0], legends,'dynamic', logPlot);
     
-end
-
-function xytSpectra = makeRotationallySymmetric(xytSpectra)
-
-    indexOfZeroSFx = floor(size(xytSpectra,3)/2)+1;
-    indexOfZeroSFy = floor(size(xytSpectra,2)/2)+1;
-    
-    sfXIndices = indexOfZeroSFx:size(xytSpectra,3);
-    sfYIndices = indexOfZeroSFy:size(xytSpectra,2);
-    
-    for sfY = 1:numel(sfYIndices)
-        sfYIndex = sfYIndices(sfY);
-        sfYIndexSymmetric = indexOfZeroSFy - (sfYIndex - indexOfZeroSFy);
-        for sfX = 1:numel(sfXIndices)
-            sfXIndex = sfXIndices(sfX);
-            sfXIndexSymmetric = indexOfZeroSFx - (sfXIndex - indexOfZeroSFx);
-            if ((sfY == 1) && (sfX  == 1))
-                % (0,0) frequency
-                % Do nothing, already assigned during initialization
-            else
-                if (sfY == 1) && (sfX > 1)
-                    % at zero SFy axis, sum corresponding points from 2
-                    % SFx frequencies
-                    m = 0.5 * ( ...
-                            xytSpectra(:,sfYIndex,sfXIndex) + ...
-                            xytSpectra(:,sfYIndex,sfXIndexSymmetric)...
-                            );
-                    xytSpectra(:,sfYIndex,sfXIndex) = m;
-                    xytSpectra(:,sfYIndex,sfXIndexSymmetric) = m;
-                    
-                elseif (sfX  == 1) && (sfY > 1)
-                    % at zero SFx axis, sum corresponding points from 2
-                    % SFy frequencies
-                    m = 0.5*(...
-                            xytSpectra(:, sfYIndex,sfXIndex) + ...
-                            xytSpectra(:, sfYIndexSymmetric,sfXIndex)...
-                            );
-                    xytSpectra(:,sfYIndex,sfXIndex) = m;
-                    xytSpectra(:,sfYIndexSymmetric,sfXIndex) = m;
-                else
-                    % sum corresponding points from 4 quadrants
-                    m = 0.25 * (...
-                            xytSpectra(:, sfYIndex,sfXIndex) + ...
-                            xytSpectra(:, sfYIndexSymmetric,sfXIndex) + ...
-                            xytSpectra(:, sfYIndex,sfXIndexSymmetric) + ...
-                            xytSpectra(:, sfYIndexSymmetric,sfXIndexSymmetric)...
-                            );
-                    xytSpectra(:, sfYIndex,sfXIndex)  = m;
-                    xytSpectra(:, sfYIndexSymmetric,sfXIndex) = m;
-                    xytSpectra(:, sfYIndex,sfXIndexSymmetric) = m;
-                    xytSpectra(:, sfYIndexSymmetric,sfXIndexSymmetric) = m;
-                end
-            end
-        end
-    end 
 end
 
 
