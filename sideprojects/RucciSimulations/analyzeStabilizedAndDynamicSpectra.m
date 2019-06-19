@@ -45,10 +45,24 @@ function analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fix
             save(fName, 'xtStimStructStabilized', '-append');
         else
             fName = spectralAnalysisFileName(stimulusTypes{stimIndex}, stimulusSizeDegs);
-            load(fName, 'xtStimStructFEM', 'xtStimStructStabilized');
+            load(fName, 'xtStimStructStabilized');
+            
+            [xtSpectralDensityStabilized, sfSupport, tfSupport] = xtSpectrumFromXYTspectrum(...
+                xtStimStructStabilized.meanSpatioTemporalPowerSpectalDensity, ...
+                xtStimStructStabilized.spatialFrequencySupport, ...
+                xtStimStructStabilized.tfSupport);
+            clear 'xtStimStructStabilized'
+            
+            load(fName, 'xtStimStructFEM');
+            [xtSpectralDensityDynamic, sfSupport, tfSupport] = xtSpectrumFromXYTspectrum(...
+                xtStimStructFEM.meanSpatioTemporalPowerSpectalDensity, ...
+                xtStimStructFEM.spatialFrequencySupport, ...
+                xtStimStructFEM.tfSupport);
+            clear 'xtStimStructFEM';
+            
             % Visualize spatiomporal spectra
             figNo = 1000 + stimIndex*1000;
-            visualizeStabilizedAndDynamicsSpectra(xtStimStructFEM, xtStimStructStabilized, figNo);
+            visualizeStabilizedAndDynamicsSpectra(xtSpectralDensityStabilized, xtSpectralDensityDynamic, sfSupport, tfSupport, figNo);
         end
         
         
