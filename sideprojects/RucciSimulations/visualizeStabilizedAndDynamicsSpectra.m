@@ -3,7 +3,7 @@ function visualizeStabilizedAndDynamicsSpectra(xtSpectralDensityStabilized, xtSp
     % Limits
     sfLims = [0.2 50];
     tfLims = [0 200];
-    dbRange = [10 85]; %  [-60 45]; % in dB
+    dbRange = [0 90]; %  [-60 45]; % in dB
     
     hFig = figure(figNo+100); clf;
     plotSummarySlices(xtSpectralDensityStabilized, xtSpectralDensityDynamic, sfSupport, tfSupport, dbRange, sfLims, tfLims)
@@ -76,8 +76,8 @@ function plotSummarySlices(averageXTpowerSpectralDensityStabilized, averageXTpow
     
     
     % Visualize summed spectrum across the SF axis 
-    subplot('Position', subplotPosVectors(1,4).v); 
-    visualizeMarginalSpectra(tfSupport, sumStabilizedAcrossSFs, sumDynamicAcrossSFs, tfLims, marginalLimsDB, [sfSupport(1) sfSupport(end)], 'c/deg', 'temporal frequency (Hz)', logPlot);
+    %subplot('Position', subplotPosVectors(1,4).v); 
+    %visualizeMarginalSpectra(tfSupport, sumStabilizedAcrossSFs, sumDynamicAcrossSFs, tfLims, marginalLimsDB, [sfSupport(1) sfSupport(end)], 'c/deg', 'temporal frequency (Hz)', logPlot);
     
     
     
@@ -114,6 +114,8 @@ function plotSummarySlices(averageXTpowerSpectralDensityStabilized, averageXTpow
 end
 
 function visualize2Dspectrum(ax, sfSupport, tfSupport, spectrum2D, sfLims, tfLims, dbRange, figureTitle, logPlot )
+    sfSupport(1) = (sfSupport(2)-sfSupport(1))/2;
+    tfSupport(1) = (tfSupport(2)-tfSupport(1))/2;
     [X,Y] = meshgrid(sfSupport, tfSupport);
     spectrum2D = 10*log10(spectrum2D);
     spectrum2D(spectrum2D<dbRange(1)) = dbRange(1);
@@ -124,7 +126,7 @@ function visualize2Dspectrum(ax, sfSupport, tfSupport, spectrum2D, sfLims, tfLim
     xlabel('\it spatial frequency, X (c/deg)');
     ylabel('\it temporal frequency (Hz)');
     title(figureTitle);
-    set(gca, 'XLim', sfLims, 'YLim', tfLims, 'CLim', dbRange, 'ZLim', dbRange);
+    set(gca, 'XLim', sfLims, 'YLim', tfLims, 'CLim', dbRange);
     if (logPlot)
         set(gca, 'XScale', 'log', 'YScale', 'log');
     end
