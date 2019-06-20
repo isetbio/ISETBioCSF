@@ -134,6 +134,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
             computePhotocurrents, computeResponses, computeMosaic, ...
             visualizeResponses, findPerformance, visualizePerformance); 
         
+        params
         % Go !
         [~,~, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end % condIndex
@@ -169,6 +170,7 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
     params.computeResponses = computeResponses;
     params.computePhotocurrentResponseInstances = computePhotocurrents && computeResponses;
     params.visualizeResponses = visualizeResponses;
+    params.visualizeOuterSegmentFilters = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;

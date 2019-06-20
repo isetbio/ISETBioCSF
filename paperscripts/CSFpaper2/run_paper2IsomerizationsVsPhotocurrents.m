@@ -38,10 +38,10 @@ function run_paper2IsomerizationsVsPhotocurrents
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = ~true;
+    computeResponses = true;
     visualizeResponses = ~true;
-    findPerformance = true;
-    visualizePerformance = true;
+    findPerformance = ~true;
+    visualizePerformance = ~true;
     
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
@@ -62,7 +62,6 @@ function run_paper2IsomerizationsVsPhotocurrents
     condIndex = 0;
     
     if (~computeResponses)
-
         condIndex = condIndex+1;
         examinedCond(condIndex).label = 'SVM-Template-Linear, cone exc.';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
@@ -82,6 +81,12 @@ function run_paper2IsomerizationsVsPhotocurrents
     examinedLegends = {};
     for condIndex = 1:numel(examinedCond)
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds,  frameRate, stimulusDurationInSeconds, computationInstance);
+        
+        % Use 1024 vs 1024 trials to differentiate results from old photocurrent computation
+        params.nTrainingSamples = 1028;
+        
+        % Try out for subset of SFs
+        params.cyclesPerDegreeExamined = [8    12    16    24    32    50    60];
         
         cond = examinedCond(condIndex);
         
@@ -137,6 +142,7 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
     params.computeResponses = computeResponses;
     params.computePhotocurrentResponseInstances = computePhotocurrents && computeResponses;
     params.visualizeResponses = visualizeResponses;
+    params.visualizeOuterSegmentFilters = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
