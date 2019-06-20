@@ -1,5 +1,6 @@
 function run_paper2IsomerizationsVsPhotocurrents
-% Compute and contrast performance at the level of isomerizations vs photocurrents.
+% Compute and contrast performance at the level of isomerizations vs
+% photocurrents.m
 %
 % Syntax:
 %   run_paper2IsomerizationsVsPhotocurrents
@@ -39,7 +40,7 @@ function run_paper2IsomerizationsVsPhotocurrents
     % Whether to compute responses
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -61,10 +62,6 @@ function run_paper2IsomerizationsVsPhotocurrents
     condIndex = 0;
     
     if (~computeResponses)
-%         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'Ideal observer, cone exc.';
-%         examinedCond(condIndex).performanceClassifier = 'mlpt';
-%         examinedCond(condIndex).performanceSignal = 'isomerizations';
 
         condIndex = condIndex+1;
         examinedCond(condIndex).label = 'SVM-Template-Linear, cone exc.';
@@ -85,8 +82,6 @@ function run_paper2IsomerizationsVsPhotocurrents
     examinedLegends = {};
     for condIndex = 1:numel(examinedCond)
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds,  frameRate, stimulusDurationInSeconds, computationInstance);
-        
-        
         
         cond = examinedCond(condIndex);
         
