@@ -32,6 +32,7 @@ p.addParameter('conePacking', 'hexReg',@ischar);
 p.addParameter('eccBasedConeQuantalEfficiency', false, @islogical);
 p.addParameter('eccBasedMacularPigment', false, @islogical);
 p.addParameter('freezeNoise',true,@islogical);
+p.addParameter('minimumMosaicFOVdegs', [], @isnumeric);    %% *** NEW FOR fixationalEM **** 
 
 % HEX MOSAIC OPTIONS
 p.addParameter('sConeMinDistanceFactor', 3.0, @isnumeric); % min distance between neighboring S-cones = f * local cone separation - to make the S-cone lattice semi-regular
@@ -180,7 +181,15 @@ for ll = 1:length(p.Results.luminances)
         rParams = updateBackgroundParams(rParams, p.Results, p.Results.luminances(ll));
         
         % Modify mosaic params
-        rParams = updateMosaicParams(rParams, p.Results, rParams.spatialParams.fieldOfViewDegs);
+        if (~isempty(p.Results.minimumMosaicFOVdegs)) && (rParams.spatialParams.fieldOfViewDegs < p.Results.minimumMosaicFOVdegs)
+            % User-specified mosaic FOV
+            fprintf(2,'Using mosaic size of %2.3f degs (stimulus is %2.3f degs)\n', p.Results.minimumMosaicFOVdegs, rParams.spatialParams.fieldOfViewDegs);
+            rParams = updateMosaicParams(rParams, p.Results, p.Results.minimumMosaicFOVdegs);
+        else
+            % mosaic FOV matched to stimulus
+            fprintf('Using mosaic size of %2.3f degs (matched to stimulus)\n', rParams.spatialParams.fieldOfViewDegs);
+            rParams = updateMosaicParams(rParams, p.Results, rParams.spatialParams.fieldOfViewDegs);
+        end
         
         % Modify the optical image params
         rParams = updateOpticalImageParams(rParams, p.Results, rParams.spatialParams.fieldOfViewDegs);
