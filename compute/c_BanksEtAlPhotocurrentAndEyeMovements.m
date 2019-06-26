@@ -251,6 +251,15 @@ for ll = 1:length(p.Results.luminances)
             
         %% Find performance
         if (p.Results.findPerformance) || (p.Results.visualizePerformance)
+            
+            % if we are using a minimumMosaicFOCdegs, adjust  thresholdParams.poolingTemplateWidthInDegrees 
+            if (~isempty(p.Results.minimumMosaicFOVdegs)) && (rParams.spatialParams.fieldOfViewDegs < p.Results.minimumMosaicFOVdegs)
+                thresholdParams.poolingTemplateWidthInDegrees = p.Results.minimumMosaicFOVdegs;
+                fprintf(2, 'Using custom: thresholdParams.poolingTemplateWidthInDegrees\n)');
+            else
+                thresholdParams.poolingTemplateWidthInDegrees = rParams.spatialParams.fieldOfViewDegs;
+            end
+            
             t_colorDetectFindPerformance(...
                 'rParams',rParams, ...
                 'testDirectionParams',testDirectionParams, ...

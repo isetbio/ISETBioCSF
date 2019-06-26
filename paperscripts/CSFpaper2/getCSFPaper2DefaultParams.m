@@ -73,6 +73,9 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
     % Use all trials in the classifier (Specify [] to use all available trials)
     params.performanceTrialsUsed = [];
     
+    % No minimumMosaicFOVdegs, so mosaic size is  matched to stimulus
+    params.minimumMosaicFOVdegs = [];
+    
     % Performance signal
     params.performanceSignal = 'isomerizations';
     

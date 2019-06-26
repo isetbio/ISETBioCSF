@@ -2,6 +2,10 @@ function [V1filterBank, hFig] = generateV1FilterBank(spatialParams, mosaicParams
     
     % Filter width
     filterWidthInDegrees = spatialParams.fieldOfViewDegs;
+    if (isfield(thresholdParams,'poolingTemplateWidthInDegrees'))
+        filterWidthInDegrees = thresholdParams.poolingTemplateWidthInDegrees;
+        spatialParams.fieldOfViewDegs = filterWidthInDegrees;
+    end
     
     % Load the mosaic
     coneParamsList = {topLevelDirParams, mosaicParams};
@@ -47,9 +51,9 @@ function [V1filterBank, hFig] = generateV1FilterBank(spatialParams, mosaicParams
             error('Currently generating V1 filter banks for Gabor stimuli only.');
     end  % switch
     
-    xaxis = (0:(size(spatialModulation,2)-1))/size(spatialModulation,2) * spatialParams.fieldOfViewDegs;
+    xaxis = (0:(size(spatialModulation,2)-1))/size(spatialModulation,2) * filterWidthInDegrees;
     xaxis = xaxis - mean(xaxis);
-    yaxis = (0:(size(spatialModulation,1)-1))/size(spatialModulation,1) * spatialParams.fieldOfViewDegs;
+    yaxis = (0:(size(spatialModulation,1)-1))/size(spatialModulation,1) * filterWidthInDegrees;
     yaxis = yaxis - mean(yaxis);
             
     % Generate the V1 filter bank        

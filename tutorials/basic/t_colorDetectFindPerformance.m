@@ -57,8 +57,8 @@ p.addParameter('visualizeKernelTransformedSignals', false, @islogical);
 p.addParameter('visualizeVarianceExplained', false, @islogical);
 p.addParameter('plotPsychometric',false,@islogical);
 p.addParameter('plotSvmBoundary',false,@islogical);
-p.addParameter('plotPCAAxis1',1,@isnumeric)
-p.addParameter('plotPCAAxis2',2,@isnumeric)
+p.addParameter('plotPCAAxis1',1,@isnumeric);
+p.addParameter('plotPCAAxis2',2,@isnumeric);
 p.addParameter('delete',false',@islogical);
 p.addParameter('IBIOColorDetectSnapshot', struct(), @isstruct);
 
