@@ -36,7 +36,7 @@ function run_paper2FixationalEyeMovementsVsNone
     computeResponses = true;
     visualizeResponses = ~true;
     findPerformance = ~true;
-    visualizePerformance = true;
+    visualizePerformance = ~true;
     
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
@@ -59,26 +59,26 @@ function run_paper2FixationalEyeMovementsVsNone
     % Init condition index
     condIndex = 0;
     
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Linear, noEM';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).performanceSignal = 'isomerizations';
-    examinedCond(condIndex).emPathType = 'frozen0';
-    examinedCond(condIndex).centeredEMPaths = true;
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'SVM-Template-Linear, noEM';
+%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+%     examinedCond(condIndex).performanceSignal = 'isomerizations';
+%     examinedCond(condIndex).emPathType = 'frozen0';
+%     examinedCond(condIndex).centeredEMPaths = true;
 
 
-    if (~computeResponses)
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Template-Energy, noEM';
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-        examinedCond(condIndex).performanceSignal = 'isomerizations';
-        examinedCond(condIndex).emPathType = 'frozen0';
-        examinedCond(condIndex).centeredEMPaths = true;
-    end
+%     if (~computeResponses)
+%         condIndex = condIndex+1;
+%         examinedCond(condIndex).label = 'SVM-Template-Energy, noEM';
+%         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+%         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+%         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+%         examinedCond(condIndex).performanceSignal = 'isomerizations';
+%         examinedCond(condIndex).emPathType = 'frozen0';
+%         examinedCond(condIndex).centeredEMPaths = true;
+%     end
     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-Template-Linear, drift';
