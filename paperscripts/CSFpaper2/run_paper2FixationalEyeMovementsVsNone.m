@@ -66,7 +66,7 @@ function run_paper2FixationalEyeMovementsVsNone
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).performanceSignal = 'isomerizations';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = true;
 
@@ -77,7 +77,7 @@ function run_paper2FixationalEyeMovementsVsNone
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-        examinedCond(condIndex).performanceSignal = 'isomerizations';
+        examinedCond(condIndex).performanceSignal = performanceSignal;
         examinedCond(condIndex).emPathType = 'frozen0';
         examinedCond(condIndex).centeredEMPaths = true;
     end
@@ -87,7 +87,7 @@ function run_paper2FixationalEyeMovementsVsNone
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).performanceSignal = 'isomerizations';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = 'randomNoSaccades';
     examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
 %     
@@ -97,7 +97,7 @@ function run_paper2FixationalEyeMovementsVsNone
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-        examinedCond(condIndex).performanceSignal = 'isomerizations';
+        examinedCond(condIndex).performanceSignal = performanceSignal;
         examinedCond(condIndex).emPathType = 'randomNoSaccades';
         examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
     end
