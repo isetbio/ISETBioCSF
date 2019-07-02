@@ -109,13 +109,13 @@ function run_paper2FixationalEyeMovementsVsNone
         
         % Use 1030 vs 1024 trials to differentiate results from when the
         % mosaic size is matched to the stimulus (see below params.minimumMosaicFOVdegs)
-        params.nTrainingSamples = 1030;
+        params.nTrainingSamples = 1024;
         
         % Try out for subset of SFs
         params.cyclesPerDegreeExamined = [4 8 12 16 24  32    50    60];
         
         % Do not use mosaics smaller than 0.5 degs 
-        params.minimumMosaicFOVdegs = 0.492;
+        %params.minimumMosaicFOVdegs = 0.492;
         
         
         % Update params
