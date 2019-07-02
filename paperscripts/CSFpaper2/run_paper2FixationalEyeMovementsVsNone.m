@@ -35,7 +35,7 @@ function run_paper2FixationalEyeMovementsVsNone
     % Whether to compute responses
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -54,6 +54,8 @@ function run_paper2FixationalEyeMovementsVsNone
     % Compute photocurrent responses
     computePhotocurrents = true;
     
+    performanceSignal = 'isomerizations';  % 'photocurrents', 'isomerizations';
+    performanceSignal = 'photocurrents';
     
     % Assemble conditions list to be examined
     % Init condition index
