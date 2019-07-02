@@ -33,10 +33,10 @@ function run_paper2FixationalEyeMovementsVsNone
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
     findPerformance = ~true;
-    visualizePerformance = ~true;
+    visualizePerformance = true;
     
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
@@ -59,26 +59,26 @@ function run_paper2FixationalEyeMovementsVsNone
     % Init condition index
     condIndex = 0;
     
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-Template-Linear, noEM';
-%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-%     examinedCond(condIndex).performanceSignal = 'isomerizations';
-%     examinedCond(condIndex).emPathType = 'frozen0';
-%     examinedCond(condIndex).centeredEMPaths = true;
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'SVM-Template-Linear, noEM';
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+    examinedCond(condIndex).performanceSignal = 'isomerizations';
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = true;
 
 
-%     if (~computeResponses)
-%         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Template-Energy, noEM';
-%         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%         examinedCond(condIndex).performanceSignal = 'isomerizations';
-%         examinedCond(condIndex).emPathType = 'frozen0';
-%         examinedCond(condIndex).centeredEMPaths = true;
-%     end
+    if (~computeResponses)
+        condIndex = condIndex+1;
+        examinedCond(condIndex).label = 'SVM-Template-Energy, noEM';
+        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+        examinedCond(condIndex).performanceSignal = 'isomerizations';
+        examinedCond(condIndex).emPathType = 'frozen0';
+        examinedCond(condIndex).centeredEMPaths = true;
+    end
     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-Template-Linear, drift';
@@ -88,7 +88,7 @@ function run_paper2FixationalEyeMovementsVsNone
     examinedCond(condIndex).performanceSignal = 'isomerizations';
     examinedCond(condIndex).emPathType = 'randomNoSaccades';
     examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
-    
+%     
     if (~computeResponses)
         condIndex = condIndex+1;
         examinedCond(condIndex).label = 'SVM-Template-Energy, drift';
@@ -112,7 +112,7 @@ function run_paper2FixationalEyeMovementsVsNone
         params.nTrainingSamples = 1030;
         
         % Try out for subset of SFs
-        params.cyclesPerDegreeExamined = [24  32    50    60];
+        params.cyclesPerDegreeExamined = [4 8 12 16 24  32    50    60];
         
         % Do not use mosaics smaller than 0.5 degs 
         params.minimumMosaicFOVdegs = 0.492;
@@ -143,7 +143,7 @@ function run_paper2FixationalEyeMovementsVsNone
     
     if (makeSummaryFigure)
         variedParamName = 'EyeMovements';
-        theRatioLims = [0.05 1.0];
+        theRatioLims = [0.05 1.2];
         theRatioTicks = [0.05 0.1 0.2 0.5 1.0];
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
