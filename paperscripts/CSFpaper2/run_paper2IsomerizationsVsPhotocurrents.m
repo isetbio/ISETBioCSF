@@ -40,8 +40,8 @@ function run_paper2IsomerizationsVsPhotocurrents
     % Whether to compute responses
     computeResponses = true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
-    visualizePerformance = ~true;
+    findPerformance = true;
+    visualizePerformance = true;
     
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
@@ -82,11 +82,11 @@ function run_paper2IsomerizationsVsPhotocurrents
     for condIndex = 1:numel(examinedCond)
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds,  frameRate, stimulusDurationInSeconds, computationInstance);
         
-        % Use 1024 vs 1024 trials to differentiate results from old photocurrent computation
-        params.nTrainingSamples = 1028;
+        % Use 1028 vs 1024 trials to differentiate results from old photocurrent computation
+        params.nTrainingSamples = 1030;
         
         % Try out for subset of SFs
-        params.cyclesPerDegreeExamined = [8    12    16    24    32    50    60];
+        params.cyclesPerDegreeExamined = [60]; % [4 8 12 16 24 32 50]; 
         
         cond = examinedCond(condIndex);
         
