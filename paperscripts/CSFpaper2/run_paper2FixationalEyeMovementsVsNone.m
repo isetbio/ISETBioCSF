@@ -33,9 +33,9 @@ function run_paper2FixationalEyeMovementsVsNone
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -61,14 +61,14 @@ function run_paper2FixationalEyeMovementsVsNone
     % Init condition index
     condIndex = 0;
     
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-Template-Linear, noEM';
-%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-%     examinedCond(condIndex).performanceSignal = performanceSignal;
-%     examinedCond(condIndex).emPathType = 'frozen0';
-%     examinedCond(condIndex).centeredEMPaths = true;
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'SVM-Template-Linear, noEM';
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = true;
 
 
     if (~computeResponses)
@@ -114,7 +114,7 @@ function run_paper2FixationalEyeMovementsVsNone
         params.nTrainingSamples = 1030;
         
         % Try out for subset of SFs
-        params.cyclesPerDegreeExamined = [60]; % [32    50    60];
+        params.cyclesPerDegreeExamined = [4 8 12 16 24 32 50 60];
         
         % Do not use mosaics smaller than 0.5 degs 
         params.minimumMosaicFOVdegs = 0.158; % 0.492 IS NOT GOOD. TRY: 0.328 , 0.246 TRY THIS TO SEE IF WE DO BETTER AT 60 C/DEG WITH ISOMERIZATIONS
