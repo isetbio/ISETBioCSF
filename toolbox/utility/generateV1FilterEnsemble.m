@@ -1,5 +1,8 @@
 function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosaicParams, topLevelDirParams, visualizeSpatialScheme, thresholdParams, paramsList)
 
+    originalStimulusFOV = spatialParams.fieldOfViewDegs;
+    spatialParams.fieldOfViewDegs = max([spatialParams.fieldOfViewDegs mosaicParams.fieldOfViewDegs]);
+    
     % Make the stimulus spatial modulation
     spatialPattern = imageHarmonic(imageHarmonicParamsFromGaborParams(spatialParams, 1.0));
     spatialModulation = spatialPattern-1;
@@ -45,7 +48,7 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
     orientationRFs = thresholdParams.spatialPoolingKernelParams.orientations;
     
     ensemblePositions = thresholdParams.spatialPoolingKernelParams.spatialPositionsNum;   
-    ensembleSampleSpacing = 0.2*spatialParams.row/ensemblePositions;
+    ensembleSampleSpacing = 0.2*spatialParams.row/ensemblePositions;  % in pixels
         
     unitIndex = 0;
     ft2Dindex = 0;
@@ -74,7 +77,7 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
             
                 spatialParams.center = [colOffset rowOffset]*ensembleSampleSpacing;
                 v1Unit.rowColPosition = [rowOffset colOffset];
-                v1Unit.spatialPosition = spatialParams.center/(spatialParams.row/2) * spatialParams.fieldOfViewDegs/2;
+                v1Unit.spatialPosition = spatialParams.center/(spatialParams.row/2) * originalStimulusFOV/2;
             
                 % re-center RF to nearest cone
                 %[~, nearestConeIndex] = min(sqrt(sum((bsxfun(@minus, coneLocsDegs, v1Unit.spatialPosition)).^2,2)));
@@ -92,16 +95,16 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
                 RFprofile = (v1Unit.cosPhasePoolingProfile).^2 + (v1Unit.sinPhasePoolingProfile).^2;
                 v1Unit.RFprofile = RFprofile / max(RFprofile(:));
             
-                if (rowOffset == -ensemblePositions) && (colOffset == -ensemblePositions)
+                %if (rowOffset == -ensemblePositions) && (colOffset == -ensemblePositions)
                     xaxisDegs = (0:(size(RFprofile,2)-1))/size(RFprofile,2) * spatialParams.fieldOfViewDegs;
                     xaxisDegs = xaxisDegs - mean(xaxisDegs);
                     yaxisDegs = (0:(size(RFprofile,1)-1))/size(RFprofile,1) * spatialParams.fieldOfViewDegs;
                     yaxisDegs = yaxisDegs - mean(yaxisDegs);
-                    [X,Y] = meshgrid(xaxisDegs, yaxisDegs);
+                    [X,Y] = meshgrid(xaxisDegs+v1Unit.spatialPosition(1), yaxisDegs+v1Unit.spatialPosition(2));
                     rfCoordsDegs = [X(:) Y(:)];
                     % Find nearest cone location
                     [~, idx] = pdist2(rfCoordsDegs, coneLocsDegs, 'euclidean', 'Smallest', 1);
-                end
+                %end
             
                 % Sample according to cone locations
                 v1Unit.cosPhasePoolingWeights = v1Unit.cosPhasePoolingProfile(idx);

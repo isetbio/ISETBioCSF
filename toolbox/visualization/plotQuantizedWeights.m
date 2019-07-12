@@ -3,7 +3,7 @@ function plotQuantizedWeights(axesHandle, quantizedWeights, quantizationLevels, 
     quantizedWeights(quantizedWeights >  1) = 1;
     quantizedWeights(quantizedWeights < -1) = -1;
 
-    faceColorsNormalizedValues = (1+quantizedWeights);
+    faceColorsNormalizedValues = 0.5*(1+quantizedWeights);
     coneAperture(:,1) = coneX;
     coneAperture(:,2) = coneY;
     xCoords = coneLocsInDegs(:,1);

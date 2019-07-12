@@ -59,23 +59,23 @@ function hFigs = visualizeEnsembleSpatialPoolingScheme(xaxis, yaxis, spatialModu
             'bottomMargin',   0.001, ...
             'topMargin',      0.001);
         
-    hFigEnvelopes = figure(1000); clf;
-    set(hFigEnvelopes, 'Position', [10 10 1000 1000], 'Color', [1 1 1]);
-    
-    for ft2DIndex = 1:size(envelopePoolingWeights,1)
-        r = squeeze(ft2DindexList(ft2DIndex,:));
-        subplot('Position', subplotPosVectors(r(2),r(1)).v);
-        weights = squeeze(envelopePoolingWeights(ft2DIndex,:));
-        hold on;
-        plotQuantizedWeights(gca, weights/maxWeights, quantizationLevels, coneLocsDegs, coneX, coneY);
-        plot(gca,[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
-        plot(gca,[0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
-        axis 'image'; axis 'xy';  box 'on'
-        set(gca, 'Color', [0.5 0.5 0.5]);
-        set(gca, 'CLim', [0 1], 'XLim', [xaxis(1) xaxis(end)], 'YLim', [yaxis(1) yaxis(end)]);
-        set(gca, 'XTickLabel', {}, 'YTickLabel', {});
-    end
-    drawnow;
+%     hFigEnvelopes = figure(1000); clf;
+%     set(hFigEnvelopes, 'Position', [10 10 1000 1000], 'Color', [1 1 1]);
+%     
+%     for ft2DIndex = 1:size(envelopePoolingWeights,1)
+%         r = squeeze(ft2DindexList(ft2DIndex,:));
+%         subplot('Position', subplotPosVectors(r(2),r(1)).v);
+%         weights = squeeze(envelopePoolingWeights(ft2DIndex,:));
+%         hold on;
+%         plotQuantizedWeights(gca, weights/maxWeights, quantizationLevels, coneLocsDegs, coneX, coneY);
+%         plot(gca,[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
+%         plot(gca,[0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
+%         axis 'image'; axis 'xy';  box 'on'
+%         set(gca, 'Color', [0.5 0.5 0.5]);
+%         set(gca, 'CLim', [0 1], 'XLim', [xaxis(1) xaxis(end)], 'YLim', [yaxis(1) yaxis(end)]);
+%         set(gca, 'XTickLabel', {}, 'YTickLabel', {});
+%     end
+%     drawnow;
     
     for unitIndex = 1:unitsNum 
        theSpatialPoolingFilter = V1filterEnsemble{unitIndex};
@@ -105,7 +105,7 @@ function hFigs = visualizeEnsembleSpatialPoolingScheme(xaxis, yaxis, spatialModu
             'topMargin',      0.001);
         
             hFigs(ft2DIndex) = figure(1000+ft2DIndex); clf;
-            set(hFigs(ft2DIndex), 'Position', [10+ft2DIndex*100 10+ft2DIndex*50 1650 1000], 'Color', [1 1 1]);
+            set(hFigs(ft2DIndex), 'Position', [10+ft2DIndex*100 10+ft2DIndex*50 1000 1000], 'Color', [1 1 1]);
             %set(gcf,'renderer','opengl');
        end
        
@@ -123,36 +123,22 @@ function hFigs = visualizeEnsembleSpatialPoolingScheme(xaxis, yaxis, spatialModu
 %        imagesc(xaxis(ii), yaxis(jj), 0.5 + 0.3*spatialModulation(jj,ii));
        hold on;
        plotQuantizedWeights(gca, quantizedWeights/maxWeight, quantizationLevels, coneLocsDegs, coneX, coneY);
-       plotHorizontalPoolingProfile(xaxis, min(yaxis) + 0.1*((max(yaxis)-min(yaxis))), (max(yaxis)-min(yaxis)) * 0.1, quantizedWeights, coneLocsDegs, desiredProfile, coneRadiusDegs);
+       plotHorizontalPoolingProfile(xaxis*2, min(yaxis) + 0.1*((max(yaxis)-min(yaxis))), (max(yaxis)-min(yaxis)) * 0.1, quantizedWeights, coneLocsDegs, desiredProfile, coneRadiusDegs);
                    
-       plot(gca,[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
-       plot(gca,[0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
-       axis 'image'; axis 'xy';  box 'on'
-       set(gca, 'Color', [0.5 0.5 0.5]);
+       plot(gca,2.0*[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
+       plot(gca,[0 0],2.0*[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
+       axis 'image'; axis 'xy';  box 'off'
+       set(gca, 'Color', [1 1 1]);
        set(gca, 'CLim', [0 1], 'XLim', [xaxis(1) xaxis(end)], 'YLim', [yaxis(1) yaxis(end)]);
        set(gca, 'XTickLabel', {}, 'YTickLabel', {});
     end % 
     
-    colormap(gray(1024));
+    cMap = brewermap(1024, '*RdBu');
+    colormap(cMap);
     drawnow;
     
-    hFigs(numel(hFigs)+1) = hFigEnvelopes;
+%    hFigs(numel(hFigs)+1) = hFigEnvelopes;
 end
-
-function plotConeLocations(coneLocsDegs, coneX, coneY, xaxis, yaxis)
-    % All cone locations
-    X = zeros(numel(coneX), size(coneLocsDegs,1));
-    Y = X;
-    for k = 1:size(coneLocsDegs,1)
-        X(:,k) = coneLocsDegs(k,1)+coneX;
-        Y(:,k) = coneLocsDegs(k,2)+coneY;
-    end
-    line(X,Y,'color','k', 'LineWidth', 0.75)
-    plot([xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
-    plot([0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
-        
-end
-
 
 function plotHorizontalPoolingProfile(xaxis, y0, yA, quantizedWeights, coneLocsInDegs, desired2DProfile, coneRadiusDegs)
 
@@ -180,7 +166,8 @@ function plotHorizontalPoolingProfile(xaxis, y0, yA, quantizedWeights, coneLocsI
     horizontalProfile = sum(desired2DProfile,1);
     horizontalProfile = horizontalProfile/max(abs(horizontalProfile));
     
-    stairs(xaxis(indices), y0 + yA * horizontalProfile(indices), 'k-', 'LineWidth', 1.5);
-    stairs(xaxis(indices), y0 + yA * measuredHorizontalProfile, 'g-', 'LineWidth', 2.0);
+    %stairs(xaxis(indices), y0 + yA * horizontalProfile(indices), 'k-', 'LineWidth', 1.5);
+    stairs(xaxis(indices), y0 + yA * measuredHorizontalProfile, 'k-', 'LineWidth', 3.0);
+    stairs(xaxis(indices), y0 + yA * measuredHorizontalProfile, 'y-', 'LineWidth', 1.5);
 end
 
