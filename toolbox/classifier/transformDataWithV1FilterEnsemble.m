@@ -101,12 +101,14 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
     parfor unitIndex = 1:unitsNum
         cosFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData, V1filterEnsemble{unitIndex}.cosPhasePoolingWeights), spatialDimension));
         sinFilterLinearActivation = squeeze(sum(bsxfun(@times, noStimData, V1filterEnsemble{unitIndex}.sinPhasePoolingWeights), spatialDimension));
-        if strcmp(V1filterEnsemble{unitIndex}.activationFunction, 'energy')
+        if strcmp(V1filterEnsemble{unitIndex}.activationFunction, 'linear')
+            dataUnits(unitIndex,:,:) = cosFilterLinearActivation;
+        elseif strcmp(V1filterEnsemble{unitIndex}.activationFunction, 'energy')
             dataUnits(unitIndex,:,:) = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
         elseif (strcmp(V1filterEnsemble{unitIndex}.activationFunction,'fullWaveRectifier'))
             dataUnits(unitIndex,:,:)  = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
         else
-            error('Activation function (''%s''), must be either energy ot fullWaveRectifier\n', V1filterEnsemble{unitIndex}.activationFunction);
+            error('Activation function (''%s''), must be either ''energy'' OR ''fullWaveRectifier''\n', V1filterEnsemble{unitIndex}.activationFunction);
         end
     end
     
@@ -118,12 +120,14 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
     parfor unitIndex = 1:unitsNum
         cosFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData, V1filterEnsemble{unitIndex}.cosPhasePoolingWeights), spatialDimension));
         sinFilterLinearActivation = squeeze(sum(bsxfun(@times, stimData, V1filterEnsemble{unitIndex}.sinPhasePoolingWeights), spatialDimension));
-        if strcmp(V1filterEnsemble{unitIndex}.activationFunction, 'energy')
+        if strcmp(V1filterEnsemble{unitIndex}.activationFunction, 'linear')
+            dataUnits(unitIndex,:,:) = cosFilterLinearActivation;
+        elseif strcmp(V1filterEnsemble{unitIndex}.activationFunction, 'energy')
             dataUnits(unitIndex,:,:) = sqrt(cosFilterLinearActivation.^2 + sinFilterLinearActivation.^2);
         elseif (strcmp(V1filterEnsemble{unitIndex}.activationFunction,'fullWaveRectifier'))
             dataUnits(unitIndex,:,:)  = abs(cosFilterLinearActivation) + abs(sinFilterLinearActivation);
         else
-            error('Activation function (''%s''), must be either energy ot fullWaveRectifier\n', V1filterEnsemble{unitIndex}.activationFunction);
+            error('Activation function (''%s''), must be either ''energy'' OR ''fullWaveRectifier''\n', V1filterEnsemble{unitIndex}.activationFunction);
         end
     end
     

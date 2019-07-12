@@ -45,7 +45,7 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
     orientationRFs = thresholdParams.spatialPoolingKernelParams.orientations;
     
     ensemblePositions = thresholdParams.spatialPoolingKernelParams.spatialPositionsNum;   
-    ensembleSampleSpacing = round((spatialParams.row/2)/ensemblePositions);
+    ensembleSampleSpacing = 0.2*spatialParams.row/ensemblePositions;
         
     unitIndex = 0;
     ft2Dindex = 0;

@@ -15,8 +15,7 @@ function hFigs = visualizeEnsembleSpatialPoolingScheme(xaxis, yaxis, spatialModu
     hFigs = [];
     figure();
     
-    displayedHalfRows = 2;
-    displayedHalfCols = 3;
+    
     
     envelopePoolingWeights = [];
     
@@ -24,6 +23,10 @@ function hFigs = visualizeEnsembleSpatialPoolingScheme(xaxis, yaxis, spatialModu
     orientationIndices = 0;
     for unitIndex = 1:unitsNum
         theSpatialPoolingFilter = V1filterEnsemble{unitIndex};
+        
+        displayedHalfRows = max(theSpatialPoolingFilter.rowColPosition(:));
+        displayedHalfCols = displayedHalfRows;
+    
         bandwidthIndex = theSpatialPoolingFilter.bandwidthIndex;
         orientationIndex = theSpatialPoolingFilter.orientationIndex;
         if (bandwidthIndex > bandwidthIndices)
@@ -64,7 +67,7 @@ function hFigs = visualizeEnsembleSpatialPoolingScheme(xaxis, yaxis, spatialModu
         subplot('Position', subplotPosVectors(r(2),r(1)).v);
         weights = squeeze(envelopePoolingWeights(ft2DIndex,:));
         hold on;
-        plotQuantizedWeights(weights/maxWeights, quantizationLevels, coneLocsDegs, coneX, coneY);
+        plotQuantizedWeights(gca, weights/maxWeights, quantizationLevels, coneLocsDegs, coneX, coneY);
         plot(gca,[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
         plot(gca,[0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
         axis 'image'; axis 'xy';  box 'on'
@@ -119,7 +122,7 @@ function hFigs = visualizeEnsembleSpatialPoolingScheme(xaxis, yaxis, spatialModu
 %        jj = 1:4:numel(yaxis);
 %        imagesc(xaxis(ii), yaxis(jj), 0.5 + 0.3*spatialModulation(jj,ii));
        hold on;
-       plotQuantizedWeights(quantizedWeights/maxWeight, quantizationLevels, coneLocsDegs, coneX, coneY);
+       plotQuantizedWeights(gca, quantizedWeights/maxWeight, quantizationLevels, coneLocsDegs, coneX, coneY);
        plotHorizontalPoolingProfile(xaxis, min(yaxis) + 0.1*((max(yaxis)-min(yaxis))), (max(yaxis)-min(yaxis)) * 0.1, quantizedWeights, coneLocsDegs, desiredProfile, coneRadiusDegs);
                    
        plot(gca,[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
@@ -150,32 +153,6 @@ function plotConeLocations(coneLocsDegs, coneX, coneY, xaxis, yaxis)
         
 end
 
-function plotQuantizedWeights(quantizedWeights, quantizationLevels, coneLocsInDegs, coneX, coneY)
-            
-    quantizedWeights(quantizedWeights >  1) = 1;
-    quantizedWeights(quantizedWeights < -1) = -1;
-    quantizedWeights = round(quantizationLevels/2 * (1+quantizedWeights));
-    
-    for iLevel = quantizationLevels/2:quantizationLevels
-        idx = find(quantizedWeights==iLevel);
-        if (~isempty(idx))
-            for k = 1:numel(idx)
-                c = [0.5 0.5 0.5] + (iLevel-quantizationLevels/2)/(quantizationLevels/2)*[0.5 -0.4 -0.4];
-                fill(squeeze(coneLocsInDegs(idx(k),1))+coneX, squeeze(coneLocsInDegs(idx(k),2))+coneY,  c);
-            end
-        end
-    end
-
-    for iLevel = 0:quantizationLevels/2-1
-        idx = find(quantizedWeights==iLevel);
-        if (~isempty(idx))
-            for k = 1:numel(idx)
-                c = [0.5 0.5 0.5] + (quantizationLevels/2-iLevel)/(quantizationLevels/2)*[-0.4 -0.4 0.5];
-                fill(squeeze(coneLocsInDegs(idx(k),1))+coneX, squeeze(coneLocsInDegs(idx(k),2))+coneY,  c);
-            end
-        end
-    end
-end
 
 function plotHorizontalPoolingProfile(xaxis, y0, yA, quantizedWeights, coneLocsInDegs, desired2DProfile, coneRadiusDegs)
 

@@ -30,7 +30,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         title('spatial pooling weights (cone mosaic view)');
         imagesc(xaxis, yaxis, 0.5 + 0.3*spatialModulation);
         hold on;
-        plotQuantizedWeights(spatialPoolingFilter.poolingWeights, quantizationLevels, coneLocsInDegs, coneX, coneY);
+        plotQuantizedWeights(gca, spatialPoolingFilter.poolingWeights, quantizationLevels, coneLocsInDegs, coneX, coneY);
         hold off;
         axis 'xy'; axis 'image'
         set(gca, 'CLim', [0 1], 'XLim', max([mosaicFOVDegs stimulusFOVDegs])/2*[-1 1]*1.02, 'YLim', max([mosaicFOVDegs stimulusFOVDegs])/2*[-1 1]*1.02, 'XTickLabels', {});
@@ -98,7 +98,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
             
         ax = subplot('Position', subplotPosVectors(1,2).v);
         hold on
-        plotQuantizedWeights(0*theSpatialPoolingFilter.cosPhasePoolingWeights, quantizationLevels, coneLocsInDegs, coneX, coneY);
+        plotQuantizedWeights(gca, 0*theSpatialPoolingFilter.cosPhasePoolingWeights, quantizationLevels, coneLocsInDegs, coneX, coneY);
         plot(ax,[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
         plot(ax,[0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
                     
@@ -166,7 +166,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
 
                     ax = subplot('Position', subplotPosVectors(1, quadratureIndex+2).v);
                     hold(ax, 'on');
-                    plotQuantizedWeights(quantizedWeights/maxWeight, quantizationLevels, coneLocsInDegs, coneX, coneY);
+                    plotQuantizedWeights(gca, quantizedWeights/maxWeight, quantizationLevels, coneLocsInDegs, coneX, coneY);
                     %plotHorizontalPoolingProfile(xaxis, min(yaxis) + 0.1*((max(yaxis)-min(yaxis))), (max(yaxis)-min(yaxis)) * 0.1, quantizedWeights, coneLocsInDegs, desiredProfile, coneRadiusDegs);
                     plot(ax,[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
                     plot(ax,[0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
@@ -259,7 +259,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         subplot('Position', subplotPosVectors(1,2).v);
         imagesc(xaxis, yaxis, spatialModulation);
         hold on;
-        plotQuantizedWeights(quantizedWeights/maxWeight, quantizationLevels, coneLocsInDegs, coneX, coneY);
+        plotQuantizedWeights(gca, quantizedWeights/maxWeight, quantizationLevels, coneLocsInDegs, coneX, coneY);
         hold off;
         axis 'xy'; axis 'image'
         set(gca, 'Color', [0.5 0.5 0.5], 'XTickLabel', {}, 'YTickLabel', {});
@@ -299,32 +299,4 @@ function plotHorizontalPoolingProfile(xaxis, y0, yA, quantizedWeights, coneLocsI
     
     %stairs(xaxis(indices), y0 + yA * horizontalProfile(indices), 'k-', 'LineWidth', 1.5);
     stairs(xaxis(indices), y0 + yA * measuredHorizontalProfile, 'g-', 'LineWidth', 2.0);
-end
-
-function plotQuantizedWeights(quantizedWeights, quantizationLevels, coneLocsInDegs, coneX, coneY)
-            
-    quantizedWeights(quantizedWeights >  1) = 1;
-    quantizedWeights(quantizedWeights < -1) = -1;
-    quantizedWeights = round(quantizationLevels/2 * (1+quantizedWeights));
-
-
-    for iLevel = quantizationLevels/2:quantizationLevels
-        idx = find(quantizedWeights == iLevel);
-        if (~isempty(idx))
-            for k = 1:numel(idx)
-                c = [0.5 0.5 0.5] + (iLevel-quantizationLevels/2)/(quantizationLevels/2)*[0.5 -0.4 -0.4];
-                fill(squeeze(coneLocsInDegs(idx(k),1))+coneX, squeeze(coneLocsInDegs(idx(k),2))+coneY,  c);
-            end
-        end
-    end
-
-    for iLevel = 0:quantizationLevels/2-1
-        idx = find(quantizedWeights == iLevel);
-        if (~isempty(idx))
-            for k = 1:numel(idx)
-                c = [0.5 0.5 0.5] + (quantizationLevels/2-iLevel)/(quantizationLevels/2)*[-0.4 -0.4 0.5];
-                fill(squeeze(coneLocsInDegs(idx(k),1))+coneX, squeeze(coneLocsInDegs(idx(k),2))+coneY,  c);
-            end
-        end
-    end
 end
