@@ -38,9 +38,9 @@ function run_paper2IsomerizationsVsPhotocurrents
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -86,7 +86,7 @@ function run_paper2IsomerizationsVsPhotocurrents
         params.nTrainingSamples = 1030;
         
         % Try out for subset of SFs
-        params.cyclesPerDegreeExamined = [60]; % [4 8 12 16 24 32 50]; 
+        params.cyclesPerDegreeExamined = [4 8 12 16 24 32 50 60];
         
         cond = examinedCond(condIndex);
         
