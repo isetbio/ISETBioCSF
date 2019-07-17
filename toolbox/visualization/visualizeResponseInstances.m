@@ -487,6 +487,10 @@ end
 
 function showActivationMap(ax, theMosaic, timeAxis, visualizationTime,  isomerizationInstance, spaceLimsDegs, spaceLimsMeters,signalRange, spaceTicksArcMin, showXLabel, fontSize)
     indices = find(timeAxis <= visualizationTime);
+    if (isempty(indices))
+        fprintf('visualizationTime not found in timeAxis (%2.3f - %2.3f)\n', timeAxis(1), timeAxis(end));
+        return;
+    end
     tBin = indices(end);
     theMosaic.renderActivationMap(ax, squeeze(isomerizationInstance(:,tBin)), ...
         'signalRange',  signalRange, 'mapType', 'modulated disks', ...
@@ -528,6 +532,11 @@ end
 
 function idx0 = renderOpticalImageEyePathComboPlot(ax, timeAxis, visualizationTime, theEMpathDegs, emPathColor, xAxisDegs, yAxisDegs, retinalImage, spaceLimsDegs, spaceTicksArcMin, showXLabel, fontSize)
     indices = find(timeAxis <= visualizationTime);
+    if (isempty(indices))
+        fprintf('visualizationTime not found in timeAxis (%2.3f - %2.3f)\n', timeAxis(1), timeAxis(end));
+        idx0 = [];
+        return;
+    end
     idx0 = indices(end);
     offset = theEMpathDegs(idx0,:);
     imagesc(ax,xAxisDegs + offset(1), yAxisDegs + offset(2), retinalImage); hold(ax, 'on');

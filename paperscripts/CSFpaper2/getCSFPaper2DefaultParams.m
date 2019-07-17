@@ -27,23 +27,27 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
     params.responseExtinctionMilliseconds = 100;
         
     params.integrationTimeMilliseconds = integrationTimeMilliseconds;
+    frameDurationSeconds = 1.0/params.frameRate;
+    
     
     if (params.integrationTimeMilliseconds == 2.5)
         params.secondsToInclude = params.stimulusDurationInSeconds + 50/1000;
-        params.secondsToIncludeOffset = 75/1000;
+        params.secondsToIncludeOffset = params.stimulusDurationInSeconds-25/1000;
                                  
     elseif (params.integrationTimeMilliseconds == 4.0)
         params.secondsToInclude = params.stimulusDurationInSeconds + 48/1000;
-        params.secondsToIncludeOffset = 72/1000;
+        params.secondsToIncludeOffset = params.stimulusDurationInSeconds-28/1000;
         
     elseif (params.integrationTimeMilliseconds == 5.0)
         params.secondsToInclude = params.stimulusDurationInSeconds + 50/1000;
-        params.secondsToIncludeOffset = 75/1000; 
+        params.secondsToIncludeOffset = frameDurationSeconds*0.75; 
     else
         error('integrationTimeMilliseconds is not 2.5 4 or 5: %f', integrationTimeMilliseconds);
     end
     
+    params.secondsToInclude = max([150/1000 params.secondsToInclude]);
     
+ 
     % Fixational eye movements type: 'random'; 'randomNoSaccades' 'frozen0';
     params.emPathType = 'frozen0';  
     params.centeredEMPaths = true;
