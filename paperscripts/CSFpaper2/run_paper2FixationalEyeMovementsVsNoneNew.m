@@ -55,32 +55,32 @@ function run_paper2FixationalEyeMovementsVsNone
     computePhotocurrents = true;
     
     performanceSignal = 'isomerizations';  % 'photocurrents', 'isomerizations';
-    %performanceSignal = 'photocurrents';
+    performanceSignal = 'photocurrents';
     
     % Assemble conditions list to be examined
     % Init condition index
     condIndex = 0;
     
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-Template-Linear, noEM';
-%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-%     examinedCond(condIndex).performanceSignal = performanceSignal;
-%     examinedCond(condIndex).emPathType = 'frozen0';
-%     examinedCond(condIndex).centeredEMPaths = true;
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'SVM-Template-Linear, noEM';
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = true;
+
 % 
-% 
-%     if (~computeResponses)
-%         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Template-Energy, noEM';
-%         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%         examinedCond(condIndex).performanceSignal = performanceSignal;
-%         examinedCond(condIndex).emPathType = 'frozen0';
-%         examinedCond(condIndex).centeredEMPaths = true;
-%     end
+    if (~computeResponses)
+        condIndex = condIndex+1;
+        examinedCond(condIndex).label = 'SVM-Template-Energy, noEM';
+        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+        examinedCond(condIndex).performanceSignal = performanceSignal;
+        examinedCond(condIndex).emPathType = 'frozen0';
+        examinedCond(condIndex).centeredEMPaths = true;
+    end
     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-Template-Linear, drift';
@@ -114,7 +114,7 @@ function run_paper2FixationalEyeMovementsVsNone
         params.nTrainingSamples = 1030;
         
         % Try out for subset of SFs
-        params.cyclesPerDegreeExamined = [60];
+        params.cyclesPerDegreeExamined = [24 32 50 60];
         
         % If params.minimumMosaicFOVdegs is not empty, we are using a
         % single template whose size is matched the minimumMosaicFOVdegs,
@@ -122,7 +122,7 @@ function run_paper2FixationalEyeMovementsVsNone
         % If params.minimumMosaicFOVdegs is negative, we are using an
         % ensemble of templates (see cBandsEtAlPhotocurrentAndEyeMovements.m, line 260)
         % operating on a mosaic whose size is abs(minimumMosaicFOVdegs)
-        params.minimumMosaicFOVdegs = -0.246; % 0.492 IS NOT GOOD. TRY: 0.328, 0.246, 0.158 TRY THIS TO SEE IF WE DO BETTER AT 60 C/DEG WITH ISOMERIZATIONS
+        params.minimumMosaicFOVdegs = 0.328; % -0.328; % 0.492 IS NOT GOOD. TRY: 0.328, 0.246, 0.158 TRY THIS TO SEE IF WE DO BETTER AT 60 C/DEG WITH ISOMERIZATIONS
         
         
         % Update params
