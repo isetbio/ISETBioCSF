@@ -181,10 +181,10 @@ for ll = 1:length(p.Results.luminances)
         rParams = updateBackgroundParams(rParams, p.Results, p.Results.luminances(ll));
         
         % Modify mosaic params
-        if (~isempty(p.Results.minimumMosaicFOVdegs)) && (rParams.spatialParams.fieldOfViewDegs < p.Results.minimumMosaicFOVdegs)
+        if (~isempty(p.Results.minimumMosaicFOVdegs)) && (rParams.spatialParams.fieldOfViewDegs < abs(p.Results.minimumMosaicFOVdegs))
             % User-specified mosaic FOV
             fprintf(2,'Using mosaic size of %2.3f degs (stimulus is %2.3f degs)\n', p.Results.minimumMosaicFOVdegs, rParams.spatialParams.fieldOfViewDegs);
-            rParams = updateMosaicParams(rParams, p.Results, p.Results.minimumMosaicFOVdegs);
+            rParams = updateMosaicParams(rParams, p.Results, abs(p.Results.minimumMosaicFOVdegs));
         else
             % mosaic FOV matched to stimulus
             fprintf('Using mosaic size of %2.3f degs (matched to stimulus)\n', rParams.spatialParams.fieldOfViewDegs);
@@ -265,8 +265,8 @@ for ll = 1:length(p.Results.luminances)
                     fprintf(2, 'Performance for stimulus %2.4f c/deg. Overriding thesholdParams.method from ''%s'' to ''%s'' AND using minimum mosaic (%2.5f degs instead of %2.5f degs).\n',p.Results.cyclesPerDegree(cc), thresholdParams.method, newMethod, p.Results.minimumMosaicFOVdegs, rParams.spatialParams.fieldOfViewDegs);
                     thresholdParams.method =  newMethod;
                     ensembleFilterParams = struct(...
-                        'spatialPositionsNum',  3, ...
-                        'cyclesPerRFs', 3.5, ...
+                        'spatialPositionsNum',  1, ...
+                        'cyclesPerRFs', 7, ...
                         'orientations', 0);
                     fNames = fieldnames(ensembleFilterParams);
                     for fNameIndex = 1:numel(fNames)
