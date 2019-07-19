@@ -48,14 +48,15 @@ function run_ConditionToVisualizePhotocurrentAndEyeMovements
        
     % Modify default params
     % Eye movement types
-    params.emPathType = 'randomNoSaccades';     % 'random' (with saccades),  'randomNoSaccades', or 'frozen0'
+    params.emPathType = 'frozen0'; 'randomNoSaccades';     % 'random' (with saccades),  'randomNoSaccades', or 'frozen0'
+    params.nTrainingSamples = 4;
     
     % Eye movement centering
     % 'atStimulusModulationMidPoint' (the centroid of the emPath within the stimulation time is at (0,0)), OR 
     % 'atStimulusModulationOnset' (the em position is (0,0) at stimulus onset)
     
-    params.centeredEMPaths =  'atStimulusModulationOnset';
-    params.nTrainingSamples = 8;
+    %params.centeredEMPaths =  'atStimulusModulationOnset';
+    %params.nTrainingSamples = 8;
     
     %params.centeredEMPaths =  'atStimulusModulationMidPoint';
     %params.nTrainingSamples = 4;
@@ -67,7 +68,7 @@ function run_ConditionToVisualizePhotocurrentAndEyeMovements
     params.nContrastsPerDirection = 1;
         
     % Simulation steps to perform
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
@@ -80,6 +81,7 @@ function run_ConditionToVisualizePhotocurrentAndEyeMovements
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeSpatialPoolingScheme = ~true;
     params.visualizeMosaicWithFirstEMpath = true;
+    params.visualizeOuterSegmentFilters = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = ~true;

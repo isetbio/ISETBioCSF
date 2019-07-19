@@ -114,10 +114,10 @@ function run_paper2FixationalEyeMovementsVsNone
         params.nTrainingSamples = 1030;
         
         % Try out for subset of SFs
-        params.cyclesPerDegreeExamined = [4 8 12 16 24 32 50 60];
+        params.cyclesPerDegreeExamined = [32 50 60]; % Done 60, 50 %[24 32 50 60];  % [4 8 12 16 24 32 50 60];
         
         % Do not use mosaics smaller than 0.5 degs 
-        params.minimumMosaicFOVdegs = 0.158; % 0.492 IS NOT GOOD. TRY: 0.328 , 0.246 TRY THIS TO SEE IF WE DO BETTER AT 60 C/DEG WITH ISOMERIZATIONS
+        params.minimumMosaicFOVdegs = -0.328; % 0.492 IS NOT GOOD. TRY: 0.328 , 0.246, 0.158 TRY THIS TO SEE IF WE DO BETTER AT 60 C/DEG WITH ISOMERIZATIONS
         
         
         % Update params
@@ -178,7 +178,7 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
-    params.visualizeSpatialPoolingScheme = ~true;
+    params.visualizeSpatialPoolingScheme = true;
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeDisplay = ~true;
     

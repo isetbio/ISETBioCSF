@@ -46,10 +46,10 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
     
     cyclesPerRFs = thresholdParams.spatialPoolingKernelParams.cyclesPerRFs;
     orientationRFs = thresholdParams.spatialPoolingKernelParams.orientations;
+    ensemblePositions = thresholdParams.spatialPoolingKernelParams.spatialPositionsNum;
+    pixelsPerDeg = spatialParams.row/spatialParams.fieldOfViewDegs;
+    ensembleSampleSpacingPixels = thresholdParams.spatialPoolingKernelParams.spatialPositionOffsetDegs * pixelsPerDeg;
     
-    ensemblePositions = thresholdParams.spatialPoolingKernelParams.spatialPositionsNum;   
-    ensembleSampleSpacing = 0.1*spatialParams.row/ensemblePositions;  % in pixels
-        
     unitIndex = 0;
     ft2Dindex = 0;
     
@@ -75,7 +75,7 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
             for rowOffset = -ensemblePositions:ensemblePositions
             for colOffset = -ensemblePositions:ensemblePositions
             
-                spatialParams.center = [colOffset rowOffset]*ensembleSampleSpacing;
+                spatialParams.center = [colOffset rowOffset]*ensembleSampleSpacingPixels;
                 v1Unit.rowColPosition = [rowOffset colOffset];
                 v1Unit.spatialPosition = spatialParams.center/(spatialParams.row/2) * originalStimulusFOV/2;
             

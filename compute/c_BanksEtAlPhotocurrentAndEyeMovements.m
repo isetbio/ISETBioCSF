@@ -251,7 +251,6 @@ for ll = 1:length(p.Results.luminances)
             
         %% Find performance
         if (p.Results.findPerformance) || (p.Results.visualizePerformance)
-            fprintf('Stimulus size: %f, minMosaicFOV: %f\n', rParams.spatialParams.fieldOfViewDegs, p.Results.minimumMosaicFOVdegs);
             % if we are using a minimumMosaicFOCdegs, adjust  thresholdParams.poolingTemplateWidthInDegrees 
             if (~isempty(p.Results.minimumMosaicFOVdegs)) && (rParams.spatialParams.fieldOfViewDegs < abs(p.Results.minimumMosaicFOVdegs))
                 if (rParams.spatialParams.fieldOfViewDegs < p.Results.minimumMosaicFOVdegs)
