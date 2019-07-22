@@ -36,7 +36,7 @@ function run_paper2EffectOfPulseDuration
     % Whether to compute responses
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -58,29 +58,7 @@ function run_paper2EffectOfPulseDuration
     centeredEMPaths = true;                            % choose between true and 'atStimulusModulationMidPoint';
     
     
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = '25 ms';
-    examinedCond(condIndex).frameRate = 40;
-    examinedCond(condIndex).stimulusDurationInSeconds = 25/1000;
-    examinedCond(condIndex).performanceClassifier = performanceClassifier;
-    examinedCond(condIndex).spatialPoolingKernelParams.type = spatialPoolingKernelType;
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = spatialPoolingKernelActivationFunction;
-    examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = emPathType;
-    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-    
-        
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = '50 ms';
-    examinedCond(condIndex).frameRate = 40;
-    examinedCond(condIndex).stimulusDurationInSeconds = 50/1000;
-    examinedCond(condIndex).performanceClassifier = performanceClassifier;
-    examinedCond(condIndex).spatialPoolingKernelParams.type = spatialPoolingKernelType;
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = spatialPoolingKernelActivationFunction;
-    examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = emPathType;
-    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-    
+       
     if (~computeResponses)
         condIndex = condIndex+1;
         examinedCond(condIndex).label = '100 ms';
@@ -94,6 +72,7 @@ function run_paper2EffectOfPulseDuration
         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
     end
     
+    
     condIndex = condIndex+1;
     examinedCond(condIndex).label = '200 ms';
     examinedCond(condIndex).frameRate = 25;
@@ -105,6 +84,31 @@ function run_paper2EffectOfPulseDuration
     examinedCond(condIndex).emPathType = emPathType;
     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
 
+    
+
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = '50 ms';
+    examinedCond(condIndex).frameRate = 40;
+    examinedCond(condIndex).stimulusDurationInSeconds = 50/1000;
+    examinedCond(condIndex).performanceClassifier = performanceClassifier;
+    examinedCond(condIndex).spatialPoolingKernelParams.type = spatialPoolingKernelType;
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = spatialPoolingKernelActivationFunction;
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = emPathType;
+    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = '25 ms';
+    examinedCond(condIndex).frameRate = 40;
+    examinedCond(condIndex).stimulusDurationInSeconds = 25/1000;
+    examinedCond(condIndex).performanceClassifier = performanceClassifier;
+    examinedCond(condIndex).spatialPoolingKernelParams.type = spatialPoolingKernelType;
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = spatialPoolingKernelActivationFunction;
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = emPathType;
+    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    
+     
     % Go
     examinedLegends = {};
     for condIndex = 1:numel(examinedCond)
@@ -143,8 +147,8 @@ function run_paper2EffectOfPulseDuration
     if (makeSummaryFigure)
         variedParamName = 'SignalType';
         
-        theRatioLims = [0.07 1.15];
-        theRatioTicks = [0.05 0.1 0.2 0.5 1.0];
+        theRatioLims = [0.3 2];
+        theRatioTicks = [0.5 0.7 1.0 1.5 2];
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
