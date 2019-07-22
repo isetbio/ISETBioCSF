@@ -34,10 +34,10 @@ function run_paper2EffectOfPulseDuration
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = true;
-    visualizeResponses = true;
-    findPerformance = ~true;
-    visualizePerformance = ~true;
+    computeResponses = ~true;
+    visualizeResponses = ~true;
+    findPerformance = true;
+    visualizePerformance = true;
     
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
@@ -50,7 +50,7 @@ function run_paper2EffectOfPulseDuration
     % Init condition index
     condIndex = 0;
     
-    performanceSignal = 'photocurrents';
+    performanceSignal = 'isomerizations'; % 'photocurrents';
     performanceClassifier = 'svmV1FilterBank';
     spatialPoolingKernelType = 'V1CosUnit';            % choose between 'V1CosUnit' and 'V1QuadraturePair';
     spatialPoolingKernelActivationFunction = 'linear'; % choose between 'linear' and 'energy';
@@ -119,7 +119,7 @@ function run_paper2EffectOfPulseDuration
         params.nTrainingSamples = 1030;
         
         % Try out for subset of SFs
-        params.cyclesPerDegreeExamined = [16 24 32 50 60];
+        params.cyclesPerDegreeExamined = [8 16 24 32 50 60]; % [16 24 32 50 60];
         
         
         examinedLegends{numel(examinedLegends) + 1} = cond.label;
