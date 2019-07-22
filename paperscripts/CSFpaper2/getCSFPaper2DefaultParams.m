@@ -144,6 +144,8 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
         params.parforWorkersNumForClassification = min([numberOfCores 2*params.parforWorkersNumForClassification]);
     elseif (ramSizeGBytes > 100)
         params.parforWorkersNumForClassification = min([numberOfCores params.parforWorkersNumForClassification]);
+    elseif (ramSizeGBytes > 16)
+        params.parforWorkersNumForClassification = min([numberOfCores params.parforWorkersNumForClassification]);
     else
         params.parforWorkersNumForClassification = min([numberOfCores 1]);
     end

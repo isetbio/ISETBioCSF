@@ -246,8 +246,8 @@ if (p.Results.compute)
     useStdErr = zeros(size(testConeContrasts,2),1);
     rState = rng;
     
-    %parfor (kk = 1:nParforConditions, parforWorkersNum)
-    for kk = nParforConditions:-1:1
+    parfor (kk = 1:nParforConditions, parforWorkersNum)
+    %for kk = nParforConditions:-1:1
         
         rng(parforRanSeeds(kk));
         thisConditionStruct = parforConditionStructs{kk};
@@ -457,15 +457,15 @@ function checkStructs(struct1Name, struct1, struct2Name, struct2, varargin)
         'defaultTolerance', defaultTolerance, ...
         'graphMismatchedData', graphMismatchedData);
     
-    if (~isempty(structCheck))
-        % Oh oh, structs do not match. Print mismatched fields
-        for k = 1:numel(structCheck)
-            fprintf(2,'\t[%d]. %s\n', k, structCheck{k});
-        end
-        error('\n<strong>%s and %s are NOT identical structs. </strong>\n', struct1Name, struct2Name);
-    else
-        %fprintf('%s and %s are identical structs\n', struct1Name, struct2Name);
-    end
+%     if (~isempty(structCheck))
+%         % Oh oh, structs do not match. Print mismatched fields
+%         for k = 1:numel(structCheck)
+%             fprintf(2,'\t[%d]. %s\n', k, structCheck{k});
+%         end
+%         error('\n<strong>%s and %s are NOT identical structs. </strong>\n', struct1Name, struct2Name);
+%     else
+%         %fprintf('%s and %s are identical structs\n', struct1Name, struct2Name);
+%     end
 end
 
 function responseInstanceArray = keepTrialsUsed(responseInstanceArray, trialsUsed)

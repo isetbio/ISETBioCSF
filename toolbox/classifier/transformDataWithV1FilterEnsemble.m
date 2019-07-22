@@ -94,7 +94,7 @@ function [noStimData, stimData, noStimDataPCAapproximation, stimDataPCAapproxima
         fprintf('Previous parpool had %d workers. Deleting and staring one with %d workers\n', previousPoolSize, parforWorkersNum);
     end
     % Start a new parpool with desired workers num
-    poolobj = parpool(parforWorkersNum);
+    %poolobj = parpool(parforWorkersNum);
     
     % Transform the noStimData
     dataUnits = zeros(unitsNum, trialsNum, binsNum);
