@@ -8,9 +8,11 @@ function generateFig1Components
     mosaicFOV = 0.6;
     theConeMosaic = generateMosaicFig(rootPath, mosaicFOV);
     
-    sceneFOV = 1.5;
+    sceneFOV = 20;
     visualizedSceneFraction = [0.6*1.1 0.6];
     theScene = generateSceneFig(rootPath, sceneFOV, visualizedSceneFraction, mosaicFOV);
+    pause
+    
     
     opticsModel = 'ThibosDefaultSubject3MMPupil'; pupilDiamMm = 3.0;
     theOI = generateOpticsImageFig(opticsModel, pupilDiamMm, sceneFOV);
@@ -54,7 +56,8 @@ function generateDisplayFig(rootPath)
     xlabel('wavelength, \lambda (nm)');
     set(gca, 'FontSize', 20);
     box off
-    NicePlot.exportFigToPDF('../componentFigs/DisplayComponent.pdf', hFig, 300);
+    pwd
+    NicePlot.exportFigToPDF('componentFigs/DisplayComponent.pdf', hFig, 300);
 end
 
 function generateIsomerizationsImageFig(theConeMosaic, theIsomerizations)
@@ -81,7 +84,7 @@ function generateIsomerizationsImageFig(theConeMosaic, theIsomerizations)
      ylabel(ax, '');    
      set(ax,'XTickLabels', {});
      set(ax,'YTickLabels', {});
-     NicePlot.exportFigToPDF('../componentFigs/MeanIsomerizationsComponent.pdf', hFig, 300);
+     NicePlot.exportFigToPDF('componentFigs/MeanIsomerizationsComponent.pdf', hFig, 300);
 end
 
 
@@ -114,7 +117,7 @@ function generateOpticalImageFig(theOI, xyRange, mosaicFOV)
     set(ax, 'FontSize', 12);
     %xlabel('space (degs)');
     %ylabel('space (degs)');
-    NicePlot.exportFigToPNG('../componentFigs/OpticalImageComponent.png', hFig, 300);
+    NicePlot.exportFigToPNG('componentFigs/OpticalImageComponent.png', hFig, 300);
     
     
     
@@ -140,7 +143,7 @@ function generateOpticalImageFig(theOI, xyRange, mosaicFOV)
          'XTick', -15:tickInterval:15, 'YTick', -15:tickInterval:15, ...
          'XTickLabels', {}, 'YTickLabels', {});
         colormap(gray(1024));
-        NicePlot.exportFigToPNG(sprintf('../componentFigs/PhotonsOIComponent%d.png', wave(idx)), hFig, 300);
+        NicePlot.exportFigToPNG(sprintf('componentFigs/PhotonsOIComponent%d.png', wave(idx)), hFig, 300);
     end
     
     
@@ -164,6 +167,8 @@ function theScene = generateSceneFig(rootPath, sceneFOV, visualizedSceneFraction
     theScene = sceneSet(theScene, 'h fov', sceneFOV);
     sceneGet(theScene, 'wAngular')
 
+    save(fullfile('componentFigs','scene.mat'), 'theScene');
+    
     hFig = figure(1); clf
     set(hFig, 'Position', [10 10 468 420], 'Color', [1 1 1]);
     ax = subplot('Position', [0.02 0.02 0.96 0.96]);
@@ -196,7 +201,7 @@ function theScene = generateSceneFig(rootPath, sceneFOV, visualizedSceneFraction
     set(ax, 'FontSize', 12);
     %xlabel('space (degs)');
     %ylabel('space (degs)');
-    NicePlot.exportFigToPNG('../componentFigs/SceneComponent.png', hFig, 300);
+    NicePlot.exportFigToPNG('componentFigs/SceneComponent.png', hFig, 300);
     
     
     wave = sceneGet(theScene, 'wave');
@@ -221,7 +226,7 @@ function theScene = generateSceneFig(rootPath, sceneFOV, visualizedSceneFraction
          'XTick', -15:tickInterval:15, 'YTick', -15:tickInterval:15, ...
          'XTickLabels', {}, 'YTickLabels', {});
         colormap(gray(1024));
-        NicePlot.exportFigToPNG(sprintf('../componentFigs/PhotonsSceneComponent%d.png', wave(idx)), hFig, 300);
+        NicePlot.exportFigToPNG(sprintf('componentFigs/PhotonsSceneComponent%d.png', wave(idx)), hFig, 300);
     end
     
     
@@ -239,7 +244,7 @@ function theConeMosaic = generateMosaicFig(rootPath, mosaicFOV)
     set(ax,'XColor', 'none', 'YColor', 'none');
     set(ax,'XTickLabels', {});
     set(ax,'YTickLabels', {});
-    NicePlot.exportFigToPDF('../componentFigs/MosaicComponent.pdf', hFig, 300);
+    NicePlot.exportFigToPDF('componentFigs/MosaicComponent.pdf', hFig, 300);
 end
 
 

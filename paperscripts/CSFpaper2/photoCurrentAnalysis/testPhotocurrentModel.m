@@ -1,11 +1,11 @@
 function testPhotocurrentModel
 
-    recomputeResponses = ~true;
+    recomputeResponses = true;
     
     % Pulse duration in seconds
     
-    %vParams.pulseDurationSeconds = 50/1000;
-    vParams.pulseDurationSeconds = 100/1000;
+    vParams.pulseDurationSeconds = 20/1000;
+    %vParams.pulseDurationSeconds = 100/1000;
     %vParams.pulseDurationSeconds = 200/1000;
     %vParams.pulseDurationSeconds = 400/1000;
     
