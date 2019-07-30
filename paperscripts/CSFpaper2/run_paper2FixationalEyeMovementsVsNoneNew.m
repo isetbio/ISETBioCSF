@@ -35,7 +35,7 @@ function run_paper2FixationalEyeMovementsVsNone
     % Whether to compute responses
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -172,11 +172,12 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
                          
     % Simulation steps to perform
     params.computeMosaic = ~true; 
-    params.visualizeMosaic = true;
+    params.visualizeMosaic = ~true;
     
     params.computeResponses = computeResponses;
     params.computePhotocurrentResponseInstances = computePhotocurrents && computeResponses;
     params.visualizeResponses = visualizeResponses;
+    params.visualizeResponsesWithSpatialPoolingSchemeInVideo = ~true;
     params.visualizeOuterSegmentFilters = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;

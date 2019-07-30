@@ -55,12 +55,15 @@ function run_paper2FixationalEyeMovementsVsNone
     computePhotocurrents = true;
     
     performanceSignal = 'isomerizations';  % 'photocurrents', 'isomerizations';
-    %performanceSignal = 'photocurrents';
+    
+    showDataFromLinearPooling = ~true;
+    showDataFromQuadraturePooling = true;
     
     % Assemble conditions list to be examined
     % Init condition index
     condIndex = 0;
     
+    % Reference CSF
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-Template-Linear, noEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
@@ -69,9 +72,10 @@ function run_paper2FixationalEyeMovementsVsNone
     examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = true;
+    
+    
 
-
-    if (~computeResponses)
+    if (~computeResponses) && (showDataFromQuadraturePooling)
         condIndex = condIndex+1;
         examinedCond(condIndex).label = 'SVM-Template-Energy, noEM';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
@@ -82,16 +86,18 @@ function run_paper2FixationalEyeMovementsVsNone
         examinedCond(condIndex).centeredEMPaths = true;
     end
     
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Linear, drift';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = 'randomNoSaccades';
-    examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
+    if (showDataFromLinearPooling)
+        condIndex = condIndex+1;
+        examinedCond(condIndex).label = 'SVM-Template-Linear, drift';
+        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+        examinedCond(condIndex).performanceSignal = performanceSignal;
+        examinedCond(condIndex).emPathType = 'randomNoSaccades';
+        examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
+    end
 %     
-    if (~computeResponses)
+    if (~computeResponses) && (showDataFromQuadraturePooling)
         condIndex = condIndex+1;
         examinedCond(condIndex).label = 'SVM-Template-Energy, drift';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
@@ -114,10 +120,10 @@ function run_paper2FixationalEyeMovementsVsNone
         params.nTrainingSamples = 1030;
         
         % Try out for subset of SFs
-        params.cyclesPerDegreeExamined = [32 50 60]; % Done 60, 50 %[24 32 50 60];  % [4 8 12 16 24 32 50 60];
+        params.cyclesPerDegreeExamined = [4 8 12 16 24 32 50 60]; % Done 60, 50 %[24 32 50 60];  % [4 8 12 16 24 32 50 60];
         
         % Do not use mosaics smaller than 0.5 degs 
-        params.minimumMosaicFOVdegs = -0.328; % 0.492 IS NOT GOOD. TRY: 0.328 , 0.246, 0.158 TRY THIS TO SEE IF WE DO BETTER AT 60 C/DEG WITH ISOMERIZATIONS
+        %params.minimumMosaicFOVdegs = -0.328; % 0.492 IS NOT GOOD. TRY: 0.328 , 0.246, 0.158 TRY THIS TO SEE IF WE DO BETTER AT 60 C/DEG WITH ISOMERIZATIONS
         
         
         % Update params
@@ -145,8 +151,8 @@ function run_paper2FixationalEyeMovementsVsNone
     
     if (makeSummaryFigure)
         variedParamName = 'EyeMovements';
-        theRatioLims = [0.05 1.2];
-        theRatioTicks = [0.05 0.1 0.2 0.5 1.0];
+        theRatioLims = [0.01 1.2];
+        theRatioTicks = [0.01 0.05 0.1 0.2 0.5 1.0];
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
@@ -167,18 +173,19 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
                          
     % Simulation steps to perform
     params.computeMosaic = ~true; 
-    params.visualizeMosaic = true;
+    params.visualizeMosaic = ~true;
     
     params.computeResponses = computeResponses;
     params.computePhotocurrentResponseInstances = computePhotocurrents && computeResponses;
     params.visualizeResponses = visualizeResponses;
+    params.visualizeResponsesWithSpatialPoolingSchemeInVideo = ~true;
     params.visualizeOuterSegmentFilters = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
-    params.visualizeSpatialPoolingScheme = true;
+    params.visualizeSpatialPoolingScheme = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeDisplay = ~true;
     
