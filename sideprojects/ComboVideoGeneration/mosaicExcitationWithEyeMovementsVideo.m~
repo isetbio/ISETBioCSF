@@ -1,0 +1,100 @@
+function mosaicExcitationWithEyeMovementsVideo
+    %load('tmp.mat')
+    %timeAxis = videoData.stimResponseInstances(1).timeAxis
+    %pause
+    
+    %mosaicActivations = videoData.differentialResponses + 25;
+    %emPathsMicrons = videoData.stimResponseInstances.theMosaicEyeMovementsMicrons
+    
+    load('demoData', 'theMosaic', 'mosaicActivations', 'emPathsMicrons', 'timeAxis');
+
+    % Params for mosaic activation plotting
+    activationRange = prctile(mosaicActivations(:), 50+45*[-1.0 1.0]);
+    activationColorMap = gray(1024);
+    
+    % Params for emPath plotting
+    micronsToArcMin = 60/theMosaic.micronsPerDegree;
+    emPathArcMin = emPathsMicrons*micronsToArcMin;
+    emRange = max(abs(emPathArcMin(:)))*[-1 1];
+    deltaEM = emRange(2)/3;
+    emTick = emRange(1):deltaEM:emRange(2);
+    emTickLabel = sprintf('%2.1f\n', emTick);
+    
+    % Setup figure
+    hFig = figure(1); clf;
+    set(hFig, 'Position', [10 10 1100 620], 'Color', [1 1 1]);
+    
+    % Setup subfig layout
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+       'rowsNum', 1, ...
+       'colsNum', 2, ...
+       'heightMargin', 0.08, ...
+       'widthMargin', 0.08, ...
+       'leftMargin', 0.06, ...
+       'rightMargin', 0.02, ...
+       'bottomMargin', 0.1, ...
+       'topMargin', 0.05);
+    mosaicAxes = subplot('Position', subplotPosVectors(1,1).v);
+    emAxes = subplot('Position', subplotPosVectors(1,2).v);
+    
+    % Open video stream
+    videoFileName = 'comboVideo';
+    videoOBJ = VideoWriter(videoFileName, 'MPEG-4'); % H264 format
+    videoOBJ.FrameRate = 20;
+    videoOBJ.Quality = 100;
+    videoOBJ.open();
+
+    
+    % Which trial to visualize
+    visualizedTrial = 1;
+    sz = size(mosaicActivations); nTrials = sz(1); nCones = sz(2); nTimeBins = sz(3);
+    
+    % Retrieve data for the visualized trial
+    theVisualizedActivation = squeeze(mosaicActivations(visualizedTrial, :, :));
+    theVisualizedEMPath = squeeze(emPathArcMin(visualizedTrial,:,:));
+    
+    % Go through each time bin
+    for tBin = 1:nTimeBins
+        % Render the instantaneous mosaic activation at this time bin
+        theMosaic.renderActivationMap(mosaicAxes, theVisualizedActivation(:,tBin) , ...
+                    'visualizedConeAperture', 'geometricArea', ...
+                    'mapType', 'modulated disks', ...
+                    'signalRange', activationRange, ...
+                    'colorMap', activationColorMap, ...
+                    'outlineConesAlongHorizontalMeridian', ~true, ...
+                    'showXLabel', ~true, ...
+                    'showYLabel', ~true, ...
+                    'showXTicks', true, ...
+                    'showYTicks', true, ...
+                    'tickInc', 0.1, ...
+                    'backgroundColor', 0*[0.5 0.5 0.5]);
+        % S
+        set(ax, 'XLim', visualizedMosaicRange, 'YLim', visualizedMosaicRange);
+        xlabel(mosaicAxes, '\it space(degs)');
+        title(mosaicAxes, 'mosaic activation', 'FontWeight', 'normal');
+        
+         % render the emPath up to this time point
+        plot(emAxes, [-100 100], [0 0 ], 'k-'); hold(emAxes, 'on');
+        plot(emAxes, [0 0 ], [-100 100], 'k-'); 
+        plot(emAxes, theVisualizedEMPath(1:tBin,1), -theVisualizedEMPath(1:tBin,2), 'k-', 'LineWidth', 4.0);
+        plot(emAxes, theVisualizedEMPath(1:tBin,1), -theVisualizedEMPath(1:tBin,2), 'r-', 'LineWidth', 2.0);
+        plot(emAxes, theVisualizedEMPath(tBin,1), -theVisualizedEMPath(tBin,2), 'rs', 'LineWidth', 1.5, 'MarkerFaceColor', [1 0.5 0.5], 'MarkerSize', 12);
+        hold(emAxes, 'off');
+        set(emAxes, 'XLim', emRange, 'YLim', emRange, 'XTick', emTick, 'YTick', emTick, ...
+            'XTickLabel', emTickLabel, 'YTickLabel', emTickLabel, 'FontSize', 18);
+        grid(emAxes, 'on'); box(emAxes, 'off'); axis(emAxes, 'square');
+        xlabel(emAxes, '\it position (arc min)');
+        title(emAxes, sprintf('eye movement path (%2.0f ms)', timeAxis(tBin)*1000), 'FontWeight', 'normal');
+        
+
+        % Add another video frame
+        drawnow;
+        videoOBJ.writeVideo(getframe(hFig));
+            
+    end % tBin
+    
+    % Close the video stream
+    videoOBJ.close();
+    fprintf('File saved in %s\n', videoFileName);
+end
+

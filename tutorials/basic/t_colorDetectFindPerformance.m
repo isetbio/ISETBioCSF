@@ -53,6 +53,7 @@ p.addParameter('parforWorkersNum', 1, @isnumeric);
 p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('visualizeSpatialScheme', false, @islogical);
+p.addParameter('visualizeResponsesWithSpatialPoolingSchemeInVideo', false, @islogical);
 p.addParameter('visualizeKernelTransformedSignals', false, @islogical);
 p.addParameter('visualizeVarianceExplained', false, @islogical);
 p.addParameter('plotPsychometric',false,@islogical);
@@ -74,8 +75,9 @@ parforWorkersNum = p.Results.parforWorkersNum;
 %     parforWorkersNum = numberOfWorkers;
 % end
 
-
-fprintf('Classifying using %d workers\n', parforWorkersNum);
+if (p.Results.compute)
+    fprintf('Classifying using %d workers\n', parforWorkersNum);
+end
 
 %% Clear
 if (nargin == 0)
@@ -157,6 +159,11 @@ if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
     V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams, constantParamsList);
     thresholdParams = modifyStructParams(thresholdParams, ...
         'spatialPoolingKernel', V1filterBank);
+    
+    % Render video of responses with spatial pooling scheme is requested
+    if (p.Results.visualizeResponsesWithSpatialPoolingSchemeInVideo)
+        visualizeResponsesWithSpatialPoolingSchemeInVideo(thresholdParams.method, V1filterBank, rParams.colorModulationParams, rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, thresholdParams, constantParamsList);
+    end
 end
 
 if (strcmp(thresholdParams.method, 'svmV1FilterEnsemble'))
@@ -164,6 +171,10 @@ if (strcmp(thresholdParams.method, 'svmV1FilterEnsemble'))
     V1filterEnsemble = generateV1FilterEnsemble(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams, constantParamsList);
     thresholdParams = modifyStructParams(thresholdParams, ...
         'spatialPoolingKernel', V1filterEnsemble);
+    % Render video of responses with spatial pooling scheme is requested
+    if (p.Results.visualizeResponsesWithSpatialPoolingSchemeInVideo)
+        visualizeResponsesWithSpatialPoolingSchemeInVideo(thresholdParams.method, V1filterEnsemble, rParams.colorModulationParams, rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, thresholdParams, constantParamsList);
+    end
 end
 
 if (strcmp(thresholdParams.method, 'svmGaussianRF')) || (strcmp(thresholdParams.method, 'mlptGaussianRF'))
@@ -373,7 +384,7 @@ if (p.Results.generatePlots && p.Results.plotPsychometric)
     end
 end
 
-if (p.Results.visualizeVarianceExplained) 
+if (p.Results.visualizeVarianceExplained) && (p.Results.compute)
     fprintf('Reading performance data ... ');
     paramsList = constantParamsList;
     paramsList{numel(paramsList)+1} = thresholdParams;

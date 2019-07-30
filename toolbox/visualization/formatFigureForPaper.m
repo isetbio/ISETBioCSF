@@ -324,12 +324,23 @@ function varargout = formatFigureForPaper(hFig, varargin)
                     'LineWidth', 1.0);
             end
             
-        case 'CSF'
+        case {'CSF', 'CSF_high SF range'}
             csTicks = [2 5 10 20 50 100 200 500 1000 2000 5000 10000];
             csLims = [1.5 15000];
             sfTicks = [1 2 5 10 20 50 100];
             sfLims  = [1.5 80];
             dx1 = 0.2; dx2 = 10; dy1 = 0.5; dy2 = 1000;
+            
+            if (strcmp(figureType, 'CSF_high SF range'))
+                csTicks = [1 2 5 10 20 50 100 200 500 1000 2000 5000 10000];
+                csLims = [1.0 20];
+            
+                sfTicks = [1 2 5 10 20 40 60 80 100];
+                sfLims  = [20 80];
+                dx1 = 0.2; dx2 = 10; dy1 = 0.1; dy2 = 10;
+            end
+            
+            
                 
             if (isempty(theAxes)) && (isempty(theLegend))
                 if (plotRatiosOfOtherConditionsToFirst)

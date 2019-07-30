@@ -95,16 +95,20 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
                 RFprofile = (v1Unit.cosPhasePoolingProfile).^2 + (v1Unit.sinPhasePoolingProfile).^2;
                 v1Unit.RFprofile = RFprofile / max(RFprofile(:));
             
-                %if (rowOffset == -ensemblePositions) && (colOffset == -ensemblePositions)
-                    xaxisDegs = (0:(size(RFprofile,2)-1))/size(RFprofile,2) * spatialParams.fieldOfViewDegs;
-                    xaxisDegs = xaxisDegs - mean(xaxisDegs);
-                    yaxisDegs = (0:(size(RFprofile,1)-1))/size(RFprofile,1) * spatialParams.fieldOfViewDegs;
-                    yaxisDegs = yaxisDegs - mean(yaxisDegs);
-                    [X,Y] = meshgrid(xaxisDegs+v1Unit.spatialPosition(1), yaxisDegs+v1Unit.spatialPosition(2));
-                    rfCoordsDegs = [X(:) Y(:)];
-                    % Find nearest cone location
-                    [~, idx] = pdist2(rfCoordsDegs, coneLocsDegs, 'euclidean', 'Smallest', 1);
-                %end
+                
+                xaxisDegs = (0:(size(RFprofile,2)-1))/size(RFprofile,2) * spatialParams.fieldOfViewDegs;
+                xaxisDegs = xaxisDegs - mean(xaxisDegs);
+                yaxisDegs = (0:(size(RFprofile,1)-1))/size(RFprofile,1) * spatialParams.fieldOfViewDegs;
+                yaxisDegs = yaxisDegs - mean(yaxisDegs);
+                
+                v1Unit.xaxisDegs = xaxisDegs;
+                v1Unit.yaxisDegs = yaxisDegs;
+                
+                [X,Y] = meshgrid(xaxisDegs+v1Unit.spatialPosition(1), yaxisDegs+v1Unit.spatialPosition(2));
+                rfCoordsDegs = [X(:) Y(:)];
+                % Find nearest cone location
+                [~, idx] = pdist2(rfCoordsDegs, coneLocsDegs, 'euclidean', 'Smallest', 1);
+                
             
                 % Sample according to cone locations
                 v1Unit.cosPhasePoolingWeights = v1Unit.cosPhasePoolingProfile(idx);

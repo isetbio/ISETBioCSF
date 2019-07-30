@@ -84,6 +84,7 @@ p.addParameter('employStandardHostComputerResources', false, @islogical);
 p.addParameter('overrideMosaicIntegrationTime', [], @isnumeric);
 p.addParameter('generatePlots',false,@islogical);
 p.addParameter('visualizeResponses',true,@islogical);
+p.addParameter('visualizeResponsesWithSpatialPoolingSchemeInVideo',false,@islogical);
 p.addParameter('visualizedConditionIndices', [], @isnumeric);
 p.addParameter('visualizeOuterSegmentFilters',false, @islogical);
 p.addParameter('visualizeSpatialScheme',false,@islogical);

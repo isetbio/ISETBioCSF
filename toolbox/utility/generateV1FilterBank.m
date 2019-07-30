@@ -104,6 +104,8 @@ function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLoc
     % Compute energy envelope
     RFprofile = V1filterBank.cosPhasePoolingProfile.^2 + V1filterBank.sinPhasePoolingProfile.^2;
     V1filterBank.RFprofile = RFprofile / max(abs(RFprofile(:)));
+    V1filterBank.xaxisDegs = xaxisDegs;
+    V1filterBank.yaxisDegs = yaxisDegs;
     
     % Find pooling weights
     [X,Y] = meshgrid(xaxisDegs, yaxisDegs);
