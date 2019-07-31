@@ -35,9 +35,9 @@ function run_paper2EffectOfBackgroundLuminance
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -155,6 +155,7 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
     params.computePhotocurrentResponseInstances = computePhotocurrents && computeResponses;
     params.visualizeResponses = visualizeResponses;
     params.visualizeOuterSegmentFilters = ~true;
+    params.visualizeResponsesWithSpatialPoolingSchemeInVideo = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
