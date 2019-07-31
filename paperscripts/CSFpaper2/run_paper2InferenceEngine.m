@@ -36,7 +36,7 @@ function run_paper2InferenceEngine
     computeMosaic = ~true;
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -149,22 +149,22 @@ function run_paper2InferenceEngine
 %                         'spatialPositionOffsetDegs', 0.05, ... 
 %                         'cyclesPerRFs', 5, ...           % each template contains 5 cycles of the stimulus
 %                         'orientations', 0);
-                        
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'Pooling: 0.5 degs, 5x5, drift';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
-    examinedCond(condIndex).minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-    examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = 'randomNoSaccades';
-    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-    examinedCond(condIndex).ensembleFilterParams = struct(...
-                        'spatialPositionsNum',  2, ...   % 1 results in a 3x3 grid of spatial pooling templates
-                        'spatialPositionOffsetDegs', 0.03, ... 
-                        'cyclesPerRFs', 5, ...           % each template contains 5 cycles of the stimulus
-                        'orientations', 0);
-                    
+%                         
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'Pooling: 0.5 degs, 5x5, drift';
+%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
+%     examinedCond(condIndex).minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
+%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+%     examinedCond(condIndex).performanceSignal = performanceSignal;
+%     examinedCond(condIndex).emPathType = 'randomNoSaccades';
+%     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+%     examinedCond(condIndex).ensembleFilterParams = struct(...
+%                         'spatialPositionsNum',  2, ...   % 1 results in a 3x3 grid of spatial pooling templates
+%                         'spatialPositionOffsetDegs', 0.03, ... 
+%                         'cyclesPerRFs', 5, ...           % each template contains 5 cycles of the stimulus
+%                         'orientations', 0);
+%                     
     % Go
     examinedLegends = {};
 
