@@ -63,7 +63,7 @@ function run_paper2_ComboFemAndPcurrent
     nTrainingSamples = 1030;
      
     
-    showDataFromLinearPooling = true;
+    showDataFromLinearPooling = ~true;
     showDataFromQuadraturePooling = ~showDataFromLinearPooling;
     
     % Assemble conditions list to be examined
