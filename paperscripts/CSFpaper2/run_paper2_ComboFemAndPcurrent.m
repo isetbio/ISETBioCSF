@@ -1,4 +1,4 @@
-function run_paper2_FinalConditionsUsing2mmPupil
+function run_paper2_ComboFemAndPcurrent
 % Compute and contrast performance via different inference engines.
 %
 % Syntax:
@@ -40,7 +40,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
     visualizePerformance = true;
     
     % Pupil diameter to be used
-    pupilDiamMm = 2.0;
+    pupilDiamMm = 3.0;
     
     % Integration time to use: Here set to 5.0 ms, but 2.5 ms may be better 
     % for capturing the dynamics of fixationalEM
@@ -60,14 +60,17 @@ function run_paper2_FinalConditionsUsing2mmPupil
     
     % Different stategy for  drift fixational EMs
     centeredEMPaths =  'atStimulusModulationMidPoint';
-    nTrainingSamples = 1024;
+    nTrainingSamples = 1030;
      
+    
+    showDataFromLinearPooling = true;
+    showDataFromQuadraturePooling = ~showDataFromLinearPooling;
     
     % Assemble conditions list to be examined
     % Init condition index
     condIndex = 0;
     
-    
+    % Reference CSF (gray)
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-Temp-L, cone exc., noEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
@@ -77,34 +80,50 @@ function run_paper2_FinalConditionsUsing2mmPupil
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = true;
     
-    
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Temp-L, pCurrent, noEM';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = 'frozen0';
-    examinedCond(condIndex).centeredEMPaths = true;
-    
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Temp-E., pCurrent, noEM';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-    examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = 'frozen0';
-    examinedCond(condIndex).centeredEMPaths = true;
-    
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Temp-E., pCurrent, driftEM';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-    examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = 'randomNoSaccades';
-    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
 
+    if (showDataFromLinearPooling)
+        condIndex = condIndex+1;
+        examinedCond(condIndex).label = 'SVM-Temp-L, pCurrent, noEM';
+        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+        examinedCond(condIndex).performanceSignal = performanceSignal;
+        examinedCond(condIndex).emPathType = 'frozen0';
+        examinedCond(condIndex).centeredEMPaths = true;
+    end
+    
+    if (showDataFromQuadraturePooling)
+        condIndex = condIndex+1;
+        examinedCond(condIndex).label = 'SVM-Temp-E., pCurrent, noEM';
+        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+        examinedCond(condIndex).performanceSignal = performanceSignal;
+        examinedCond(condIndex).emPathType = 'frozen0';
+        examinedCond(condIndex).centeredEMPaths = true;
+    end
+    
+    if (showDataFromQuadraturePooling)
+        condIndex = condIndex+1;
+        examinedCond(condIndex).label = 'SVM-Temp-E., pCurrent, driftEM';
+        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+        examinedCond(condIndex).performanceSignal = performanceSignal;
+        examinedCond(condIndex).emPathType = 'randomNoSaccades';
+        examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    end
+    
+    if (showDataFromLinearPooling)
+        condIndex = condIndex+1;
+        examinedCond(condIndex).label = 'SVM-Temp-L., pCurrent, driftEM';
+        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+        examinedCond(condIndex).performanceSignal = performanceSignal;
+        examinedCond(condIndex).emPathType = 'randomNoSaccades';
+        examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    end
     
     % Go
     examinedLegends = {};
@@ -141,14 +160,19 @@ function run_paper2_FinalConditionsUsing2mmPupil
     
    
     if (makeSummaryFigure)
-        variedParamName = sprintf('EyeMovements_%s', performanceSignal);
+        if (showDataFromQuadraturePooling)
+            variedParamName = 'QuadraturePoolingfEM_pCurrent_combo';
+        else
+            variedParamName = 'LinearPoolingfEM_pCurrent_combo';
+        end
+        
         theRatioLims = [0.07 1.15];
         theRatioTicks = [0.05 0.1 0.2 0.5 1.0];
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
-            'showSubjectData', true, ...
-            'showSubjectMeanData', true, ...
+            'showSubjectData', ~true, ...
+            'showSubjectMeanData', ~true, ...
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
