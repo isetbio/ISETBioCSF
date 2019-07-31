@@ -50,7 +50,7 @@ function run_paper2EffectOfPulseDuration
     % Init condition index
     condIndex = 0;
     
-    performanceSignal = 'isomerizations'; % 'photocurrents';
+    performanceSignal = 'photocurrents';
     performanceClassifier = 'svmV1FilterBank';
     spatialPoolingKernelType = 'V1CosUnit';            % choose between 'V1CosUnit' and 'V1QuadraturePair';
     spatialPoolingKernelActivationFunction = 'linear'; % choose between 'linear' and 'energy';
@@ -145,7 +145,7 @@ function run_paper2EffectOfPulseDuration
     
     
     if (makeSummaryFigure)
-        variedParamName = 'SignalType';
+        variedParamName = sprintf('%sStimulusDuration',performanceSignal);
         
         theRatioLims = [0.3 2];
         theRatioTicks = [0.5 0.7 1.0 1.5 2];
@@ -158,7 +158,7 @@ function run_paper2EffectOfPulseDuration
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.220,0.905,0.77,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.23,0.88,0.4,0.08], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );
@@ -174,6 +174,7 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
     params.computeResponses = computeResponses;
     params.computePhotocurrentResponseInstances = computePhotocurrents && computeResponses;
     params.visualizeResponses = visualizeResponses;
+    params.visualizeResponsesWithSpatialPoolingSchemeInVideo = ~true;
     params.visualizeOuterSegmentFilters = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;

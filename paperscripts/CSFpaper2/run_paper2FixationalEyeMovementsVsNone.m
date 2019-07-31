@@ -56,8 +56,8 @@ function run_paper2FixationalEyeMovementsVsNone
     
     performanceSignal = 'isomerizations';  % 'photocurrents', 'isomerizations';
     
-    showDataFromLinearPooling = ~true;
-    showDataFromQuadraturePooling = true;
+    showDataFromLinearPooling = true;
+    showDataFromQuadraturePooling = ~showDataFromLinearPooling;
     
     % Assemble conditions list to be examined
     % Init condition index
@@ -150,9 +150,15 @@ function run_paper2FixationalEyeMovementsVsNone
     
     
     if (makeSummaryFigure)
-        variedParamName = 'EyeMovements';
+        
         theRatioLims = [0.01 1.2];
         theRatioTicks = [0.01 0.05 0.1 0.2 0.5 1.0];
+        if (showDataFromQuadraturePooling)
+            variedParamName = 'QuadraturePoolingEyeMovements';
+        else
+            variedParamName = 'LinearPoolingEyeMovements';
+        end
+        
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...

@@ -141,6 +141,7 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
     
     params.computeResponses = computeResponses;
     params.computePhotocurrentResponseInstances = computePhotocurrents && computeResponses;
+    params.visualizeResponsesWithSpatialPoolingSchemeInVideo = ~true;
     params.visualizeResponses = visualizeResponses;
     params.visualizeOuterSegmentFilters = ~true;
     params.visualizeSpatialScheme = ~true;
