@@ -1,4 +1,4 @@
-function run_paper2FixationalEyeMovementsVsNone
+function run_paper2FixationalEyeMovementsVsNoneNew
 % Compute and contrast performance for fixational eye movements vs no EM.
 %
 % Syntax:

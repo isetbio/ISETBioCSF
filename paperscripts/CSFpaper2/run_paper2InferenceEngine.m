@@ -68,7 +68,7 @@ function run_paper2InferenceEngine
 % %     
     if (~findPerformance) && (~computeResponses)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'Pooling: stim-matched, no EM';
+        examinedCond(condIndex).label = 'stim-matched, no EM';
         examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -78,7 +78,7 @@ function run_paper2InferenceEngine
         examinedCond(condIndex).centeredEMPaths = true;
     
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'Pooling: stim-matched, drift';
+        examinedCond(condIndex).label = 'stim-matched, drift';
         examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -94,7 +94,7 @@ function run_paper2InferenceEngine
     
     if (~findPerformance) && (~computeResponses)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'Pooling: 0.33 degs, drift';
+        examinedCond(condIndex).label = '0.3 degs, drift';
         examinedCond(condIndex).minimumMosaicFOVdegs = 0.328;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -104,7 +104,7 @@ function run_paper2InferenceEngine
         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
     
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'Pooling: 0.50 degs, drift';
+        examinedCond(condIndex).label = '0.5 degs, drift';
         examinedCond(condIndex).minimumMosaicFOVdegs = 0.492;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -119,7 +119,7 @@ function run_paper2InferenceEngine
         % 60 c/deg, isomerizations: YES (CSF = 2.48)
         % 50 c/deg, photocurrent: YES (CSF = 1.087)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'Pooling: 0.33 degs, 3x3, drift';
+        examinedCond(condIndex).label = '0.3 degs, 3x3, drift';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
         examinedCond(condIndex).minimumMosaicFOVdegs = -0.328;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -150,20 +150,20 @@ function run_paper2InferenceEngine
 %                         'cyclesPerRFs', 5, ...           % each template contains 5 cycles of the stimulus
 %                         'orientations', 0);
 %                         
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'Pooling: 0.5 degs, 5x5, drift';
-%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
-%     examinedCond(condIndex).minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%     examinedCond(condIndex).performanceSignal = performanceSignal;
-%     examinedCond(condIndex).emPathType = 'randomNoSaccades';
-%     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-%     examinedCond(condIndex).ensembleFilterParams = struct(...
-%                         'spatialPositionsNum',  2, ...   % 1 results in a 3x3 grid of spatial pooling templates
-%                         'spatialPositionOffsetDegs', 0.03, ... 
-%                         'cyclesPerRFs', 5, ...           % each template contains 5 cycles of the stimulus
-%                         'orientations', 0);
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = '0.5 degs, 5x5, drift';
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
+    examinedCond(condIndex).minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = 'randomNoSaccades';
+    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    examinedCond(condIndex).ensembleFilterParams = struct(...
+                        'spatialPositionsNum',  2, ...   % 1 results in a 3x3 grid of spatial pooling templates
+                        'spatialPositionOffsetDegs', 0.02, ... 
+                        'cyclesPerRFs', 5, ...           % each template contains 5 cycles of the stimulus
+                        'orientations', 0);
 %                     
     % Go
     examinedLegends = {};
@@ -213,8 +213,8 @@ function run_paper2InferenceEngine
    
     if (makeSummaryFigure)
         variedParamName = performanceSignal;
-        theRatioLims = [0.4 1.5];
-        theRatioTicks = [0.3 0.5 1.0 1.5];
+        theRatioLims = [0.25 1.4];
+        theRatioTicks = [0.3 0.5 0.7 1.0 1.4];
         formatLabel = 'InferenceEngine';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF_high SF range', ...
@@ -224,7 +224,7 @@ function run_paper2InferenceEngine
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.25,0.8,0.7,0.08], ...    % custom legend position and size
+            'theLegendPosition', [0.45,0.86,0.5,0.08], ...    % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );

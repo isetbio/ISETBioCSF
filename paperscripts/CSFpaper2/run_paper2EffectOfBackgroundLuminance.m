@@ -58,7 +58,7 @@ function run_paper2EffectOfBackgroundLuminance
         
     
     
-    performanceSignal = 'photocurrents';
+    performanceSignal = 'isomerizations'; %'isomerizations'; % 'photocurrents';
     performanceClassifier = 'svmV1FilterBank';
     spatialPoolingKernelType = 'V1CosUnit';            % choose between 'V1CosUnit' and 'V1QuadraturePair';
     spatialPoolingKernelActivationFunction = 'linear'; % choose between 'linear' and 'energy';
@@ -127,7 +127,7 @@ function run_paper2EffectOfBackgroundLuminance
     if (makeSummaryFigure)
         variedParamName = sprintf('%sBkgndLuminance',performanceSignal);
         
-        theRatioLims = [0.1 15];
+        theRatioLims = [0.09 17];
         theRatioTicks = [0.1 0.3 1.0 3 10];
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
@@ -138,7 +138,7 @@ function run_paper2EffectOfBackgroundLuminance
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.6,0.89,0.5,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.23,0.31,0.41,0.15], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );

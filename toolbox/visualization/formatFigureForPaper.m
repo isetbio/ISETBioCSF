@@ -335,9 +335,9 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 csTicks = [1 2 5 10 20 50 100 200 500 1000 2000 5000 10000];
                 csLims = [1.0 20];
             
-                sfTicks = [1 2 5 10 20 40 60 80 100];
-                sfLims  = [20 80];
-                dx1 = 0.2; dx2 = 10; dy1 = 0.1; dy2 = 10;
+                sfTicks = [1 2 5 10 20 30 40 50 60 80 100];
+                sfLims  = [26 70];
+                dx1 = 0.2; dx2 = 5; dy1 = 0.1; dy2 = 15;
             end
             
             
