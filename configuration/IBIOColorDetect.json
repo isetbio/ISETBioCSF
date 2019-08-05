@@ -6,7 +6,7 @@
 		"localHookTemplate": "configuration/IBIOColorDetectLocalHookTemplate.m",
 		"name": "IBIOColorDetect",
 		"pathPlacement": "append",
-		"subfolder": ["toolbox", "tutorials", "compute", "validations", "paperfigs", "paperscripts"],
+		"subfolder": ["toolbox", "tutorials", "compute", "validations", "paperfigs", "paperscripts", "wrappers"],
 		"toolboxRoot": "",
 		"type": "git",
 		"update": "",
