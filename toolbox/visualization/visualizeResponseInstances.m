@@ -203,11 +203,11 @@ function hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData)
     
     timeLims = [0 200];
     isomerizationsLimits = [0 30];
-    photocurrentLimits = [-83 -68];
+    photocurrentLimits = [-85 -70];
     
     timeTicks = 0:50:300;
     isomerizationTicks = 0:5:300;
-    photocurrentTicks = -90:2:-60;
+    photocurrentTicks = -90:5:-60;
     
     fontSize = 16;
     mosaicZoomedInTicksArcMin = -21:3:21;
@@ -293,6 +293,9 @@ function hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData)
     dt = timeAxis(2)-timeAxis(1);
     renderMeanResponseAndInstance('steps', timeAxis, meanIsomerizations, isomerizationInstance, isomerizationsLimits, timeLims, isomerizationTicks, timeTicks, sprintf('\\it R*/%1.0fmsec', dt), fontSize);
     
+    % Plot the x-axis emPath time course
+    %axes('Position',[0.61 0.7 width height/3]);
+    %renderEMpath(timeAxis, theEMpathDegs, timeLims, timeTicks, fontSize);
     
     % Plot the photocurrent mean and instance time traces in the middle
     axes('Position',[0.78 0.546 width height]);
@@ -326,7 +329,7 @@ function hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData)
     
     % Plot the photocurrent noise at the bottom
     axes('Position',[0.75 0.10 width height]);
-    renderPhotocurrentNoise(timeAxis, timeLims, fontSize);
+    renderPhotocurrentNoise(timeAxis, timeLims, photocurrentInstance(:)-meanPhotocurrent(:), fontSize);
 end
 
 function renderMosaicAndSingleEMPath(theMosaic, timeAxis, theEMpathMeters, spaceLimsMeters, mosaicZoomedInTicksMeters, mosaicZoomedInTicksLabels, fontSize)
@@ -353,9 +356,16 @@ function renderPhotocurrentImpulseResponses(timeAxis,  timeLims, stimData, timeT
     
     dt = timeAxis(2)-timeAxis(1);
     tt  = (1:size(stimData.osImpulseResponses,1))*dt - dt;
-    plot(tt, stimData.osImpulseResponses(:,1), 'r-', 'LineWidth', 1.5); hold on
-    plot(tt, stimData.osImpulseResponses(:,2), 'g-', 'LineWidth', 1.5);
-    plot(tt, stimData.osImpulseResponses(:,3), 'b-', 'LineWidth', 1.5);
+    hold on;
+    plot(tt, stimData.osImpulseResponses(:,1), 'r-', 'LineWidth', 3);
+    plot(tt, stimData.osImpulseResponses(:,2), 'g-', 'LineWidth', 3);
+    plot(tt, stimData.osImpulseResponses(:,3), 'b-', 'LineWidth', 3, 'Color', [0.3 0.4 1.0]);
+    plot(tt, stimData.osImpulseResponses(:,1), 'k-', 'LineWidth', 4);
+    plot(tt, stimData.osImpulseResponses(:,2), 'k-', 'LineWidth', 4);
+    plot(tt, stimData.osImpulseResponses(:,3), 'k-', 'LineWidth', 4);
+    plot(tt, stimData.osImpulseResponses(:,1), 'r-', 'LineWidth', 2);
+    plot(tt, stimData.osImpulseResponses(:,2), 'g-', 'LineWidth', 2);
+    plot(tt, stimData.osImpulseResponses(:,3), 'b-', 'LineWidth', 2, 'Color', [0.3 0.4 1.0]);
     set(gca, 'XLim', timeLims, 'XTick', timeTicks, 'YTick', photocurrentTicks, 'YTickLabel', sprintf('%2.2f\n', photocurrentTicks), 'FontSize', fontSize); 
     axis 'square';
     hl = legend({'L', 'M', 'S'});
@@ -364,7 +374,7 @@ function renderPhotocurrentImpulseResponses(timeAxis,  timeLims, stimData, timeT
     box on; grid on;
 end
 
-function renderPhotocurrentNoise(timeAxis, timeLims, fontSize)
+function renderPhotocurrentNoise(timeAxis, timeLims, instanceNoise, fontSize)
     nTimeSamples = 1000;
     nConesNum = 8192;
     deltaT = (timeAxis(2)-timeAxis(1))/1000;
@@ -383,17 +393,27 @@ function renderPhotocurrentNoise(timeAxis, timeLims, fontSize)
         xlabel('\it frequency (Hz)')
         ylabel('\it pAmps^2 / Hz');
     else
-        timeAxis2 = 1000*(1: nTimeSamples)*deltaT-deltaT/2;
-        hPlot = plot(timeAxis2, noiseOnlyResponses(:,1:512), 'k-', 'LineWidth', 1.5);
+        timeAxis2 = 1000*((1: nTimeSamples)*deltaT-deltaT);
+        hPlot = plot(timeAxis2, noiseOnlyResponses(:,1:128), '-', 'LineWidth', 1.5, 'Color', [0 0 0]);
         for k = 1:numel(hPlot)
-            hPlot(k).Color(4) = 0.1;  % 5% transparent
+            hPlot(k).Color(4) = 0.2;  % 5% transparent
         end
+        %hold on;
+        %plot(timeAxis2(1:numel(instanceNoise)), instanceNoise, 'k-', 'LineWidth', 2.0);
         set(gca, 'XLim', timeLims, 'YLim', 15*[-1 1], 'XTIck', 0:50:500, 'YTick', [-20:5:20], 'FontSize', fontSize);
         xlabel('\it time (msec)')
         ylabel('\it pAmps');
     end
     
     axis 'square';
+    box on; grid on;
+end
+
+function renderEMpath(timeAxis, theEMpathDegs, timeLims, timeTicks, fontSize)
+    plot(timeAxis, squeeze(theEMpathDegs(:,1))*60, 'r-', 'LineWidth', 1.5); hold on;
+    plot(timeAxis, squeeze(theEMpathDegs(:,2))*60, 'k-', 'LineWidth', 1.5); hold off
+    set(gca, 'YLim', 2.5*[-1 1], 'YTick', [-4:2:4], 'XLim', timeLims, 'XTick', timeTicks, 'XTickLabel', {}, 'FontSize', fontSize);
+    ylabel(sprintf('\\it space\n(arc min)'));
     box on; grid on;
 end
 
@@ -520,13 +540,13 @@ function renderOpticalImage(ax, xAxisDegs, yAxisDegs, retinalImage, fontSize)
     imagesc(ax,xAxisDegs, yAxisDegs, retinalImage); hold(ax, 'on');
     axis(ax, 'image'); axis(ax, 'xy');
     spaceLimsDegs = [xAxisDegs(1) xAxisDegs(end)];
-    spaceTicksArcMin = -180:15:180;
+    spaceTicksArcMin = [xAxisDegs(1) 0 xAxisDegs(end)]*60;
     spaceTicksDegs = spaceTicksArcMin/60;
     spaceTickLabels = sprintf('%2.1f\n',  spaceTicksDegs);
     
     set(ax, 'CLim', [0 1], 'XLim', spaceLimsDegs, 'YLim', spaceLimsDegs, 'FontSize', fontSize, ...
         'XTickLabel', spaceTickLabels, 'XTick', spaceTicksDegs, 'YTickLabel', {});
-    box(ax, 'on'); grid(ax, 'on');
+    box(ax, 'on'); grid(ax, 'off');
     xlabel('\it space (degs)');
 end
 
@@ -552,7 +572,7 @@ function idx0 = renderOpticalImageEyePathComboPlot(ax, timeAxis, visualizationTi
     spaceTickLabels = sprintf('%2.0f\n',  spaceTicksArcMin);
     set(ax, 'CLim', [0 1], 'XLim', spaceLimsDegs, 'YLim', spaceLimsDegs, 'FontSize', fontSize, ...
         'XTick', spaceTicksDegs, 'YTick', spaceTicksDegs, 'XTickLabel', spaceTickLabels, 'YTickLabel', {});
-    box(ax, 'on'); grid(ax, 'on');
+    box(ax, 'on'); grid(ax, 'off');
     t = ylabel(sprintf('%2.0fmsec', visualizationTime), 'FontWeight', 'normal','FontSize', fontSize);
     set(t, 'horizontalAlignment', 'right')
     if (showXLabel)
@@ -1205,8 +1225,8 @@ function [timelinePlot, timelineArrowPlot] = generateXTConeLinePlot(ax, theMosai
     plot(emTRajectoryXposDegs, timeAxis, '-', 'LineWidth', 5, 'Color', [0 0.7 0]);
     plot(emTRajectoryXposDegs, timeAxis, '-', 'LineWidth', 3, 'Color', [0 1 0]);
     
-    timelinePlot = plot(ax, [min(coneXcoordsDegs) max(coneXcoordsDegs)], [nan nan], 'g-', 'LineWidth', 2);
-    timelineArrowPlot = plot(ax, min(coneXcoordsDegs), nan, 'gs', 'MarkerSize', 12, 'LineWidth', 1.5, 'MarkerFaceColor', [0.6 1.0 0.6]);
+    %timelinePlot = plot(ax, [min(coneXcoordsDegs) max(coneXcoordsDegs)], [nan nan], 'g-', 'LineWidth', 2);
+    %timelineArrowPlot = plot(ax, min(coneXcoordsDegs), nan, 'gs', 'MarkerSize', 12, 'LineWidth', 1.5, 'MarkerFaceColor', [0.6 1.0 0.6]);
     hold(ax, 'off');
     if (showXTicks)
         xTickLabels = {'-0.2', '', '-0.1', '', '0', '', '+0.1', '', '+0.2'};
