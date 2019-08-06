@@ -34,7 +34,7 @@ function run_paper2InferenceEngine
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = ~true;
+    computeResponses = true;
     visualizeResponses = ~true;
     findPerformance = ~true;
     visualizePerformance = true;
@@ -92,7 +92,7 @@ function run_paper2InferenceEngine
 %     
 
     
-    if (~findPerformance) && (~computeResponses)
+    %if (~findPerformance) && (~computeResponses)
         condIndex = condIndex+1;
         examinedCond(condIndex).label = '0.3 degs, drift';
         examinedCond(condIndex).minimumMosaicFOVdegs = 0.328;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
@@ -112,7 +112,7 @@ function run_paper2InferenceEngine
         examinedCond(condIndex).performanceSignal = performanceSignal;
         examinedCond(condIndex).emPathType = emPathType;
         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-    end
+    %end
     
     
     if (~findPerformance) && (~computeResponses)
