@@ -29,6 +29,7 @@ function generateFig1panels()
     params.computePhotocurrentResponseInstances = true;
     params.visualizeDisplay = ~true;
     params.visualizeResponses = true;
+    params.visualizeResponsesWithSpatialPoolingSchemeInVideo = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
