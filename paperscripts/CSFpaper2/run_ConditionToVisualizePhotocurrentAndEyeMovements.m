@@ -68,7 +68,7 @@ function run_ConditionToVisualizePhotocurrentAndEyeMovements
     params.nContrastsPerDirection = 1;
         
     % Simulation steps to perform
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
