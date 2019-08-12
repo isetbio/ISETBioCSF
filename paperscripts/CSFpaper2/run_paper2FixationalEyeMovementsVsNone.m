@@ -56,7 +56,7 @@ function run_paper2FixationalEyeMovementsVsNone
     
     performanceSignal = 'isomerizations';  % 'photocurrents', 'isomerizations';
     
-    showDataFromLinearPooling = true;
+    showDataFromLinearPooling = ~true;
     showDataFromQuadraturePooling = ~showDataFromLinearPooling;
     
     % Assemble conditions list to be examined
@@ -65,7 +65,7 @@ function run_paper2FixationalEyeMovementsVsNone
     
     % Reference CSF
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Linear, noEM';
+    examinedCond(condIndex).label = 'SVM-Template-L, noEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -77,7 +77,7 @@ function run_paper2FixationalEyeMovementsVsNone
 
     if (~computeResponses) && (showDataFromQuadraturePooling)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Template-Energy, noEM';
+        examinedCond(condIndex).label = 'SVM-Template-E, noEM';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
@@ -88,7 +88,7 @@ function run_paper2FixationalEyeMovementsVsNone
     
     if (showDataFromLinearPooling)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Template-Linear, drift';
+        examinedCond(condIndex).label = 'SVM-Template-L, drift';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -99,7 +99,7 @@ function run_paper2FixationalEyeMovementsVsNone
 %     
     if (~computeResponses) && (showDataFromQuadraturePooling)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Template-Energy, drift';
+        examinedCond(condIndex).label = 'SVM-Template-E, drift';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
@@ -168,7 +168,7 @@ function run_paper2FixationalEyeMovementsVsNone
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.220,0.905,0.77,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.38,0.905,0.59,0.08], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );

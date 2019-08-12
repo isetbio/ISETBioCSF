@@ -50,7 +50,7 @@ function run_paper2EffectOfPulseDuration
     % Init condition index
     condIndex = 0;
     
-    performanceSignal = 'photocurrents';
+    performanceSignal = 'isomerizations'; %'photocurrents';
     performanceClassifier = 'svmV1FilterBank';
     spatialPoolingKernelType = 'V1CosUnit';            % choose between 'V1CosUnit' and 'V1QuadraturePair';
     spatialPoolingKernelActivationFunction = 'linear'; % choose between 'linear' and 'energy';
@@ -158,7 +158,7 @@ function run_paper2EffectOfPulseDuration
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.23,0.31,0.41,0.15], ...   % custom legend position and size
+            'theLegendPosition', [0.57 0.835 0.41 0.15], ...    % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );

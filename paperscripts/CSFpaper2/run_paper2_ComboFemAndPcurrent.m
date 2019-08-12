@@ -72,7 +72,7 @@ function run_paper2_ComboFemAndPcurrent
     
     % Reference CSF (gray)
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Temp-L, cone exc., noEM';
+    examinedCond(condIndex).label = 'SVM-Temp-L, R*, noEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -83,7 +83,7 @@ function run_paper2_ComboFemAndPcurrent
 
     if (showDataFromLinearPooling)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Temp-L, pCurrent, noEM';
+        examinedCond(condIndex).label = 'SVM-Temp-L, curr., noEM';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -94,7 +94,7 @@ function run_paper2_ComboFemAndPcurrent
     
     if (showDataFromQuadraturePooling)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Temp-E., pCurrent, noEM';
+        examinedCond(condIndex).label = 'SVM-Temp-E, curr., noEM';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
@@ -105,7 +105,7 @@ function run_paper2_ComboFemAndPcurrent
     
     if (showDataFromQuadraturePooling)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Temp-E., pCurrent, driftEM';
+        examinedCond(condIndex).label = 'SVM-Temp-E, curr., drift';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
@@ -116,7 +116,7 @@ function run_paper2_ComboFemAndPcurrent
     
     if (showDataFromLinearPooling)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Temp-L., pCurrent, driftEM';
+        examinedCond(condIndex).label = 'SVM-Temp-L, curr., drift';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -166,8 +166,8 @@ function run_paper2_ComboFemAndPcurrent
             variedParamName = 'LinearPoolingfEM_pCurrent_combo';
         end
         
-        theRatioLims = [0.07 1.15];
-        theRatioTicks = [0.05 0.1 0.2 0.5 1.0];
+        theRatioLims = [0.01 1.00];
+        theRatioTicks = [0.01 0.05 0.1 0.2 0.5 1.0];
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
@@ -177,7 +177,7 @@ function run_paper2_ComboFemAndPcurrent
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.23,0.86,0.75,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.415,0.905,0.5,0.08], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );

@@ -58,7 +58,7 @@ function run_paper2EffectOfBackgroundLuminance
         
     
     
-    performanceSignal = 'isomerizations'; %'isomerizations'; % 'photocurrents';
+    performanceSignal = 'photocurrents'; %'isomerizations'; % 'photocurrents';
     performanceClassifier = 'svmV1FilterBank';
     spatialPoolingKernelType = 'V1CosUnit';            % choose between 'V1CosUnit' and 'V1QuadraturePair';
     spatialPoolingKernelActivationFunction = 'linear'; % choose between 'linear' and 'energy';
@@ -88,10 +88,13 @@ function run_paper2EffectOfBackgroundLuminance
     examinedCond(condIndex).label = '340 cd/m2';
     examinedCond(condIndex).backgroundLuminance = 340;
 %     
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = '3400 cd/m2';
-    examinedCond(condIndex).backgroundLuminance = 3400;
-     
+    use3400 = false;
+    if (use3400)
+        condIndex = condIndex+1;
+        examinedCond(condIndex).label = '3400 cd/m2';
+        examinedCond(condIndex).backgroundLuminance = 3400;
+    end
+    
     % Go
     examinedLegends = {};
     for condIndex = 1:numel(examinedCond)
@@ -138,7 +141,7 @@ function run_paper2EffectOfBackgroundLuminance
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.23,0.31,0.41,0.15], ...   % custom legend position and size
+            'theLegendPosition', [0.57 0.844 0.41 0.14],  ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );

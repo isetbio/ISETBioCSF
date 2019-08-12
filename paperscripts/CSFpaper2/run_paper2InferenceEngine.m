@@ -66,7 +66,7 @@ function run_paper2InferenceEngine
     condIndex = 0;
     
 % %     
-    if (~findPerformance) && (~computeResponses)
+%    if (~findPerformance) && (~computeResponses)
         condIndex = condIndex+1;
         examinedCond(condIndex).label = 'stim-matched, no EM';
         examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
@@ -86,7 +86,7 @@ function run_paper2InferenceEngine
         examinedCond(condIndex).performanceSignal = performanceSignal;
         examinedCond(condIndex).emPathType = emPathType;
         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-    end
+%    end
     
 %     
 %     
@@ -135,21 +135,7 @@ function run_paper2InferenceEngine
     end
      
    
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'Pooling: 0.5 degs, 3x3, drift';
-%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
-%     examinedCond(condIndex).minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%     examinedCond(condIndex).performanceSignal = performanceSignal;
-%     examinedCond(condIndex).emPathType = 'randomNoSaccades';
-%     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-%     examinedCond(condIndex).ensembleFilterParams = struct(...
-%                         'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid of spatial pooling templates
-%                         'spatialPositionOffsetDegs', 0.05, ... 
-%                         'cyclesPerRFs', 5, ...           % each template contains 5 cycles of the stimulus
-%                         'orientations', 0);
-%                         
+
     condIndex = condIndex+1;
     examinedCond(condIndex).label = '0.5 degs, 5x5, drift';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
@@ -171,7 +157,7 @@ function run_paper2InferenceEngine
     for condIndex = 1:numel(examinedCond)
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
-        params.cyclesPerDegreeExamined = [32 50 60]; % [24 32 50 60];
+        params.cyclesPerDegreeExamined = [40]; % [32 40 50 60]; % [24 32 50 60];
 
         
         % Update params
