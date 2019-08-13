@@ -63,7 +63,7 @@ function run_paper2IsomerizationsVsPhotocurrents
     
     if (~computeResponses)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Template-Linear, cone exc.';
+        examinedCond(condIndex).label = 'SVM-Template-Linear, R*';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -71,7 +71,7 @@ function run_paper2IsomerizationsVsPhotocurrents
     end
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Linear, pCurrent';
+    examinedCond(condIndex).label = 'SVM-Template-Linear, pCurr.';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -126,7 +126,7 @@ function run_paper2IsomerizationsVsPhotocurrents
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.220,0.905,0.77,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.30,0.905,0.67,0.08], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );

@@ -83,7 +83,7 @@ function run_paper2_ComboFemAndPcurrent
 
     if (showDataFromLinearPooling)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Temp-L, curr., noEM';
+        examinedCond(condIndex).label = 'SVM-Temp-L, pCurr., noEM';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -94,7 +94,7 @@ function run_paper2_ComboFemAndPcurrent
     
     if (showDataFromQuadraturePooling)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Temp-E, curr., noEM';
+        examinedCond(condIndex).label = 'SVM-Temp-E, pCurr., noEM';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
@@ -105,7 +105,7 @@ function run_paper2_ComboFemAndPcurrent
     
     if (showDataFromQuadraturePooling)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Temp-E, curr., drift';
+        examinedCond(condIndex).label = 'SVM-Temp-E, pCurr., drift';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
@@ -116,7 +116,7 @@ function run_paper2_ComboFemAndPcurrent
     
     if (showDataFromLinearPooling)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Temp-L, curr., drift';
+        examinedCond(condIndex).label = 'SVM-Temp-L, pCurr., drift';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -177,7 +177,7 @@ function run_paper2_ComboFemAndPcurrent
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.415,0.905,0.5,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.47,0.905,0.37,0.08], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );
