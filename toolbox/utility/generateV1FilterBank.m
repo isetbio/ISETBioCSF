@@ -51,20 +51,36 @@ function [V1filterBank, hFig] = generateV1FilterBank(spatialParams, mosaicParams
             error('Currently generating V1 filter banks for Gabor stimuli only.');
     end  % switch
     
-    xaxis = (0:(size(spatialModulation,2)-1))/size(spatialModulation,2) * filterWidthInDegrees;
+    xaxis = (0:(size(spatialModulation,2)-1))/size(spatialModulation,2) * abs(filterWidthInDegrees);
     xaxis = xaxis - mean(xaxis);
-    yaxis = (0:(size(spatialModulation,1)-1))/size(spatialModulation,1) * filterWidthInDegrees;
+    yaxis = (0:(size(spatialModulation,1)-1))/size(spatialModulation,1) * abs(filterWidthInDegrees);
     yaxis = yaxis - mean(yaxis);
             
     % Generate the V1 filter bank        
     V1filterBank = makeV1FilterBank(spatialParams, filterWidthInDegrees, coneLocsInDegs, xaxis, yaxis, coneDensity, thresholdParams.spatialPoolingKernelParams);
 
     if (visualizeSpatialScheme)
-        coneRadiusMicrons = mosaicParams.innerSegmentSizeMicrons/2;
         coneRadiusMicrons = 0.5*diameterForCircularApertureFromWidthForSquareAperture(theMosaic.pigment.width)*1e6;
+        iTheta = (0:30:360) / 180 * pi;
+        if (theMosaic.shouldCorrectAbsorptionsWithEccentricity())
+            % Compute ecc-varying apertures
+            dx = coneRadiusMicrons * 1e-6;
+            apertureOutline.x = dx * cos(iTheta);
+            apertureOutline.y = dx * sin(iTheta);
+        
+            [coneApertureOutline, ~, ~] = theMosaic.computeApertureSizes(...
+                dx, [], apertureOutline, [], coneLocsInMeters(:,1), coneLocsInMeters(:,2));
+            
+            coneApertureOutline.x = coneApertureOutline.x *1e6/theMosaic.micronsPerDegree;
+            coneApertureOutline.y = coneApertureOutline.y *1e6/theMosaic.micronsPerDegree;
+        else
+            coneRadiusDegs = coneRadiusMicrons/theMosaic.micronsPerDegree;
+            coneApertureOutline.x = coneRadiusDegs * cos(iTheta);
+            coneApertureOutline.y = coneRadiusDegs * sin(iTheta);
+        end
         hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, ...
             thresholdParams.spatialPoolingKernelParams, V1filterBank, coneLocsInDegs, ...
-            mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs, coneRadiusMicrons);
+            mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs, coneApertureOutline);
     
         % Save figure
         theProgram = mfilename;

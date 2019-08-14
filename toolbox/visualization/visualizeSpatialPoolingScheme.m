@@ -1,14 +1,9 @@
 function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, ...
-            spatialPoolingKernelParams, spatialPoolingFilter, coneLocsInDegs, mosaicFOVDegs, stimulusFOVDegs, coneRadiusMicrons)
+            spatialPoolingKernelParams, spatialPoolingFilter, coneLocsInDegs, mosaicFOVDegs, stimulusFOVDegs, coneApertureOutline)
         
         
     zLevels = [0.025:0.05:1.0];
     zLevels = [-fliplr(zLevels) zLevels];
-        
-    micronsPerDegree = 300;
-    coneRadiusDegs = coneRadiusMicrons/micronsPerDegree;
-    coneX = coneRadiusDegs * cos(2*pi*(0:30:360)/360);
-    coneY = coneRadiusDegs * sin(2*pi*(0:30:360)/360);
     quantizationLevels = 1024;
     
     if (strcmp(spatialPoolingKernelParams.type, 'GaussianRF'))
@@ -30,7 +25,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         title('spatial pooling weights (cone mosaic view)');
         imagesc(xaxis, yaxis, 0.5 + 0.3*spatialModulation);
         hold on;
-        plotQuantizedWeights(gca, spatialPoolingFilter.poolingWeights, quantizationLevels, coneLocsInDegs, coneX, coneY);
+        plotQuantizedWeights(gca, spatialPoolingFilter.poolingWeights, quantizationLevels, coneLocsInDegs, coneApertureOutline);
         hold off;
         axis 'xy'; axis 'image'
         set(gca, 'CLim', [0 1], 'XLim', max([mosaicFOVDegs stimulusFOVDegs])/2*[-1 1]*1.02, 'YLim', max([mosaicFOVDegs stimulusFOVDegs])/2*[-1 1]*1.02, 'XTickLabels', {});
@@ -39,9 +34,13 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
     elseif ((strcmp(spatialPoolingKernelParams.type, 'V1QuadraturePair')) || ...
             (strcmp(spatialPoolingKernelParams.type, 'V1CosUnit')) )
         
+        cMapForWeights = brewermap(256, '*RdBu');
+        cMapForStim = brewermap(1024, '*Greys');
+        
         if iscell(spatialPoolingFilter)
             hFig = visualizeEnsembleSpatialPoolingScheme(xaxis, yaxis, spatialModulation, ...
-                spatialPoolingKernelParams, spatialPoolingFilter, coneLocsInDegs, mosaicFOVDegs, stimulusFOVDegs, coneRadiusMicrons);
+                spatialPoolingKernelParams, spatialPoolingFilter, ...
+                coneLocsInDegs, mosaicFOVDegs, stimulusFOVDegs, coneApertureOutline, cMapForWeights);
             return;
         end
         
@@ -80,8 +79,10 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
              'theAxes', ax, ...
              'theFigureTitle', 'stimulus modulation' ...
         );
+
         set(ax, 'CLim', [0 1], 'XLim', [xaxis(1) xaxis(end)], 'YLim', [yaxis(1) yaxis(end)]);
         set(ax, 'XTick', -0.2:0.1:0.2, 'YTick', -0.2:tickIncrementDegs:0.2);
+        colormap(ax, cMapForStim);
         ylabel(ax, 'degrees');
         
         % Spatial RF envelope
@@ -98,18 +99,9 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
             
         ax = subplot('Position', subplotPosVectors(1,2).v);
         hold on
-        plotQuantizedWeights(gca, 0*theSpatialPoolingFilter.cosPhasePoolingWeights, quantizationLevels, coneLocsInDegs, coneX, coneY);
+        plotQuantizedWeights(gca, 0*theSpatialPoolingFilter.cosPhasePoolingWeights, quantizationLevels, coneLocsInDegs, coneApertureOutline);
         plot(ax,[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
         plot(ax,[0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
-                    
-        % All cone locations
-%         X = zeros(numel(coneX), size(coneLocsInDegs,1));
-%         Y = X;
-%         for k = 1:size(coneLocsInDegs,1)
-%             X(:,k) = coneLocsInDegs(k,1)+coneX;
-%             Y(:,k) = coneLocsInDegs(k,2)+coneY;
-%         end
-%         line(X,Y,'color','k', 'LineWidth', 0.75)
         hold off;
         formatFigureForPaper(hFig, ...
              'figureType', 'CONE_SPATIAL_POOLING', ...
@@ -119,6 +111,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         set(gca, 'CLim', [0 1], 'XLim', [xaxis(1) xaxis(end)], 'YLim', [yaxis(1) yaxis(end)]);
         set(gca, 'XTick', -0.2:0.1:0.2, 'YTick', -0.2:tickIncrementDegs:0.2);
         set(gca, 'YTickLabel', {});
+        colormap(gca, cMapForStim);
         %xlabel(ax, 'degrees');
         %ylabel(ax, 'degrees');
     
@@ -166,10 +159,12 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
 
                     ax = subplot('Position', subplotPosVectors(1, quadratureIndex+2).v);
                     hold(ax, 'on');
-                    plotQuantizedWeights(gca, quantizedWeights/maxWeight, quantizationLevels, coneLocsInDegs, coneX, coneY);
-                    %plotHorizontalPoolingProfile(xaxis, min(yaxis) + 0.1*((max(yaxis)-min(yaxis))), (max(yaxis)-min(yaxis)) * 0.1, quantizedWeights, coneLocsInDegs, desiredProfile, coneRadiusDegs);
+                    plotQuantizedWeights(gca, quantizedWeights/maxWeight, quantizationLevels, coneLocsInDegs, coneApertureOutline);
+                    
                     plot(ax,[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
                     plot(ax,[0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
+                    hold(ax, 'off');
+                    colormap(ax, cMapForWeights);
                 end % quadrature index
                 drawnow;
             end % if
@@ -240,16 +235,6 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         % Spatial RF envelope
         envelopeLevels = [0.05:0.05:1];
         contour(xaxis, yaxis, spatialPoolingFilter.RFprofile, envelopeLevels, 'Color', 'g', 'LineWidth', 1.5, 'LineStyle', '-');
-   
-        % All cone locations
-        X = zeros(numel(coneX), size(coneLocsInDegs,1));
-        Y = X;
-        for k = 1:size(coneLocsInDegs,1)
-            X(:,k) = coneLocsInDegs(k,1)+coneX;
-            Y(:,k) = coneLocsInDegs(k,2)+coneY;
-        end
-        line(X,Y,'color','k', 'LineWidth', 1.0);
-        hold off;
         axis 'xy'; axis 'image'
         set(gca, 'Color', [0.5 0.5 0.5], 'FontSize', 16);
         
@@ -259,7 +244,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         subplot('Position', subplotPosVectors(1,2).v);
         imagesc(xaxis, yaxis, spatialModulation);
         hold on;
-        plotQuantizedWeights(gca, quantizedWeights/maxWeight, quantizationLevels, coneLocsInDegs, coneX, coneY);
+        plotQuantizedWeights(gca, quantizedWeights/maxWeight, quantizationLevels, coneLocsInDegs, coneApertureOutline);
         hold off;
         axis 'xy'; axis 'image'
         set(gca, 'Color', [0.5 0.5 0.5], 'XTickLabel', {}, 'YTickLabel', {});
@@ -267,36 +252,5 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         error('Unknown spatialPooling filter: %s\n', spatialPoolingKernelParams.type);
     end
       
-    colormap(gray(quantizationLevels));
     drawnow;
-end
-
-function plotHorizontalPoolingProfile(xaxis, y0, yA, quantizedWeights, coneLocsInDegs, desired2DProfile, coneRadiusDegs)
-
-    xaxisIncrement = coneRadiusDegs/2;
-    sampledLocations = 0:xaxisIncrement:xaxis(end);
-    sampledLocationsMinus = -fliplr(sampledLocations);
-    sampledLocations = [sampledLocationsMinus sampledLocations(2:end)];
-    indices = zeros(1,numel(sampledLocations));
-    for k = 1:numel(sampledLocations)
-        [~,indices(k)] = min(abs(xaxis-sampledLocations(k)));
-    end
-    
-    conesNum = size(coneLocsInDegs,1);
-    measuredHorizontalProfile = zeros(1, numel(sampledLocations));
-    for k = 1:numel(sampledLocations)
-        for coneIndex = 1:conesNum
-            xCoord = coneLocsInDegs(coneIndex,1);
-            if (abs(xCoord-sampledLocations(k)) < coneRadiusDegs)
-                measuredHorizontalProfile(k) = measuredHorizontalProfile(k) + quantizedWeights(coneIndex);
-            end
-        end
-    end
-    measuredHorizontalProfile = measuredHorizontalProfile / max(abs(measuredHorizontalProfile));
-
-    horizontalProfile = sum(desired2DProfile,1);
-    horizontalProfile = horizontalProfile/max(abs(horizontalProfile));
-    
-    %stairs(xaxis(indices), y0 + yA * horizontalProfile(indices), 'k-', 'LineWidth', 1.5);
-    stairs(xaxis(indices), y0 + yA * measuredHorizontalProfile, 'g-', 'LineWidth', 2.0);
 end
