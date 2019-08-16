@@ -49,7 +49,7 @@ function run_ConditionToVisualizeSpatialPoolingMechanisms
     params.centeredEMPaths =  'atStimulusModulationOnset';
     
     % (ii) only 4 trials
-    params.nTrainingSamples = 16;
+    params.nTrainingSamples = 4;
     
     % (iii) Only the max contrast level
     params.lowContrast = 1.0; 
@@ -57,7 +57,7 @@ function run_ConditionToVisualizeSpatialPoolingMechanisms
     params.nContrastsPerDirection = 1;
     
     % (iv) only 20 c/deg
-    params.cyclesPerDegreeExamined = [20]; % [24 32 50 60];
+    params.cyclesPerDegreeExamined = [32]; % [24 32 50 60];
     
     % (v) minimum oi size (0.5 for visualization purposes)
     params.opticalImagePadSizeDegs = 0.5; 
@@ -65,17 +65,17 @@ function run_ConditionToVisualizeSpatialPoolingMechanisms
     % (vi) * * * SPATIAL POOLING SELECTION  * * * 
     % Negative sign for the 'minimumMosaicFOVdegs' means use an ensemble of pooling mechanisms
     % on a mosaic whose FOV is the absolute value of the 'minimumMosaicFOVdegs'
-    params.minimumMosaicFOVdegs = -0.492;
+    params.minimumMosaicFOVdegs = -0.328; %-0.492;
     params.spatialPoolingKernelParams.type = 'V1QuadraturePair';
     params.spatialPoolingKernelParams.activationFunction = 'energy';
     
-    params.performanceClassifier = 'svmV1FilterEnsemble'; %'svmV1FilterBank' or 'svmV1FilterEnsemble'
+    params.performanceClassifier = 'svmV1FilterEnsemble'; % 'svmV1FilterEnsemble'; %'svmV1FilterBank' or 'svmV1FilterEnsemble'
     
     if (strcmp(params.performanceClassifier, 'svmV1FilterEnsemble'))
         ensembleFilterParams = struct(...
                             'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid of spatial pooling templates
-                            'spatialPositionOffsetDegs', 0.05, ... 
-                            'cyclesPerRFs', 4, ...           % each template contains 4 cycles of the stimulus
+                            'spatialPositionOffsetDegs', 0.0328, ... 
+                            'cyclesPerRFs', 5, ...           % each template contains 4 cycles of the stimulus
                             'orientations', 0);
         fNames = fieldnames(ensembleFilterParams);
         for fNameIndex = 1:numel(fNames)
@@ -84,27 +84,28 @@ function run_ConditionToVisualizeSpatialPoolingMechanisms
        end                
     end
     
+    
     % Simulation steps to perform
-    params.computeResponses = ~true;
+    params.computeResponses = true;
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     
     params.computePhotocurrentResponseInstances = true;
     params.visualizeDisplay = ~true;
-    params.visualizeResponses = ~true;
+    params.visualizeResponses = true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
-    params.visualizeStimulusAndOpticalImage = ~true;
+    params.visualizeStimulusAndOpticalImage = true;
     params.visualizeSpatialPoolingScheme = true;
     params.visualizeMosaicWithFirstEMpath = ~true;
     params.visualizeOuterSegmentFilters = ~true;
-    params.visualizeResponsesWithSpatialPoolingSchemeInVideo = true;
+    params.visualizeResponsesWithSpatialPoolingSchemeInVideo = ~true;
     
     
     params.visualizeKernelTransformedSignals = ~true;
-    params.findPerformance = ~true;
-    params.visualizePerformance = ~true;
+    params.findPerformance = true;
+    params.visualizePerformance = true;
     params.deleteResponseInstances = ~true;
     
     % Go

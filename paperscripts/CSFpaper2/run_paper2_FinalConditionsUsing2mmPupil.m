@@ -72,7 +72,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
     condIndex = 0;
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Temp-L, cone exc., noEM';
+    examinedCond(condIndex).label = 'SVM-Temp-L, R*, noEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -83,7 +83,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
     
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Temp-L, pCurrent, noEM';
+    examinedCond(condIndex).label = 'SVM-Temp-L, pCurr., noEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -93,7 +93,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
     examinedCond(condIndex).centeredEMPaths = true;
 
 %         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Temp-L, pCurrent, drift';
+%         examinedCond(condIndex).label = 'SVM-Temp-L, pCurr., drift';
 %         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
 %         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
 %         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -103,7 +103,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
 %         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
         
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Temp-E, pCurrent, driftEM';
+    examinedCond(condIndex).label = 'SVM-Temp-E, pCurr., drift';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
@@ -115,7 +115,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
 
 
 %         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Temp-E. (5 degs), cone-exc, driftEM';
+%         examinedCond(condIndex).label = 'SVM-Temp-E. (5 degs), R*, drift';
 %         examinedCond(condIndex).minimumMosaicFOVdegs = 0.492;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
 %         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
 %         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -125,7 +125,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
 %         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
         
 %         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Temp-E. (5 degs), pCurrent, driftEM';
+%         examinedCond(condIndex).label = 'SVM-Temp-E. (5 degs), pCurr., drift';
 %         examinedCond(condIndex).minimumMosaicFOVdegs = 0.492;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
 %         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
 %         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -135,7 +135,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
 %         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
         
 %         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Temp-E. (5x5), cone-exc, driftEM';
+%         examinedCond(condIndex).label = 'SVM-Temp-E. (5x5), R*, drift';
 %         examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
 %         examinedCond(condIndex).minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
 %         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -151,7 +151,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
 
 
 %         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Temp-E. (3x3), cone-exc, driftEM';
+%         examinedCond(condIndex).label = 'SVM-Temp-E. (3x3), R*, drift';
 %         examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
 %         examinedCond(condIndex).minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
 %         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -167,7 +167,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
 
 
 %         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Temp-E. (5x5), pCurrent, driftEM';
+%         examinedCond(condIndex).label = 'SVM-Temp-E. (5x5), pCurr., drift';
 %         examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
 %         examinedCond(condIndex).minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
 %         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -183,7 +183,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
 % 
 % 
 %         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Temp-E. (3x3), pCurrent, driftEM';
+%         examinedCond(condIndex).label = 'SVM-Temp-E. (3x3), pCurr., drift';
 %         examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
 %         examinedCond(condIndex).minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
 %         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -263,7 +263,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.23,0.86,0.75,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.23,0.87,0.75,0.08], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );

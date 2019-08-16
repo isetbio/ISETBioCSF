@@ -2,7 +2,7 @@ function visualizeResponsesWithSpatialPoolingSchemeInVideo(filterBankName, filte
     
     % Make sure we have a valid filterBankName
     if (~ismember(filterBankName, {'svmV1FilterBank', 'svmV1FilterEnsemble'}))
-        error('filterBankName must be either ''svmV1FilterBank'' *OR* ''svmV1FilterEnsemble''.');
+        error('filterBankName must be either ''svmV1FilterBank'' *OR* ''svmV1FilterEnsemble''. It is: ''%s''.', filterBankName);
     end
 
     % Load the employed mosaic

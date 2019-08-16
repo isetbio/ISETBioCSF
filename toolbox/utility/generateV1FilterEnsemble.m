@@ -136,12 +136,28 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
 
     hFig = [];
     if (visualizeSpatialScheme)
-        coneRadiusMicrons = mosaicParams.innerSegmentSizeMicrons/2;
         coneRadiusMicrons = 0.5*diameterForCircularApertureFromWidthForSquareAperture(theMosaic.pigment.width)*1e6;
+        iTheta = (0:30:360) / 180 * pi;
+        if (theMosaic.shouldCorrectAbsorptionsWithEccentricity())
+            % Compute ecc-varying apertures
+            dx = coneRadiusMicrons * 1e-6;
+            apertureOutline.x = dx * cos(iTheta);
+            apertureOutline.y = dx * sin(iTheta);
+        
+            [coneApertureOutline, ~, ~] = theMosaic.computeApertureSizes(...
+                dx, [], apertureOutline, [], coneLocsInMeters(:,1), coneLocsInMeters(:,2));
+            
+            coneApertureOutline.x = coneApertureOutline.x *1e6/theMosaic.micronsPerDegree;
+            coneApertureOutline.y = coneApertureOutline.y *1e6/theMosaic.micronsPerDegree;
+        else
+            coneRadiusDegs = coneRadiusMicrons/theMosaic.micronsPerDegree;
+            coneApertureOutline.x = coneRadiusDegs * cos(iTheta);
+            coneApertureOutline.y = coneRadiusDegs * sin(iTheta);
+        end
         
         hFig = visualizeSpatialPoolingScheme(xaxisDegs, yaxisDegs, spatialModulation, ...
             thresholdParams.spatialPoolingKernelParams, V1filterEnsemble, coneLocsDegs, ...
-            mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs, coneRadiusMicrons);
+            mosaicParams.fieldOfViewDegs, spatialParams.fieldOfViewDegs, coneApertureOutline);
     
         % Save figure
         theProgram = mfilename;
