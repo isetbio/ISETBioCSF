@@ -205,7 +205,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
         
-        params.cyclesPerDegreeExamined =  [8 12 16 24 32 50 60];
+        params.cyclesPerDegreeExamined =  [4 8 12 16 24 32 50 60];
         % Update params
         cond = examinedCond(condIndex);
         params.performanceClassifier = cond.performanceClassifier;

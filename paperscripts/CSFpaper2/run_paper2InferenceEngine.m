@@ -34,7 +34,7 @@ function run_paper2InferenceEngine
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
     findPerformance = ~true;
     visualizePerformance = true;
@@ -66,33 +66,33 @@ function run_paper2InferenceEngine
     condIndex = 0;
     
 % %     
-%    if (~findPerformance) && (~computeResponses)
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'stim-matched, no EM';
-        examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-        examinedCond(condIndex).performanceSignal = performanceSignal;
-        examinedCond(condIndex).emPathType = 'frozen0';
-        examinedCond(condIndex).centeredEMPaths = true;
-    
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'stim-matched, drift';
-        examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-        examinedCond(condIndex).performanceSignal = performanceSignal;
-        examinedCond(condIndex).emPathType = emPathType;
-        examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-%    end
-    
-%     
-%     
 
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'stim-matched, no EM';
+    examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = true;
+
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'stim-matched, drift';
+    examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = emPathType;
+    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
     
-    %if (~findPerformance) && (~computeResponses)
+    
+
+ 
+        
+        
+    if (~computeResponses)
         condIndex = condIndex+1;
         examinedCond(condIndex).label = '0.3 degs, drift';
         examinedCond(condIndex).minimumMosaicFOVdegs = 0.328;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
@@ -112,10 +112,10 @@ function run_paper2InferenceEngine
         examinedCond(condIndex).performanceSignal = performanceSignal;
         examinedCond(condIndex).emPathType = emPathType;
         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-    %end
+    end
     
     
-    if (~findPerformance) && (~computeResponses)
+    if (~computeResponses)
         % 60 c/deg, isomerizations: YES (CSF = 2.48)
         % 50 c/deg, photocurrent: YES (CSF = 1.087)
         condIndex = condIndex+1;
@@ -135,7 +135,7 @@ function run_paper2InferenceEngine
     end
      
    
-
+    if (~computeResponses)
     condIndex = condIndex+1;
     examinedCond(condIndex).label = '0.5 degs, 5x5, drift';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
@@ -150,6 +150,8 @@ function run_paper2InferenceEngine
                         'spatialPositionOffsetDegs', 0.02, ... 
                         'cyclesPerRFs', 5, ...           % each template contains 5 cycles of the stimulus
                         'orientations', 0);
+                    
+    end
 %                     
     % Go
     examinedLegends = {};
@@ -157,7 +159,7 @@ function run_paper2InferenceEngine
     for condIndex = 1:numel(examinedCond)
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
-        params.cyclesPerDegreeExamined = [40]; % [32 40 50 60]; % [24 32 50 60];
+        params.cyclesPerDegreeExamined = [32 40 50 60]; % [24 32 50 60];
 
         
         % Update params
