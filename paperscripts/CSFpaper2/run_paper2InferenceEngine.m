@@ -66,7 +66,7 @@ function run_paper2InferenceEngine
     condIndex = 0;
     
     
-    tmp = true
+    tmp = true;
 % %     
     if (~tmp)
     condIndex = condIndex+1;
@@ -117,90 +117,38 @@ function run_paper2InferenceEngine
     end
     
     
+    defaultCond.label = '';
+    defaultCond.performanceClassifier = 'svmV1FilterEnsemble';
+    defaultCond.minimumMosaicFOVdegs = -0.328;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
+    defaultCond.spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    defaultCond.spatialPoolingKernelParams.activationFunction = 'energy';
+    defaultCond.performanceSignal = performanceSignal;
+    defaultCond.emPathType = 'randomNoSaccades';
+    defaultCond.centeredEMPaths = centeredEMPaths;
+    defaultCond.ensembleFilterParams = struct(...
+                        'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid of spatial pooling templates
+                        'spatialPositionOffsetDegs', 0.0328, ... 
+                        'cyclesPerRFs', 5, ...           % each template contains 5 cycles of the stimulus
+                        'orientations', 0);
+                        
     if (~computeResponses)
-        % 60 c/deg, isomerizations: YES (CSF = 2.48)
-        % 50 c/deg, photocurrent: YES (CSF = 1.087)
-%         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = '0.3 degs, 3x3, drift';
-%         examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
-%         examinedCond(condIndex).minimumMosaicFOVdegs = -0.328;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-%         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%         examinedCond(condIndex).performanceSignal = performanceSignal;
-%         examinedCond(condIndex).emPathType = 'randomNoSaccades';
-%         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-%         examinedCond(condIndex).ensembleFilterParams = struct(...
-%                             'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid of spatial pooling templates
-%                             'spatialPositionOffsetDegs', 0.0328, ... 
-%                             'cyclesPerRFs', 5, ...           % each template contains 5 cycles of the stimulus
-%                             'orientations', 0);
-                        
-                        % 60 c/deg, isomerizations: YES (CSF = 2.48)
-        % 50 c/deg, photocurrent: YES (CSF = 1.087)
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = '0.3 degs, 3x3, drift';
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
-        examinedCond(condIndex).minimumMosaicFOVdegs = -0.328;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-        examinedCond(condIndex).performanceSignal = performanceSignal;
-        examinedCond(condIndex).emPathType = 'randomNoSaccades';
-        examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-        examinedCond(condIndex).ensembleFilterParams = struct(...
-                            'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid of spatial pooling templates
-                            'spatialPositionOffsetDegs', 0.0328, ... 
-                            'cyclesPerRFs', 6, ...           % each template contains 5 cycles of the stimulus
+        cyclesPerRFlist = [3.5 4 4.5 5 5.5 6];
+        spatialPositionOffsetDegsList = 0.033*[1/1.6 1/1.4 1/1.2 1.0 1.2 1.4 1.6];
+        for i = 1:numel(cyclesPerRFlist)
+        for j = 1:numel(spatialPositionOffsetDegsList)
+            condIndex = condIndex+1;
+            posNum = 1; 
+            cyclesPerRF = cyclesPerRFlist(i); 
+            spatialPositionOffsetDegs = spatialPositionOffsetDegsList (j);
+            examinedCond(condIndex) = defaultCond;
+            examinedCond(condIndex).label = sprintf('0.3 degs, %2.0fx%2.0f, %2.3f, %2.1f', 2*posNum+1, 2*posNum+1, spatialPositionOffsetDegs,cyclesPerRF);
+            examinedCond(condIndex).ensembleFilterParams = struct(...
+                            'spatialPositionsNum',  posNum, ...    
+                            'spatialPositionOffsetDegs', spatialPositionOffsetDegs, ... 
+                            'cyclesPerRFs', cyclesPerRF, ... 
                             'orientations', 0);
-                        
-                        % 50 c/deg, photocurrent: YES (CSF = 1.087)
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = '0.3 degs, 3x3 (2), drift';
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
-        examinedCond(condIndex).minimumMosaicFOVdegs = -0.328;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-        examinedCond(condIndex).performanceSignal = performanceSignal;
-        examinedCond(condIndex).emPathType = 'randomNoSaccades';
-        examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-        examinedCond(condIndex).ensembleFilterParams = struct(...
-                            'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid of spatial pooling templates
-                            'spatialPositionOffsetDegs', 0.0328*0.85, ... 
-                            'cyclesPerRFs', 5.5, ...           % each template contains 5 cycles of the stimulus
-                            'orientations', 0);
-                        
-                                        % 50 c/deg, photocurrent: YES (CSF = 1.087)
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = '0.3 degs, 3x3 (3), drift';
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
-        examinedCond(condIndex).minimumMosaicFOVdegs = -0.328;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-        examinedCond(condIndex).performanceSignal = performanceSignal;
-        examinedCond(condIndex).emPathType = 'randomNoSaccades';
-        examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-        examinedCond(condIndex).ensembleFilterParams = struct(...
-                            'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid of spatial pooling templates
-                            'spatialPositionOffsetDegs', 0.0328*0.85, ... 
-                            'cyclesPerRFs', 6, ...           % each template contains 5 cycles of the stimulus
-                            'orientations', 0);
-                        
-                        % 50 c/deg, photocurrent: YES (CSF = 1.087)
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = '0.3 degs, 3x3 (2), drift';
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
-        examinedCond(condIndex).minimumMosaicFOVdegs = -0.328;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-        examinedCond(condIndex).performanceSignal = performanceSignal;
-        examinedCond(condIndex).emPathType = 'randomNoSaccades';
-        examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-        examinedCond(condIndex).ensembleFilterParams = struct(...
-                            'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid of spatial pooling templates
-                            'spatialPositionOffsetDegs', 0.0328, ... 
-                            'cyclesPerRFs', 5.5, ...           % each template contains 5 cycles of the stimulus
-                            'orientations', 0);
-                        
-                        
+        end
+        end
     end
     
     
