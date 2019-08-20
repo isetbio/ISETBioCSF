@@ -195,9 +195,9 @@ end
 
 % And must make a plot in a figure
 if (p.Results.generatePlots)
-    vcNewGraphWin; [~,h] = gaborConeMosaic.plot('cone mosaic');
+    vcNewGraphWin; gaborConeMosaic.plot('cone mosaic');
     rwObject.write('colorGaborMosaic',h,paramsList,theProgram,'Type','figure');
-    vcNewGraphWin; [~,h] = gaborConeMosaic.plot('mean absorptions');
+    vcNewGraphWin; gaborConeMosaic.plot('mean absorptions');
     rwObject.write('colorGaborIsomerizations',h,paramsList,theProgram,'Type','figure');
 end
 
