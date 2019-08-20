@@ -34,10 +34,10 @@ function run_paper2InferenceEngine
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = ~true;
+    computeResponses = true;
     visualizeResponses = ~true;
     findPerformance = ~true;
-    visualizePerformance = true;
+    visualizePerformance = ~true;
     
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
@@ -59,17 +59,18 @@ function run_paper2InferenceEngine
     'photocurrents'; %'isomerizations'; % 'photocurrents';
     emPathType = 'randomNoSaccades';
     centeredEMPaths =  'atStimulusModulationMidPoint';
-    nTrainingSamples = 1030;
-     
+    
+    %% * * * * * * * * * * * * * * * 
+    nTrainingSamples = 1032;       % 1032 to differential the no OIPad case
+    opticalImagePadSizeDegs = [];  % do not pad the OI to a fixed size - this will in effect increase the pCurrnet impulse response gain
+    %% * * * * * * * * * * * * * * * 
+    
     
     % Assemble conditions list to be examined
     % Init condition index
     condIndex = 0;
     
     
-    tmp = ~true;
-% %     
-    if (~tmp)
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'stim-matched, no EM';
     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
@@ -89,13 +90,43 @@ function run_paper2InferenceEngine
     examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = emPathType;
     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-    end
     
 
- 
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = '0.3 degs, drift';
+    examinedCond(condIndex).minimumMosaicFOVdegs = 0.328;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = emPathType;
+    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    examinedCond(condIndex).ensembleFilterParams = struct(...
+                    'spatialPositionsNum',  0, ...   % 1 results in a 3x3 grid, 2 in 5x5
+                    'spatialPositionOffsetDegs', 0, ... 
+                    'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
+                    'orientations', 0);
+
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = '0.5 degs, drift';
+    examinedCond(condIndex).minimumMosaicFOVdegs = 0.492;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = emPathType;
+    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    examinedCond(condIndex).ensembleFilterParams = struct(...
+                    'spatialPositionsNum',  0, ...   % 1 results in a 3x3 grid, 2 in 5x5
+                    'spatialPositionOffsetDegs', 0, ... 
+                    'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
+                    'orientations', 0);
+                    
+                    
+
+    
         
-        
-    if (~computeResponses) && (~tmp)
+    if (~computeResponses)
         condIndex = condIndex+1;
         examinedCond(condIndex).label = '0.3 degs, drift';
         examinedCond(condIndex).minimumMosaicFOVdegs = 0.328;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
@@ -125,7 +156,7 @@ function run_paper2InferenceEngine
                         'spatialPositionOffsetDegs', 0, ... 
                         'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
                         'orientations', 0);
-    end
+    
     
     
     defaultCond.label = '';
@@ -142,9 +173,9 @@ function run_paper2InferenceEngine
                         'cyclesPerRFs', 5, ...           % each template contains 5 cycles of the stimulus
                         'orientations', 0);
                         
-    if (~computeResponses)
+    
         cyclesPerRFlist = [3.5 4 4.5 5 5.5 6];
-        spatialPositionOffsetDegsList = 0; %0.033*[1/1.5 1/1.25 1.0 1.25 1.5];
+        spatialPositionOffsetDegsList = 0.033;  % cannot save this variation is different data files - not encoded
         for i = 1:numel(cyclesPerRFlist)
         for j = 1:numel(spatialPositionOffsetDegsList)
             condIndex = condIndex+1;
@@ -160,12 +191,7 @@ function run_paper2InferenceEngine
                             'orientations', 0);
         end
         end
-    end
     
-    
-    
-   
-    if (~computeResponses) && (~tmp)
     condIndex = condIndex+1;
     examinedCond(condIndex).label = '0.5 degs, 5x5, drift';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
@@ -181,12 +207,8 @@ function run_paper2InferenceEngine
                         'cyclesPerRFs', 5, ...           % each template contains 5 cycles of the stimulus
                         'orientations', 0);
                     
-    
-    
-    
-   
-                        
     end
+    
 %                     
     % Go
     examinedLegends = {};
@@ -195,7 +217,8 @@ function run_paper2InferenceEngine
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
         params.cyclesPerDegreeExamined = [32 40 50 60]; % [24 32 50 60];
-
+        params.opticalImagePadSizeDegs = opticalImagePadSizeDegs;
+        
         
         % Update params
         cond = examinedCond(condIndex);
