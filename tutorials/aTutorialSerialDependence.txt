@@ -1,0 +1,24 @@
+% There is a serial dependence between tutorials for data:
+% t_plotDetectThresholds depends on data from t_fitPsychometricFunctions,
+% which depends on data from t_colorDetectFindPerformance, which depends on
+% data from t_coneCurrentEyeMovementsResponseInstances.
+% 
+% The problem with these tutorials was that the default value for
+% freezeNoize in t_coneCurrentEyeMovementsResponseInstances was set to
+% false, whereas  the t_colorDetectFindPerformance had this set to true. So
+% t_colorDetectFindPerformance was crashing because it could find the data
+% it was looking for and similarly for the other dependent tutorials.
+% 
+% My theory is that the tutorials used to work in the past because at some
+% point t_coneCurrentEyeMovementsResponseInstances was run with that flag
+% set to false and the data that the other tutorials were looking for
+% existed on the disk. But now, for some reason the data files with the
+% freezeNoize flag set to false do not exist.
+% 
+% I fixed all this by setting the default value of freezeNoise in
+% t_coneCurrentEyeMovementsResponseInstances to true. This is how we set
+% this flag when we call  t_coneCurrentEyeMovementsResponseInstances from
+% all the CSF simulations by the way.
+% 
+% You may have to run t_coneCurrentEyeMovementsResponseInstances by itself
+% to generate the data and then run all the other tutorials.
