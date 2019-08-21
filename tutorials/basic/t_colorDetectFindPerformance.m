@@ -47,7 +47,7 @@ p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('testDirectionParams',[],@isemptyorstruct);
 p.addParameter('thresholdParams',[],@isemptyorstruct);
 p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
-p.addParameter('freezeNoise',false,@islogical);
+p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('compute',true,@islogical);
 p.addParameter('parforWorkersNum', 1, @isnumeric);
 p.addParameter('employStandardHostComputerResources', false, @islogical);
@@ -104,6 +104,7 @@ if (isempty(rParams))
     rParams.mosaicParams.osNoise = 'random';                % Type outerSegment.validNoiseFlags to get valid values
     rParams.mosaicParams.osModel = 'Linear';
 end
+
 
 % Fix random number generator so we can validate output exactly
 if (p.Results.freezeNoise)

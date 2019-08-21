@@ -88,7 +88,9 @@ if (p.Results.plotPsychometric)
     set(gca,'FontSize',rParams.plotParams.axisFontSize);
     errorbar(log10(psychoData.testContrasts), psychoData.thePerformance, psychoData.theStandardError, 'ro', 'MarkerSize', rParams.plotParams.markerSize, 'MarkerFaceColor', [1.0 0.5 0.50]);
     plot(log10(psychoData.fitContrasts),psychoData.fitFractionCorrect,'r','LineWidth', 2.0);
-    plot(log10(psychoData.thresholdContrasts)*[1 1],[0 thresholdParams.criterionFraction],'b', 'LineWidth', 2.0);
+    for kk = 1:numel(psychoData.thresholdContrasts)
+        plot(log10(psychoData.thresholdContrasts(kk))*[1 1],[0 thresholdParams.criterionFraction],'b', 'LineWidth', 2.0);
+    end
     axis 'square'
     set(gca, 'YLim', [0 1.0],'XLim', log10([psychoData.testContrasts(1) psychoData.testContrasts(end)]), 'FontSize', 14);
     xlabel('contrast', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');
