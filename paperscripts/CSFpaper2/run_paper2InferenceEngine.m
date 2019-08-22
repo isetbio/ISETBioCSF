@@ -60,10 +60,10 @@ function run_paper2InferenceEngine
     emPathType = 'randomNoSaccades';
     centeredEMPaths =  'atStimulusModulationMidPoint';
     
-    %% * * * * * * * * * * * * * * * 
+    % * * * * * * * * * * * * * * * 
     nTrainingSamples = 1032;       % 1032 to differential the no OIPad case
     opticalImagePadSizeDegs = [];  % do not pad the OI to a fixed size - this will in effect increase the pCurrnet impulse response gain
-    %% * * * * * * * * * * * * * * * 
+    % * * * * * * * * * * * * * * * 
     
     
     % Assemble conditions list to be examined
