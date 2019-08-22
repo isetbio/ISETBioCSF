@@ -36,7 +36,7 @@ function run_paper2InferenceEngine
     computeMosaic = ~true;
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -55,7 +55,7 @@ function run_paper2InferenceEngine
     % Compute photocurrent responses
     computePhotocurrents = true;
     
-    performanceSignal = 'isomerizations'; %'isomerizations'; % 'photocurrents';
+    performanceSignal = 'photocurrents'; %'isomerizations'; % 'photocurrents';
     emPathType = 'randomNoSaccades';
     centeredEMPaths =  'atStimulusModulationMidPoint';
     
@@ -142,13 +142,13 @@ function run_paper2InferenceEngine
                             'orientations', 0);
 
 
-        cyclesPerRFlist = [4 5 6]; 
+        cyclesPerRFlist = [4 6]; 
         for i = 1:numel(cyclesPerRFlist)
             condIndex = condIndex+1;
             cyclesPerRF = cyclesPerRFlist(i); 
             posNum = defaultCond.ensembleFilterParams.spatialPositionsNum;
             examinedCond(condIndex) = defaultCond;
-            examinedCond(condIndex).label = sprintf('%2.1f degs, %2.0fx%2.0f, %2.1f', defaultCond.minimumMosaicFOVdegs, 2*posNum+1, 2*posNum+1, cyclesPerRF);
+            examinedCond(condIndex).label = sprintf('%2.1f degs, %2.0fx%2.0f, %2.1f', abs(defaultCond.minimumMosaicFOVdegs), 2*posNum+1, 2*posNum+1, cyclesPerRF);
             examinedCond(condIndex).ensembleFilterParams.cyclesPerRFs = cyclesPerRF;
         end
 
@@ -164,7 +164,7 @@ function run_paper2InferenceEngine
             cyclesPerRF = cyclesPerRFlist(i); 
             posNum = defaultCond.ensembleFilterParams.spatialPositionsNum;
             examinedCond(condIndex) = defaultCond;
-            examinedCond(condIndex).label = sprintf('%2.1f degs, %2.0fx%2.0f, %2.1f', defaultCond.minimumMosaicFOVdegs, 2*posNum+1, 2*posNum+1, cyclesPerRF);
+            examinedCond(condIndex).label = sprintf('%2.1f degs, %2.0fx%2.0f, %2.1f', abs(defaultCond.minimumMosaicFOVdegs), 2*posNum+1, 2*posNum+1, cyclesPerRF);
             examinedCond(condIndex).ensembleFilterParams.cyclesPerRFs = cyclesPerRF;
         end                
                                
