@@ -146,6 +146,7 @@ function run_paper2InferenceEngine
         for i = 1:numel(cyclesPerRFlist)
             condIndex = condIndex+1;
             cyclesPerRF = cyclesPerRFlist(i); 
+            posNum = defaultCond.ensembleFilterParams.spatialPositionsNum;
             examinedCond(condIndex) = defaultCond;
             examinedCond(condIndex).label = sprintf('%2.1f degs, %2.0fx%2.0f, %2.1f', defaultCond.minimumMosaicFOVdegs, 2*posNum+1, 2*posNum+1, cyclesPerRF);
             examinedCond(condIndex).ensembleFilterParams.cyclesPerRFs = cyclesPerRF;
@@ -161,6 +162,7 @@ function run_paper2InferenceEngine
         for i = 1:numel(cyclesPerRFlist)
             condIndex = condIndex+1;
             cyclesPerRF = cyclesPerRFlist(i); 
+            posNum = defaultCond.ensembleFilterParams.spatialPositionsNum;
             examinedCond(condIndex) = defaultCond;
             examinedCond(condIndex).label = sprintf('%2.1f degs, %2.0fx%2.0f, %2.1f', defaultCond.minimumMosaicFOVdegs, 2*posNum+1, 2*posNum+1, cyclesPerRF);
             examinedCond(condIndex).ensembleFilterParams.cyclesPerRFs = cyclesPerRF;
