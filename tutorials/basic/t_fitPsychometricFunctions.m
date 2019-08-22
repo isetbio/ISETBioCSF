@@ -22,7 +22,7 @@ p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('instanceParams',[],@isemptyorstruct);
 p.addParameter('thresholdParams',[],@isemptyorstruct);
-p.addParameter('setRng',true,@islogical);
+p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('delete',false',@islogical);
 p.parse(varargin{:});
@@ -37,11 +37,6 @@ varargout{1} = {};    % psychometricFunctions
 %% Clear
 if (nargin == 0)
     ieInit; close all;
-end
-
-%% Fix random number generator so we can validate output exactly
-if (p.Results.setRng)
-    rng(1);
 end
 
 %% Get the parameters we need
@@ -65,6 +60,17 @@ if (isempty(rParams))
     rParams.mosaicParams.isomerizationNoise = 'random';         % Type coneMosaic.validNoiseFlags to get valid values
     rParams.mosaicParams.osNoise = 'random';                    % Type outerSegment.validNoiseFlags to get valid values
     rParams.mosaicParams.osModel = 'Linear';
+end
+
+% Fix random number generator so we can validate output exactly
+if (p.Results.freezeNoise)
+     rng(1);
+     if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
+         rParams.mosaicParams.isomerizationNoise = 'frozen';
+     end
+     if (strcmp(rParams.mosaicParams.osNoise, 'random'))
+         rParams.mosaicParams.osNoise = 'frozen';
+     end
 end
 
 %% Parameters that define the LM instances we'll generate here

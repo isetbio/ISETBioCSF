@@ -23,7 +23,7 @@ p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('instanceParams',[],@isemptyorstruct);
 p.addParameter('thresholdParams',[],@isemptyorstruct);
-p.addParameter('setRng',true,@islogical);
+p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('delete',false',@islogical);
@@ -35,11 +35,6 @@ thresholdParams = p.Results.thresholdParams;
 %% Clear
 if (nargin == 0)
     ieInit; close all;
-end
-
-%% Fix random number generator so we can validate output exactly
-if (p.Results.setRng)
-    rng(1);
 end
 
 %% Get the parameters we need
@@ -64,6 +59,17 @@ if (isempty(rParams))
     rParams.mosaicParams.osModel = 'Linear';
 end
 
+% Fix random number generator so we can validate output exactly
+if (p.Results.freezeNoise)
+     rng(1);
+     if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
+         rParams.mosaicParams.isomerizationNoise = 'frozen';
+     end
+     if (strcmp(rParams.mosaicParams.osNoise, 'random'))
+         rParams.mosaicParams.osNoise = 'frozen';
+     end
+end
+
 % Default
 if (isempty(instanceParams))
     instanceParams = instanceParamsGenerate;
@@ -81,14 +87,16 @@ writeProgram = 't_fitPsychometricFunctions';
 
 %% Fit the psychometric functions to get thresholds
 psychoData = t_fitPsychometricFunctions('rParams',rParams,'instanceParams',instanceParams,'thresholdParams',thresholdParams, ...
-    'setRng',p.Results.setRng,'generatePlots', false,'delete',p.Results.delete);
+    'freezeNoise',p.Results.freezeNoise,'generatePlots', false,'delete',p.Results.delete);
 
 if (p.Results.plotPsychometric)
     hFig = figure; hold on
     set(gca,'FontSize',rParams.plotParams.axisFontSize);
     errorbar(log10(psychoData.testContrasts), psychoData.thePerformance, psychoData.theStandardError, 'ro', 'MarkerSize', rParams.plotParams.markerSize, 'MarkerFaceColor', [1.0 0.5 0.50]);
     plot(log10(psychoData.fitContrasts),psychoData.fitFractionCorrect,'r','LineWidth', 2.0);
-    plot(log10(psychoData.thresholdContrasts)*[1 1],[0 thresholdParams.criterionFraction],'b', 'LineWidth', 2.0);
+    for kk = 1:numel(psychoData.thresholdContrasts)
+        plot(log10(psychoData.thresholdContrasts(kk))*[1 1],[0 thresholdParams.criterionFraction],'b', 'LineWidth', 2.0);
+    end
     axis 'square'
     set(gca, 'YLim', [0 1.0],'XLim', log10([psychoData.testContrasts(1) psychoData.testContrasts(end)]), 'FontSize', 14);
     xlabel('contrast', 'FontSize' ,rParams.plotParams.labelFontSize, 'FontWeight', 'bold');

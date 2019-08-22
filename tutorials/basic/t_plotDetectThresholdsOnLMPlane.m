@@ -35,7 +35,7 @@ p = inputParser;
 p.addParameter('rParams',[],@isemptyorstruct);
 p.addParameter('instanceParams',[],@isemptyorstruct);
 p.addParameter('thresholdParams',[],@isemptyorstruct);
-p.addParameter('setRng',true,@islogical);
+p.addParameter('freezeNoise',true,@islogical);
 p.addParameter('generatePlots',true,@islogical);
 p.addParameter('plotPsychometric',true,@islogical);
 p.addParameter('plotEllipse',true,@islogical);
@@ -54,10 +54,6 @@ end
 varargout = {};
 varargout{1} = {};    % psychometricFunctions  
 
-%% Fix random number generator so we can validate output exactly
-if (p.Results.setRng)
-    rng(1);
-end
 
 %% Get the parameters we need
 %
@@ -83,6 +79,17 @@ if (isempty(rParams))
     rParams.mosaicParams.osModel = 'Linear';
 end
 
+% Fix random number generator so we can validate output exactly
+if (p.Results.freezeNoise)
+     rng(1);
+     if (strcmp(rParams.mosaicParams.isomerizationNoise, 'random'))
+         rParams.mosaicParams.isomerizationNoise = 'frozen';
+     end
+     if (strcmp(rParams.mosaicParams.osNoise, 'random'))
+         rParams.mosaicParams.osNoise = 'frozen';
+     end
+end
+
 %% Parameters that define the LM instances we'll generate here
 %
 % Make these numbers in the struct small (trialNum = 2, deltaAngle = 180,
@@ -104,7 +111,7 @@ writeProgram = mfilename;
 
 %% Fit the psychometric functions to get thresholds
 [psychoData, varargout{1}] = t_fitPsychometricFunctions('rParams',rParams,'instanceParams',instanceParams,'thresholdParams',thresholdParams, ...
-    'setRng',p.Results.setRng,'generatePlots',p.Results.generatePlots && p.Results.plotPsychometric,'delete',p.Results.delete);
+    'freezeNoise',p.Results.freezeNoise,'generatePlots',p.Results.generatePlots && p.Results.plotPsychometric,'delete',p.Results.delete);
 testContrasts = psychoData.testContrasts;
 testConeContrasts = psychoData.testConeContrasts;
 thresholdContrasts = psychoData.thresholdContrasts;
