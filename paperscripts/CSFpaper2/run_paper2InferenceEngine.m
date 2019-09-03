@@ -142,7 +142,7 @@ function run_paper2InferenceEngine
                             'orientations', 0);
 
 
-        cyclesPerRFlist = [4 6]; 
+        cyclesPerRFlist = [6]; 
         for i = 1:numel(cyclesPerRFlist)
             condIndex = condIndex+1;
             cyclesPerRF = cyclesPerRFlist(i); 
