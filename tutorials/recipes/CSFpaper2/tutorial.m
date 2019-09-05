@@ -1,4 +1,4 @@
-%% Tutorial listed in the Cottaris et al (2019A) paper.
+%% Tutorial listed in the Cottaris et al (2019B) paper.
 %% NPC, ISETBIO Team
 %%
 %% Generate a display for presenting stimuli and place it at a viewing distance of 57 cm
