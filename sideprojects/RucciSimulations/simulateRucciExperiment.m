@@ -8,8 +8,8 @@ function simulateRucciExperiment
     
     % Actions
     analyzeStimulusSpatioTemporalSpectra = true;
-    generateScenes = true;
-    generateOpticalImages = true;
+    generateScenes = ~true;
+    generateOpticalImages = ~true;
     generateMosaicResponses = ~true;
     visualizeMosaicResponses = ~true;
     computeEnergyMechanismResponses = ~true;
@@ -23,15 +23,15 @@ function simulateRucciExperiment
     end
     
     % Simulation parameters
-    minContrast = 0.2/100;
+    minContrast = 0.1/100;
     maxContrast = 3/100;
-    nContrastLevels = 5;
+    nContrastLevels = 8;
     
     contrastLevels = logspace(log10(minContrast), log10(maxContrast), nContrastLevels);
     stimulusSizeDegs = 1.0;
     nTrials = 300;
     eyePosition = 'dynamic';
-    eyePosition = 'stabilized';
+    %eyePosition = 'stabilized';
     fixationDurationSeconds = 0.4;
     warmupTimeSeconds = 0.1;
     mosaicIntegrationTimeSeconds = 2.5/1000;
@@ -60,8 +60,8 @@ function simulateRucciExperiment
     
     if (analyzeStimulusSpatioTemporalSpectra) 
         noiseInstances = 2;
-        stimulusSizeDegs = 5;
-        fixationDurationSeconds = 2.5;
+        stimulusSizeDegs = 5/5;
+        fixationDurationSeconds = 2.5/5;
         reComputeSpectralAnalyses = ~true;
         stimulusTypes = {'1 over F'}; % , '1 over F', 'low frequency', 'high frequency'};
         analyzeStabilizedAndDynamicSpectra(stimulusTypes, stimulusSizeDegs, fixationDurationSeconds, noiseInstances, reComputeSpectralAnalyses);

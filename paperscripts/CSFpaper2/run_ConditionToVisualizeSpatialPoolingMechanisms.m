@@ -75,7 +75,7 @@ function run_ConditionToVisualizeSpatialPoolingMechanisms
         ensembleFilterParams = struct(...
                             'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid of spatial pooling templates
                             'spatialPositionOffsetDegs', 0.0328, ... 
-                            'cyclesPerRFs', 5, ...           % each template contains 4 cycles of the stimulus
+                            'cyclesPerRFs', 6, ...           % each template contains 4 cycles of the stimulus
                             'orientations', 0);
         fNames = fieldnames(ensembleFilterParams);
         for fNameIndex = 1:numel(fNames)
@@ -86,7 +86,7 @@ function run_ConditionToVisualizeSpatialPoolingMechanisms
     
     
     % Simulation steps to perform
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     

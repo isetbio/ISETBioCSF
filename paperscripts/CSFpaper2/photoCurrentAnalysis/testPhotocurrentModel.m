@@ -17,10 +17,10 @@ function testPhotocurrentModel
         fprintf('Will save to %s\n', dataFileName);
         
         % Constant params
-        cParams.spontaneousIsomerizationRate = 200; %  R*/c/s
+        cParams.spontaneousIsomerizationRate = 0; %  R*/c/s
         cParams.eccentricity  = 'foveal';
         cParams.useDefaultImplementation = true;
-        cParams.noisyInstancesNum = 1500;
+        cParams.noisyInstancesNum = 1000;
         
         % Varied Params
         % Pulse contrast
@@ -41,7 +41,7 @@ function testPhotocurrentModel
         % Examined adaptation levels
         % prctile               1%      5%     10%     25%     50%     75%     90%    95%      99% 
         %adaptationLevels = [0.0317  0.1434  0.2882  0.7143  1.4192  2.1320 2.5554  2.6961  2.8136]*1e4; % for 2 deg mosaic
-        adaptationLevels = [250 500 1000 2000 4000 8000 16000 24000]; 
+        adaptationLevels = [250 500 1000 2000 4000 8000 16000]; 
 
         % Preallocate memory
         d = cell(1,numel(adaptationLevels));

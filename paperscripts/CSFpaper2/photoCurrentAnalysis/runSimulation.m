@@ -5,7 +5,7 @@ function dStruct = runSimulation(vParams, cParams)
         
         stimParams = struct(...
             'type', 'pulse', ...                                            % type of stimulus
-            'timeSampleSeconds', 0.1/1000, ...                              % simulation time step
+            'timeSampleSeconds', 1/1000, ...                              % simulation time step
             'pulseDurationSeconds', vParams.pulseDurationSeconds, ...       % pulse duration in seconds
             'totalDurationSeconds', vParams.pulseDurationSeconds + 1.3, ... % total duration of the stimulus
             'adaptationPhotonRate',  vParams.adaptationPhotonRate, ...      %  R*/c/s
