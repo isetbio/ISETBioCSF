@@ -1,11 +1,11 @@
 function run_paper2_CrowellBanksUnpublishedExperiment
-% Simulate experiment 2 of Crowell & Banks
+% Simulate experiment 3 of Crowell & Banks
 %
 % Syntax:
 %   run_paper2_CrowellBanksUnpublishedExperiment
 %
 % Description:
-%    Simulate experiment 2 (spatial summation experiment) of Crowell &
+%    Simulate experiment 3 (spatial summation experiment) of Crowell &
 %    Banks (unpublished data)
 % 
 %
@@ -185,7 +185,7 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
     params.visualizeSpatialPoolingScheme = ~true;
-    params.visualizeStimulusAndOpticalImage = true;
+    params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
