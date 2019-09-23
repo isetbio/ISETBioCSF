@@ -254,20 +254,28 @@ for ll = 1:length(p.Results.luminances)
             
         %% Find performance
         if (p.Results.findPerformance) ||  (p.Results.visualizeResponsesWithSpatialPoolingSchemeInVideo) || (p.Results.visualizePerformance)
-            % if we are using a minimumMosaicFOCdegs, adjust  thresholdParams.poolingTemplateWidthInDegrees 
-            if (~isempty(p.Results.minimumMosaicFOVdegs)) && (rParams.spatialParams.fieldOfViewDegs < abs(p.Results.minimumMosaicFOVdegs))
-                if (rParams.spatialParams.fieldOfViewDegs < p.Results.minimumMosaicFOVdegs)
-                    % Larger mosaic, single template size based on larger mosaic, not the stimulus
-                    thresholdParams.poolingTemplateWidthInDegrees = p.Results.minimumMosaicFOVdegs;
-                    fprintf(2, 'Performance for stimulus %2.4f c/deg. Using using minimum mosaic (%2.5f degs instead of %2.5f degs)\n)', p.Results.cyclesPerDegree(cc), p.Results.minimumMosaicFOVdegs, rParams.spatialParams.fieldOfViewDegs);
+            
+            
+            if (isempty(p.Results.patchSize2SigmaCycles))
+                % Stimulus of Banks et al 1987
+                % if we are using a minimumMosaicFOVdegs, adjust  thresholdParams.poolingTemplateWidthInDegrees 
+                if (~isempty(p.Results.minimumMosaicFOVdegs)) && (rParams.spatialParams.fieldOfViewDegs < abs(p.Results.minimumMosaicFOVdegs))
+                    if (rParams.spatialParams.fieldOfViewDegs < p.Results.minimumMosaicFOVdegs)
+                        % Larger mosaic, single template size based on larger mosaic, not the stimulus
+                        thresholdParams.poolingTemplateWidthInDegrees = p.Results.minimumMosaicFOVdegs;
+                        fprintf(2, 'Performance for stimulus %2.4f c/deg. Using using minimum mosaic (%2.5f degs instead of %2.5f degs)\n)', p.Results.cyclesPerDegree(cc), p.Results.minimumMosaicFOVdegs, rParams.spatialParams.fieldOfViewDegs);
+                    else
+                        % Larger mosaic, ensemble of templates
+                        thresholdParams.poolingTemplateWidthInDegrees = p.Results.minimumMosaicFOVdegs;
+                         newMethod =  'svmV1FilterEnsemble';
+                         fprintf(2, 'Performance for stimulus %2.4f c/deg. Overriding thesholdParams.method from ''%s'' to ''%s'' AND using minimum mosaic (%2.5f degs instead of %2.5f degs).\n',p.Results.cyclesPerDegree(cc), thresholdParams.method, newMethod, p.Results.minimumMosaicFOVdegs, rParams.spatialParams.fieldOfViewDegs);
+                    end
                 else
-                    % Larger mosaic, ensemble of templates
-                    thresholdParams.poolingTemplateWidthInDegrees = p.Results.minimumMosaicFOVdegs;
-                     newMethod =  'svmV1FilterEnsemble';
-                     fprintf(2, 'Performance for stimulus %2.4f c/deg. Overriding thesholdParams.method from ''%s'' to ''%s'' AND using minimum mosaic (%2.5f degs instead of %2.5f degs).\n',p.Results.cyclesPerDegree(cc), thresholdParams.method, newMethod, p.Results.minimumMosaicFOVdegs, rParams.spatialParams.fieldOfViewDegs);
+                    % Standard, single template matched to stimulus
+                    thresholdParams.poolingTemplateWidthInDegrees = rParams.spatialParams.fieldOfViewDegs;
                 end
             else
-                % Standard, single template matched to stimulus
+                % Stimulus of Crowell & Banks
                 thresholdParams.poolingTemplateWidthInDegrees = rParams.spatialParams.fieldOfViewDegs;
             end
             
