@@ -22,6 +22,8 @@ function run_paper2_CrowellBanksUnpublishedExperiment
 % History
 %    09/20/19  npc  Wrote it.
 
+    plotHumanData();
+    
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all but
     % the 2 largest), or some specific spatial frequency, like 16
@@ -75,11 +77,6 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     performanceClassifier = 'svmV1FilterBank';
     spatialPoolingKernelParams.type = 'V1QuadraturePair';
     spatialPoolingKernelParams.activationFunction = 'energy';
-    ensembleFilterParams = struct(...
-                    'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid, 2 in 5x5
-                    'spatialPositionOffsetDegs', 0.0328, ... 
-                    'cyclesPerRFs', 6, ...           % each template contains 5 cycles of the stimulus
-                    'orientations', 0);
                 
     
     % Assemble conditions list to be examined (different patch sizes)
@@ -129,11 +126,6 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         params.performanceClassifier = performanceClassifier;
         params.spatialPoolingKernelParams.type = spatialPoolingKernelParams.type;
         params.spatialPoolingKernelParams.activationFunction = spatialPoolingKernelParams.activationFunction;
-        fNames = fieldnames(ensembleFilterParams);
-        for fNameIndex = 1:numel(fNames)
-                fName = fNames{fNameIndex};
-                params.spatialPoolingKernelParams.(fName) = ensembleFilterParams.(fName);
-        end
             
         % Update params
         cond = examinedCond(condIndex);
@@ -144,8 +136,8 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         params.patchSize2SigmaCycles = cond.patchSize2SigmaCycles;
         
         % Also adjust stimulus pixels
-        params.imagePixels = round(0.5*params.imagePixels * params.patchSize2SigmaCycles / 3.3)*2;
-
+        params.imagePixels = max([256 round(0.5*params.imagePixels * params.patchSize2SigmaCycles / 3.3)*2]);
+        
         % Stimulus SF
         params.cyclesPerDegreeExamined = cond.cyclesPerDegreeExamined;
         
@@ -155,6 +147,21 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         % Keep the optical image size matched to the cone mosaic, not the
         % stimulus
         params.opticalImagePadSizeDegs = cond.minimumMosaicFOVdegs;
+        
+        % Adjust the 'svmV1FilterEnsemble' pooling params to match the
+        % current 'patchSize2SigmaCycles'
+        if (strcmp(performanceClassifier, 'svmV1FilterEnsemble'))
+            ensembleFilterParams = struct(...
+                        'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid, 2 in 5x5
+                        'spatialPositionOffsetDegs', 0.028, ... 
+                        'cyclesPerRFs', params.patchSize2SigmaCycles*2, ...           % each template contains 5 cycles of the stimulus
+                        'orientations', 0);
+            fNames = fieldnames(ensembleFilterParams);
+            for fNameIndex = 1:numel(fNames)
+                    fName = fNames{fNameIndex};
+                    params.spatialPoolingKernelParams.(fName) = ensembleFilterParams.(fName);
+            end
+        end
         
         % Update params
         params = getRemainingDefaultParams(params, ...
@@ -194,4 +201,32 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
     params.deleteResponseInstances = ~true;
 end
 
+function plotHumanData()
+
+load('CrowellBanksSubjects.mat');
+figure(555)
+subplot(1,2,1);
+plot(CrowellBanksEx3MSB_33cycles.x, CrowellBanksEx3MSB_33cycles.y, 'bs-', 'LineWidth', 1.5);
+hold on;
+plot(CrowellBanksEx3MSB_17cycles.x, CrowellBanksEx3MSB_17cycles.y, 'bo-','LineWidth', 1.5);
+plot(CrowellBanksEx3MSB_08cycles.x, CrowellBanksEx3MSB_08cycles.y, 'bd-','LineWidth', 1.5);
+plot(CrowellBanksEx3MSB_04cycles.x, CrowellBanksEx3MSB_04cycles.y, 'b^-','LineWidth', 1.5);
+set(gca, 'XScale', 'log', 'YScale', 'log');
+set(gca, 'XLim', [1 100], 'YLim', [0.9 1000]);
+legend({'3.3', '1.7', '0.8', '0.4'});
+grid on
+title('MSB');
+
+subplot(1,2,2);
+plot(CrowellBanksEx3JAC_33cycles.x, CrowellBanksEx3JAC_33cycles.y, 'bs-', 'LineWidth', 1.5);
+hold on;
+plot(CrowellBanksEx3JAC_17cycles.x, CrowellBanksEx3JAC_17cycles.y, 'bo-', 'LineWidth', 1.5);
+plot(CrowellBanksEx3JAC_08cycles.x, CrowellBanksEx3JAC_08cycles.y, 'bd-', 'LineWidth', 1.5);
+plot(CrowellBanksEx3JAC_04cycles.x, CrowellBanksEx3JAC_04cycles.y, 'b^-', 'LineWidth', 1.5);
+set(gca, 'XScale', 'log', 'YScale', 'log');
+set(gca, 'XLim', [1 100], 'YLim', [0.9 1000]);
+legend({'3.3', '1.7', '0.8', '0.4'});
+title('JAC');
+grid on
+end
 

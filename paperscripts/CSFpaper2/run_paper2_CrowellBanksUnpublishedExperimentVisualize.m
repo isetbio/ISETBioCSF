@@ -9,7 +9,6 @@ function run_paper2_CrowellBanksUnpublishedExperimentVisualize
 %    of Crowell & Banks (unpublished data) only for 100% contrast and
 %    visualize mosaic responses
 % 
-%
 % Inputs:
 %    None.
 %
@@ -32,9 +31,9 @@ function run_paper2_CrowellBanksUnpublishedExperimentVisualize
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = true;
-    visualizeResponses = true;
-    findPerformance = ~true;
+    computeResponses = ~true;
+    visualizeResponses = ~true;
+    findPerformance = true;
     visualizePerformance = ~true;
     
     % Pupil diameter used
@@ -44,10 +43,10 @@ function run_paper2_CrowellBanksUnpublishedExperimentVisualize
     luminanceCdM2 = 100;                                % Crowell & Banks employed 100 cd/m2 stimuli
     
     % Cycles/deg examined
-    cyclesPerDegreeExamined = [5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
+    cyclesPerDegreeExamined = [14]; % [5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
     
     % Patch sizes examined
-    patchSize2SigmaCycles = [3.3 1.7 0.8 0.4];          % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
+    patchSize2SigmaCycles = [0.4]; % [3.3 1.7 0.8 0.4];          % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
     
     % Performance for threshold
     thresholdCriterionFraction = 0.75;                  % Performance threshold employed by Crowell & Banks was 75%
@@ -75,16 +74,11 @@ function run_paper2_CrowellBanksUnpublishedExperimentVisualize
     performanceSignal = 'isomerizations'; % 'photocurrents';
     
     % Inference engine employed
-    performanceClassifier = 'svmV1FilterBank';
+    performanceClassifier = 'svmV1FilterEnsemble';  % 'svmV1FilterEnsemble'; % 'svmV1FilterBank';
     spatialPoolingKernelParams.type = 'V1QuadraturePair';
     spatialPoolingKernelParams.activationFunction = 'energy';
-    ensembleFilterParams = struct(...
-                    'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid, 2 in 5x5
-                    'spatialPositionOffsetDegs', 0.0328, ... 
-                    'cyclesPerRFs', 6, ...           % each template contains 5 cycles of the stimulus
-                    'orientations', 0);
-                
     
+                
     % Assemble conditions list to be examined (different patch sizes)
     condIndex = 0;
     for k = 1:numel(patchSize2SigmaCycles)
@@ -137,12 +131,8 @@ function run_paper2_CrowellBanksUnpublishedExperimentVisualize
         params.performanceClassifier = performanceClassifier;
         params.spatialPoolingKernelParams.type = spatialPoolingKernelParams.type;
         params.spatialPoolingKernelParams.activationFunction = spatialPoolingKernelParams.activationFunction;
-        fNames = fieldnames(ensembleFilterParams);
-        for fNameIndex = 1:numel(fNames)
-                fName = fNames{fNameIndex};
-                params.spatialPoolingKernelParams.(fName) = ensembleFilterParams.(fName);
-        end
-            
+        
+        
         % Update params
         cond = examinedCond(condIndex);
 
@@ -152,8 +142,8 @@ function run_paper2_CrowellBanksUnpublishedExperimentVisualize
         params.patchSize2SigmaCycles = cond.patchSize2SigmaCycles;
         
         % Also adjust stimulus pixels
-        params.imagePixels = round(0.5*params.imagePixels * params.patchSize2SigmaCycles / 3.3)*2;
-
+        params.imagePixels = max([256 round(0.5*params.imagePixels * params.patchSize2SigmaCycles / 3.3)*2]);
+        
         % Stimulus SF
         params.cyclesPerDegreeExamined = cond.cyclesPerDegreeExamined;
         
@@ -163,6 +153,21 @@ function run_paper2_CrowellBanksUnpublishedExperimentVisualize
         % Keep the optical image size matched to the cone mosaic, not the
         % stimulus
         params.opticalImagePadSizeDegs = cond.minimumMosaicFOVdegs;
+        
+        % Adjust the 'svmV1FilterEnsemble' pooling params to match the
+        % current 'patchSize2SigmaCycles'
+        if (strcmp(performanceClassifier, 'svmV1FilterEnsemble'))
+            ensembleFilterParams = struct(...
+                        'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid, 2 in 5x5
+                        'spatialPositionOffsetDegs', 0.028, ... 
+                        'cyclesPerRFs', params.patchSize2SigmaCycles*2, ...           % each template contains 5 cycles of the stimulus
+                        'orientations', 0);
+            fNames = fieldnames(ensembleFilterParams);
+            for fNameIndex = 1:numel(fNames)
+                    fName = fNames{fNameIndex};
+                    params.spatialPoolingKernelParams.(fName) = ensembleFilterParams.(fName);
+            end
+        end
         
         % Update params
         params = getRemainingDefaultParams(params, ...
@@ -185,14 +190,15 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
     params.computeResponses = computeResponses;
     params.computePhotocurrentResponseInstances = computePhotocurrents && computeResponses;
     params.visualizeResponses = visualizeResponses;
-    params.visualizeResponsesWithSpatialPoolingSchemeInVideo = ~true;
     params.visualizeOuterSegmentFilters = ~true;
     params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
-    params.visualizeSpatialPoolingScheme = ~true;
+    params.visualizeSpatialPoolingScheme = true;
+    params.visualizeResponsesWithSpatialPoolingSchemeInVideo = ~true;
+    
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeDisplay = ~true;
     
@@ -205,7 +211,7 @@ end
 function plotHumanData()
 
 load('CrowellBanksSubjects.mat');
-figure()
+figure(555)
 subplot(1,2,1);
 plot(CrowellBanksEx3MSB_33cycles.x, CrowellBanksEx3MSB_33cycles.y, 'bs-', 'LineWidth', 1.5);
 hold on;
@@ -229,6 +235,6 @@ set(gca, 'XLim', [1 100], 'YLim', [0.9 1000]);
 legend({'3.3', '1.7', '0.8', '0.4'});
 title('JAC');
 grid on
-pause
+
 end
 
