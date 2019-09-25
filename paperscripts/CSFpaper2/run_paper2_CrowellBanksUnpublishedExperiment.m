@@ -71,10 +71,10 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     centeredEMPaths =  'atStimulusModulationMidPoint';
     
     % Signal on which to base performance
-    performanceSignal = 'photocurrents'; %'isomerizations'; % 'photocurrents';
+    performanceSignal = 'isomerizations'; %'isomerizations'; % 'photocurrents';
     
     % Inference engine employed
-    performanceClassifier = 'svmV1FilterBank';
+    performanceClassifier = 'mlpt'; % 'svmV1FilterBank';
     spatialPoolingKernelParams.type = 'V1QuadraturePair';
     spatialPoolingKernelParams.activationFunction = 'energy';
                 
