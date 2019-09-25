@@ -84,7 +84,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     for k = 1:numel(patchSize2SigmaCycles)
         for kk = 1:numel(cyclesPerDegreeExamined)   
             condIndex = condIndex + 1;
-            examinedCond(condIndex).label = sprintf('2 sigma = %2.1f cycles', patchSize2SigmaCycles(k));
+            examinedCond(condIndex).label = sprintf('%2.1f cycles', patchSize2SigmaCycles(k));
             examinedCond(condIndex).patchSize2SigmaCycles = patchSize2SigmaCycles(k);
             examinedCond(condIndex).cyclesPerDegreeExamined = cyclesPerDegreeExamined(kk);
             
@@ -193,8 +193,34 @@ function run_paper2_CrowellBanksUnpublishedExperiment
             end
             plot(cpd(k,:), contrastSensitivity(k,:), 'o-', 'Color', squeeze(colors(k,:)), 'LineWidth', 1.5); hold on;
         end
+        
+        % Now plot the Crowell&Banks data
+        plot(CrowellBanksEx3MSB_33cycles.x, CrowellBanksEx3MSB_33cycles.y, 'ks-', 'LineWidth', 1.5);
+        plot(CrowellBanksEx3MSB_17cycles.x, CrowellBanksEx3MSB_17cycles.y, 'ko-','LineWidth', 1.5);
+        plot(CrowellBanksEx3MSB_08cycles.x, CrowellBanksEx3MSB_08cycles.y, 'kd-','LineWidth', 1.5);
+        plot(CrowellBanksEx3MSB_04cycles.x, CrowellBanksEx3MSB_04cycles.y, 'k^-','LineWidth', 1.5);
+
+        plot(CrowellBanksEx3JAC_33cycles.x, CrowellBanksEx3JAC_33cycles.y, 'ks-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
+        plot(CrowellBanksEx3JAC_17cycles.x, CrowellBanksEx3JAC_17cycles.y, 'ko-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
+        plot(CrowellBanksEx3JAC_08cycles.x, CrowellBanksEx3JAC_08cycles.y, 'kd-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
+        plot(CrowellBanksEx3JAC_04cycles.x, CrowellBanksEx3JAC_04cycles.y, 'k^-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
+
+        theLegends{numel(theLegends)+1} = sprintf('MSB, 3.3 cycles');
+        theLegends{numel(theLegends)+1} = sprintf('MSB, 1.7 cycles');
+        theLegends{numel(theLegends)+1} = sprintf('MSB, 0.8 cycles');
+        theLegends{numel(theLegends)+1} = sprintf('MSB, 0.4 cycles');
+        
+        theLegends{numel(theLegends)+1} = sprintf('JAC, 3.3 cycles');
+        theLegends{numel(theLegends)+1} = sprintf('JAC, 1.7 cycles');
+        theLegends{numel(theLegends)+1} = sprintf('JAC, 0.8 cycles');
+        theLegends{numel(theLegends)+1} = sprintf('JAC, 0.4 cycles');
+        
+        
         legend(theLegends);
         set(gca, 'FontSize', 14);
+        set(gca, 'XScale', 'log', 'YScale', 'log');
+        set(gca, 'XLim', [1 100], 'YLim', [0.9 1000]);
+
         xlabel('spatial frequency (c/deg)');
         ylabel('contrast sensitivity');
         drawnow;
