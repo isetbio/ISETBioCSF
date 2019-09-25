@@ -31,10 +31,10 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
-    visualizePerformance = ~true;
+    findPerformance = true;
+    visualizePerformance = true;
     
     % Pupil diameter used
     pupilDiamMm = 2.5;                                  % Crowell & Banks employed a 2.5 mm artificial pupil
@@ -46,7 +46,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     cyclesPerDegreeExamined = [5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
     
     % Patch sizes examined
-    patchSize2SigmaCycles = [3.3 1.7 0.8 0.4];          % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
+    patchSize2SigmaCycles = [3.3 1.7]; % [3.3 1.7 0.8 0.4];          % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
     
     % Performance for threshold
     thresholdCriterionFraction = 0.75;                  % Performance threshold employed by Crowell & Banks was 75%
@@ -171,6 +171,34 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         % Go !
         [~,~, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end % condIndex
+    
+    if (visualizePerformance)
+        condIndex = 0;
+        lumIndex = 1;
+        colors = brewermap(numel(patchSize2SigmaCycles), 'Set1');
+        figure(1234); clf;
+        theLegends = cell(1, numel(patchSize2SigmaCycles));
+        
+        for k = 1:numel(patchSize2SigmaCycles)
+            for sfIndex = 1:numel(cyclesPerDegreeExamined)   
+                condIndex = condIndex + 1;
+                if (sfIndex == 1) 
+                    theLegends{k} = examinedLegends{condIndex};
+                end
+                figData = theFigData{condIndex};
+                referenceContrast = figData.banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1);
+                cpd(k,sfIndex) = figData.banksEtAlReplicate.cyclesPerDegree(lumIndex,:);
+                thresholdContrasts = [figData.banksEtAlReplicate.mlptThresholds(lumIndex,:).thresholdContrasts];
+                contrastSensitivity(k,sfIndex) = 1./(thresholdContrasts*referenceContrast);
+            end
+            plot(cpd(k,:), contrastSensitivity(k,:), 'o-', 'Color', squeeze(colors(k,:)), 'LineWidth', 1.5); hold on;
+        end
+        legend(theLegends);
+        set(gca, 'FontSize', 14);
+        xlabel('spatial frequency (c/deg)');
+        ylabel('contrast sensitivity');
+        drawnow;
+    end
     
 end
 
