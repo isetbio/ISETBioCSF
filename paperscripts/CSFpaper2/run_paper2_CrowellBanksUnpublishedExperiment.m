@@ -71,7 +71,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     centeredEMPaths =  'atStimulusModulationMidPoint';
     
     % Signal on which to base performance
-    performanceSignal = 'isomerizations'; % 'photocurrents';
+    performanceSignal = 'photocurrents'; %'isomerizations'; % 'photocurrents';
     
     % Inference engine employed
     performanceClassifier = 'svmV1FilterBank';
@@ -195,6 +195,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         end
         
         % Now plot the Crowell&Banks data
+        load('CrowellBanksSubjects.mat');
         plot(CrowellBanksEx3MSB_33cycles.x, CrowellBanksEx3MSB_33cycles.y, 'ks-', 'LineWidth', 1.5);
         plot(CrowellBanksEx3MSB_17cycles.x, CrowellBanksEx3MSB_17cycles.y, 'ko-','LineWidth', 1.5);
         plot(CrowellBanksEx3MSB_08cycles.x, CrowellBanksEx3MSB_08cycles.y, 'kd-','LineWidth', 1.5);
