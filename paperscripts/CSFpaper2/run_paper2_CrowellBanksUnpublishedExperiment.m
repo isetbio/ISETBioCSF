@@ -99,14 +99,14 @@ function run_paper2_CrowellBanksUnpublishedExperiment
             
             for sfIndex = 1:numel(cyclesPerDegreeExamined)   
                 condIndex = condIndex + 1;
-                examinedCond(condIndex).label = sprintf('%s, %2.1f cycles', observerLegend, patchSize2SigmaCycles(k));
+                examinedCond(condIndex).label = sprintf('%s, %2.1f cycles', observerLegend, patchSize2SigmaCycles(patchSizeIndex));
                 examinedCond(condIndex).emPathType = emPathType;
                 examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
                 examinedCond(condIndex).performanceSignal = performanceSignal;
                 examinedCond(condIndex).performanceClassifier = performanceClassifier;
                 examinedCond(condIndex).spatialPoolingKernelParams.type = spatialPoolingKernelParams.type;
                 
-                examinedCond(condIndex).patchSize2SigmaCycles = patchSize2SigmaCycles(k);
+                examinedCond(condIndex).patchSize2SigmaCycles = patchSize2SigmaCycles(patchSizeIndex);
                 examinedCond(condIndex).cyclesPerDegreeExamined = cyclesPerDegreeExamined(sfIndex);
                 examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = spatialPoolingKernelParams.activationFunction;
                 
@@ -192,6 +192,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
             computePhotocurrents, computeResponses, computeMosaic, ...
             visualizeResponses, findPerformance, visualizePerformance); 
 
+            
         % Go !
         [~,~, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end % condIndex
