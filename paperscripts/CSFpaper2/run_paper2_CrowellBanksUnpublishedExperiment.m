@@ -76,7 +76,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         for observerTypeIndex = 1:numel(observerTypesExamined)
             observerType = observerTypesExamined{observerTypeIndex};
             if (strcmp(observerType, 'ideal'))
-                % the ideal observer, isomerizations, no eye movements
+                % the ideal observer: based on isomerizations with no eye movements
                 observerLegend = 'ideal observer';
                 emPathType = 'frozen0';
                 centeredEMPaths =  'atStimulusModulationMidPoint';
@@ -84,8 +84,9 @@ function run_paper2_CrowellBanksUnpublishedExperiment
                 performanceClassifier = 'mlpt';
                 spatialPoolingKernelParams.type = 'V1QuadraturePair';
                 spatialPoolingKernelParams.activationFunction = 'energy';
+                
             elseif (strcmp(observerType, 'computational'))
-                % the computational observer, pCurrent + fix. eye movements
+                % the computational observer: based on pCurrent with fixational eye movements
                 observerLegend = computationalObserverClassifier;
                 emPathType = 'randomNoSaccades';
                 centeredEMPaths =  'atStimulusModulationMidPoint';
@@ -138,20 +139,20 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         params.thresholdCriterionFraction = thresholdCriterionFraction;
         params.nTrainingSamples = nTrainingSamples;
         
-        % Update params
+        % Update params based on condition currently examined
         cond = examinedCond(condIndex);
         
         % Legend
         examinedLegends{numel(examinedLegends)+1} = cond.label;
         
-        % Eye movement typw
+        % Eye movement type
         params.emPathType = cond.emPathType;
         params.centeredEMPaths = cond.centeredEMPaths;
         
-        % Signal
+        % Signal on which inference engine is acting on
         params.performanceSignal = cond.performanceSignal;
         
-        % Classifier
+        % Classifier type (mltp, svm, etc)
         params.performanceClassifier = cond.performanceClassifier;
         params.spatialPoolingKernelParams.type = cond.spatialPoolingKernelParams.type;
         params.spatialPoolingKernelParams.activationFunction = cond.spatialPoolingKernelParams.activationFunction;
@@ -159,7 +160,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         % Stimulus patch size
         params.patchSize2SigmaCycles = cond.patchSize2SigmaCycles;
         
-        % Also adjust stimulus pixels
+        % Also adjust stimulus pixels based on patch size
         params.imagePixels = max([256 round(0.5*params.imagePixels * params.patchSize2SigmaCycles / 3.3)*2]);
         
         % Stimulus SF
@@ -232,26 +233,47 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         
         % Now plot the Crowell&Banks data
         load('CrowellBanksSubjects.mat');
-        plot(CrowellBanksEx3MSB_33cycles.x, CrowellBanksEx3MSB_33cycles.y, 'ks-', 'LineWidth', 1.5);
-        plot(CrowellBanksEx3MSB_17cycles.x, CrowellBanksEx3MSB_17cycles.y, 'ko-','LineWidth', 1.5);
-        plot(CrowellBanksEx3MSB_08cycles.x, CrowellBanksEx3MSB_08cycles.y, 'kd-','LineWidth', 1.5);
-        plot(CrowellBanksEx3MSB_04cycles.x, CrowellBanksEx3MSB_04cycles.y, 'k^-','LineWidth', 1.5);
-
-        plot(CrowellBanksEx3JAC_33cycles.x, CrowellBanksEx3JAC_33cycles.y, 'ks-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
-        plot(CrowellBanksEx3JAC_17cycles.x, CrowellBanksEx3JAC_17cycles.y, 'ko-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
-        plot(CrowellBanksEx3JAC_08cycles.x, CrowellBanksEx3JAC_08cycles.y, 'kd-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
-        plot(CrowellBanksEx3JAC_04cycles.x, CrowellBanksEx3JAC_04cycles.y, 'k^-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
-
-        theLegends{numel(theLegends)+1} = sprintf('MSB, 3.3 cycles');
-        theLegends{numel(theLegends)+1} = sprintf('MSB, 1.7 cycles');
-        theLegends{numel(theLegends)+1} = sprintf('MSB, 0.8 cycles');
-        theLegends{numel(theLegends)+1} = sprintf('MSB, 0.4 cycles');
         
-        theLegends{numel(theLegends)+1} = sprintf('JAC, 3.3 cycles');
-        theLegends{numel(theLegends)+1} = sprintf('JAC, 1.7 cycles');
-        theLegends{numel(theLegends)+1} = sprintf('JAC, 0.8 cycles');
-        theLegends{numel(theLegends)+1} = sprintf('JAC, 0.4 cycles');
+        if (~isempty(find(patchSize2SigmaCycles==3.3)))
+            plot(CrowellBanksEx3MSB_33cycles.x, CrowellBanksEx3MSB_33cycles.y, 'ks-', 'LineWidth', 1.5);
+            theLegends{numel(theLegends)+1} = sprintf('MSB, 3.3 cycles');
+        end
         
+        if (~isempty(find(patchSize2SigmaCycles==1.7)))
+            plot(CrowellBanksEx3MSB_17cycles.x, CrowellBanksEx3MSB_17cycles.y, 'ko-','LineWidth', 1.5);
+            theLegends{numel(theLegends)+1} = sprintf('MSB, 1.7 cycles');
+        end
+        
+        if (~isempty(find(patchSize2SigmaCycles==0.8)))
+            plot(CrowellBanksEx3MSB_08cycles.x, CrowellBanksEx3MSB_08cycles.y, 'kd-','LineWidth', 1.5);
+            theLegends{numel(theLegends)+1} = sprintf('MSB, 0.8 cycles');
+        end
+        
+        if (~isempty(find(patchSize2SigmaCycles==0.4)))
+            plot(CrowellBanksEx3MSB_04cycles.x, CrowellBanksEx3MSB_04cycles.y, 'k^-','LineWidth', 1.5);
+            theLegends{numel(theLegends)+1} = sprintf('MSB, 0.4 cycles');
+        end
+        
+
+        if (~isempty(find(patchSize2SigmaCycles==3.3)))
+            plot(CrowellBanksEx3JAC_33cycles.x, CrowellBanksEx3JAC_33cycles.y, 'ks-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
+            theLegends{numel(theLegends)+1} = sprintf('JAC, 3.3 cycles');
+        end
+        
+        if (~isempty(find(patchSize2SigmaCycles==1.7)))
+            plot(CrowellBanksEx3JAC_17cycles.x, CrowellBanksEx3JAC_17cycles.y, 'ko-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
+            theLegends{numel(theLegends)+1} = sprintf('JAC, 1.7 cycles');
+        end
+        
+        if (~isempty(find(patchSize2SigmaCycles==0.8)))
+            plot(CrowellBanksEx3JAC_08cycles.x, CrowellBanksEx3JAC_08cycles.y, 'kd-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
+             theLegends{numel(theLegends)+1} = sprintf('JAC, 0.8 cycles');
+        end
+        
+        if (~isempty(find(patchSize2SigmaCycles==0.4)))
+            plot(CrowellBanksEx3JAC_04cycles.x, CrowellBanksEx3JAC_04cycles.y, 'k^-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
+            theLegends{numel(theLegends)+1} = sprintf('JAC, 0.4 cycles');
+        end
         
         legend(theLegends);
         set(gca, 'FontSize', 14);
