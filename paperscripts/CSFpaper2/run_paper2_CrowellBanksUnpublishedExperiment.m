@@ -33,7 +33,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     computeMosaic = ~true;
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Pupil diameter used
@@ -202,8 +202,10 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         condIndex = 0;
         lumIndex = 1;
         colors = brewermap(numel(patchSize2SigmaCycles), 'Set1');
-        figure(1234); clf;
-        theLegends = cell(1, numel(patchSize2SigmaCycles)*2);
+        hFig = figure(1234); clf;
+        set(hFig, 'Position', [600 40 630 950], 'Color', [1 1 1]);
+        subplot('Position', [0.1 0.3 0.85 0.75]); 
+        theLegends = {};
         
         for patchSizeIndex  = 1:numel(patchSize2SigmaCycles)
             thePatchSizeColor = squeeze(colors(patchSizeIndex,:));
@@ -225,9 +227,9 @@ function run_paper2_CrowellBanksUnpublishedExperiment
                     plot(cpd, contrastSensitivity, '--', 'Color', thePatchSizeColor, 'LineWidth', 1.5); hold on;
                 else
                     % computational observer
-                    plot(cpd, contrastSensitivity, 'o-', 'Color', thePatchSizeColor, ... 
-                        'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
-                        'LineWidth', 1.5); hold on;
+                    plot(cpd, contrastSensitivity, 'o-', 'Color', [0 0 0], ... 
+                        'MarkerFaceColor', 0.3*thePatchSizeColor+0.7*[1 1 1], 'MarkerSize', 14, ...
+                        'LineWidth', 2.0); hold on;
                 end
             end % observerType
         end
@@ -303,10 +305,10 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         legend(theLegends);
         set(gca, 'FontSize', 14);
         set(gca, 'XScale', 'log', 'YScale', 'log');
-        set(gca, 'XLim', [1 100], 'YLim', [0.9 1000]);
+        set(gca, 'XLim', [1 100], 'YLim', [0.9 1000], 'XTick', [1 3 10 30 100], 'YTick', [1 3 10 30 100 300 1000]);
 
-        xlabel('spatial frequency (c/deg)');
-        ylabel('contrast sensitivity');
+        xlabel('\it spatial frequency (c/deg)');
+        ylabel('\it contrast sensitivity');
         drawnow;
     end
     
