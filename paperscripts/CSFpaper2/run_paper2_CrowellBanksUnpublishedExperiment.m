@@ -36,6 +36,10 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     findPerformance = ~true;
     visualizePerformance = true;
     
+    % Type of inference engine to employ
+    observerTypesExamined = {'ideal'};                % {'ideal', 'computational'};
+    computationalObserverClassifier = 'svmV1FilterBank';  % Choose from : 'svmV1FilterEnsemble', 'svmV1FilterBank'
+   
     % Pupil diameter used
     pupilDiamMm = 2.5;                                  % Crowell & Banks employed a 2.5 mm artificial pupil
     
@@ -67,9 +71,6 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     % Compute photocurrent responses
     computePhotocurrents = true;
       
-    observerTypesExamined = {'computational'};                % {'ideal', 'computational'};
-    computationalObserverClassifier = 'svmV1FilterEnsemble';  % Choose from : 'svmV1FilterEnsemble', 'svmV1FilterBank'
-    
     % Assemble conditions list to be examined (different patch sizes)
     condIndex = 0;
     for patchSizeIndex = 1:numel(patchSize2SigmaCycles)
@@ -244,7 +245,7 @@ function generateFigure(data)
     % Plot the computed data
     colors = brewermap(numel(data.patchSize2SigmaCycles), 'Set1');
     
-    for patchSizeIndex  = 1:numel(patchSize2SigmaCycles)
+    for patchSizeIndex  = 1:numel(data.patchSize2SigmaCycles)
         thePatchSizeColor = squeeze(colors(patchSizeIndex,:));
             for observerTypeIndex = 1:numel(data.observerTypesExamined)
                 
@@ -268,7 +269,7 @@ function generateFigure(data)
     theLegends = data.theLegends;
     load('CrowellBanksSubjects.mat');
 
-    if (~isempty(find(patchSize2SigmaCycles==3.3)))
+    if (~isempty(find(data.patchSize2SigmaCycles==3.3)))
         thePatchSizeColor = squeeze(colors(1,:));
         plot(CrowellBanksEx3MSB_33cycles.x, CrowellBanksEx3MSB_33cycles.y, 'ks-', 'Color', thePatchSizeColor, ...
             'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
@@ -276,7 +277,7 @@ function generateFigure(data)
         theLegends{numel(theLegends)+1} = sprintf('MSB, 3.3 cycles');
     end
 
-    if (~isempty(find(patchSize2SigmaCycles==1.7)))
+    if (~isempty(find(data.patchSize2SigmaCycles==1.7)))
         thePatchSizeColor = squeeze(colors(2,:));
         plot(CrowellBanksEx3MSB_17cycles.x, CrowellBanksEx3MSB_17cycles.y, 'ks-', 'Color', thePatchSizeColor, ...
             'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
@@ -284,7 +285,7 @@ function generateFigure(data)
         theLegends{numel(theLegends)+1} = sprintf('MSB, 1.7 cycles');
     end
 
-    if (~isempty(find(patchSize2SigmaCycles==0.8)))
+    if (~isempty(find(data.patchSize2SigmaCycles==0.8)))
         thePatchSizeColor = squeeze(colors(3,:));
         plot(CrowellBanksEx3MSB_08cycles.x, CrowellBanksEx3MSB_08cycles.y, 'ks-', 'Color', thePatchSizeColor, ...
             'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
@@ -292,7 +293,7 @@ function generateFigure(data)
         theLegends{numel(theLegends)+1} = sprintf('MSB, 0.8 cycles');
     end
 
-    if (~isempty(find(patchSize2SigmaCycles==0.4)))
+    if (~isempty(find(data.patchSize2SigmaCycles==0.4)))
         thePatchSizeColor = squeeze(colors(4,:));
         plot(CrowellBanksEx3MSB_04cycles.x, CrowellBanksEx3MSB_04cycles.y, 'ks-', 'Color', thePatchSizeColor, ...
             'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
@@ -301,7 +302,7 @@ function generateFigure(data)
     end
 
 
-    if (~isempty(find(patchSize2SigmaCycles==3.3)))
+    if (~isempty(find(data.patchSize2SigmaCycles==3.3)))
         thePatchSizeColor = squeeze(colors(1,:));
         plot(CrowellBanksEx3JAC_33cycles.x, CrowellBanksEx3JAC_33cycles.y, 'kd-', 'Color', thePatchSizeColor, ...
             'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
@@ -309,7 +310,7 @@ function generateFigure(data)
         theLegends{numel(theLegends)+1} = sprintf('JAC, 3.3 cycles');
     end
 
-    if (~isempty(find(patchSize2SigmaCycles==1.7)))
+    if (~isempty(find(data.patchSize2SigmaCycles==1.7)))
         thePatchSizeColor = squeeze(colors(2,:));
         plot(CrowellBanksEx3JAC_17cycles.x, CrowellBanksEx3JAC_17cycles.y, 'kd-', 'Color', thePatchSizeColor, ...
             'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
@@ -317,7 +318,7 @@ function generateFigure(data)
         theLegends{numel(theLegends)+1} = sprintf('JAC, 1.7 cycles');
     end
 
-    if (~isempty(find(patchSize2SigmaCycles==0.8)))
+    if (~isempty(find(data.patchSize2SigmaCycles==0.8)))
         thePatchSizeColor = squeeze(colors(3,:));
         plot(CrowellBanksEx3JAC_08cycles.x, CrowellBanksEx3JAC_08cycles.y, 'kd-', 'Color', thePatchSizeColor, ...
             'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
@@ -325,7 +326,7 @@ function generateFigure(data)
          theLegends{numel(theLegends)+1} = sprintf('JAC, 0.8 cycles');
     end
 
-    if (~isempty(find(patchSize2SigmaCycles==0.4)))
+    if (~isempty(find(data.patchSize2SigmaCycles==0.4)))
         thePatchSizeColor = squeeze(colors(4,:));
         plot(CrowellBanksEx3JAC_04cycles.x, CrowellBanksEx3JAC_04cycles.y, 'kd-', 'Color', thePatchSizeColor, ...
             'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
