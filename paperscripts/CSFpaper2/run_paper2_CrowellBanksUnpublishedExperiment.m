@@ -201,16 +201,15 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     if (visualizePerformance)
         condIndex = 0;
         lumIndex = 1;
-        colors = brewermap(numel(patchSize2SigmaCycles), 'Set1');
-        hFig = figure(1234); clf;
-        set(hFig, 'Position', [600 40 630 950], 'Color', [1 1 1]);
-        subplot('Position', [0.1 0.3 0.85 0.75]); 
         theLegends = {};
         
+        data.patchSize2SigmaCycles = patchSize2SigmaCycles;
+        data.observerTypesExamined = observerTypesExamined;
+        data.cyclesPerDegreeExamined = cyclesPerDegreeExamined;
+        
+        
         for patchSizeIndex  = 1:numel(patchSize2SigmaCycles)
-            thePatchSizeColor = squeeze(colors(patchSizeIndex,:));
             for observerTypeIndex = 1:numel(observerTypesExamined)
-                observerType = observerTypesExamined{observerTypeIndex};
                 for sfIndex = 1:numel(cyclesPerDegreeExamined)   
                     condIndex = condIndex + 1;
                     if (sfIndex == 1) 
@@ -218,10 +217,41 @@ function run_paper2_CrowellBanksUnpublishedExperiment
                     end
                     figData = theFigData{condIndex};
                     referenceContrast = figData.banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1);
-                    cpd(sfIndex) = figData.banksEtAlReplicate.cyclesPerDegree(lumIndex,:);
                     thresholdContrasts = [figData.banksEtAlReplicate.mlptThresholds(lumIndex,:).thresholdContrasts];
-                    contrastSensitivity(sfIndex) = 1./(thresholdContrasts*referenceContrast);
+                    data.cpd(patchSizeIndex, observerTypeIndex, sfIndex) = figData.banksEtAlReplicate.cyclesPerDegree(lumIndex,:);
+                    data.contrastSensitivity(patchSizeIndex, observerTypeIndex, sfIndex) = 1./(thresholdContrasts*referenceContrast);
                 end % sfIndex
+            end % observerType
+        end
+        
+        data.theLegends = theLegends;
+        data.performanceClassifier = params.performanceClassifier;
+        dataFilename = sprintf('data_%s.mat', strrep(data.performanceClassifier, ' ', '_'));
+        save(dataFilename, 'data');
+        
+        % Generate the figure
+        generateFigure(data);
+    end
+    
+end
+
+function generateFigure(data)
+    
+    hFig = figure(1234); clf;
+    set(hFig, 'Position', [600 40 630 950], 'Color', [1 1 1]);
+    subplot('Position', [0.1 0.3 0.85 0.75]); 
+        
+    % Plot the computed data
+    colors = brewermap(numel(data.patchSize2SigmaCycles), 'Set1');
+    
+    for patchSizeIndex  = 1:numel(patchSize2SigmaCycles)
+        thePatchSizeColor = squeeze(colors(patchSizeIndex,:));
+            for observerTypeIndex = 1:numel(data.observerTypesExamined)
+                
+                cpd = squeeze(data.cpd(patchSizeIndex, observerTypeIndex, :));
+                contrastSensitivity = squeeze(data.contrastSensitivity(patchSizeIndex, observerTypeIndex, :));
+                    
+                observerType = data.observerTypesExamined{observerTypeIndex};
                 if (strcmp(observerType, 'ideal'))
                     % ideal observer
                     plot(cpd, contrastSensitivity, '--', 'Color', thePatchSizeColor, 'LineWidth', 1.5); hold on;
@@ -232,86 +262,85 @@ function run_paper2_CrowellBanksUnpublishedExperiment
                         'LineWidth', 2.0); hold on;
                 end
             end % observerType
-        end
-        
-        % Now plot the Crowell&Banks data
-        load('CrowellBanksSubjects.mat');
-        
-        if (~isempty(find(patchSize2SigmaCycles==3.3)))
-            thePatchSizeColor = squeeze(colors(1,:));
-            plot(CrowellBanksEx3MSB_33cycles.x, CrowellBanksEx3MSB_33cycles.y, 'ks-', 'Color', thePatchSizeColor, ...
-                'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
-                'LineWidth', 1.5);
-            theLegends{numel(theLegends)+1} = sprintf('MSB, 3.3 cycles');
-        end
-        
-        if (~isempty(find(patchSize2SigmaCycles==1.7)))
-            thePatchSizeColor = squeeze(colors(2,:));
-            plot(CrowellBanksEx3MSB_17cycles.x, CrowellBanksEx3MSB_17cycles.y, 'ks-', 'Color', thePatchSizeColor, ...
-                'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
-                'LineWidth', 1.5);
-            theLegends{numel(theLegends)+1} = sprintf('MSB, 1.7 cycles');
-        end
-        
-        if (~isempty(find(patchSize2SigmaCycles==0.8)))
-            thePatchSizeColor = squeeze(colors(3,:));
-            plot(CrowellBanksEx3MSB_08cycles.x, CrowellBanksEx3MSB_08cycles.y, 'ks-', 'Color', thePatchSizeColor, ...
-                'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
-                'LineWidth', 1.5);
-            theLegends{numel(theLegends)+1} = sprintf('MSB, 0.8 cycles');
-        end
-        
-        if (~isempty(find(patchSize2SigmaCycles==0.4)))
-            thePatchSizeColor = squeeze(colors(4,:));
-            plot(CrowellBanksEx3MSB_04cycles.x, CrowellBanksEx3MSB_04cycles.y, 'ks-', 'Color', thePatchSizeColor, ...
-                'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
-                'LineWidth', 1.5);
-            theLegends{numel(theLegends)+1} = sprintf('MSB, 0.4 cycles');
-        end
-        
-
-        if (~isempty(find(patchSize2SigmaCycles==3.3)))
-            thePatchSizeColor = squeeze(colors(1,:));
-            plot(CrowellBanksEx3JAC_33cycles.x, CrowellBanksEx3JAC_33cycles.y, 'kd-', 'Color', thePatchSizeColor, ...
-                'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
-                'LineWidth', 1.5);
-            theLegends{numel(theLegends)+1} = sprintf('JAC, 3.3 cycles');
-        end
-        
-        if (~isempty(find(patchSize2SigmaCycles==1.7)))
-            thePatchSizeColor = squeeze(colors(2,:));
-            plot(CrowellBanksEx3JAC_17cycles.x, CrowellBanksEx3JAC_17cycles.y, 'kd-', 'Color', thePatchSizeColor, ...
-                'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
-                'LineWidth', 1.5);
-            theLegends{numel(theLegends)+1} = sprintf('JAC, 1.7 cycles');
-        end
-        
-        if (~isempty(find(patchSize2SigmaCycles==0.8)))
-            thePatchSizeColor = squeeze(colors(3,:));
-            plot(CrowellBanksEx3JAC_08cycles.x, CrowellBanksEx3JAC_08cycles.y, 'kd-', 'Color', thePatchSizeColor, ...
-                'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
-                'LineWidth', 1.5);
-             theLegends{numel(theLegends)+1} = sprintf('JAC, 0.8 cycles');
-        end
-        
-        if (~isempty(find(patchSize2SigmaCycles==0.4)))
-            thePatchSizeColor = squeeze(colors(4,:));
-            plot(CrowellBanksEx3JAC_04cycles.x, CrowellBanksEx3JAC_04cycles.y, 'kd-', 'Color', thePatchSizeColor, ...
-                'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
-                'LineWidth', 1.5);
-            theLegends{numel(theLegends)+1} = sprintf('JAC, 0.4 cycles');
-        end
-        
-        legend(theLegends);
-        set(gca, 'FontSize', 14);
-        set(gca, 'XScale', 'log', 'YScale', 'log');
-        set(gca, 'XLim', [1 100], 'YLim', [0.9 1000], 'XTick', [1 3 10 30 100], 'YTick', [1 3 10 30 100 300 1000]);
-
-        xlabel('\it spatial frequency (c/deg)');
-        ylabel('\it contrast sensitivity');
-        drawnow;
     end
-    
+        
+    % Now plot the Crowell&Banks data
+    theLegends = data.theLegends;
+    load('CrowellBanksSubjects.mat');
+
+    if (~isempty(find(patchSize2SigmaCycles==3.3)))
+        thePatchSizeColor = squeeze(colors(1,:));
+        plot(CrowellBanksEx3MSB_33cycles.x, CrowellBanksEx3MSB_33cycles.y, 'ks-', 'Color', thePatchSizeColor, ...
+            'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
+            'LineWidth', 1.5);
+        theLegends{numel(theLegends)+1} = sprintf('MSB, 3.3 cycles');
+    end
+
+    if (~isempty(find(patchSize2SigmaCycles==1.7)))
+        thePatchSizeColor = squeeze(colors(2,:));
+        plot(CrowellBanksEx3MSB_17cycles.x, CrowellBanksEx3MSB_17cycles.y, 'ks-', 'Color', thePatchSizeColor, ...
+            'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
+            'LineWidth', 1.5);
+        theLegends{numel(theLegends)+1} = sprintf('MSB, 1.7 cycles');
+    end
+
+    if (~isempty(find(patchSize2SigmaCycles==0.8)))
+        thePatchSizeColor = squeeze(colors(3,:));
+        plot(CrowellBanksEx3MSB_08cycles.x, CrowellBanksEx3MSB_08cycles.y, 'ks-', 'Color', thePatchSizeColor, ...
+            'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
+            'LineWidth', 1.5);
+        theLegends{numel(theLegends)+1} = sprintf('MSB, 0.8 cycles');
+    end
+
+    if (~isempty(find(patchSize2SigmaCycles==0.4)))
+        thePatchSizeColor = squeeze(colors(4,:));
+        plot(CrowellBanksEx3MSB_04cycles.x, CrowellBanksEx3MSB_04cycles.y, 'ks-', 'Color', thePatchSizeColor, ...
+            'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
+            'LineWidth', 1.5);
+        theLegends{numel(theLegends)+1} = sprintf('MSB, 0.4 cycles');
+    end
+
+
+    if (~isempty(find(patchSize2SigmaCycles==3.3)))
+        thePatchSizeColor = squeeze(colors(1,:));
+        plot(CrowellBanksEx3JAC_33cycles.x, CrowellBanksEx3JAC_33cycles.y, 'kd-', 'Color', thePatchSizeColor, ...
+            'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
+            'LineWidth', 1.5);
+        theLegends{numel(theLegends)+1} = sprintf('JAC, 3.3 cycles');
+    end
+
+    if (~isempty(find(patchSize2SigmaCycles==1.7)))
+        thePatchSizeColor = squeeze(colors(2,:));
+        plot(CrowellBanksEx3JAC_17cycles.x, CrowellBanksEx3JAC_17cycles.y, 'kd-', 'Color', thePatchSizeColor, ...
+            'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
+            'LineWidth', 1.5);
+        theLegends{numel(theLegends)+1} = sprintf('JAC, 1.7 cycles');
+    end
+
+    if (~isempty(find(patchSize2SigmaCycles==0.8)))
+        thePatchSizeColor = squeeze(colors(3,:));
+        plot(CrowellBanksEx3JAC_08cycles.x, CrowellBanksEx3JAC_08cycles.y, 'kd-', 'Color', thePatchSizeColor, ...
+            'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
+            'LineWidth', 1.5);
+         theLegends{numel(theLegends)+1} = sprintf('JAC, 0.8 cycles');
+    end
+
+    if (~isempty(find(patchSize2SigmaCycles==0.4)))
+        thePatchSizeColor = squeeze(colors(4,:));
+        plot(CrowellBanksEx3JAC_04cycles.x, CrowellBanksEx3JAC_04cycles.y, 'kd-', 'Color', thePatchSizeColor, ...
+            'MarkerFaceColor', 0.5*thePatchSizeColor+0.5*[1 1 1], 'MarkerSize', 12, ...
+            'LineWidth', 1.5);
+        theLegends{numel(theLegends)+1} = sprintf('JAC, 0.4 cycles');
+    end
+
+    legend(theLegends);
+    set(gca, 'FontSize', 14);
+    set(gca, 'XScale', 'log', 'YScale', 'log');
+    set(gca, 'XLim', [1 100], 'YLim', [0.9 1000], 'XTick', [1 3 10 30 100], 'YTick', [1 3 10 30 100 300 1000]);
+
+    xlabel('\it spatial frequency (c/deg)');
+    ylabel('\it contrast sensitivity');
+    drawnow;
 end
 
 
