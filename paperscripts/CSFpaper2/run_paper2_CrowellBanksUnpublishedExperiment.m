@@ -22,7 +22,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
 % History
 %    09/20/19  npc  Wrote it.
 
-    plotHumanData();
+    %plotHumanData();
     
     % How to split the computation
     % 0 (All mosaics), 1; (Largest mosaic), 2 (Second largest), 3 (all but
@@ -180,7 +180,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
             ensembleFilterParams = struct(...
                         'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid, 2 in 5x5
                         'spatialPositionOffsetDegs', 0.025, ... 
-                        'cyclesPerRFs', params.patchSize2SigmaCycles*2.5, ...           % each template contains 5 cycles of the stimulus
+                        'cyclesPerRFs', params.patchSize2SigmaCycles*1.41, ...           % each template contains 5 cycles of the stimulus
                         'orientations', 0);
             fNames = fieldnames(ensembleFilterParams);
             for fNameIndex = 1:numel(fNames)
@@ -189,6 +189,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
             end
         end
         
+ 
         % Update params
         params = getRemainingDefaultParams(params, ...
             computePhotocurrents, computeResponses, computeMosaic, ...
