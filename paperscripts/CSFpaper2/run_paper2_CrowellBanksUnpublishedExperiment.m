@@ -33,12 +33,12 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     computeMosaic = ~true;
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     visualizePerformance = true;
     
     % Type of inference engine to employ
-    observerTypesExamined = {'ideal'};                % {'ideal', 'computational'};
-    computationalObserverClassifier = 'svmV1FilterBank';  % Choose from : 'svmV1FilterEnsemble', 'svmV1FilterBank'
+    observerTypesExamined = {'computational'};                % {'ideal', 'computational'};
+    computationalObserverClassifier = 'svmV1FilterEnsemble';  % Choose from : 'svmV1FilterEnsemble', 'svmV1FilterBank'
    
     % Pupil diameter used
     pupilDiamMm = 2.5;                                  % Crowell & Banks employed a 2.5 mm artificial pupil
@@ -179,8 +179,8 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         if (strcmp(params.performanceClassifier, 'svmV1FilterEnsemble'))
             ensembleFilterParams = struct(...
                         'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid, 2 in 5x5
-                        'spatialPositionOffsetDegs', 0.03, ... 
-                        'cyclesPerRFs', params.patchSize2SigmaCycles*2, ...           % each template contains 5 cycles of the stimulus
+                        'spatialPositionOffsetDegs', 0.025, ... 
+                        'cyclesPerRFs', params.patchSize2SigmaCycles*2.5, ...           % each template contains 5 cycles of the stimulus
                         'orientations', 0);
             fNames = fieldnames(ensembleFilterParams);
             for fNameIndex = 1:numel(fNames)
