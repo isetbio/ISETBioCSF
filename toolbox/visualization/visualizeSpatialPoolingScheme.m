@@ -71,8 +71,13 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         ax = subplot('Position', subplotPosVectors(1,1).v);
         imagesc(xaxis, yaxis, 0.5 + 0.3*spatialModulation);
         hold on;
-        plot([xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
-        plot([0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
+        
+        xRange(1) = -mosaicFOVDegs/2;
+        xRange(2) = mosaicFOVDegs/2;
+        yRange = xRange;
+        
+        %plot([xRange(1) xRange(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
+        %plot([0 0],[yRange(1) yRange(end)], 'k-', 'LineWidth', 1.0);
         hold off;
         formatFigureForPaper(hFig, ...
              'figureType', 'CONE_SPATIAL_POOLING', ...
@@ -80,8 +85,11 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
              'theFigureTitle', 'stimulus modulation' ...
         );
 
-        set(ax, 'CLim', [0 1], 'XLim', [xaxis(1) xaxis(end)], 'YLim', [yaxis(1) yaxis(end)]);
-        set(ax, 'XTick', -0.2:0.1:0.2, 'YTick', -0.2:tickIncrementDegs:0.2);
+        midPoint = length(cMapForStim)/2
+        bkgndColor = cMapForStim(midPoint,:);
+        set(ax, 'CLim', [0 1], 'XLim', [xRange(1) xRange(end)], 'YLim', [yRange(1) yRange(end)]);
+        set(ax, 'Color', bkgndColor, 'XTick', -0.2:0.1:0.2, 'YTick', -0.2:tickIncrementDegs:0.2);
+        grid(ax, 'off')
         colormap(ax, cMapForStim);
         ylabel(ax, 'degrees');
         
@@ -100,15 +108,15 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
         ax = subplot('Position', subplotPosVectors(1,2).v);
         hold on
         plotQuantizedWeights(gca, 0*theSpatialPoolingFilter.cosPhasePoolingWeights, quantizationLevels, coneLocsInDegs, coneApertureOutline);
-        plot(ax,[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
-        plot(ax,[0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
+        plot(ax,[xRange(1) xRange(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
+        plot(ax,[0 0],[yRange(1) yRange(end)], 'k-', 'LineWidth', 1.0);
         hold off;
         formatFigureForPaper(hFig, ...
              'figureType', 'CONE_SPATIAL_POOLING', ...
              'theAxes', ax, ...
              'theFigureTitle', 'cone mosaic' ...
         );
-        set(gca, 'CLim', [0 1], 'XLim', [xaxis(1) xaxis(end)], 'YLim', [yaxis(1) yaxis(end)]);
+        set(gca, 'CLim', [0 1], 'XLim', [xRange(1) xRange(end)], 'YLim', [yRange(1) yRange(end)]);
         set(gca, 'XTick', -0.2:0.1:0.2, 'YTick', -0.2:tickIncrementDegs:0.2);
         set(gca, 'YTickLabel', {});
         colormap(gca, cMapForStim);
@@ -161,8 +169,8 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
                     hold(ax, 'on');
                     plotQuantizedWeights(gca, quantizedWeights/maxWeight, quantizationLevels, coneLocsInDegs, coneApertureOutline);
                     
-                    plot(ax,[xaxis(1) xaxis(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
-                    plot(ax,[0 0],[yaxis(1) yaxis(end)], 'k-', 'LineWidth', 1.0);
+                    %plot(ax,[xRange(1) xRange(end)], [0 0 ], 'k-', 'LineWidth', 1.0);
+                    %plot(ax,[0 0],[yRange(1) yRange(end)], 'k-', 'LineWidth', 1.0);
                     hold(ax, 'off');
                     colormap(ax, cMapForWeights);
                 end % quadrature index
@@ -209,7 +217,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
                      'theAxes', ax, ...
                      'theFigureTitle', figTitle ...
             );
-            set(ax, 'CLim', [0 1], 'XLim', [xaxis(1) xaxis(end)], 'YLim', [yaxis(1) yaxis(end)]);
+            set(ax, 'CLim', [0 1], 'XLim', [xRange(1) xRange(end)], 'YLim', [yRange(1) yRange(end)]);
             set(ax, 'XTick', -0.2:tickIncrementDegs:0.2, 'YTick', -0.2:tickIncrementDegs:0.2);
             set(ax, 'YTickLabel', {});
             %xlabel(ax, 'degrees');
