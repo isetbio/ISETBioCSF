@@ -33,7 +33,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     computeMosaic = ~true;
     computeResponses = true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = ~true;
     
     % Type of inference engine to employ
@@ -47,16 +47,16 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     luminanceCdM2 = 100;                                % Crowell & Banks employed 100 cd/m2 stimuli
     
     % Cycles/deg examined
-    cyclesPerDegreeExamined = [5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
+    cyclesPerDegreeExamined = [14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
     
     % Patch sizes examined
-    patchSize2SigmaCycles = [0.8]; % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
+    patchSize2SigmaCycles = [3.3 1.7 0.8 0.4]; % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
     
     % Performance for threshold
     thresholdCriterionFraction = 0.75;                  % Performance threshold employed by Crowell & Banks was 75%
     
     % Response instances to compute
-    nTrainingSamples = 1032;                         % 1032 to signify the Crowell & Banks runs
+    nTrainingSamples = 512;                            % 1032 to signify the Crowell & Banks runs
     
     % Integration time to use: Here set to 5.0 ms, but 2.5 ms may be better 
     % for capturing the dynamics of fixationalEM
@@ -136,7 +136,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
         
         % Customize params
-        params.luminances = luminanceCdM2;
+        params.luminancesExamined = luminanceCdM2;
         params.thresholdCriterionFraction = thresholdCriterionFraction;
         params.nTrainingSamples = nTrainingSamples;
         

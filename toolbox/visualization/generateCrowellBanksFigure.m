@@ -1,7 +1,7 @@
 function generateCrowellBanksFigure(data)
     
     performanceClassifier = 'svmV1FilterEnsemble';
-    performanceClassifier = 'svmV1FilterBank';
+    %performanceClassifier = 'svmV1FilterBank';
     
     if notDefined('data')
         dataFilename = sprintf('data_mlpt.mat', strrep(performanceClassifier, ' ', '_'));
@@ -20,7 +20,7 @@ function generateCrowellBanksFigure(data)
     sfLims  = [1.5 80];
     dx1 = 0.2; dx2 = 10; dy1 = 0.5; dy2 = 1000;
     theRatioTicks = [0.01 0.03 0.1 0.3 1];
-    theRatioLims = [0.01 1.0];
+    theRatioLims = [0.006 2];
     
     hFig = figure(1234); clf;
     set(hFig, 'Color', [1 1 1], 'Position', [10 10 800 340]);
@@ -38,8 +38,7 @@ function generateCrowellBanksFigure(data)
     load('CrowellBanksSubjects.mat');
     
     % Plot the computed data
-
-    for patchSizeIndex  = 1:numel(data.patchSize2SigmaCycles)
+    for patchSizeIndex  = 1:numel(referenceData.patchSize2SigmaCycles)
         
         ratioAxes = subplot('Position', [0.08+(patchSizeIndex-1)*0.23 0.08 0.18 0.22]);
         csfAxes = subplot('Position', [0.08+(patchSizeIndex-1)*0.23 0.31 0.18 0.68]);
@@ -49,7 +48,7 @@ function generateCrowellBanksFigure(data)
         hold on;
         
         % Plot the corresponding Crowell&Banks data
-        if (~isempty(find(data.patchSize2SigmaCycles(patchSizeIndex)==3.3)))
+        if (~isempty(find(referenceData.patchSize2SigmaCycles(patchSizeIndex)==3.3)))
             plot(csfAxes, CrowellBanksEx3MSB_33cycles.x, CrowellBanksEx3MSB_33cycles.y, 'kv-', 'Color', [0.4 0.4 0.4], ...
             'MarkerFaceColor', 0.7*[1 1 1], ...
             'MarkerSize', markerSize*1.4, 'LineWidth', lineWidth);
@@ -61,7 +60,7 @@ function generateCrowellBanksFigure(data)
             theLegends{numel(theLegends)+1} = sprintf('JAC, 3.3 cycles');
         end
         
-        if (~isempty(find(data.patchSize2SigmaCycles(patchSizeIndex)==1.7)))
+        if (~isempty(find(referenceData.patchSize2SigmaCycles(patchSizeIndex)==1.7)))
             plot(csfAxes, CrowellBanksEx3MSB_17cycles.x, CrowellBanksEx3MSB_17cycles.y, 'kv-', 'Color', [0.4 0.4 0.4], ...
             'MarkerFaceColor', 0.7*[1 1 1], ...
             'MarkerSize', markerSize*1.4, 'LineWidth', lineWidth);
@@ -71,6 +70,18 @@ function generateCrowellBanksFigure(data)
             'MarkerFaceColor', 0.7*[1 1 1], ...
              'MarkerSize', markerSize*1.4, 'LineWidth', lineWidth);
             theLegends{numel(theLegends)+1} = sprintf('JAC, 1.7 cycles');
+        end
+        
+        if (~isempty(find(referenceData.patchSize2SigmaCycles(patchSizeIndex)==0.8)))
+            plot(csfAxes, CrowellBanksEx3MSB_08cycles.x, CrowellBanksEx3MSB_08cycles.y, 'kv-', 'Color', [0.4 0.4 0.4], ...
+            'MarkerFaceColor', 0.7*[1 1 1], ...
+            'MarkerSize', markerSize*1.4, 'LineWidth', lineWidth);
+            theLegends{numel(theLegends)+1} = sprintf('MSB, 0.8 cycles');
+            
+            plot(csfAxes, CrowellBanksEx3JAC_08cycles.x, CrowellBanksEx3JAC_08cycles.y, 'k^-', 'Color', [0.4 0.4 0.4], ...
+            'MarkerFaceColor', 0.7*[1 1 1], ...
+             'MarkerSize', markerSize*1.4, 'LineWidth', lineWidth);
+            theLegends{numel(theLegends)+1} = sprintf('JAC, 0.8 cycles');
         end
         
         for observerTypeIndex = 1:numel(data.observerTypesExamined)
@@ -83,19 +94,22 @@ function generateCrowellBanksFigure(data)
                     'LineWidth', 1.0); 
             theLegends{numel(theLegends)+1} = referenceData.theLegends{patchSizeIndex};
             
-            % computational observer data
-            cpd = squeeze(data.cpd(patchSizeIndex, observerTypeIndex, :));
-            contrastSensitivity = squeeze(data.contrastSensitivity(patchSizeIndex, observerTypeIndex, :));
-            pp = plot(csfAxes, cpd, contrastSensitivity, 'o-', 'Color', [1 0 0], ... 
-                    'MarkerFaceColor', [1 0.5 0.5], 'MarkerSize', markerSize, ...
-                    'LineWidth', 1.5);
-   
-                
-            theLegends{numel(theLegends)+1} = data.theLegends{patchSizeIndex};
+            if (size(data.cpd,1) >= patchSizeIndex)
+                % computational observer data
+                cpd = squeeze(data.cpd(patchSizeIndex, observerTypeIndex, :));
+                contrastSensitivity = squeeze(data.contrastSensitivity(patchSizeIndex, observerTypeIndex, :));
+                pp = plot(csfAxes, cpd, contrastSensitivity, 'o-', 'Color', [1 0 0], ... 
+                        'MarkerFaceColor', [1 0.5 0.5], 'MarkerSize', markerSize, ...
+                        'LineWidth', 1.5);
             
-            plot(ratioAxes, cpd, contrastSensitivity./contrastSensitivityReference, 'o-', 'Color', [1 0 0], ... 
-                    'MarkerFaceColor', [1 0.5 0.5], 'MarkerSize', markerSize, ...
-                    'LineWidth', 1.5);
+                
+                theLegends{numel(theLegends)+1} = data.theLegends{patchSizeIndex};
+            
+                plot(ratioAxes, cpd, contrastSensitivity./contrastSensitivityReference, 'o-', 'Color', [1 0 0], ... 
+                        'MarkerFaceColor', [1 0.5 0.5], 'MarkerSize', markerSize, ...
+                        'LineWidth', 1.5);
+            end
+       
         end % observerType
         
         for k = 1:numel(theLegends)
