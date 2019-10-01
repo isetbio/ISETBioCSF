@@ -1,7 +1,7 @@
 function generateCrowellBanksFigure(data)
     
     performanceClassifier = 'svmV1FilterEnsemble';
-    %performanceClassifier = 'svmV1FilterBank';
+    performanceClassifier = 'svmV1FilterBank';
     
     if notDefined('data')
         dataFilename = sprintf('data_mlpt.mat', strrep(performanceClassifier, ' ', '_'));
@@ -84,6 +84,19 @@ function generateCrowellBanksFigure(data)
             theLegends{numel(theLegends)+1} = sprintf('JAC, 0.8 cycles');
         end
         
+        if (~isempty(find(referenceData.patchSize2SigmaCycles(patchSizeIndex)==0.4)))
+            plot(csfAxes, CrowellBanksEx3MSB_04cycles.x, CrowellBanksEx3MSB_04cycles.y, 'kv-', 'Color', [0.4 0.4 0.4], ...
+            'MarkerFaceColor', 0.7*[1 1 1], ...
+            'MarkerSize', markerSize*1.4, 'LineWidth', lineWidth);
+            theLegends{numel(theLegends)+1} = sprintf('MSB, 0.4 cycles');
+            
+            plot(csfAxes, CrowellBanksEx3JAC_04cycles.x, CrowellBanksEx3JAC_04cycles.y, 'k^-', 'Color', [0.4 0.4 0.4], ...
+            'MarkerFaceColor', 0.7*[1 1 1], ...
+             'MarkerSize', markerSize*1.4, 'LineWidth', lineWidth);
+            theLegends{numel(theLegends)+1} = sprintf('JAC, 0.4 cycles');
+        end
+        
+        
         for observerTypeIndex = 1:numel(data.observerTypesExamined)
                 
             % ideal observer data
@@ -139,7 +152,6 @@ function generateCrowellBanksFigure(data)
                           'XTick', sfTicks, 'XLim', [sfLims(1)-dx1 sfLims(2)+dx2]);
 
         
-        
         ytickformat(ratioAxes,'%.2f');
         box(ratioAxes, 'on'); grid(ratioAxes, 'on');
         set(ratioAxes, 'FontSize', fontSize, 'TickLength',[0.02, 0.02] , 'LineWidth', axesLineWidth);
@@ -160,7 +172,6 @@ function generateCrowellBanksFigure(data)
     
     end % patchSizeIndex
 
-    
     NicePlot.exportFigToPDF(sprintf('CrowellBanks_%s.pdf', performanceClassifier), hFig, 300);
 end
 

@@ -1,6 +1,6 @@
 function run_paper2_CrowellBanksUnpublishedExperimentVisualize
 % Visualize responses from experiment 3 of Crowell & Banks
-%
+%exit
 % Syntax:
 %   run_paper2_CrowellBanksUnpublishedExperiment
 %
@@ -33,7 +33,7 @@ function run_paper2_CrowellBanksUnpublishedExperimentVisualize
     computeResponses = ~true;
     visualizeResponses = ~true;
     findPerformance = true;
-    visualizePerformance = true;
+    visualizePerformance = ~true;
     
     % Pupil diameter used
     pupilDiamMm = 2.5;                                  % Crowell & Banks employed a 2.5 mm artificial pupil
@@ -42,10 +42,10 @@ function run_paper2_CrowellBanksUnpublishedExperimentVisualize
     luminanceCdM2 = 100;                                % Crowell & Banks employed 100 cd/m2 stimuli
     
     % Cycles/deg examined
-    cyclesPerDegreeExamined = [28]; %[5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
+    cyclesPerDegreeExamined = [14]; %[5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
     
     % Patch sizes examined
-    patchSize2SigmaCycles = [3.3]; % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
+    patchSize2SigmaCycles = [1.7 0.8 0.4]; % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
     
     % Performance for threshold
     thresholdCriterionFraction = 0.75;                  % Performance threshold employed by Crowell & Banks was 75%
@@ -67,7 +67,7 @@ function run_paper2_CrowellBanksUnpublishedExperimentVisualize
     computePhotocurrents = true;
       
     observerTypesExamined = {'computational'};                % {'ideal', 'computational'};
-    computationalObserverClassifier = 'svmV1FilterEnsemble';  % Choose from : 'svmV1FilterEnsemble', 'svmV1FilterBank'
+    computationalObserverClassifier = 'svmV1FilterBank';  % Choose from : 'svmV1FilterEnsemble', 'svmV1FilterBank'
     
     % Assemble conditions list to be examined (different patch sizes)
     condIndex = 0;
@@ -133,7 +133,7 @@ function run_paper2_CrowellBanksUnpublishedExperimentVisualize
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
         
         % Customize params
-        params.luminances = luminanceCdM2;
+        params.luminancesExamined = luminanceCdM2;
         params.thresholdCriterionFraction = thresholdCriterionFraction;
         params.nTrainingSamples = nTrainingSamples;
         
@@ -160,7 +160,7 @@ function run_paper2_CrowellBanksUnpublishedExperimentVisualize
         
         % Also adjust stimulus pixels
         params.imagePixels = max([256 round(0.5*params.imagePixels * params.patchSize2SigmaCycles / 3.3)*2]);
-        
+
         % Stimulus SF
         params.cyclesPerDegreeExamined = cond.cyclesPerDegreeExamined;
         
@@ -181,8 +181,8 @@ function run_paper2_CrowellBanksUnpublishedExperimentVisualize
         if (strcmp(params.performanceClassifier, 'svmV1FilterEnsemble'))
             ensembleFilterParams = struct(...
                         'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid, 2 in 5x5
-                        'spatialPositionOffsetDegs', 0.03, ... 
-                        'cyclesPerRFs', params.patchSize2SigmaCycles*2, ...           % each template contains 5 cycles of the stimulus
+                        'spatialPositionOffsetDegs', 0.025, ... 
+                        'cyclesPerRFs', params.patchSize2SigmaCycles*1.41, ...           % each template contains 5 cycles of the stimulus
                         'orientations', 0);
             fNames = fieldnames(ensembleFilterParams);
             for fNameIndex = 1:numel(fNames)
@@ -201,71 +201,6 @@ function run_paper2_CrowellBanksUnpublishedExperimentVisualize
         [~,~, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end % condIndex
     
-    if (visualizePerformance)
-        condIndex = 0;
-        lumIndex = 1;
-        colors = brewermap(numel(patchSize2SigmaCycles), 'Set1');
-        figure(1234); clf;
-        theLegends = cell(1, numel(patchSize2SigmaCycles)*2);
-        
-        for patchSizeIndex  = 1:numel(patchSize2SigmaCycles)
-            thePatchSizeColor = squeeze(colors(patchSizeIndex,:));
-            for observerTypeIndex = 1:numel(observerTypesExamined)
-                observerType = observerTypesExamined{observerTypeIndex};
-                for sfIndex = 1:numel(cyclesPerDegreeExamined)   
-                    condIndex = condIndex + 1;
-                    if (sfIndex == 1) 
-                        theLegends{numel(theLegends)+1} = examinedLegends{condIndex};
-                    end
-                    figData = theFigData{condIndex};
-                    referenceContrast = figData.banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1);
-                    cpd(sfIndex) = figData.banksEtAlReplicate.cyclesPerDegree(lumIndex,:);
-                    thresholdContrasts = [figData.banksEtAlReplicate.mlptThresholds(lumIndex,:).thresholdContrasts];
-                    contrastSensitivity(sfIndex) = 1./(thresholdContrasts*referenceContrast);
-                end % sfIndex
-                if (strcmp(observerType, 'ideal'))
-                    % ideal observer
-                    plot(cpd, contrastSensitivity, '--', 'Color', thePatchSizeColor, 'LineWidth', 1.5); hold on;
-                else
-                    % computational observer
-                    plot(cpd, contrastSensitivity, 'o-', 'Color', thePatchSizeColor, ... 
-                        'MarkerFaceColor', thePatchSizeColor/2, 'MarkerSize', 12, 'LineWidth', 1.5); hold on;
-                end
-            end % observerType
-        end
-        
-        % Now plot the Crowell&Banks data
-        load('CrowellBanksSubjects.mat');
-        plot(CrowellBanksEx3MSB_33cycles.x, CrowellBanksEx3MSB_33cycles.y, 'ks-', 'LineWidth', 1.5);
-        plot(CrowellBanksEx3MSB_17cycles.x, CrowellBanksEx3MSB_17cycles.y, 'ko-','LineWidth', 1.5);
-        plot(CrowellBanksEx3MSB_08cycles.x, CrowellBanksEx3MSB_08cycles.y, 'kd-','LineWidth', 1.5);
-        plot(CrowellBanksEx3MSB_04cycles.x, CrowellBanksEx3MSB_04cycles.y, 'k^-','LineWidth', 1.5);
-
-        plot(CrowellBanksEx3JAC_33cycles.x, CrowellBanksEx3JAC_33cycles.y, 'ks-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
-        plot(CrowellBanksEx3JAC_17cycles.x, CrowellBanksEx3JAC_17cycles.y, 'ko-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
-        plot(CrowellBanksEx3JAC_08cycles.x, CrowellBanksEx3JAC_08cycles.y, 'kd-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
-        plot(CrowellBanksEx3JAC_04cycles.x, CrowellBanksEx3JAC_04cycles.y, 'k^-', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.5);
-
-        theLegends{numel(theLegends)+1} = sprintf('MSB, 3.3 cycles');
-        theLegends{numel(theLegends)+1} = sprintf('MSB, 1.7 cycles');
-        theLegends{numel(theLegends)+1} = sprintf('MSB, 0.8 cycles');
-        theLegends{numel(theLegends)+1} = sprintf('MSB, 0.4 cycles');
-        
-        theLegends{numel(theLegends)+1} = sprintf('JAC, 3.3 cycles');
-        theLegends{numel(theLegends)+1} = sprintf('JAC, 1.7 cycles');
-        theLegends{numel(theLegends)+1} = sprintf('JAC, 0.8 cycles');
-        theLegends{numel(theLegends)+1} = sprintf('JAC, 0.4 cycles');
-        
-        
-        legend(theLegends);
-        set(gca, 'FontSize', 14);
-        set(gca, 'XScale', 'log', 'YScale', 'log');
-        set(gca, 'XLim', [1 100], 'YLim', [0.9 1000]);
-
-        xlabel('spatial frequency (c/deg)');
-        ylabel('contrast sensitivity');
-        drawnow;
-    end
     
 end
 
@@ -285,46 +220,14 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
-    params.visualizeMosaicWithFirstEMpath = ~true;
+    params.visualizeMosaicWithFirstEMpath = true;
     params.visualizeSpatialPoolingScheme = true;
     params.visualizeResponsesWithSpatialPoolingSchemeInVideo = ~true;
-    
-    params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = ~true;
     params.findPerformance = findPerformance;
     params.visualizePerformance = visualizePerformance;
     params.deleteResponseInstances = ~true;
-end
-
-function plotHumanData()
-
-load('CrowellBanksSubjects.mat');
-figure(555)
-subplot(1,2,1);
-plot(CrowellBanksEx3MSB_33cycles.x, CrowellBanksEx3MSB_33cycles.y, 'bs-', 'LineWidth', 1.5);
-hold on;
-plot(CrowellBanksEx3MSB_17cycles.x, CrowellBanksEx3MSB_17cycles.y, 'bo-','LineWidth', 1.5);
-plot(CrowellBanksEx3MSB_08cycles.x, CrowellBanksEx3MSB_08cycles.y, 'bd-','LineWidth', 1.5);
-plot(CrowellBanksEx3MSB_04cycles.x, CrowellBanksEx3MSB_04cycles.y, 'b^-','LineWidth', 1.5);
-set(gca, 'XScale', 'log', 'YScale', 'log');
-set(gca, 'XLim', [1 100], 'YLim', [0.9 1000]);
-legend({'3.3', '1.7', '0.8', '0.4'});
-grid on
-title('MSB');
-
-subplot(1,2,2);
-plot(CrowellBanksEx3JAC_33cycles.x, CrowellBanksEx3JAC_33cycles.y, 'bs-', 'LineWidth', 1.5);
-hold on;
-plot(CrowellBanksEx3JAC_17cycles.x, CrowellBanksEx3JAC_17cycles.y, 'bo-', 'LineWidth', 1.5);
-plot(CrowellBanksEx3JAC_08cycles.x, CrowellBanksEx3JAC_08cycles.y, 'bd-', 'LineWidth', 1.5);
-plot(CrowellBanksEx3JAC_04cycles.x, CrowellBanksEx3JAC_04cycles.y, 'b^-', 'LineWidth', 1.5);
-set(gca, 'XScale', 'log', 'YScale', 'log');
-set(gca, 'XLim', [1 100], 'YLim', [0.9 1000]);
-legend({'3.3', '1.7', '0.8', '0.4'});
-title('JAC');
-grid on
-
 end
 
