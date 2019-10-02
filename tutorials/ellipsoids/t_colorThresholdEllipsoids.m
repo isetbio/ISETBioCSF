@@ -75,7 +75,7 @@ theSf = 2;
 %    ||Ax|| = x' * A' * A * x = x' * Q * x.
 % For threshold vectors, this length is 1.
 %
-% The threshold ellipsoid comes back in cone difference coordinates, 
+% The threshold ellipsoid comes back in cone difference coordinates,
 % not contrast, the way the parameters are provided in the paper.
 % So, divide by the background to get a cone contrast threshold ellipsoid.
 nThetaEllipsoid = 50;
@@ -106,7 +106,7 @@ ylim([-0.02 0.02]);
 zlim([-0.04 0.04]);
 axis('square');
 
-%% Generate 2D slices 
+%% Generate 2D slices
 % This plot reproduces Figure 3 in the Poirson & Wandell paper, and
 % gives us reason to believe we understand the model and how its parameters
 % are specified in the paper.

@@ -42,7 +42,7 @@ rng(1);
 if (nargin < 1 | isempty(rParams))
     rParams = responseParamsGenerate('spatialType', 'spot', ...
         'backgroundType', 'AO', 'modulationType', 'AO');
-    
+
     % Override some defaults to make more sense for our spot application
     rParams.oiParams.pupilDiamMm = 7;
 end

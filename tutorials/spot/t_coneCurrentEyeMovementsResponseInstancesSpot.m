@@ -24,7 +24,7 @@ function [validationData, extraData] = ...
 %                     true, so as to produce identical sequences of random
 %                     numbers. All other scripts should set it (leave it)
 %                     to false. Default false.
-%    rParams        - Struct. The rParams structure to use.  Default empty,
+%    rParams        - Struct. The rParams structure to use. Default empty,
 %                     which uses defaults produced by generation function.
 %    contrastParams - Struct. A structure of the contrastParams to use.
 %                     Default empty, which takes advantage of a generation

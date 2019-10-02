@@ -1,4 +1,24 @@
 %% Visualize results at selected wavelengths
+%
+% Description:
+%    Visualize provided results at specified wavelengths.
+%
+% Note:
+%    * This is not a stand-alone script. It is intended to be run after
+%      another script or calculation to visualize what you have already
+%      done. The structure variable scene must be initialized before
+%      running, else you will encounter an error.
+%
+
+% Examples:
+%{
+    % This example runs one of NC's CSF paper tutorials, and then
+    % visualizes the results after closing all of the generated figures
+    % from the tutorial.
+    tutorial
+    close all;
+    visualizeResults
+%}
 displayedWavelengths = [450:25:725];
 scenePhotons = sceneGet(scene, 'photons');
 realizedScenePhotons = sceneGet(realizedScene, 'photons');
@@ -14,7 +34,8 @@ visualizeDisplay(presentationDisplay, figNo);
 
 %% Visualize components of the LCD display - rendered scene
 figNo = figNo + 1;
-visualizeScene(realizedScene, maxPhotons, displayedWavelengths, figNo, 'realized scene');
+visualizeScene(realizedScene, maxPhotons, displayedWavelengths, ...
+    figNo, 'realized scene');
 
 %% Visualize the PSF
 figNo = figNo + 1;
@@ -27,4 +48,3 @@ visualizeOpticalImage(opticalImage, displayedWavelengths, figNo);
 %% Visualize the cone mosaic and the cone excitation responses
 figNo = figNo + 1;
 visualizeResponses(coneMosaic, coneExcitations, figNo);
- 
