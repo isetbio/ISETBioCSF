@@ -230,9 +230,16 @@ function hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData)
     
     meanPhotocurrent = squeeze(meanPhotocurrents(targetConeIndex,:));
     isomerizationInstanceMean = squeeze(mean(isomerizationInstances(:, targetConeIndex,:),1));
-    photocurrentInstanceMean = squeeze(mean(photocurrentInstances(:, targetConeIndex,:),1));
     isomerizationInstance = squeeze(isomerizationInstances(visualizedResponseInstance, targetConeIndex,:));
-    photocurrentInstance = squeeze(photocurrentInstances(visualizedResponseInstance, targetConeIndex,:));
+    
+    
+    if (~isempty(photocurrentInstances))
+        photocurrentInstanceMean = squeeze(mean(photocurrentInstances(:, targetConeIndex,:),1));
+        photocurrentInstance = squeeze(photocurrentInstances(visualizedResponseInstance, targetConeIndex,:));
+    else
+        photocurrentInstanceMean = [];
+        photocurrentInstance = [];
+    end
     
     theEMpathMicrons = squeeze(stimData.responseInstanceArray.theMosaicEyeMovementsMicrons(visualizedResponseInstance,:,:));
     theEMpathMeters = theEMpathMicrons / 1e6;
@@ -299,8 +306,9 @@ function hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData)
     
     % Plot the photocurrent mean and instance time traces in the middle
     axes('Position',[0.78 0.546 width height]);
-    renderMeanResponseAndInstance('lines', timeAxis, meanPhotocurrent, photocurrentInstance, photocurrentLimits, timeLims, photocurrentTicks, timeTicks, 'pAmps', fontSize);
-    
+    if (~isempty(photocurrentInstance))
+        renderMeanResponseAndInstance('lines', timeAxis, meanPhotocurrent, photocurrentInstance, photocurrentLimits, timeLims, photocurrentTicks, timeTicks, 'pAmps', fontSize);
+    end
 
     % Plot the mosaic with one emPath at the bottom
     ax = axes('Position',[0.15 0.10 width height]);
@@ -322,14 +330,15 @@ function hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData)
     xlabel('space (arc min)');
     
     
-    
-    % Plot the photocurrent impulse responses at the bottom
-    axes('Position',[0.60 0.10 width height]);
-    renderPhotocurrentImpulseResponses(timeAxis,  timeLims, stimData, timeTicks, -0.05:0.05:0.2, fontSize);
-    
-    % Plot the photocurrent noise at the bottom
-    axes('Position',[0.75 0.10 width height]);
-    renderPhotocurrentNoise(timeAxis, timeLims, photocurrentInstance(:)-meanPhotocurrent(:), fontSize);
+    if (~isempty(photocurrentInstance))
+        % Plot the photocurrent impulse responses at the bottom
+        axes('Position',[0.60 0.10 width height]);
+        renderPhotocurrentImpulseResponses(timeAxis,  timeLims, stimData, timeTicks, -0.05:0.05:0.2, fontSize);
+
+        % Plot the photocurrent noise at the bottom
+        axes('Position',[0.75 0.10 width height]);
+        renderPhotocurrentNoise(timeAxis, timeLims, photocurrentInstance(:)-meanPhotocurrent(:), fontSize);
+    end
 end
 
 function renderMosaicAndSingleEMPath(theMosaic, timeAxis, theEMpathMeters, spaceLimsMeters, mosaicZoomedInTicksMeters, mosaicZoomedInTicksLabels, fontSize)
