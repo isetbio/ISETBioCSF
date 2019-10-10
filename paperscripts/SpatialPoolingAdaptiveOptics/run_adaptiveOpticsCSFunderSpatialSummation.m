@@ -37,7 +37,7 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     
     % Adaptive optics pupil diameter
     pupilDiamMm = 8.0;
-    opticsModel = 'AOoptics80mmPupil'; %'ThibosDefaultSubject3MMPupil'; %'ThibosAverageSubject3MMPupil'; %'AOoptics80mmPupil';
+    opticsModel = 'AOoptics80mmPupil'; %'ThibosAverageSubject3MMPupil'; %'AOoptics80mmPupil';
     
     emPathType = 'frozen0';
     centeredEMPaths = false;
