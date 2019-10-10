@@ -85,7 +85,7 @@ function hFig = visualizeSpatialPoolingScheme(xaxis, yaxis, spatialModulation, .
              'theFigureTitle', 'stimulus modulation' ...
         );
 
-        midPoint = length(cMapForStim)/2
+        midPoint = length(cMapForStim)/2;
         bkgndColor = cMapForStim(midPoint,:);
         set(ax, 'CLim', [0 1], 'XLim', [xRange(1) xRange(end)], 'YLim', [yRange(1) yRange(end)]);
         set(ax, 'Color', bkgndColor, 'XTick', -0.2:0.1:0.2, 'YTick', -0.2:tickIncrementDegs:0.2);

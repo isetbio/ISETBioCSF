@@ -67,7 +67,7 @@ p.addParameter('singleBinTemporalWindowIfPossible', true, @islogical);
 % PERFORMANCE COMPUTATION OPTIONS
 p.addParameter('spatialPoolingKernelParams', struct(), @isstruct);
 p.addParameter('useRBFSVMKernel', false, @islogical);
-p.addParameter('performanceClassifier', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'svmV1FilterBank', 'svmV1FilterEnsemble', 'mlpt', 'mlpe', 'mlgtGaussianRF'}));
+p.addParameter('performanceClassifier', 'mlpt', @(x)ismember(x, {'svm', 'svmSpaceTimeSeparable', 'svmGaussianRF', 'svmV1FilterBank', 'svmV1FilterEnsemble', 'svmGaussPooledResponses', 'mlpt', 'mlpe', 'mlgtGaussianRF'}));
 p.addParameter('performanceSignal', 'isomerizations', @(x)ismember(x, {'isomerizations', 'photocurrents'}));
 p.addParameter('performanceTrialsUsed', [], @isnumeric);
 p.addParameter('thresholdCriterionFraction',0.7071,@isnumeric);

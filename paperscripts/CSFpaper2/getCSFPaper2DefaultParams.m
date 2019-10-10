@@ -61,6 +61,12 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
     % Grating orientation
     params.stimulusOrientationDegs = 0;
     
+    % Default Banks et al'87 stimulus
+    params.patchSize2SigmaCycles = [];
+    
+    % Default Banks et al'87 threshold
+    params.thresholdCriterionFraction = 0.7071;
+    
     % Conrast axis sampling
     params.coneContrastDirection = 'L+M+S';
     params.lowContrast = 0.00001*3;

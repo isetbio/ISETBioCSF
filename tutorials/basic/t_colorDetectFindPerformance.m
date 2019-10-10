@@ -155,6 +155,15 @@ if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaic
     error('Currently, classification using the ''svmGaussianRF'' method is only implemented for  hex mosaics.\n')
 end
 
+
+if (strcmp(thresholdParams.method, 'svmGaussPooledResponses'))
+    % Generate the ensemble of Gaussian pooling kernel for each cone and add it to thresholdParams
+    GaussianPoolingSigmaArcMin = 1.7;
+    GaussianPoolingEnsemble = generateGaussianPoolingEnsemble(GaussianPoolingSigmaArcMin, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams, constantParamsList);
+    thresholdParams = modifyStructParams(thresholdParams, ...
+        'spatialPoolingKernel', GaussianPoolingEnsemble);
+end
+
 if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
     % Generate V1 filter bank struct and add it to thresholdParams
     V1filterBank = generateV1FilterBank(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams, constantParamsList);
