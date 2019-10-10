@@ -34,6 +34,7 @@ varargout{1} = nan;   % varianceExplained for PCA
 % Start timing
 tBegin = clock;
 
+
 %% Transform the raw cone responses into V1 filter bank responses
 if (strcmp(thresholdParams.method, 'svmV1FilterBank'))
     if ( (~isfield(thresholdParams, 'spatialPoolingKernel')) || ...
@@ -49,6 +50,10 @@ elseif (strcmp(thresholdParams.method, 'svmV1FilterEnsemble'))
         error('thresholdParams must have a spatialPoolingKernel field when using the svmV1FilterEnsemble classifier\n');
     end
     [noStimData, stimData] = transformDataWithV1FilterEnsemble(noStimData, stimData, ...
+        thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals, p.Results.parforWorkersNum);
+    
+elseif (strcmp(thresholdParams.method, 'svmGaussPooledResponses'))
+    [noStimData, stimData] = transformDataWithGaussianPooling(noStimData, stimData, ...
         thresholdParams, p.Results.paramsList, p.Results.visualizeKernelTransformedSignals, p.Results.parforWorkersNum);
     
 elseif (strcmp(thresholdParams.method, 'svmSpaceTimeSeparable'))
@@ -79,7 +84,7 @@ switch (thresholdParams.method)
         h = [];
 
         
-    case 'svm'
+    case {'svm', 'svmGaussPooledResponses'}
         % Friendly neighborhood SVM, with optional standardization and PCA
         % first
         
@@ -88,6 +93,7 @@ switch (thresholdParams.method)
         fprintf('\tExtracting the first %d principal components of the data ... ', thresholdParams.PCAComponents);
         [theData, ~, varianceExplained] = transformDataWithPCA(classificationData,thresholdParams.PCAComponents,thresholdParams.STANDARDIZE);
         fprintf('done. Variance explained: %2.4f (sum of %d elements)\n', sum(varianceExplained), numel(varianceExplained));
+        
         for compIndex = 1:thresholdParams.PCAComponents
             fprintf('Variance explained by component #%d: %2.4f (accum: %2.4f)\n', compIndex, varianceExplained(compIndex), sum(varianceExplained(1:compIndex)));
         end
