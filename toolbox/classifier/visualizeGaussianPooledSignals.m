@@ -82,7 +82,7 @@ function hFigs = visualizeGaussPooledResponses(spatialPoolingKernel, timeAxis, .
             spatialPoolingKernel.coneLocsDegs, spatialPoolingKernel.coneApertureOutlines);
         set(ax3, 'FontSize', 14, 'XLim', xRange, 'YLim', xRange);
         box(ax3, 'on');
-        title(ax3, 'null response');
+        title(ax3, sprintf('null response (%2.0f ms)', timeAxis(tBin)));
         xlabel(ax3, '\it position (degs)');
         ylabel(ax3, '\it position (degs)');
         
@@ -90,7 +90,7 @@ function hFigs = visualizeGaussPooledResponses(spatialPoolingKernel, timeAxis, .
             spatialPoolingKernel.coneLocsDegs, spatialPoolingKernel.coneApertureOutlines);
         set(ax4, 'FontSize', 14, 'XLim', xRange, 'YLim', xRange, 'YTickLabel', {});
         box(ax4, 'on');
-        title(ax4, 'test response');
+        title(ax4, sprintf('test response (%2.0f ms)', timeAxis(tBin)));
         xlabel(ax4, '\it position (degs)');
         drawnow;
     end
