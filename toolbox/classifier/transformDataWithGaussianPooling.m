@@ -42,18 +42,15 @@ end
 
 % Visualize the transformed signals only if we are working on the full temporal response (i.e. no temporal PCA)
 if (visualizeTheTransformedSignals)
-    
-    % THIS NEEDS TO BE IMPLEMENTED
-    
     if (strcmp(thresholdParams.signalSource,'photocurrents'))
-        hFig = visualizeGaussianPooledSignals( ...
+        hFig = visualizeGaussianPooledSignals(thresholdParams.spatialPoolingKernel, ...
             noStimData.responseInstanceArray.timeAxis, ...
             noStimData.responseInstanceArray.theMosaicPhotocurrents, ...
             stimData.responseInstanceArray.theMosaicPhotocurrents, ...
             thresholdParams.signalSource, stimData.testContrast*100, ...
             'photocurrents');
     else
-        hFig = visualizeGaussianPooledSignals( ...
+        hFig = visualizeGaussianPooledSignals(thresholdParams.spatialPoolingKernel, ...
             noStimData.responseInstanceArray.timeAxis, ...
             noStimData.responseInstanceArray.theMosaicIsomerizations, ...
             stimData.responseInstanceArray.theMosaicIsomerizations, ...
@@ -65,7 +62,7 @@ if (visualizeTheTransformedSignals)
     theProgram = mfilename;
     rwObject = IBIOColorDetectReadWriteBasic;
     data = 0;
-    fileName = sprintf('%s-based_%s_%s_%s_%.2fshrinkageFactor_outputs', thresholdParams.signalSource, thresholdParams.method, thresholdParams.spatialPoolingKernelParams.type, thresholdParams.spatialPoolingKernelParams.activationFunction, thresholdParams.spatialPoolingKernelParams.shrinkageFactor);
+    fileName = sprintf('%s-based_%s_outputs', thresholdParams.signalSource, thresholdParams.method);
     rwObject.write(fileName, data, paramsList, theProgram, ...
            'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
 end % visualize transformed signals
@@ -79,12 +76,12 @@ function [noStimData, stimData] = ...
     conesNum = size(noStimData,spatialDimension);
     
     tmp = noStimData;
-    for coneIndex = 1:conesNum
+    parfor coneIndex = 1:conesNum
         noStimData(:,coneIndex,:) = sum(bsxfun(@times, tmp, spatialPoolingKernel.poolingWeights(coneIndex,:)), spatialDimension);
     end
     
     tmp = stimData;
-    for coneIndex = 1:conesNum
+    parfor coneIndex = 1:conesNum
         stimData(:,coneIndex,:) = sum(bsxfun(@times, tmp, spatialPoolingKernel.poolingWeights(coneIndex,:)), spatialDimension);
     end
 end

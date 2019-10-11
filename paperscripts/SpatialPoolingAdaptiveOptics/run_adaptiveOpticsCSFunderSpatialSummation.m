@@ -30,9 +30,9 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     makeSummaryFigure = ~true;
     
     % Whether to compute responses
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     visualizePerformance = ~true;
     
     % Adaptive optics pupil diameter
@@ -85,11 +85,6 @@ function run_adaptiveOpticsCSFunderSpatialSummation
         params.emPathType = emPathType;
         params.centeredEMPaths = centeredEMPaths;
         
-         % Only the max contrast level
-%         params.lowContrast = 1.0; 
-%         params.highContrast =  1.0; 
-%         params.nContrastsPerDirection = 1;
-        
         cond = examinedCond(condIndex);
         params.performanceClassifier = cond.performanceClassifier;
          
@@ -132,15 +127,15 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
     params.visualizeResponsesWithSpatialPoolingSchemeInVideo = ~true;
     params.visualizeResponses = visualizeResponses;
     params.visualizeOuterSegmentFilters = ~true;
-    params.visualizeSpatialScheme = true;
+    params.visualizeSpatialScheme = ~true;
     params.visualizeOIsequence = ~true;
     params.visualizeOptics = ~true;
-    params.visualizeStimulusAndOpticalImage = true;
+    params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
-    params.visualizeSpatialPoolingScheme = ~true;
+    params.visualizeSpatialPoolingScheme = true;
     params.visualizeDisplay = ~true;
     
-    params.visualizeKernelTransformedSignals = ~true;
+    params.visualizeKernelTransformedSignals = true;
     params.findPerformance = findPerformance;
     params.visualizePerformance = visualizePerformance;
     params.deleteResponseInstances = ~true;

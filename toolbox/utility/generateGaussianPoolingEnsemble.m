@@ -23,33 +23,43 @@ function [GaussianPoolingEnsemble, hFig] = generateGaussianPoolingEnsemble(Gauss
     % Find nearest cone location
     [~, idx] = pdist2(rfCoordsDegs, coneLocsDegs, 'euclidean', 'Smallest', 1);
               
-    coneApertureOutlines = computeConeApertureOutlines(theMosaic);
-        
-    if (visualizeSpatialScheme)
-        figure(1); colormap(gray);
-    end
     
-    parfor coneIndex = 1:conesNum
-        
+    parfor coneIndex = 1:conesNum  
         poolingProfile = gaussianKernel(sigmaDegs,coneLocsDegs(coneIndex,:),xAxisDegs);
         poolingWeights(coneIndex,:) = poolingProfile(idx);
-        
-        if (visualizeSpatialScheme)
-            clf;
-            quantizationLevels = 256;
-            plotQuantizedWeights(gca, squeeze(poolingWeights(coneIndex,:)), quantizationLevels, coneLocsDegs, coneApertureOutlines);
-            hold on
-            plotCircle(coneLocsDegs(coneIndex,1), coneLocsDegs(coneIndex,2), 2.355*sigmaDegs);
-            hold off
-            axis 'xy'; axis 'image';box on
-            set(gca, 'FontSize', 20, 'CLim', [0 1], 'XLim', max(theMosaic.fov(:))/2*[-1 1]*1.02, 'YLim', max(theMosaic.fov(:))/2*[-1 1]*1.02, 'XTickLabels', {});
-            drawnow
-        	ause(0.01)
-        end
     end
     
     GaussianPoolingEnsemble.poolingWeights = poolingWeights;
-                
+    GaussianPoolingEnsemble.coneApertureOutlines = computeConeApertureOutlines(theMosaic);
+    GaussianPoolingEnsemble.coneLocsDegs = coneLocsDegs;
+    
+    if (visualizeSpatialScheme)
+        hFig = figure(1); clf;
+        set(hFig, 'Position', [10 10 1000 1000], 'Color', [1 1 1]);
+        colormap(gray);
+        coneApertureOutlines = GaussianPoolingEnsemble.coneApertureOutlines;
+        eccentricities = sqrt(sum(coneLocsDegs.^2,2));
+        [~,coneIndex] = min(eccentricities);
+        quantizationLevels = 256;
+        plotQuantizedWeights(gca, squeeze(poolingWeights(coneIndex,:)), quantizationLevels, coneLocsDegs, coneApertureOutlines);
+        hold on
+        plotCircle(coneLocsDegs(coneIndex,1), coneLocsDegs(coneIndex,2), 2.355*sigmaDegs);
+        hold off
+        axis 'xy'; axis 'image';box on
+        set(gca, 'FontSize', 20, 'CLim', [0 1], 'XLim', max(theMosaic.fov(:))/2*[-1 1]*1.02, 'YLim', max(theMosaic.fov(:))/2*[-1 1]*1.02, 'XTickLabels', {});
+        drawnow
+        
+        % Save figure
+        theProgram = mfilename;
+        rwObject = IBIOColorDetectReadWriteBasic;
+        data = 0;
+        fileName = sprintf('GaussianPooling');
+        paramsList{numel(paramsList)+1} = thresholdParams;
+        rwObject.write(fileName, data, paramsList, theProgram, ...
+           'type', 'NicePlotExportPDF', 'FigureHandle', hFig, 'FigureType', 'pdf');
+       
+       
+    end
 end
 
 function plotCircle(xo,yo,diam)
