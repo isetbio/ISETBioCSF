@@ -39,6 +39,9 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     pupilDiamMm = 8.0;
     opticsModel = 'AOoptics80mmPupil'; %'ThibosAverageSubject3MMPupil'; %'AOoptics80mmPupil';
     
+%     pupilDiamMm = 3.0;
+%     opticsModel = 'ThibosAverageSubject3MMPupil';
+    
     emPathType = 'frozen0';
     centeredEMPaths = false;
     performanceSignal = 'isomerizations';
@@ -60,9 +63,9 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     % Init condition index
     condIndex = 0;
     
-    %condIndex = condIndex+1;
-    %examinedCond(condIndex).label = 'SVM-No Spatial Summation';
-    %examinedCond(condIndex).performanceClassifier = 'svm';
+%    condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'SVM-No Spatial Summation';
+%     examinedCond(condIndex).performanceClassifier = 'svm';
     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-GaussPooling';
@@ -77,7 +80,7 @@ function run_adaptiveOpticsCSFunderSpatialSummation
         params.nTrainingSamples = 1024;
         
         % Try out for subset of SFs
-        params.cyclesPerDegreeExamined = [12 24 32 50 60]; % [4 8 12 16 24 32 50 60];
+        params.cyclesPerDegreeExamined = [60]; % [12 24 32 60]; %  60]; % [4 8 12 16 24 32 50 60];
         
         params.opticsModel = opticsModel;
         params.pupilDiamMm = pupilDiamMm;
