@@ -35,13 +35,6 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     findPerformance = true;
     visualizePerformance = ~true;
     
-    % Adaptive optics pupil diameter
-    pupilDiamMm = 8.0;
-    opticsModel = 'AOoptics80mmPupil'; %'ThibosAverageSubject3MMPupil'; %'AOoptics80mmPupil';
-    
-%     pupilDiamMm = 3.0;
-%     opticsModel = 'ThibosAverageSubject3MMPupil';
-    
     emPathType = 'frozen0';
     centeredEMPaths = false;
     performanceSignal = 'isomerizations';
@@ -63,13 +56,23 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     % Init condition index
     condIndex = 0;
     
-%    condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-No Spatial Summation';
-%     examinedCond(condIndex).performanceClassifier = 'svm';
-    
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-GaussPooling';
-    examinedCond(condIndex).performanceClassifier = 'svmGaussPooledResponses';
+    examinedCond(condIndex).label = 'Human-3mm, SVM - No Spatial Summation';
+    examinedCond(condIndex).performanceClassifier = 'svm';
+    examinedCond(condIndex).pupilDiamMm = 3.0;
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'AO-8mm, SVM - No Spatial Summation';
+    examinedCond(condIndex).performanceClassifier = 'svm';
+    examinedCond(condIndex).pupilDiamMm = 8.0;
+    examinedCond(condIndex).opticsModel = 'AOoptics80mmPupil';
+    
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'AO-8mm, SVM - 1.7 ArcMin Summation';
+%     examinedCond(condIndex).performanceClassifier = 'svmGaussPooledResponses';
+%     examinedCond(condIndex).pupilDiamMm = 8.0;
+%     examinedCond(condIndex).opticsModel = 'AOoptics80mmPupil';
     
     % Go
     examinedLegends = {};
@@ -80,17 +83,19 @@ function run_adaptiveOpticsCSFunderSpatialSummation
         params.nTrainingSamples = 1024;
         
         % Try out for subset of SFs
-        params.cyclesPerDegreeExamined = [60]; % [12 24 32 60]; %  60]; % [4 8 12 16 24 32 50 60];
+        params.cyclesPerDegreeExamined = [12 24 32 60]; % [4 8 12 16 24 32 50 60];
         
-        params.opticsModel = opticsModel;
-        params.pupilDiamMm = pupilDiamMm;
+        
         params.performanceSignal = performanceSignal;
         params.emPathType = emPathType;
         params.centeredEMPaths = centeredEMPaths;
         
         cond = examinedCond(condIndex);
+        params.opticsModel = cond.opticsModel;
+        params.pupilDiamMm = cond.pupilDiamMm;
         params.performanceClassifier = cond.performanceClassifier;
-         
+        
+        
         examinedLegends{numel(examinedLegends) + 1} = cond.label;
         
         params = getRemainingDefaultParams(params, computePhotocurrents, computeResponses, visualizeResponses, findPerformance, visualizePerformance);  
