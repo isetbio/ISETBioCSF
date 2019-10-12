@@ -32,6 +32,7 @@ function [GaussianPoolingEnsemble, hFig] = generateGaussianPoolingEnsemble(Gauss
     GaussianPoolingEnsemble.poolingWeights = poolingWeights;
     GaussianPoolingEnsemble.coneApertureOutlines = computeConeApertureOutlines(theMosaic);
     GaussianPoolingEnsemble.coneLocsDegs = coneLocsDegs;
+    GaussianPoolingEnsemble.sigmaArcMin = GaussianPoolingSigmaArcMin;
     
     if (visualizeSpatialScheme)
         hFig = figure(1); clf;
