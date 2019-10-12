@@ -77,7 +77,9 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     % Go
     examinedLegends = {};
     for condIndex = 1:numel(examinedCond)
-        params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds,  frameRate, stimulusDurationInSeconds, computationInstance);
+        
+        cond = examinedCond(condIndex);
+        params = getCSFPaper2DefaultParams(cond.pupilDiamMm, integrationTimeMilliseconds,  frameRate, stimulusDurationInSeconds, computationInstance);
         
         % Use 1024 trials
         params.nTrainingSamples = 1024;
@@ -90,7 +92,7 @@ function run_adaptiveOpticsCSFunderSpatialSummation
         params.emPathType = emPathType;
         params.centeredEMPaths = centeredEMPaths;
         
-        cond = examinedCond(condIndex);
+        
         params.opticsModel = cond.opticsModel;
         params.pupilDiamMm = cond.pupilDiamMm;
         params.performanceClassifier = cond.performanceClassifier;
