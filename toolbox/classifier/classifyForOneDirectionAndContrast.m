@@ -94,9 +94,9 @@ switch (thresholdParams.method)
         [theData, ~, varianceExplained] = transformDataWithPCA(classificationData,thresholdParams.PCAComponents,thresholdParams.STANDARDIZE);
         fprintf('done. Variance explained: %2.4f (sum of %d elements)\n', sum(varianceExplained), numel(varianceExplained));
         
-        for compIndex = 1:thresholdParams.PCAComponents
-            fprintf('Variance explained by component #%d: %2.4f (accum: %2.4f)\n', compIndex, varianceExplained(compIndex), sum(varianceExplained(1:compIndex)));
-        end
+%         for compIndex = 1:thresholdParams.PCAComponents
+%             fprintf('Variance explained by component #%d: %2.4f (accum: %2.4f)\n', compIndex, varianceExplained(compIndex), sum(varianceExplained(1:compIndex)));
+%         end
         varargout{1} = varianceExplained;
         
         % Perform SVM classification for this stimulus vs the zero contrast stimulus
