@@ -27,13 +27,13 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     computationInstance = 0;
     
     % Whether to make a summary figure with CSF from all examined conditions
-    makeSummaryFigure = ~true;
+    makeSummaryFigure = true;
     
     % Whether to compute responses
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
-    visualizePerformance = ~true;
+    findPerformance = ~true;
+    visualizePerformance = true;
     
     emPathType = 'frozen0';
     centeredEMPaths = false;
@@ -56,24 +56,24 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     % Init condition index
     condIndex = 0;
     
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'Human-3mm, SVM - No Spatial Summation';
-%     examinedCond(condIndex).performanceClassifier = 'svm';
-%     examinedCond(condIndex).pupilDiamMm = 3.0;
-%     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
-% 
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'AO-8mm, SVM - No Spatial Summation';
-%     examinedCond(condIndex).performanceClassifier = 'svm';
-%     examinedCond(condIndex).pupilDiamMm = 8.0;
-%     examinedCond(condIndex).opticsModel = 'AOoptics80mmPupil';
-    
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'AO-8mm, SVM - 1.7 ArcMin Summation';
-    examinedCond(condIndex).performanceClassifier = 'svmGaussPooledResponses';
+    examinedCond(condIndex).label = 'AO-8mm, no pool SVM';
+    examinedCond(condIndex).performanceClassifier = 'svm';
     examinedCond(condIndex).pupilDiamMm = 8.0;
     examinedCond(condIndex).opticsModel = 'AOoptics80mmPupil';
     
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'Human-3mm, no pool SVM';
+    examinedCond(condIndex).performanceClassifier = 'svm';
+    examinedCond(condIndex).pupilDiamMm = 3.0;
+    examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
+%     
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'AO-8mm, SVM, 1.7'' pool SVM';
+    examinedCond(condIndex).performanceClassifier = 'svmGaussPooledResponses';
+    examinedCond(condIndex).pupilDiamMm = 8.0;
+    examinedCond(condIndex).opticsModel = 'AOoptics80mmPupil';
+
     % Go
     examinedLegends = {};
     for condIndex = 1:numel(examinedCond)
@@ -85,18 +85,14 @@ function run_adaptiveOpticsCSFunderSpatialSummation
         params.nTrainingSamples = 1024;
         
         % Try out for subset of SFs
-        params.cyclesPerDegreeExamined = [8]; %[12 24 32 60]; % [4 8 12 16 24 32 50 60];
+        params.cyclesPerDegreeExamined = [8 12 24 32 60]; % [4 8 12 16 24 32 50 60];
         
-        % Only the max contrast level
-%         params.lowContrast = 1.0; 
-%         params.highContrast =  1.0; 
-%         params.nContrastsPerDirection = 1;
         
         params.performanceSignal = performanceSignal;
         params.emPathType = emPathType;
         params.centeredEMPaths = centeredEMPaths;
         
-        
+        params.parforWorkersNumForClassification = 2;
         params.opticsModel = cond.opticsModel;
         params.pupilDiamMm = cond.pupilDiamMm;
         params.performanceClassifier = cond.performanceClassifier;
@@ -113,8 +109,8 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     if (makeSummaryFigure)
         variedParamName = 'GaussPooling';
         
-        theRatioLims = [0.07 1.15];
-        theRatioTicks = [0.05 0.1 0.2 0.5 1.0];
+        theRatioLims = [0.05 2];
+        theRatioTicks = [0.05 0.1 0.2 0.5 1.0 2.0];
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
