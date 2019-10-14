@@ -1,5 +1,5 @@
-function dirname = paramsToResponseGenerationDirName(obj,params)
-% dirname = paramsToResponseGenerationDirName(obj,params)
+function dirname = paramsToThresholdDirName(obj,params)
+% dirname = paramsToThresholdDirName(obj,params)
 %
 % Generate a directory names that captures the basic parameters used to
 % find threshold.
