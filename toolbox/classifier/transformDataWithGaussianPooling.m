@@ -102,15 +102,16 @@ function [noStimData, stimData] = ...
     computeGaussianPooling(spatialPoolingKernel, noStimData, stimData, repsDimension, spatialDimension, temporalDimension)
 
     conesNum = size(noStimData,spatialDimension);
+    poolingWeights = spatialPoolingKernel.poolingWeights;
     
     tmp = noStimData;
     parfor coneIndex = 1:conesNum
-        noStimData(:,coneIndex,:) = sum(bsxfun(@times, tmp, spatialPoolingKernel.poolingWeights(coneIndex,:)), spatialDimension);
+        noStimData(:,coneIndex,:) = sum(bsxfun(@times, tmp, poolingWeights(coneIndex,:)), spatialDimension);
     end
     
     tmp = stimData;
     parfor coneIndex = 1:conesNum
-        stimData(:,coneIndex,:) = sum(bsxfun(@times, tmp, spatialPoolingKernel.poolingWeights(coneIndex,:)), spatialDimension);
+        stimData(:,coneIndex,:) = sum(bsxfun(@times, tmp, poolingWeights(coneIndex,:)), spatialDimension);
     end
 end
 
