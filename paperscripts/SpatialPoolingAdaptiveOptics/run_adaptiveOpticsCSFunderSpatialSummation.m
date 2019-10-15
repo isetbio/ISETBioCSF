@@ -32,7 +32,7 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     % Whether to compute responses
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     visualizePerformance = true;
     
     emPathType = 'frozen0';
