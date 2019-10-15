@@ -31,10 +31,10 @@ function run_paper2_CrowellBanksUnpublishedExperimentTest
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
-    visualizePerformance = ~true;
+    findPerformance = ~true;
+    visualizePerformance = true;
     
     % Type of inference engine to employ
     observerTypesExamined = {'ideal'};                % {'ideal', 'computational'};
@@ -163,6 +163,8 @@ function run_paper2_CrowellBanksUnpublishedExperimentTest
         
         % Also adjust stimulus pixels based on patch size
         params.imagePixels = max([256 round(0.5*params.imagePixels * params.patchSize2SigmaCycles / 3.3)*2]);
+        params.imagePixels = max([192 round(0.5*params.imagePixels * params.patchSize2SigmaCycles / 3.3)*2]);
+        
         
         % Stimulus SF
         params.cyclesPerDegreeExamined = cond.cyclesPerDegreeExamined;
