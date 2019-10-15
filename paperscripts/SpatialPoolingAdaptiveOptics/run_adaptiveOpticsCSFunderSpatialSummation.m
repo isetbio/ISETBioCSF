@@ -56,23 +56,23 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     % Init condition index
     condIndex = 0;
     
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'AO-8mm, no pool SVM';
-    examinedCond(condIndex).performanceClassifier = 'svm';
-    examinedCond(condIndex).pupilDiamMm = 8.0;
-    examinedCond(condIndex).opticsModel = 'AOoptics80mmPupil';
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'AO-8mm, no pool SVM';
+%     examinedCond(condIndex).performanceClassifier = 'svm';
+%     examinedCond(condIndex).pupilDiamMm = 8.0;
+%     examinedCond(condIndex).opticsModel = 'AOoptics80mmPupil';
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'Human-3mm, no pool SVM';
+    examinedCond(condIndex).label = 'Human-2mm, no pool SVM';
     examinedCond(condIndex).performanceClassifier = 'svm';
-    examinedCond(condIndex).pupilDiamMm = 3.0;
+    examinedCond(condIndex).pupilDiamMm = 2.0;
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
 %     
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'AO-8mm, SVM, 1.7'' pool SVM';
-    examinedCond(condIndex).performanceClassifier = 'svmGaussPooledResponses';
-    examinedCond(condIndex).pupilDiamMm = 8.0;
-    examinedCond(condIndex).opticsModel = 'AOoptics80mmPupil';
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'AO-8mm, SVM, 1.7'' pool SVM';
+%     examinedCond(condIndex).performanceClassifier = 'svmGaussPooledResponses';
+%     examinedCond(condIndex).pupilDiamMm = 8.0;
+%     examinedCond(condIndex).opticsModel = 'AOoptics80mmPupil';
 
     % Go
     examinedLegends = {};
@@ -85,7 +85,7 @@ function run_adaptiveOpticsCSFunderSpatialSummation
         params.nTrainingSamples = 1024;
         
         % Try out for subset of SFs
-        params.cyclesPerDegreeExamined =[8 12 16 24 32 60]; % [4 8 12 16 24 32 50 60];
+        params.cyclesPerDegreeExamined = [8 12 16 24 32 60]; % [4 8 12 16 24 32 50 60];
         
         
         params.performanceSignal = performanceSignal;
@@ -106,6 +106,7 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     end % condIndex
     
     
+    
     if (makeSummaryFigure)
         variedParamName = 'GaussPooling';
         
@@ -114,8 +115,8 @@ function run_adaptiveOpticsCSFunderSpatialSummation
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
-            'showSubjectData', ~true, ...
-            'showSubjectMeanData', ~true, ...
+            'showSubjectData', true, ...
+            'showSubjectMeanData', true, ...
             'plotFirstConditionInGray', true, ...
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
@@ -143,7 +144,7 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
     params.visualizeOptics = ~true;
     params.visualizeStimulusAndOpticalImage = ~true;
     params.visualizeMosaicWithFirstEMpath = ~true;
-    params.visualizeSpatialPoolingScheme = true;
+    params.visualizeSpatialPoolingScheme = ~true;
     params.visualizeDisplay = ~true;
     
     params.visualizeKernelTransformedSignals = true;
