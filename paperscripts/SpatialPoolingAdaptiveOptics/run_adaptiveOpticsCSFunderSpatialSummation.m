@@ -32,7 +32,7 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     % Whether to compute responses
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     emPathType = 'frozen0';
@@ -56,23 +56,23 @@ function run_adaptiveOpticsCSFunderSpatialSummation
     % Init condition index
     condIndex = 0;
     
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'AO-8mm, no pool SVM';
-%     examinedCond(condIndex).performanceClassifier = 'svm';
-%     examinedCond(condIndex).pupilDiamMm = 8.0;
-%     examinedCond(condIndex).opticsModel = 'AOoptics80mmPupil';
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'AO-8mm, no pool SVM';
+    examinedCond(condIndex).performanceClassifier = 'svm';
+    examinedCond(condIndex).pupilDiamMm = 8.0;
+    examinedCond(condIndex).opticsModel = 'AOoptics80mmPupil';
     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'Human-2mm, no pool SVM';
     examinedCond(condIndex).performanceClassifier = 'svm';
     examinedCond(condIndex).pupilDiamMm = 2.0;
     examinedCond(condIndex).opticsModel = 'ThibosAverageSubject3MMPupil';
-%     
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'AO-8mm, SVM, 1.7'' pool SVM';
-%     examinedCond(condIndex).performanceClassifier = 'svmGaussPooledResponses';
-%     examinedCond(condIndex).pupilDiamMm = 8.0;
-%     examinedCond(condIndex).opticsModel = 'AOoptics80mmPupil';
+    
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'AO-8mm, SVM, 1.7'' pool SVM';
+    examinedCond(condIndex).performanceClassifier = 'svmGaussPooledResponses';
+    examinedCond(condIndex).pupilDiamMm = 8.0;
+    examinedCond(condIndex).opticsModel = 'AOoptics80mmPupil';
 
     % Go
     examinedLegends = {};
@@ -115,13 +115,13 @@ function run_adaptiveOpticsCSFunderSpatialSummation
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
-            'showSubjectData', true, ...
-            'showSubjectMeanData', true, ...
+            'showSubjectData', ~true, ...
+            'showSubjectMeanData', ~true, ...
             'plotFirstConditionInGray', true, ...
-            'plotRatiosOfOtherConditionsToFirst', true, ...
+            'plotRatiosOfOtherConditionsToFirst', ~true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.30,0.905,0.67,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.275,0.87,0.67,0.08], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );
