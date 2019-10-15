@@ -460,8 +460,9 @@ function rParams = updateSpatialParams(rParams, userParams, cyclesPerDegree)
         % For a Gaussian, FWHM = 2.355 * sigma
         gaussianFWHMDegs = 2.355*sigmaDegs;
         
-        fieldOfViewDegs = 2.5*gaussianFWHMDegs;
-        
+        fieldOfViewDegs = 2.5 * gaussianFWHMDegs;
+        fieldOfViewDegs = 2.5 * max([gaussianFWHMDegs 2.355*0.5*(0.8) / cyclesPerDegree]);
+
         rParams.spatialParams = modifyStructParams(rParams.spatialParams, ...
                 'windowType', 'Gaussian', ...
                 'cyclesPerDegree', cyclesPerDegree, ...
