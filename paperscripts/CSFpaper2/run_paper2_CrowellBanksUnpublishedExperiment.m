@@ -33,11 +33,11 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     computeMosaic = ~true;
     computeResponses = true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     visualizePerformance = ~true;
     
     % Type of inference engine to employ
-    observerTypesExamined = {'computational'};                % {'ideal', 'computational'};
+    observerTypesExamined = {'ideal'};                % {'ideal', 'computational'};
     computationalObserverClassifier = 'svmV1FilterEnsemble';  % Choose from : 'svmV1FilterEnsemble', 'svmV1FilterBank'
    
     % Pupil diameter used
@@ -47,16 +47,16 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     luminanceCdM2 = 100;                                % Crowell & Banks employed 100 cd/m2 stimuli
     
     % Cycles/deg examined
-    cyclesPerDegreeExamined = [14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
+    cyclesPerDegreeExamined = [28]; % [5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
     
     % Patch sizes examined
-    patchSize2SigmaCycles = [3.3 1.7 0.8 0.4]; % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
+    patchSize2SigmaCycles = [0.8]; % [3.3 1.7 0.8 0.4]; % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
     
     % Performance for threshold
     thresholdCriterionFraction = 0.75;                  % Performance threshold employed by Crowell & Banks was 75%
     
     % Response instances to compute
-    nTrainingSamples = 512;                            % 1032 to signify the Crowell & Banks runs
+    nTrainingSamples = 400;                            % 1032 to signify the Crowell & Banks runs
     
     % Integration time to use: Here set to 5.0 ms, but 2.5 ms may be better 
     % for capturing the dynamics of fixationalEM
@@ -68,8 +68,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     % Will need to change this to study shorter stimulus durations.
     frameRate = 10; 
     
-    % Compute photocurrent responses
-    computePhotocurrents = true;
+    
       
     % Assemble conditions list to be examined (different patch sizes)
     condIndex = 0;
@@ -85,7 +84,8 @@ function run_paper2_CrowellBanksUnpublishedExperiment
                 performanceClassifier = 'mlpt';
                 spatialPoolingKernelParams.type = 'V1QuadraturePair';
                 spatialPoolingKernelParams.activationFunction = 'energy';
-                
+                % Compute photocurrent responses
+                computePhotocurrents = ~true;
             elseif (strcmp(observerType, 'computational'))
                 % the computational observer: based on pCurrent with fixational eye movements
                 observerLegend = computationalObserverClassifier;
@@ -95,6 +95,8 @@ function run_paper2_CrowellBanksUnpublishedExperiment
                 performanceClassifier = computationalObserverClassifier;
                 spatialPoolingKernelParams.type = 'V1QuadraturePair';
                 spatialPoolingKernelParams.activationFunction = 'energy';
+                % Compute photocurrent responses
+                computePhotocurrents = true;
             else
                 error('Unknown observer type: ''%s''.', observerType);
             end
@@ -107,6 +109,8 @@ function run_paper2_CrowellBanksUnpublishedExperiment
                 examinedCond(condIndex).performanceSignal = performanceSignal;
                 examinedCond(condIndex).performanceClassifier = performanceClassifier;
                 examinedCond(condIndex).spatialPoolingKernelParams.type = spatialPoolingKernelParams.type;
+                % Compute photocurrent responses
+                examinedCond(condIndex).computePhotocurrents = computePhotocurrents;
                 
                 examinedCond(condIndex).patchSize2SigmaCycles = patchSize2SigmaCycles(patchSizeIndex);
                 examinedCond(condIndex).cyclesPerDegreeExamined = cyclesPerDegreeExamined(sfIndex);
@@ -162,7 +166,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         params.patchSize2SigmaCycles = cond.patchSize2SigmaCycles;
         
         % Also adjust stimulus pixels based on patch size
-        params.imagePixels = max([256 round(0.5*params.imagePixels * params.patchSize2SigmaCycles / 3.3)*2]);
+        params.imagePixels = max([192 round(0.5*params.imagePixels * params.patchSize2SigmaCycles / 3.3)*2]);
         
         % Stimulus SF
         params.cyclesPerDegreeExamined = cond.cyclesPerDegreeExamined;
@@ -190,9 +194,11 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         end
         
  
+            params.parforWorkersNumForClassification = 10;
+            
         % Update params
         params = getRemainingDefaultParams(params, ...
-            computePhotocurrents, computeResponses, computeMosaic, ...
+            cond.computePhotocurrents, computeResponses, computeMosaic, ...
             visualizeResponses, findPerformance, visualizePerformance); 
 
             
