@@ -57,7 +57,9 @@ end
 % Set the padding for the optical image
 if (isfield(oiParams, 'opticalImagePadSizeDegs')) && (~isempty(oiParams.opticalImagePadSizeDegs))
     %warnmsg(sprintf('Will apply custom oi padding with size: %2.2f degrees\n', oiParams.opticalImagePadSizeDegs));
-    theOI = oiSet(theOI, 'pad', struct('sizeDegs', oiParams.opticalImagePadSizeDegs, 'value', 'mean photons'));
+    oiParams.padValue = 'mean photons';
+    oiParams.padValue = 'border photons';
+    theOI = oiSet(theOI, 'pad', struct('sizeDegs', oiParams.opticalImagePadSizeDegs, 'value', oiParams.padValue));
 end
 
 % Set the fNumber
