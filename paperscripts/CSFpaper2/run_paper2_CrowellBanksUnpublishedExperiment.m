@@ -50,13 +50,13 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     cyclesPerDegreeExamined = [28]; % [5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
     
     % Patch sizes examined
-    patchSize2SigmaCycles = [0.8]; % [3.3 1.7 0.8 0.4]; % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
+    patchSize2SigmaCycles = [0.8 ]; % [3.3 1.7 0.8 0.4]; % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
     
     % Performance for threshold
     thresholdCriterionFraction = 0.75;                  % Performance threshold employed by Crowell & Banks was 75%
     
     % Response instances to compute
-    nTrainingSamples = 400;                            % 1032 to signify the Crowell & Banks runs
+    nTrainingSamples = 500;                            % 1032 to signify the Crowell & Banks runs
     
     % Integration time to use: Here set to 5.0 ms, but 2.5 ms may be better 
     % for capturing the dynamics of fixationalEM
