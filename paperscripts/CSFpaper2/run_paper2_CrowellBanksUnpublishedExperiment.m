@@ -31,10 +31,10 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
-    visualizePerformance = ~true;
+    findPerformance = ~true;
+    visualizePerformance = true;
     
     % Type of inference engine to employ
     observerTypesExamined = {'ideal'};                % {'ideal', 'computational'};
@@ -42,15 +42,47 @@ function run_paper2_CrowellBanksUnpublishedExperiment
    
     % Pupil diameter used
     pupilDiamMm = 2.5;                                  % Crowell & Banks employed a 2.5 mm artificial pupil
-    
-    % Mean luminance used
+       % Mean luminance used
     luminanceCdM2 = 100;                                % Crowell & Banks employed 100 cd/m2 stimuli
     
     % Cycles/deg examined
-    cyclesPerDegreeExamined = [28]; % [5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
+    cyclesPerDegreeExamined = [2.5 5 14 28]; % [5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
     
     % Patch sizes examined
-    patchSize2SigmaCycles = [0.8 ]; % [3.3 1.7 0.8 0.4]; % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
+    patchSize2SigmaCycles = [3.3 1.7 0.8 0.4]; % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
+    
+    if (strcmp(observerTypesExamined{1}, 'ideal'))
+        sfPatchCombo = [...
+            2.5 0.4; ...
+           2.5 0.8; ...
+           2.5 1.7; ...
+             5 1.7;
+            14 1.7; ...
+            28 1.7; ...
+             5 0.8; ...
+            14 0.8; ...
+            28 0.8; ...
+             5 0.4; ...
+            14 0.4; ...
+            28 0.4; ...
+        ];
+    end
+    
+    if (strcmp(observerTypesExamined{1}, 'computational'))
+        sfPatchCombo = [...
+           2.5 0.4; ...
+           2.5 0.8; ...
+           2.5 1.7; ...
+             5 1.7; ...
+            14 1.7; ...
+            28 1.7; ...
+            28 0.8; ...
+            14 0.8; ...
+            14 0.4; ...
+            5  0.8; ...
+            5  0.4; ...
+        ];
+    end
     
     % Performance for threshold
     thresholdCriterionFraction = 0.75;                  % Performance threshold employed by Crowell & Banks was 75%
@@ -72,65 +104,74 @@ function run_paper2_CrowellBanksUnpublishedExperiment
       
     % Assemble conditions list to be examined (different patch sizes)
     condIndex = 0;
-    for patchSizeIndex = 1:numel(patchSize2SigmaCycles)
-        for observerTypeIndex = 1:numel(observerTypesExamined)
-            observerType = observerTypesExamined{observerTypeIndex};
-            if (strcmp(observerType, 'ideal'))
-                % the ideal observer: based on isomerizations with no eye movements
-                observerLegend = 'ideal observer';
-                emPathType = 'frozen0';
-                centeredEMPaths =  'atStimulusModulationMidPoint';
-                performanceSignal = 'isomerizations';
-                performanceClassifier = 'mlpt';
-                spatialPoolingKernelParams.type = 'V1QuadraturePair';
-                spatialPoolingKernelParams.activationFunction = 'energy';
-                % Compute photocurrent responses
-                computePhotocurrents = ~true;
-            elseif (strcmp(observerType, 'computational'))
-                % the computational observer: based on pCurrent with fixational eye movements
-                observerLegend = computationalObserverClassifier;
-                emPathType = 'randomNoSaccades';
-                centeredEMPaths =  'atStimulusModulationMidPoint';
-                performanceSignal = 'photocurrents';
-                performanceClassifier = computationalObserverClassifier;
-                spatialPoolingKernelParams.type = 'V1QuadraturePair';
-                spatialPoolingKernelParams.activationFunction = 'energy';
-                % Compute photocurrent responses
-                computePhotocurrents = true;
-            else
-                error('Unknown observer type: ''%s''.', observerType);
-            end
+    for observerTypeIndex = 1:numel(observerTypesExamined)
+        observerType = observerTypesExamined{observerTypeIndex};
+        if (strcmp(observerType, 'ideal'))
+            % the ideal observer: based on isomerizations with no eye movements
+            observerLegend = 'ideal observer';
+            emPathType = 'frozen0';
+            centeredEMPaths =  'atStimulusModulationMidPoint';
+            performanceSignal = 'isomerizations';
+            performanceClassifier = 'mlpt';
+            spatialPoolingKernelParams.type = 'V1QuadraturePair';
+            spatialPoolingKernelParams.activationFunction = 'energy';
+            % Compute photocurrent responses
+            computePhotocurrents = ~true;
+        elseif (strcmp(observerType, 'computational'))
+            % the computational observer: based on pCurrent with fixational eye movements
+            observerLegend = computationalObserverClassifier;
+            emPathType = 'randomNoSaccades';
+            centeredEMPaths =  'atStimulusModulationMidPoint';
+            performanceSignal = 'photocurrents';
+            performanceClassifier = computationalObserverClassifier;
+            spatialPoolingKernelParams.type = 'V1QuadraturePair';
+            spatialPoolingKernelParams.activationFunction = 'energy';
+            % Compute photocurrent responses
+            computePhotocurrents = true;
+        else
+            error('Unknown observer type: ''%s''.', observerType);
+        end
+        
+        for sfPatchIndex = 1:size(sfPatchCombo,1)
+            sf = sfPatchCombo(sfPatchIndex,1);
+            patchSize = sfPatchCombo(sfPatchIndex,2);
             
-            for sfIndex = 1:numel(cyclesPerDegreeExamined)   
-                condIndex = condIndex + 1;
-                examinedCond(condIndex).label = sprintf('%s, %2.1f cycles', observerLegend, patchSize2SigmaCycles(patchSizeIndex));
-                examinedCond(condIndex).emPathType = emPathType;
-                examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-                examinedCond(condIndex).performanceSignal = performanceSignal;
-                examinedCond(condIndex).performanceClassifier = performanceClassifier;
-                examinedCond(condIndex).spatialPoolingKernelParams.type = spatialPoolingKernelParams.type;
-                % Compute photocurrent responses
-                examinedCond(condIndex).computePhotocurrents = computePhotocurrents;
-                
-                examinedCond(condIndex).patchSize2SigmaCycles = patchSize2SigmaCycles(patchSizeIndex);
-                examinedCond(condIndex).cyclesPerDegreeExamined = cyclesPerDegreeExamined(sfIndex);
-                examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = spatialPoolingKernelParams.activationFunction;
-                
-                switch (cyclesPerDegreeExamined(sfIndex))
-                    case 2.5
-                        examinedCond(condIndex).minimumMosaicFOVdegs = 3.94; % specify [] for mosaic that is matched to the stimulus
-                    case 5
-                        examinedCond(condIndex).minimumMosaicFOVdegs = 1.97; % specify [] for mosaic that is matched to the stimulus
-                    case 14
-                        examinedCond(condIndex).minimumMosaicFOVdegs = 0.98; 
-                    case 28
-                        examinedCond(condIndex).minimumMosaicFOVdegs = 0.492; 
-                    otherwise
-                        error('minimumMosaicFOVdegs not specified');
-                end
-            end % sfIndex
-        end % observerTypeIndex
-    end % patchSizeIndex
+            condIndex = condIndex + 1;
+            examinedCond(condIndex).label = sprintf('%s, %2.1f cycles', observerLegend, patchSize);
+            examinedCond(condIndex).emPathType = emPathType;
+            examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+            examinedCond(condIndex).performanceSignal = performanceSignal;
+            examinedCond(condIndex).performanceClassifier = performanceClassifier;
+            examinedCond(condIndex).spatialPoolingKernelParams.type = spatialPoolingKernelParams.type;
+            % Compute photocurrent responses
+            examinedCond(condIndex).computePhotocurrents = computePhotocurrents;
+            
+            examinedCond(condIndex).patchSize2SigmaCycles = patchSize;
+            examinedCond(condIndex).cyclesPerDegreeExamined = sf;
+            examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = spatialPoolingKernelParams.activationFunction;
+            
+            switch (sf)
+                case 2.5
+                    if (examinedCond(condIndex).patchSize2SigmaCycles < 0.8)
+                            examinedCond(condIndex).minimumMosaicFOVdegs = 0.98;
+                        elseif (examinedCond(condIndex).patchSize2SigmaCycles < 1.7)
+                            examinedCond(condIndex).minimumMosaicFOVdegs = 1.97;
+                        else
+                            examinedCond(condIndex).minimumMosaicFOVdegs = 3.94; % specify [] for mosaic that is matched to the stimulus
+                        end
+                        
+                case 5
+                    examinedCond(condIndex).minimumMosaicFOVdegs = 1.97; % specify [] for mosaic that is matched to the stimulus
+                case 14
+                    examinedCond(condIndex).minimumMosaicFOVdegs = 0.98;
+                case 28
+                    examinedCond(condIndex).minimumMosaicFOVdegs = 0.492;
+                otherwise
+                    error('minimumMosaicFOVdegs not specified');
+            end
+        end % sfPatchIndex
+  
+    end % observerTypeIndex
     
     % Go
     examinedLegends = {};
@@ -209,26 +250,31 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     if (visualizePerformance)
         condIndex = 0;
         lumIndex = 1;
-        theLegends = {};
+        theLegends = cell(numel(patchSize2SigmaCycles), numel(observerTypesExamined), numel(cyclesPerDegreeExamined));
         
         data.patchSize2SigmaCycles = patchSize2SigmaCycles;
         data.observerTypesExamined = observerTypesExamined;
         data.cyclesPerDegreeExamined = cyclesPerDegreeExamined;
+        data.cpd = nan(numel(patchSize2SigmaCycles), numel(observerTypesExamined), numel(cyclesPerDegreeExamined));
+        data.contrastSensitivity = data.cpd;
         
         
-        for patchSizeIndex  = 1:numel(patchSize2SigmaCycles)
-            for observerTypeIndex = 1:numel(observerTypesExamined)
-                for sfIndex = 1:numel(cyclesPerDegreeExamined)   
-                    condIndex = condIndex + 1;
-                    if (sfIndex == 1) 
-                        theLegends{numel(theLegends)+1} = examinedLegends{condIndex};
-                    end
-                    figData = theFigData{condIndex};
-                    referenceContrast = figData.banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1);
-                    thresholdContrasts = [figData.banksEtAlReplicate.mlptThresholds(lumIndex,:).thresholdContrasts];
-                    data.cpd(patchSizeIndex, observerTypeIndex, sfIndex) = figData.banksEtAlReplicate.cyclesPerDegree(lumIndex,:);
-                    data.contrastSensitivity(patchSizeIndex, observerTypeIndex, sfIndex) = 1./(thresholdContrasts*referenceContrast);
-                end % sfIndex
+        for observerTypeIndex = 1:numel(observerTypesExamined)
+            for sfPatchIndex = 1:size(sfPatchCombo,1)
+                sf = sfPatchCombo(sfPatchIndex,1);
+                patchSize = sfPatchCombo(sfPatchIndex,2);
+                condIndex = condIndex + 1;
+                sfIndex = find(cyclesPerDegreeExamined==sf);
+                patchSizeIndex = find(patchSize2SigmaCycles ==patchSize);
+                %[sfIndex patchSizeIndex]
+                if (~isempty(patchSizeIndex)) && (~isempty(sfIndex)) 
+                    theLegend{patchSizeIndex, observerTypeIndex, sfIndex} = examinedLegends{condIndex};
+                end
+                figData = theFigData{condIndex};
+                referenceContrast = figData.banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1);
+                thresholdContrasts = [figData.banksEtAlReplicate.mlptThresholds(lumIndex,:).thresholdContrasts];
+                data.cpd(patchSizeIndex, observerTypeIndex, sfIndex) = figData.banksEtAlReplicate.cyclesPerDegree(lumIndex,:);
+                data.contrastSensitivity(patchSizeIndex, observerTypeIndex, sfIndex) = 1./(thresholdContrasts*referenceContrast);
             end % observerType
         end
         
