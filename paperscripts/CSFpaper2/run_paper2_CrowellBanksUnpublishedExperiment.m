@@ -37,7 +37,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     visualizePerformance = true;
     
     % Type of inference engine to employ
-    observerTypesExamined = {'ideal'};                % {'ideal', 'computational'};
+    observerTypesExamined = {'ideal', 'computational'};
     computationalObserverClassifier = 'svmV1FilterEnsemble';  % Choose from : 'svmV1FilterEnsemble', 'svmV1FilterBank'
    
     % Pupil diameter used
@@ -46,7 +46,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     luminanceCdM2 = 100;                                % Crowell & Banks employed 100 cd/m2 stimuli
     
     % Cycles/deg examined
-    cyclesPerDegreeExamined = [2.5 5 14 28]; % [5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
+    cyclesPerDegreeExamined = [2.5 5 14 28 50]; % [5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
     
     % Patch sizes examined
     patchSize2SigmaCycles = [3.3 1.7 0.8 0.4]; % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
@@ -83,6 +83,13 @@ function run_paper2_CrowellBanksUnpublishedExperiment
             5  0.4; ...
         ];
     end
+    
+    sfPatchCombo = [...
+        50 3.3; ...
+        50 1.7; ...
+        50 0.8; ...
+        50 0.4; ...
+        ];
     
     % Performance for threshold
     thresholdCriterionFraction = 0.75;                  % Performance threshold employed by Crowell & Banks was 75%
@@ -165,6 +172,8 @@ function run_paper2_CrowellBanksUnpublishedExperiment
                 case 14
                     examinedCond(condIndex).minimumMosaicFOVdegs = 0.98;
                 case 28
+                    examinedCond(condIndex).minimumMosaicFOVdegs = 0.492;
+                case 50
                     examinedCond(condIndex).minimumMosaicFOVdegs = 0.492;
                 otherwise
                     error('minimumMosaicFOVdegs not specified');
