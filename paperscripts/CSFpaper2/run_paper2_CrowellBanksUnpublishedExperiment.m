@@ -31,13 +31,13 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = ~true;
+    computeResponses = true;
     visualizeResponses = ~true;
     findPerformance = true;
     visualizePerformance = true;
     
     % Type of inference engine to employ
-    observerTypesExamined = {'computational'};
+    observerTypesExamined = {'ideal'};
     computationalObserverClassifier = 'svmV1FilterBank';  % Choose from : 'svmV1FilterEnsemble', 'svmV1FilterBank'
    
     % Pupil diameter used
@@ -70,6 +70,18 @@ function run_paper2_CrowellBanksUnpublishedExperiment
              5 0.4; ...
             14 0.4; ...
             28 0.4; ...
+        ];
+        
+        % a couple of high spatial frequencies
+        sfPatchCombo = [...
+            47 3.3; 
+            39 3.3; ...
+            47 1.7; 
+            39 1.7; ...
+            47 0.8; 
+            39 0.8; ...
+            47 0.4; 
+            39 0.4; ...
         ];
     end
     
@@ -174,9 +186,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
                     examinedCond(condIndex).minimumMosaicFOVdegs = 1.97; % specify [] for mosaic that is matched to the stimulus
                 case 14
                     examinedCond(condIndex).minimumMosaicFOVdegs = 0.98;
-                case 28
-                    examinedCond(condIndex).minimumMosaicFOVdegs = 0.492;
-                case 50
+                case {28, 39, 47}
                     examinedCond(condIndex).minimumMosaicFOVdegs = 0.492;
                 otherwise
                     error('minimumMosaicFOVdegs not specified');
