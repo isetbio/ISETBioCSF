@@ -31,14 +31,14 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Type of inference engine to employ
     observerTypesExamined = {'ideal'};
-    computationalObserverClassifier = 'svmV1FilterBank';  % Choose from : 'svmV1FilterEnsemble', 'svmV1FilterBank'
+    computationalObserverClassifier = 'svmV1FilterEnsemble';  % Choose from : 'svmV1FilterEnsemble', 'svmV1FilterBank'
    
     % Pupil diameter used
     pupilDiamMm = 2.5;                                  % Crowell & Banks employed a 2.5 mm artificial pupil
@@ -46,7 +46,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     luminanceCdM2 = 100;                                % Crowell & Banks employed 100 cd/m2 stimuli
     
     % Cycles/deg examined
-    cyclesPerDegreeExamined = [2.5 5 14 28]; % [5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
+    cyclesPerDegreeExamined = [2.5 5 14 28 39 47]; % [5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
     
     % Patch sizes examined
     patchSize2SigmaCycles = [3.3 1.7 0.8 0.4]; % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
@@ -70,19 +70,16 @@ function run_paper2_CrowellBanksUnpublishedExperiment
              5 0.4; ...
             14 0.4; ...
             28 0.4; ...
+            39 3.3; ...
+            39 1.7; ...
+            39 0.8; ...
+            39 0.4; ...
+            47 3.3; ...
+            47 1.7; ...
+            47 0.8; ...
+            47 0.4; ...
         ];
         
-        % a couple of high spatial frequencies
-        sfPatchCombo = [...
-            47 3.3; 
-            39 3.3; ...
-            47 1.7; 
-            39 1.7; ...
-            47 0.8; 
-            39 0.8; ...
-            47 0.4; 
-            39 0.4; ...
-        ];
     end
     
     if (strcmp(observerTypesExamined{1}, 'computational'))
