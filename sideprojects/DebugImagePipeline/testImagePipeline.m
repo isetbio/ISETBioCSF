@@ -2,7 +2,7 @@ function testImagePipeline
 
     theRetina = makeRetina();
     
-     imageSize = [128, 128, 3];
+     imageStbize = [128, 128, 3];
      input = ones(imageSize) * 1;
      [theRetina, ~, ~, ~, coneVec] = retinaCompute(theRetina, input);
 %     
