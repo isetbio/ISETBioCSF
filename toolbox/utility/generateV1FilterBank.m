@@ -171,10 +171,12 @@ function V1filterBank = makeV1FilterBank(spatialParams, filterWidthDegs, coneLoc
    
     if (strcmp(spatialPoolingKernelParams.type, 'V1SinUnit'))
         V1filterBank.cosPhasePoolingProfile = 0*V1filterBank.cosPhasePoolingProfile;
+        V1filterBank.cosPhasePoolingWeights = 0*V1filterBank.cosPhasePoolingWeights;
     end
     
     if (strcmp(spatialPoolingKernelParams.type, 'V1CosUnit'))
         V1filterBank.sinPhasePoolingProfile = 0*V1filterBank.sinPhasePoolingProfile;
+        V1filterBank.sinPhasePoolingWeights = 0*V1filterBank.sinPhasePoolingWeights;
     end
     
     if (any(isnan(V1filterBank.cosPhasePoolingWeights)))

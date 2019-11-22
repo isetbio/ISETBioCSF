@@ -122,6 +122,33 @@ function [V1filterEnsemble, hFig] = generateV1FilterEnsemble(spatialParams, mosa
     
                 v1Unit.envelopePoolingWeights = (v1Unit.cosPhasePoolingWeights).^2 + (v1Unit.sinPhasePoolingWeights).^2;
 
+                if (any(v1Unit.cosPhasePoolingWeights(:)<-1))
+                    fprintf('Cos pooling contains % values< -1\n', sum(v1Unit.cosPhasePoolingWeights(:)<-1));
+                end
+
+                if (any(v1Unit.cosPhasePoolingWeights(:)>1))
+                    fprintf('Cos pooling contains % values< >1\n', sum(v1Unit.cosPhasePoolingWeights(:)>1));
+                end
+
+                if (any(v1Unit.sinPhasePoolingWeights(:)<-1))
+                    fprintf('Sin pooling contains % values< -1\n', sum(v1Unit.sinPhasePoolingWeights(:)<-1));
+                end
+
+                if (any(v1Unit.sinPhasePoolingWeights(:)>1))
+                    fprintf('Sin pooling contains % values< >1\n', sum(v1Unit.sinPhasePoolingWeights(:)>1));
+                end
+    
+       
+                if (strcmp(thresholdParams.spatialPoolingKernelParams.type, 'V1SinUnit'))
+                    v1Unit.cosPhasePoolingProfile = 0*v1Unit.cosPhasePoolingProfile;
+                    v1Unit.cosPhasePoolingWeights = 0*v1Unit.cosPhasePoolingWeights;
+                end
+
+                if (strcmp(thresholdParams.spatialPoolingKernelParams.type, 'V1CosUnit'))
+                    v1Unit.sinPhasePoolingProfile = 0*v1Unit.sinPhasePoolingProfile;
+                    v1Unit.sinPhasePoolingWeights = 0*v1Unit.sinPhasePoolingWeights;
+                end
+    
                 v1Unit.type = thresholdParams.spatialPoolingKernelParams.type;
                 v1Unit.activationFunction = thresholdParams.spatialPoolingKernelParams.activationFunction;
                 v1Unit.temporalPCAcoeffs = thresholdParams.spatialPoolingKernelParams.temporalPCAcoeffs;
