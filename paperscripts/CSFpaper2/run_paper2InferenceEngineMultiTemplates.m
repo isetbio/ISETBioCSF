@@ -34,7 +34,7 @@ function run_paper2InferenceEngineMultiTemplates
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
     findPerformance = ~true;
     visualizePerformance = true;
@@ -171,7 +171,7 @@ function run_paper2InferenceEngineMultiTemplates
     end
     
     
-     doNewComputations = ~true;
+     doNewComputations = true;
      if (doNewComputations)
         defaultCond.label = '';
         defaultCond.performanceClassifier = 'svmV1FilterEnsemble';
