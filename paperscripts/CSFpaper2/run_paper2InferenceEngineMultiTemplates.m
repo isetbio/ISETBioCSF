@@ -36,7 +36,7 @@ function run_paper2InferenceEngineMultiTemplates
     computeMosaic = ~true;
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -65,11 +65,25 @@ function run_paper2InferenceEngineMultiTemplates
     % * * * * * * * * * * * * * * * 
     
     
+    defaultCondForEnsembleEngine.label = '';
+    defaultCondForEnsembleEngine.performanceClassifier = 'svmV1FilterEnsemble';
+    defaultCondForEnsembleEngine.minimumMosaicFOVdegs = -0.328;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
+    defaultCondForEnsembleEngine.spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    defaultCondForEnsembleEngine.spatialPoolingKernelParams.activationFunction = 'energy';
+    defaultCondForEnsembleEngine.performanceSignal = performanceSignal;
+    defaultCondForEnsembleEngine.emPathType = 'randomNoSaccades';
+    defaultCondForEnsembleEngine.centeredEMPaths = centeredEMPaths;
+    defaultCondForEnsembleEngine.ensembleFilterParams = struct(...
+                        'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid, 2 in 5x5
+                        'spatialPositionOffsetDegs', 0.0328, ... % cannot save this variation is different data files - not encoded
+                        'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
+                        'orientations', 0);
+                        
     % Assemble conditions list to be examined
     % Init condition index
     condIndex = 0;
     
-    doOriginalComputationsAgain = true;
+    doOriginalComputationsAgain = ~true;
     if (doOriginalComputationsAgain)
     
     condIndex = condIndex+1;
@@ -81,7 +95,12 @@ function run_paper2InferenceEngineMultiTemplates
     examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = true;
-
+    examinedCond(condIndex).ensembleFilterParams = struct(...
+                    'spatialPositionsNum',  0, ...   % 1 results in a 3x3 grid, 2 in 5x5
+                    'spatialPositionOffsetDegs', 0, ... 
+                    'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
+                    'orientations', 0);
+                
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'stim-matched, drift';
     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
@@ -125,35 +144,19 @@ function run_paper2InferenceEngineMultiTemplates
                     
                     
     if (~computeResponses)
-    
-        defaultCond.label = '';
-        defaultCond.performanceClassifier = 'svmV1FilterEnsemble';
-        defaultCond.minimumMosaicFOVdegs = -0.328;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-        defaultCond.spatialPoolingKernelParams.type = 'V1QuadraturePair';
-        defaultCond.spatialPoolingKernelParams.activationFunction = 'energy';
-        defaultCond.performanceSignal = performanceSignal;
-        defaultCond.emPathType = 'randomNoSaccades';
-        defaultCond.centeredEMPaths = centeredEMPaths;
-        defaultCond.ensembleFilterParams = struct(...
-                            'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid, 2 in 5x5
-                            'spatialPositionOffsetDegs', 0.0328, ... % cannot save this variation is different data files - not encoded
-                            'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
-                            'orientations', 0);
-
-
         cyclesPerRFlist = [6]; 
         for i = 1:numel(cyclesPerRFlist)
             condIndex = condIndex+1;
             cyclesPerRF = cyclesPerRFlist(i); 
-            posNum = defaultCond.ensembleFilterParams.spatialPositionsNum;
-            examinedCond(condIndex) = defaultCond;
-            examinedCond(condIndex).label = sprintf('%2.1f degs, %2.0fx%2.0f, %2.1f', abs(defaultCond.minimumMosaicFOVdegs), 2*posNum+1, 2*posNum+1, cyclesPerRF);
+            posNum = defaultCondForEnsembleEngine.ensembleFilterParams.spatialPositionsNum;
+            examinedCond(condIndex) = defaultCondForEnsembleEngine;
+            examinedCond(condIndex).label = sprintf('%2.1f degs, %2.0fx%2.0f, %2.1f', abs(defaultCondForEnsembleEngine.minimumMosaicFOVdegs), 2*posNum+1, 2*posNum+1, cyclesPerRF);
             examinedCond(condIndex).ensembleFilterParams.cyclesPerRFs = cyclesPerRF;
         end
 
 
-        defaultCond.minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-        defaultCond.ensembleFilterParams = struct(...
+        defaultCondForEnsembleEngine.minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
+        defaultCondForEnsembleEngine.ensembleFilterParams = struct(...
                             'spatialPositionsNum',  2, ...   % 1 results in a 3x3 grid, 2 in 5x5
                             'spatialPositionOffsetDegs', 0.025, ... 
                             'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
@@ -161,8 +164,8 @@ function run_paper2InferenceEngineMultiTemplates
         for i = 1:numel(cyclesPerRFlist)
             condIndex = condIndex+1;
             cyclesPerRF = cyclesPerRFlist(i); 
-            posNum = defaultCond.ensembleFilterParams.spatialPositionsNum;
-            examinedCond(condIndex) = defaultCond;
+            posNum = defaultCondForEnsembleEngine.ensembleFilterParams.spatialPositionsNum;
+            examinedCond(condIndex) = defaultCondForEnsembleEngine;
             examinedCond(condIndex).label = sprintf('%2.1f degs, %2.0fx%2.0f, %2.1f', abs(defaultCond.minimumMosaicFOVdegs), 2*posNum+1, 2*posNum+1, cyclesPerRF);
             examinedCond(condIndex).ensembleFilterParams.cyclesPerRFs = cyclesPerRF;
         end                
@@ -177,7 +180,7 @@ function run_paper2InferenceEngineMultiTemplates
         defaultCond.performanceClassifier = 'svmV1FilterEnsemble';
         defaultCond.minimumMosaicFOVdegs = -0.328;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
         defaultCond.spatialPoolingKernelParams.type = 'V1CosUnit';
-        defaultCond.spatialPoolingKernelParams.activationFunction = 'fullWaveRectifier';  % did 'linear', now trying 'fullWaveRectifier'
+        defaultCond.spatialPoolingKernelParams.activationFunction = 'linear'; % 'fullWaveRectifier';  % did 'linear', now trying 'fullWaveRectifier'
         defaultCond.performanceSignal = performanceSignal;
         defaultCond.emPathType = 'randomNoSaccades';
         defaultCond.centeredEMPaths = centeredEMPaths;
