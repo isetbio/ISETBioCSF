@@ -37,7 +37,7 @@ function run_paper2InferenceEngineMultiTemplates
     computeResponses = ~true;
     visualizeResponses = ~true;
     findPerformance = true;
-    visualizePerformance = true;
+    visualizePerformance = ~true;
     
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
@@ -185,8 +185,8 @@ function run_paper2InferenceEngineMultiTemplates
         defaultCond.emPathType = 'randomNoSaccades';
         defaultCond.centeredEMPaths = centeredEMPaths;
         defaultCond.ensembleFilterParams = struct(...
-                            'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid, 2 in 5x5
-                            'spatialPositionOffsetDegs', 0.0328, ... % cannot save this variation is different data files - not encoded
+                            'spatialPositionsNum',  2, ...   % 1 results in a 3x3 grid, 2 in 5x5
+                            'spatialPositionOffsetDegs', 0.0328/2, ... % cannot save this variation is different data files - not encoded
                             'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
                             'orientations', 0);
 
@@ -204,8 +204,8 @@ function run_paper2InferenceEngineMultiTemplates
 
         defaultCond.minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
         defaultCond.ensembleFilterParams = struct(...
-                            'spatialPositionsNum',  2, ...   % 1 results in a 3x3 grid, 2 in 5x5
-                            'spatialPositionOffsetDegs', 0.025, ... 
+                            'spatialPositionsNum',  4, ...   % 1 results in a 3x3 grid, 2 in 5x5
+                            'spatialPositionOffsetDegs', 0.025/2, ... 
                             'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
                             'orientations', 0);
         for i = 1:numel(cyclesPerRFlist)
