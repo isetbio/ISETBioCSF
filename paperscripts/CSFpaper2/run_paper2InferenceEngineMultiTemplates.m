@@ -34,10 +34,10 @@ function run_paper2InferenceEngineMultiTemplates
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = ~true;
+    computeResponses = true;
     visualizeResponses = ~true;
     findPerformance = true;
-    visualizePerformance = ~true;
+    visualizePerformance = true;
     
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
@@ -83,7 +83,7 @@ function run_paper2InferenceEngineMultiTemplates
     % Init condition index
     condIndex = 0;
     
-    doOriginalComputationsAgain = ~true;
+    doOriginalComputationsAgain = true;
     if (doOriginalComputationsAgain)
     
     condIndex = condIndex+1;
@@ -166,7 +166,7 @@ function run_paper2InferenceEngineMultiTemplates
             cyclesPerRF = cyclesPerRFlist(i); 
             posNum = defaultCondForEnsembleEngine.ensembleFilterParams.spatialPositionsNum;
             examinedCond(condIndex) = defaultCondForEnsembleEngine;
-            examinedCond(condIndex).label = sprintf('%2.1f degs, %2.0fx%2.0f, %2.1f', abs(defaultCond.minimumMosaicFOVdegs), 2*posNum+1, 2*posNum+1, cyclesPerRF);
+            examinedCond(condIndex).label = sprintf('%2.1f degs, %2.0fx%2.0f, %2.1f', abs(defaultCondForEnsembleEngine.minimumMosaicFOVdegs), 2*posNum+1, 2*posNum+1, cyclesPerRF);
             examinedCond(condIndex).ensembleFilterParams.cyclesPerRFs = cyclesPerRF;
         end                
                                
@@ -175,7 +175,7 @@ function run_paper2InferenceEngineMultiTemplates
     
     
      doNewComputations = true;
-     if (doNewComputations)
+     if (doNewComputations) && (~computeResponses)
         defaultCond.label = '';
         defaultCond.performanceClassifier = 'svmV1FilterEnsemble';
         defaultCond.minimumMosaicFOVdegs = -0.328;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
@@ -227,7 +227,7 @@ function run_paper2InferenceEngineMultiTemplates
     for condIndex = 1:numel(examinedCond)
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
-        params.cyclesPerDegreeExamined = [32 40 50 60]; % [24 32 50 60];
+        params.cyclesPerDegreeExamined = [24]; %[32 40 50 60]; % [24 32 50 60];
         params.opticalImagePadSizeDegs = opticalImagePadSizeDegs;
         
         
