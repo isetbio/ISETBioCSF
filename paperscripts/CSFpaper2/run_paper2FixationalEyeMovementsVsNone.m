@@ -54,39 +54,69 @@ function run_paper2FixationalEyeMovementsVsNone
     % Compute photocurrent responses
     computePhotocurrents = true;
     
-    performanceSignal = 'isomerizations';  % 'photocurrents', 'isomerizations';
+    performanceSignal = 'photocurrents'; % 'isomerizations';  % 'photocurrents', 'isomerizations';
     
     showDataFromLinearPooling = ~true;
     showDataFromQuadraturePooling = ~showDataFromLinearPooling;
+    
+    recomputeWithFixedCurrents = true;
     
     % Assemble conditions list to be examined
     % Init condition index
     condIndex = 0;
     
+    % Recompute responses in which we have eye movements to fix issue with
+    % mean currents
+    recomputeWithFixedCurrents = true;
+    
+    
     % Reference CSF
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-L, noEM';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = 'frozen0';
-    examinedCond(condIndex).centeredEMPaths = true;
-    
-    
-
-    if (~computeResponses) && (showDataFromQuadraturePooling)
+    if (~recomputeWithFixedCurrents)
         condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Template-E, noEM';
+        examinedCond(condIndex).label = 'SVM-Template-L, noEM';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
         examinedCond(condIndex).performanceSignal = performanceSignal;
         examinedCond(condIndex).emPathType = 'frozen0';
         examinedCond(condIndex).centeredEMPaths = true;
-    end
+
+
+
+        if (~computeResponses) && (showDataFromQuadraturePooling) && 
+            condIndex = condIndex+1;
+            examinedCond(condIndex).label = 'SVM-Template-E, noEM';
+            examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+            examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+            examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+            examinedCond(condIndex).performanceSignal = performanceSignal;
+            examinedCond(condIndex).emPathType = 'frozen0';
+            examinedCond(condIndex).centeredEMPaths = true;
+        end
+
+        if (showDataFromLinearPooling)
+            condIndex = condIndex+1;
+            examinedCond(condIndex).label = 'SVM-Template-L, drift';
+            examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+            examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+            examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+            examinedCond(condIndex).performanceSignal = performanceSignal;
+            examinedCond(condIndex).emPathType = 'randomNoSaccades';
+            examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
+        end
+    %     
+        if (~computeResponses) && (showDataFromQuadraturePooling)
+            condIndex = condIndex+1;
+            examinedCond(condIndex).label = 'SVM-Template-E, drift';
+            examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+            examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+            examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+            examinedCond(condIndex).performanceSignal = performanceSignal;
+            examinedCond(condIndex).emPathType = 'randomNoSaccades';
+            examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
+        end
     
-    if (showDataFromLinearPooling)
+    else
         condIndex = condIndex+1;
         examinedCond(condIndex).label = 'SVM-Template-L, drift';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
@@ -95,17 +125,7 @@ function run_paper2FixationalEyeMovementsVsNone
         examinedCond(condIndex).performanceSignal = performanceSignal;
         examinedCond(condIndex).emPathType = 'randomNoSaccades';
         examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
-    end
-%     
-    if (~computeResponses) && (showDataFromQuadraturePooling)
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Template-E, drift';
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-        examinedCond(condIndex).performanceSignal = performanceSignal;
-        examinedCond(condIndex).emPathType = 'randomNoSaccades';
-        examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
+            
     end
     
     
@@ -119,8 +139,13 @@ function run_paper2FixationalEyeMovementsVsNone
         % mosaic size is matched to the stimulus (see below params.minimumMosaicFOVdegs)
         params.nTrainingSamples = 1030;
         
-        % Try out for subset of SFs
-        params.cyclesPerDegreeExamined = [4 8 12 16 24 32 50 60]; % Done 60, 50 %[24 32 50 60];  % [4 8 12 16 24 32 50 60];
+        % Default spatial frequencies
+        params.cyclesPerDegreeExamined = [4 8 12 16 24 32 50 60];
+        
+        if (recomputeWithFixedCurrents)
+            % High spatial frequencies only
+            params.cyclesPerDegreeExamined = [24 32 50 60];
+        end
         
         % Do not use mosaics smaller than 0.5 degs 
         %params.minimumMosaicFOVdegs = -0.328; % 0.492 IS NOT GOOD. TRY: 0.328 , 0.246, 0.158 TRY THIS TO SEE IF WE DO BETTER AT 60 C/DEG WITH ISOMERIZATIONS

@@ -426,6 +426,10 @@ if (p.Results.compute)
     paramsList = constantParamsList;
     paramsList{numel(paramsList)+1} = colorModulationParamsNull;
     
+    % Zero eye movements for the null condition to make sure mean currents
+    % and impulse responses are fixed.
+    tmpTemporalParams = rParams.temporalParams;
+    tmpTemporalParams.emPathType = 'frozen0';
     
     % Start timing the null reponses computation
     tBegin = clock;
@@ -444,7 +448,7 @@ if (p.Results.compute)
 
         [tmpData{trialBlock}, osImpulseResponseFunctionsFromNullStimulus{trialBlock}, osImpulseReponseFunctionTimeAxis{trialBlock}, meanCurrentsFromNullStimulus{trialBlock}]  = ...
             colorDetectResponseInstanceArrayFastConstruct(stimulusLabel, nParforTrials(trialBlock), ...
-                rParams.spatialParams, rParams.backgroundParams, colorModulationParamsNull, rParams.temporalParams, theOI, theMosaic, ...
+                rParams.spatialParams, rParams.backgroundParams, colorModulationParamsNull, tmpTemporalParams, theOI, theMosaic, ...
                 'centeredEMPaths', p.Results.centeredEMPaths, ...
                 'theExpandedMosaic', [], ...
                 'osImpulseResponseFunctions', [], ...  % pass empty array, to compute the IR filters based on the null stimulus 
