@@ -36,7 +36,7 @@ function run_paper2FixationalEyeMovementsVsNone
     computeResponses = ~true;
     visualizeResponses = ~true;
     findPerformance = ~true;
-    visualizePerformance = true;
+    visualizePerformance = ~true;
     
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
@@ -83,7 +83,7 @@ function run_paper2FixationalEyeMovementsVsNone
 
 
 
-        if (~computeResponses) && (showDataFromQuadraturePooling) && 
+        if (~computeResponses) && (showDataFromQuadraturePooling) 
             condIndex = condIndex+1;
             examinedCond(condIndex).label = 'SVM-Template-E, noEM';
             examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
@@ -117,6 +117,7 @@ function run_paper2FixationalEyeMovementsVsNone
         end
     
     else
+        computeResponses = true;
         condIndex = condIndex+1;
         examinedCond(condIndex).label = 'SVM-Template-L, drift';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
