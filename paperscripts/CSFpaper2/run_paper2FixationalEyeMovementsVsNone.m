@@ -35,7 +35,7 @@ function run_paper2FixationalEyeMovementsVsNone
     % Whether to compute responses
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     visualizePerformance = ~true;
     
     % Pupil diameter to be used
@@ -58,16 +58,14 @@ function run_paper2FixationalEyeMovementsVsNone
     
     showDataFromLinearPooling = ~true;
     showDataFromQuadraturePooling = ~showDataFromLinearPooling;
-    
-    recomputeWithFixedCurrents = true;
-    
+
     % Assemble conditions list to be examined
     % Init condition index
     condIndex = 0;
     
     % Recompute responses in which we have eye movements to fix issue with
     % mean currents
-    recomputeWithFixedCurrents = true;
+    recomputeWithFixedCurrents = ~true;
     
     
     % Reference CSF
@@ -141,7 +139,7 @@ function run_paper2FixationalEyeMovementsVsNone
         params.nTrainingSamples = 1030;
         
         % Default spatial frequencies
-        params.cyclesPerDegreeExamined = [4 8 12 16 24 32 50 60];
+        params.cyclesPerDegreeExamined = [32 50 60]; % [4 8 12 16 24 32 50 60];
         
         if (recomputeWithFixedCurrents)
             % High spatial frequencies only
