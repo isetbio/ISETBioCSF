@@ -145,7 +145,7 @@ function run_paper2FixationalEyeMovementsVsNone
         
         if (recomputeWithFixedCurrents)
             % High spatial frequencies only
-            params.cyclesPerDegreeExamined = [24 32 50 60];
+            params.cyclesPerDegreeExamined = [32 50 60];
         end
         
         % Do not use mosaics smaller than 0.5 degs 
