@@ -1,7 +1,7 @@
 function generateFig1Components
     % This is the function used to make the components of Fig1  for the paper2 second submission.
-    
-    dataFileName = 'dynamicDataTrials4.mat';
+    nTrialsNum = 2;
+    dataFileName = sprintf('dynamicDataTrials%1.0f.mat', nTrialsNum);
     
     redoComputations = ~true;
     if (redoComputations)
@@ -40,7 +40,6 @@ function generateFig1Components
         
         % Generate a number of identical emPaths(selectedEMPathIndex)
         theEMPaths = squeeze(theEMPaths(selectedEMPathIndex,:,:));
-        nTrialsNum = 4;
         theEMPaths = repmat(reshape(theEMPaths, [1 eyeMovementsNum 2]), [nTrialsNum 1 1]);
 
         % Dynamic isomerizations
@@ -49,7 +48,7 @@ function generateFig1Components
         theConeMosaic.os.noiseFlag = 'random';
         
         % Compute mosaic responses to the same repeated emPath with noise ON
-        [coneExcitations, photoCurrents] = theConeMosaic.compute(theOI, ...
+        [coneExcitations, photoCurrents, pCurrentImpulseResponses] = theConeMosaic.compute(theOI, ...
             'emPath', theEMPaths, 'currentFlag', true);
         
         % Compute mosaic responses to the same emPath with noise OFF
@@ -59,10 +58,10 @@ function generateFig1Components
             'emPath', theEMPaths(1:2,:,:), 'currentFlag', true);
         
         % Save the data
-        save(dataFileName, 'theConeMosaic', 'theFixationalEMobject', 'theEMPaths',  'coneExcitations', 'photoCurrents', 'coneExcitationsMean', 'photoCurrentsMean', '-v7.3');
+        save(dataFileName, 'theConeMosaic', 'theFixationalEMobject', 'theEMPaths',  'pCurrentImpulseResponses', 'coneExcitations', 'photoCurrents', 'coneExcitationsMean', 'photoCurrentsMean', '-v7.3');
     else
         % Load the data
-        load(dataFileName, 'theConeMosaic', 'theFixationalEMobject', 'theEMPaths',  'coneExcitations', 'photoCurrents', 'coneExcitationsMean', 'photoCurrentsMean');
+        load(dataFileName, 'theConeMosaic', 'theFixationalEMobject', 'theEMPaths',  'pCurrentImpulseResponses', 'coneExcitations', 'photoCurrents', 'coneExcitationsMean', 'photoCurrentsMean');
         
         generateMosaicFig([], [], theConeMosaic);
         
@@ -102,6 +101,21 @@ function generateFig1Components
 
         % Generate figure of the cone mosaic with EMPath superimposed
         generateMosaicWithEMPathFig(theConeMosaic, theEMPathsMeters, tBins, cMap);
+        
+        % Generate figure of the photocurrent impulse response and
+        % photocurrent noise
+        tBinsIdx = size(photoCurrentsMean,4)+(-length(pCurrentImpulseResponses):-1);
+        size(photoCurrentsMean,4)
+        length(pCurrentImpulseResponses)
+        size(photoCurrents)
+        size(photoCurrentsMean)
+        [min(tBinsIdx) max(tBinsIdx)]
+        noiseTraces = bsxfun(@minus, photoCurrents(:,:,:,tBinsIdx), photoCurrentsMean(:,:,:,tBinsIdx));
+        noiseTraces = reshape(noiseTraces, [size(photoCurrents,1)*size(photoCurrents,2)*size(photoCurrents,3) numel(tBinsIdx)]);
+        % Only display 1024 traces
+        noiseTraces = noiseTraces(1:1024,:);
+        figNo = 91;
+        generatePhotoCurrentFig(figNo, timeAxis, noiseTraces, pCurrentImpulseResponses);
         
         % Visualize the first cone response mosaic instance at specific times together with the EMPath
         depictedTimes = 0:50:550;
@@ -162,6 +176,60 @@ function generateFig1Components
     end       
 end      
      
+function hFig = generatePhotoCurrentFig(figNo, timeAxis, noiseTraces, pCurrentImpulseResponses)
+    hFig = figure(figNo); clf
+    set(hFig, 'Position', [10 10 426 420], 'Color', [1 1 1]);
+    
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+       'rowsNum', 2, ...
+       'colsNum', 1, ...
+       'heightMargin',  0.03, ...
+       'widthMargin',    0.09, ...
+       'leftMargin',     0.15, ...
+       'rightMargin',    0.02, ...
+       'bottomMargin',   0.15, ...
+       'topMargin',      0.02);
+   
+    ax = subplot('Position', subplotPosVectors(1,1).v);
+    dt = timeAxis(2)-timeAxis(1);
+    t = (0:(size(pCurrentImpulseResponses,1)-1))*dt;
+    plot(t, pCurrentImpulseResponses(:,1), 'r-', 'Color', [1 0.2 0.4], 'LineWidth', 2.0); hold on
+    plot(t, pCurrentImpulseResponses(:,2), 'g-', 'Color', [0.2 1.0 0.5], 'LineWidth', 2.0);
+    plot(t, pCurrentImpulseResponses(:,3), 'b-', 'Color', [0.5 0.2 1.0], 'LineWidth', 2.0);
+    
+    plot(t, pCurrentImpulseResponses(:,1), 'r-', 'Color', [0 0 0], 'LineWidth', 3.0);
+    plot(t, pCurrentImpulseResponses(:,2), 'g-', 'Color', [0 0 0], 'LineWidth', 3.0);
+    plot(t, pCurrentImpulseResponses(:,3), 'b-', 'Color', [0 0 0], 'LineWidth', 3.0);
+    
+    plot(t, pCurrentImpulseResponses(:,1), 'r-', 'Color', [1 0.2 0.4], 'LineWidth', 2.0);
+    plot(t, pCurrentImpulseResponses(:,2), 'g-', 'Color', [0.2 1.0 0.5], 'LineWidth', 2.0);
+    plot(t, pCurrentImpulseResponses(:,3), 'b-', 'Color', [0.5 0.2 1.0], 'LineWidth', 2.0);
+    legend({'L-cone', 'M-cone', 'S-cone'})
+   
+
+    grid on;
+    set(gca, 'XLim', [t(1) t(end)]); 
+    set(gca, 'XTick', [0:100:1000], 'YTick', [], 'YColor', 'none', 'XColor', 'none', 'XTickLabel', {});
+    set(gca, 'FontSize', 20);
+    box off
+    
+    ax = subplot('Position', subplotPosVectors(2,1).v);
+    hPlot = plot(timeAxis(1:size(noiseTraces,2)),  noiseTraces, 'k-', 'LineWidth', 2);
+    for k = 1:numel(hPlot)
+       hPlot(k).Color(4) = 0.02;  % 5% transparent
+    end
+    
+    grid on;
+    set(gca, 'XLim', [t(1) t(end)]); 
+    set(gca, 'XTick', [0:100:1000], 'YTick', [-10:5:10], 'YLim', [-9 9]);
+    xlabel('time (msec)');
+    ylabel('pAmps');
+    set(gca, 'FontSize', 20);
+    box off
+    
+end
+
+
 function hFig = generateSingleConeResponsePlots(figNo, timeAxis, visualizedTimeRange, ...
     visualizedMeanConeExcitationResponse, visualizedConeExcitationResponses, ...
     visualizedMeanPhotocurrentResponse, visualizedPhotocurrentResponses, visualizedConeType, cMap)
