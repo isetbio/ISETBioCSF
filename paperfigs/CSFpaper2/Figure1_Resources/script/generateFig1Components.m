@@ -105,17 +105,13 @@ function generateFig1Components
         % Generate figure of the photocurrent impulse response and
         % photocurrent noise
         tBinsIdx = size(photoCurrentsMean,4)+(-length(pCurrentImpulseResponses):-1);
-        size(photoCurrentsMean,4)
-        length(pCurrentImpulseResponses)
-        size(photoCurrents)
-        size(photoCurrentsMean)
-        [min(tBinsIdx) max(tBinsIdx)]
         noiseTraces = bsxfun(@minus, photoCurrents(:,:,:,tBinsIdx), photoCurrentsMean(:,:,:,tBinsIdx));
         noiseTraces = reshape(noiseTraces, [size(photoCurrents,1)*size(photoCurrents,2)*size(photoCurrents,3) numel(tBinsIdx)]);
         % Only display 1024 traces
         noiseTraces = noiseTraces(1:1024,:);
         figNo = 91;
-        generatePhotoCurrentFig(figNo, timeAxis, noiseTraces, pCurrentImpulseResponses);
+        hFig = generatePhotoCurrentFig(figNo, timeAxis, noiseTraces, pCurrentImpulseResponses);
+        NicePlot.exportFigToPDF('componentFigs/Photocurrent.pdf', hFig, 300);
         
         % Visualize the first cone response mosaic instance at specific times together with the EMPath
         depictedTimes = 0:50:550;
@@ -185,8 +181,8 @@ function hFig = generatePhotoCurrentFig(figNo, timeAxis, noiseTraces, pCurrentIm
        'colsNum', 1, ...
        'heightMargin',  0.03, ...
        'widthMargin',    0.09, ...
-       'leftMargin',     0.15, ...
-       'rightMargin',    0.02, ...
+       'leftMargin',     0.13, ...
+       'rightMargin',    0.03, ...
        'bottomMargin',   0.15, ...
        'topMargin',      0.02);
    
