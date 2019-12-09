@@ -58,7 +58,7 @@ function run_paper2PupilEffectOnIsomerizations
     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'cone exc., 3mm pupil';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).performanceClassifier = 'mlpt'; % 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
     examinedCond(condIndex).performanceSignal = 'isomerizations';
@@ -66,7 +66,7 @@ function run_paper2PupilEffectOnIsomerizations
     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'cone exc., 2mm pupil';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).performanceClassifier = 'mlpt'; %'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
     examinedCond(condIndex).performanceSignal = 'isomerizations';
