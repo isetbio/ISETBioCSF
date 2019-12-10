@@ -51,22 +51,23 @@ function run_paper2PupilEffectOnIsomerizations
     % Will need to change this to study shorter stimulus durations.
     frameRate = 10; 
     
+    performanceClassifier = 'svmV1FilterBank';
     % Assemble conditions list to be examined
     % Init condition index
     condIndex = 0;
    
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'cone exc., 3mm pupil';
-    examinedCond(condIndex).performanceClassifier = 'mlpt'; % 'svmV1FilterBank';
+    examinedCond(condIndex).label = '3mm pupil';
+    examinedCond(condIndex).performanceClassifier = performanceClassifier;
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
     examinedCond(condIndex).performanceSignal = 'isomerizations';
     examinedCond(condIndex).pupilDiamMm = 3.0;
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'cone exc., 2mm pupil';
-    examinedCond(condIndex).performanceClassifier = 'mlpt'; %'svmV1FilterBank';
+    examinedCond(condIndex).label = '2mm pupil';
+    examinedCond(condIndex).performanceClassifier = performanceClassifier;
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
     examinedCond(condIndex).performanceSignal = 'isomerizations';
@@ -104,7 +105,7 @@ function run_paper2PupilEffectOnIsomerizations
     
     
     if (makeSummaryFigure)
-        variedParamName = 'PupilSizeIsomerizations';
+        variedParamName = sprintf('PupilSizeIsomerizations_%s', performanceClassifier)';
         
         theRatioLims = [0.07 1.15];
         theRatioTicks = [0.05 0.1 0.2 0.5 1.0];
@@ -117,7 +118,7 @@ function run_paper2PupilEffectOnIsomerizations
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.30,0.905,0.67,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.50,0.905,0.47,0.08], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );

@@ -36,7 +36,7 @@ function run_paper2PupilEffectOnPhotocurrents
     % Whether to compute responses
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     
@@ -57,7 +57,7 @@ function run_paper2PupilEffectOnPhotocurrents
    
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'pCurr., 3mm pupil';
+    examinedCond(condIndex).label = '3mm pupil';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -65,7 +65,7 @@ function run_paper2PupilEffectOnPhotocurrents
     examinedCond(condIndex).pupilDiamMm = 3.0;
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'pCurr., 2mm pupil';
+    examinedCond(condIndex).label = '2mm pupil';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
@@ -117,7 +117,7 @@ function run_paper2PupilEffectOnPhotocurrents
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.30,0.905,0.67,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.50,0.905,0.47,0.08], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );
