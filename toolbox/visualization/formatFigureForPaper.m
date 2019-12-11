@@ -360,7 +360,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
                     else
                         set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 700]);
                     end
-                    varargout{1} = subplot('Position', [0.19 0.09 0.80 0.90]);
+                    varargout{1} = subplot('Position', [0.215 0.11 0.78 0.88]);
                 end
             end
 

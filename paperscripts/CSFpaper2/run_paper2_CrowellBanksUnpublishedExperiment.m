@@ -35,72 +35,48 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     visualizeResponses = ~true;
     findPerformance = ~true;
     visualizePerformance = true;
+    makeSummaryFigure = true;
+    
     
     % Type of inference engine to employ
-    observerTypesExamined = {'ideal'};
+    observerTypeExamined = 'computational'; % 'ideal';
     computationalObserverClassifier = 'svmV1FilterEnsemble';  % Choose from : 'svmV1FilterEnsemble', 'svmV1FilterBank'
    
     % Pupil diameter used
     pupilDiamMm = 2.5;                                  % Crowell & Banks employed a 2.5 mm artificial pupil
-       % Mean luminance used
+    % Mean luminance used
     luminanceCdM2 = 100;                                % Crowell & Banks employed 100 cd/m2 stimuli
     
-    % Cycles/deg examined
-    cyclesPerDegreeExamined = [2.5 5 14 28 39 47]; % [5 14 28]; % [2.5 5 14 28];    % Crowell & Banks employed 1.75, 5, 14, and 28 c/deg.
-    
     % Patch sizes examined
-    patchSize2SigmaCycles = [3.3 1.7 0.8 0.4]; % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
+    patchSize2SigmaCycles = 0.8;  % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
     
-    if (strcmp(observerTypesExamined{1}, 'ideal'))
-        
-        sfPatchCombo = [...
-            2.5 3.3; ...
-            5 3.3; ...
-            14 3.3; ...
-            28 3.3; ...
-            2.5 1.7; ...
-             5 1.7;
-            14 1.7; ...
-            28 1.7; ...
-           2.5 0.8; ...
-             5 0.8; ...
-            14 0.8; ...
-            28 0.8; ...
-            2.5 0.4; ...
-             5 0.4; ...
-            14 0.4; ...
-            28 0.4; ...
-            39 3.3; ...
-            39 1.7; ...
-            39 0.8; ...
-            39 0.4; ...
-            47 3.3; ...
-            47 1.7; ...
-            47 0.8; ...
-            47 0.4; ...
-        ];
-        
+    switch (patchSize2SigmaCycles)
+        case 3.3
+            if (strcmp(observerTypeExamined, 'ideal'))
+                cyclesPerDegExamined = [2.5 5 14 28 39 47];
+            else
+                cyclesPerDegExamined = [2.5 5 14 28];
+            end
+        case 1.7
+            if (strcmp(observerTypeExamined, 'ideal'))
+                cyclesPerDegExamined = [2.5 5 14 28 39 47];
+            else
+                cyclesPerDegExamined = [2.5 5 14 28];
+            end
+        case 0.8
+            if (strcmp(observerTypeExamined, 'ideal'))
+               cyclesPerDegExamined = [2.5 5 14 28 39 47];
+            else
+               cyclesPerDegExamined = [2.5 5 14 28];
+            end
+        case 0.4
+            if (strcmp(observerTypeExamined, 'ideal'))
+                cyclesPerDegExamined = [2.5 5 14 28 39 47];
+            else
+                cyclesPerDegExamined = [2.5 5 14];  
+            end
     end
     
-    if (strcmp(observerTypesExamined{1}, 'computational'))
-        sfPatchCombo = [...
-          2.5 3.3; ...
-             5 3.3; ...
-            14 3.3; ...
-            28 3.3; ...
-           2.5 1.7; ...
-             5 1.7; ...
-            14 1.7; ...
-            28 1.7; ...
-           2.5 0.8; ...
-            5  0.8; ...
-            14 0.8; ...
-            28 0.8; ...
-           2.5 0.4; ...
-            5  0.4; ...
-            14 0.4; ...  
-        ];
-    end
     
     
     % Performance for threshold
@@ -122,75 +98,72 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     
       
     % Assemble conditions list to be examined (different patch sizes)
+    if (strcmp(observerTypeExamined, 'ideal'))
+        % the ideal observer: based on isomerizations with no eye movements
+        observerLegend = 'ideal observer';
+        emPathType = 'frozen0';
+        centeredEMPaths =  'atStimulusModulationMidPoint';
+        performanceSignal = 'isomerizations';
+        performanceClassifier = 'mlpt';
+        spatialPoolingKernelParams.type = 'V1QuadraturePair';
+        spatialPoolingKernelParams.activationFunction = 'energy';
+        % Compute photocurrent responses
+        computePhotocurrents = ~true;
+    elseif (strcmp(observerTypeExamined, 'computational'))
+        % the computational observer: based on pCurrent with fixational eye movements
+        observerLegend = computationalObserverClassifier;
+        emPathType = 'randomNoSaccades';
+        centeredEMPaths =  'atStimulusModulationMidPoint';
+        performanceSignal = 'photocurrents';
+        performanceClassifier = computationalObserverClassifier;
+        spatialPoolingKernelParams.type = 'V1QuadraturePair';
+        spatialPoolingKernelParams.activationFunction = 'energy';
+        % Compute photocurrent responses
+        computePhotocurrents = true;
+    else
+        error('Unknown observer type: ''%s''.', observerType);
+    end
+
     condIndex = 0;
-    for observerTypeIndex = 1:numel(observerTypesExamined)
-        observerType = observerTypesExamined{observerTypeIndex};
-        if (strcmp(observerType, 'ideal'))
-            % the ideal observer: based on isomerizations with no eye movements
-            observerLegend = 'ideal observer';
-            emPathType = 'frozen0';
-            centeredEMPaths =  'atStimulusModulationMidPoint';
-            performanceSignal = 'isomerizations';
-            performanceClassifier = 'mlpt';
-            spatialPoolingKernelParams.type = 'V1QuadraturePair';
-            spatialPoolingKernelParams.activationFunction = 'energy';
-            % Compute photocurrent responses
-            computePhotocurrents = ~true;
-        elseif (strcmp(observerType, 'computational'))
-            % the computational observer: based on pCurrent with fixational eye movements
-            observerLegend = computationalObserverClassifier;
-            emPathType = 'randomNoSaccades';
-            centeredEMPaths =  'atStimulusModulationMidPoint';
-            performanceSignal = 'photocurrents';
-            performanceClassifier = computationalObserverClassifier;
-            spatialPoolingKernelParams.type = 'V1QuadraturePair';
-            spatialPoolingKernelParams.activationFunction = 'energy';
-            % Compute photocurrent responses
-            computePhotocurrents = true;
-        else
-            error('Unknown observer type: ''%s''.', observerType);
+    for sfIndex = 1:numel(cyclesPerDegExamined)
+        sf = cyclesPerDegExamined(sfIndex);
+        patchSize = patchSize2SigmaCycles;
+
+        condIndex = condIndex + 1;
+        examinedCond(condIndex).label = 'computational obs.';
+        examinedCond(condIndex).emPathType = emPathType;
+        examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+        examinedCond(condIndex).performanceSignal = performanceSignal;
+        examinedCond(condIndex).performanceClassifier = performanceClassifier;
+        examinedCond(condIndex).spatialPoolingKernelParams.type = spatialPoolingKernelParams.type;
+        % Compute photocurrent responses
+        examinedCond(condIndex).computePhotocurrents = computePhotocurrents;
+
+        examinedCond(condIndex).patchSize2SigmaCycles = patchSize;
+        examinedCond(condIndex).cyclesPerDegreeExamined = sf;
+        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = spatialPoolingKernelParams.activationFunction;
+
+        switch (sf)
+            case 2.5
+                if (examinedCond(condIndex).patchSize2SigmaCycles < 0.8)
+                        examinedCond(condIndex).minimumMosaicFOVdegs = 0.98;
+                    elseif (examinedCond(condIndex).patchSize2SigmaCycles < 1.7)
+                        examinedCond(condIndex).minimumMosaicFOVdegs = 1.97;
+                    else
+                        examinedCond(condIndex).minimumMosaicFOVdegs = 3.94; % specify [] for mosaic that is matched to the stimulus
+                    end
+
+            case 5
+                examinedCond(condIndex).minimumMosaicFOVdegs = 1.97; % specify [] for mosaic that is matched to the stimulus
+            case 14
+                examinedCond(condIndex).minimumMosaicFOVdegs = 0.98;
+            case {28, 39, 47}
+                examinedCond(condIndex).minimumMosaicFOVdegs = 0.492;
+            otherwise
+                error('minimumMosaicFOVdegs not specified');
         end
-        
-        for sfPatchIndex = 1:size(sfPatchCombo,1)
-            sf = sfPatchCombo(sfPatchIndex,1);
-            patchSize = sfPatchCombo(sfPatchIndex,2);
-            
-            condIndex = condIndex + 1;
-            examinedCond(condIndex).label = sprintf('%s, %2.1f cycles', observerLegend, patchSize);
-            examinedCond(condIndex).emPathType = emPathType;
-            examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-            examinedCond(condIndex).performanceSignal = performanceSignal;
-            examinedCond(condIndex).performanceClassifier = performanceClassifier;
-            examinedCond(condIndex).spatialPoolingKernelParams.type = spatialPoolingKernelParams.type;
-            % Compute photocurrent responses
-            examinedCond(condIndex).computePhotocurrents = computePhotocurrents;
-            
-            examinedCond(condIndex).patchSize2SigmaCycles = patchSize;
-            examinedCond(condIndex).cyclesPerDegreeExamined = sf;
-            examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = spatialPoolingKernelParams.activationFunction;
-            
-            switch (sf)
-                case 2.5
-                    if (examinedCond(condIndex).patchSize2SigmaCycles < 0.8)
-                            examinedCond(condIndex).minimumMosaicFOVdegs = 0.98;
-                        elseif (examinedCond(condIndex).patchSize2SigmaCycles < 1.7)
-                            examinedCond(condIndex).minimumMosaicFOVdegs = 1.97;
-                        else
-                            examinedCond(condIndex).minimumMosaicFOVdegs = 3.94; % specify [] for mosaic that is matched to the stimulus
-                        end
-                        
-                case 5
-                    examinedCond(condIndex).minimumMosaicFOVdegs = 1.97; % specify [] for mosaic that is matched to the stimulus
-                case 14
-                    examinedCond(condIndex).minimumMosaicFOVdegs = 0.98;
-                case {28, 39, 47}
-                    examinedCond(condIndex).minimumMosaicFOVdegs = 0.492;
-                otherwise
-                    error('minimumMosaicFOVdegs not specified');
-            end
-        end % sfPatchIndex
+    end % sfPatchIndex
   
-    end % observerTypeIndex
     
     % Go
     examinedLegends = {};
@@ -208,7 +181,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         cond = examinedCond(condIndex);
         
         % Legend
-        examinedLegends{numel(examinedLegends)+1} = cond.label;
+        examinedLegends{1} = cond.label;
         
         % Eye movement type
         params.emPathType = cond.emPathType;
@@ -254,7 +227,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
         end
         
  
-            params.parforWorkersNumForClassification = 2;
+        params.parforWorkersNumForClassification = 2;
             
         % Update params
         params = getRemainingDefaultParams(params, ...
@@ -263,47 +236,32 @@ function run_paper2_CrowellBanksUnpublishedExperiment
 
             
         % Go !
-        [~,~, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
+        [~,~, tmpFigData] = run_BanksPhotocurrentEyeMovementConditions(params);
+        theFigData{1}.banksEtAlReplicate.cyclesPerDegree(condIndex) = tmpFigData.banksEtAlReplicate.cyclesPerDegree;
+        theFigData{1}.banksEtAlReplicate.mlptThresholds(condIndex) = tmpFigData.banksEtAlReplicate.mlptThresholds;
     end % condIndex
     
-    if (visualizePerformance)
-        condIndex = 0;
-        lumIndex = 1;
-        theLegends = cell(numel(patchSize2SigmaCycles), numel(observerTypesExamined), numel(cyclesPerDegreeExamined));
+    if (makeSummaryFigure)
+        variedParamName = sprintf('CrowellBanksSpatialSummation_%1.1fcycles_', patchSize2SigmaCycles);
         
-        data.patchSize2SigmaCycles = patchSize2SigmaCycles;
-        data.observerTypesExamined = observerTypesExamined;
-        data.cyclesPerDegreeExamined = cyclesPerDegreeExamined;
-        data.cpd = nan(numel(patchSize2SigmaCycles), numel(observerTypesExamined), numel(cyclesPerDegreeExamined));
-        data.contrastSensitivity = data.cpd;
-        
-        
-        for observerTypeIndex = 1:numel(observerTypesExamined)
-            for sfPatchIndex = 1:size(sfPatchCombo,1)
-                sf = sfPatchCombo(sfPatchIndex,1);
-                patchSize = sfPatchCombo(sfPatchIndex,2);
-                condIndex = condIndex + 1;
-                sfIndex = find(cyclesPerDegreeExamined==sf);
-                patchSizeIndex = find(patchSize2SigmaCycles ==patchSize);
-                %[sfIndex patchSizeIndex]
-                if (~isempty(patchSizeIndex)) && (~isempty(sfIndex)) 
-                    theLegend{patchSizeIndex, observerTypeIndex, sfIndex} = examinedLegends{condIndex};
-                end
-                figData = theFigData{condIndex};
-                referenceContrast = figData.banksEtAlReplicate.mlptThresholds(1).testConeContrasts(1);
-                thresholdContrasts = [figData.banksEtAlReplicate.mlptThresholds(lumIndex,:).thresholdContrasts];
-                data.cpd(patchSizeIndex, observerTypeIndex, sfIndex) = figData.banksEtAlReplicate.cyclesPerDegree(lumIndex,:);
-                data.contrastSensitivity(patchSizeIndex, observerTypeIndex, sfIndex) = 1./(thresholdContrasts*referenceContrast);
-            end % observerType
-        end
-        
-        data.theLegends = theLegends;
-        data.performanceClassifier = params.performanceClassifier;
-        dataFilename = sprintf('data_%s.mat', strrep(data.performanceClassifier, ' ', '_'));
-        save(dataFilename, 'data');
-        
-        % Generate the figure
-        generateCrowellBanksFigure(data);
+        theRatioLims = [0.07 1.15];
+        theRatioTicks = [0.05 0.1 0.2 0.5 1.0];
+        formatLabel = 'ComparedToBanksSubjects';
+  
+        generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
+            'figureType', 'CSF', ...
+            'showSubjectData', ~true, ...
+            'showCrowellBanksSubjectDataInsteadOfBanks87SubjectData', true, ...
+            'CrowellBanksSubjectDataPatchSizeCycles', patchSize2SigmaCycles, ...
+            'showSubjectMeanData', ~true, ...
+            'plotFirstConditionInGray', ~true, ...
+            'plotRatiosOfOtherConditionsToFirst', ~true, ...
+            'theRatioLims', theRatioLims, ...
+            'theRatioTicks', theRatioTicks, ... 
+            'theLegendPosition', [0.40,0.88,0.58,0.08], ...    % custom legend position and size
+            'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
+            'figureHasFinalSize', true ...                      % publication-ready size
+            );
     end
     
 end
@@ -332,34 +290,5 @@ function params = getRemainingDefaultParams(params, computePhotocurrents, comput
     params.findPerformance = findPerformance;
     params.visualizePerformance = visualizePerformance;
     params.deleteResponseInstances = ~true;
-end
-
-function plotHumanData()
-
-load('CrowellBanksSubjects.mat');
-figure(555)
-subplot(1,2,1);
-plot(CrowellBanksEx3MSB_33cycles.x, CrowellBanksEx3MSB_33cycles.y, 'bs-', 'LineWidth', 1.5);
-hold on;
-plot(CrowellBanksEx3MSB_17cycles.x, CrowellBanksEx3MSB_17cycles.y, 'bo-','LineWidth', 1.5);
-plot(CrowellBanksEx3MSB_08cycles.x, CrowellBanksEx3MSB_08cycles.y, 'bd-','LineWidth', 1.5);
-plot(CrowellBanksEx3MSB_04cycles.x, CrowellBanksEx3MSB_04cycles.y, 'b^-','LineWidth', 1.5);
-set(gca, 'XScale', 'log', 'YScale', 'log');
-set(gca, 'XLim', [1 100], 'YLim', [0.9 1000]);
-legend({'3.3', '1.7', '0.8', '0.4'});
-grid on
-title('MSB');
-
-subplot(1,2,2);
-plot(CrowellBanksEx3JAC_33cycles.x, CrowellBanksEx3JAC_33cycles.y, 'bs-', 'LineWidth', 1.5);
-hold on;
-plot(CrowellBanksEx3JAC_17cycles.x, CrowellBanksEx3JAC_17cycles.y, 'bo-', 'LineWidth', 1.5);
-plot(CrowellBanksEx3JAC_08cycles.x, CrowellBanksEx3JAC_08cycles.y, 'bd-', 'LineWidth', 1.5);
-plot(CrowellBanksEx3JAC_04cycles.x, CrowellBanksEx3JAC_04cycles.y, 'b^-', 'LineWidth', 1.5);
-set(gca, 'XScale', 'log', 'YScale', 'log');
-set(gca, 'XLim', [1 100], 'YLim', [0.9 1000]);
-legend({'3.3', '1.7', '0.8', '0.4'});
-title('JAC');
-grid on
 end
 

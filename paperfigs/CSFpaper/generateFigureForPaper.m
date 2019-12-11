@@ -6,6 +6,8 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     p.addParameter('showBanksPaperIOAcurves', false, @islogical);
     p.addParameter('showOnly23CDM2IOAcurve', false, @islogical);
     p.addParameter('showSubjectData', false, @islogical);
+    p.addParameter('showCrowellBanksSubjectDataInsteadOfBanks87SubjectData', false, @islogical);
+    p.addParameter('CrowellBanksSubjectDataPatchSizeCycles', []);
     p.addParameter('showSubjectMeanData', false, @islogical);
     p.addParameter('showLegend', true, @islogical);
     p.addParameter('plotFirstConditionInGray', true, @islogical);
@@ -30,6 +32,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     showBanksPaperIOAcurves = p.Results.showBanksPaperIOAcurves;
     showOnly23CDM2IOAcurve = p.Results.showOnly23CDM2IOAcurve;
     showLegend = p.Results.showLegend;
+    showCrowellBanksSubjectDataInsteadOfBanks87SubjectData = p.Results.showCrowellBanksSubjectDataInsteadOfBanks87SubjectData;
     showSubjectData = p.Results.showSubjectData;
     showSubjectMeanData = p.Results.showSubjectMeanData;
     plotFirstConditionInGray = p.Results.plotFirstConditionInGray;
@@ -67,7 +70,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     
     if (plotFirstConditionInGray)
         colors(1,:) = [0.5 0.5 0.5];
-        if (numel(theFigData)>1) || (showSubjectData)
+        if (numel(theFigData)>1) || (showSubjectData) || (showCrowellBanksSubjectDataInsteadOfBanks87SubjectData)
             colors(2:numel(theFigData),:) = brewermap(numel(theFigData)-1, 'Set1');
             if (showSubjectData)
                 colorsNum = numel(theFigData)+2;
@@ -221,6 +224,54 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
             %variedParamLegends{numel(variedParamLegends)+1} = 'Mean of subjects PJB,MSB';
         end
     end % showSubjectData
+    
+    if (showCrowellBanksSubjectDataInsteadOfBanks87SubjectData)
+        load('CrowellBanksSubjects.mat');
+        switch(p.Results.CrowellBanksSubjectDataPatchSizeCycles)
+            case 3.3
+                msbSubjectSFs = CrowellBanksEx3MSB_33cycles.x;
+                msbSubjectCSFs = CrowellBanksEx3MSB_33cycles.y;
+                jacSubjectSFs = CrowellBanksEx3JAC_33cycles.x;
+                jacSubjectCSFs = CrowellBanksEx3JAC_33cycles.y;
+            case 1.7
+                msbSubjectSFs = CrowellBanksEx3MSB_17cycles.x;
+                msbSubjectCSFs = CrowellBanksEx3MSB_17cycles.y;
+                jacSubjectSFs = CrowellBanksEx3JAC_17cycles.x;
+                jacSubjectCSFs = CrowellBanksEx3JAC_17cycles.y;
+            case 0.8
+                msbSubjectSFs = CrowellBanksEx3MSB_08cycles.x;
+                msbSubjectCSFs = CrowellBanksEx3MSB_08cycles.y;
+                jacSubjectSFs = CrowellBanksEx3JAC_08cycles.x;
+                jacSubjectCSFs = CrowellBanksEx3JAC_08cycles.y;
+            case 0.4
+                msbSubjectSFs = CrowellBanksEx3MSB_04cycles.x;
+                msbSubjectCSFs = CrowellBanksEx3MSB_04cycles.y;
+                jacSubjectSFs = CrowellBanksEx3JAC_04cycles.x;
+                jacSubjectCSFs = CrowellBanksEx3JAC_04cycles.y;
+        end
+            
+        % Add in the subject data
+        subjectColor = [0.5 0.5 0.5];
+        plot(theAxes, msbSubjectSFs, msbSubjectCSFs, '^--', ...
+            'Color', subjectColor, ...
+            'MarkerEdgeColor', subjectColor-0.3, ...
+            'MarkerFaceColor', subjectColor, ...
+            'MarkerSize',markerSize,'LineWidth',lineWidth);
+        
+        subjectColor = [0.8 0.8 0.8];
+        plot(theAxes, jacSubjectSFs, jacSubjectCSFs, '^--', ...
+            'Color', subjectColor, ...
+            'MarkerEdgeColor', subjectColor-0.3, ...
+            'MarkerFaceColor', subjectColor, ...
+            'MarkerSize',markerSize,'LineWidth',lineWidth);
+        
+
+        % Legends
+        variedParamLegends{numel(variedParamLegends)+1} = 'Subject MSB';
+        variedParamLegends{numel(variedParamLegends)+1} = 'Subject JAC';
+        
+        
+    end
     
     % Add legend
     if (showLegend)
