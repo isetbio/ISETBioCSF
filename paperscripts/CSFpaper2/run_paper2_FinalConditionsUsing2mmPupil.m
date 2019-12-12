@@ -34,10 +34,10 @@ function run_paper2_FinalConditionsUsing2mmPupil
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = ~true;
+    computeResponses = true;
     visualizeResponses = ~true;
     findPerformance = ~true;
-    visualizePerformance = true;
+    visualizePerformance = ~true;
     
     % Pupil diameter to be used
     pupilDiamMm = 2.0;
@@ -61,7 +61,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
     
     % Different stategy for  drift fixational EMs
     centeredEMPaths =  'atStimulusModulationMidPoint';
-    nTrainingSamples = 1030;
+    nTrainingSamples = 1016;
      
     showDataFromLinearPooling = ~true;
     showDataFromQuadraturePooling = ~showDataFromLinearPooling;
@@ -82,25 +82,16 @@ function run_paper2_FinalConditionsUsing2mmPupil
     examinedCond(condIndex).centeredEMPaths = true;
     
     
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Temp-L, pCurr., noEM';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
-    examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = 'frozen0';
-    examinedCond(condIndex).centeredEMPaths = true;
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'SVM-Temp-L, pCurr., noEM';
+%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+%     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
+%     examinedCond(condIndex).performanceSignal = performanceSignal;
+%     examinedCond(condIndex).emPathType = 'frozen0';
+%     examinedCond(condIndex).centeredEMPaths = true;
 
-%         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Temp-L, pCurr., drift';
-%         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-%         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-%         examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
-%         examinedCond(condIndex).performanceSignal = performanceSignal;
-%         examinedCond(condIndex).emPathType = 'randomNoSaccades';
-%         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
         
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-Temp-E, pCurr., drift';
@@ -112,91 +103,6 @@ function run_paper2_FinalConditionsUsing2mmPupil
     examinedCond(condIndex).emPathType = 'randomNoSaccades';
     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
 
-
-
-%         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Temp-E. (5 degs), R*, drift';
-%         examinedCond(condIndex).minimumMosaicFOVdegs = 0.492;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
-%         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%         examinedCond(condIndex).performanceSignal = 'isomerizations';
-%         examinedCond(condIndex).emPathType = 'randomNoSaccades';
-%         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-        
-%         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Temp-E. (5 degs), pCurr., drift';
-%         examinedCond(condIndex).minimumMosaicFOVdegs = 0.492;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
-%         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%         examinedCond(condIndex).performanceSignal = performanceSignal;
-%         examinedCond(condIndex).emPathType = 'randomNoSaccades';
-%         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-        
-%         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Temp-E. (5x5), R*, drift';
-%         examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
-%         examinedCond(condIndex).minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-%         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%         examinedCond(condIndex).performanceSignal = 'isomerizations';
-%         examinedCond(condIndex).emPathType = 'randomNoSaccades';
-%         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-%         examinedCond(condIndex).ensembleFilterParams = struct(...
-%                             'spatialPositionsNum',  2, ...   % 2 results in a 5x5 grid of spatial pooling templates
-%                             'spatialPositionOffsetDegs', 0.02, ... 
-%                             'cyclesPerRFs', 6, ...           % # of stimulus cycles contained in the template
-%                             'orientations', 0);
-
-
-%         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Temp-E. (3x3), R*, drift';
-%         examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
-%         examinedCond(condIndex).minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-%         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%         examinedCond(condIndex).performanceSignal = 'isomerizations';
-%         examinedCond(condIndex).emPathType = 'randomNoSaccades';
-%         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-%         examinedCond(condIndex).ensembleFilterParams = struct(...
-%                             'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid of spatial pooling templates
-%                             'spatialPositionOffsetDegs', 0.033, ... 
-%                             'cyclesPerRFs', 6, ...           % # of stimulus cycles contained in the template
-%                             'orientations', 0);
-
-
-%         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Temp-E. (5x5), pCurr., drift';
-%         examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
-%         examinedCond(condIndex).minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-%         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%         examinedCond(condIndex).performanceSignal = performanceSignal;
-%         examinedCond(condIndex).emPathType = 'randomNoSaccades';
-%         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-%         examinedCond(condIndex).ensembleFilterParams = struct(...
-%                             'spatialPositionsNum',  2, ...   % 2 results in a 5x5 grid of spatial pooling templates
-%                             'spatialPositionOffsetDegs', 0.02, ... 
-%                             'cyclesPerRFs', 6, ...           % # of stimulus cycles contained in the template
-%                             'orientations', 0);
-% 
-% 
-%         condIndex = condIndex+1;
-%         examinedCond(condIndex).label = 'SVM-Temp-E. (3x3), pCurr., drift';
-%         examinedCond(condIndex).performanceClassifier = 'svmV1FilterEnsemble';
-%         examinedCond(condIndex).minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-%         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-%         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-%         examinedCond(condIndex).performanceSignal = performanceSignal;
-%         examinedCond(condIndex).emPathType = 'randomNoSaccades';
-%         examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-%         examinedCond(condIndex).ensembleFilterParams = struct(...
-%                             'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid of spatial pooling templates
-%                             'spatialPositionOffsetDegs', 0.033, ... 
-%                             'cyclesPerRFs', 6, ...           % # of stimulus cycles contained in the template
-%                             'orientations', 0);
-    
     
     % Go
     examinedLegends = {};
