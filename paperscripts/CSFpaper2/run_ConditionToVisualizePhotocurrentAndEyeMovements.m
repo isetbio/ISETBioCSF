@@ -48,8 +48,10 @@ function run_ConditionToVisualizePhotocurrentAndEyeMovements
        
     % Modify default params
     % Eye movement types
-    params.emPathType = 'frozen0'; 'randomNoSaccades';     % 'random' (with saccades),  'randomNoSaccades', or 'frozen0'
+    params.emPathType = 'randomNoSaccades';     % 'random' (with saccades),  'randomNoSaccades', or 'frozen0'
     params.nTrainingSamples = 4;
+    
+    params.opticalImagePadSizeDegs = 0.7;
     
     % Eye movement centering
     % 'atStimulusModulationMidPoint' (the centroid of the emPath within the stimulation time is at (0,0)), OR 
@@ -58,8 +60,8 @@ function run_ConditionToVisualizePhotocurrentAndEyeMovements
     %params.centeredEMPaths =  'atStimulusModulationOnset';
     %params.nTrainingSamples = 8;
     
-    %params.centeredEMPaths =  'atStimulusModulationMidPoint';
-    %params.nTrainingSamples = 4;
+    params.centeredEMPaths =  'atStimulusModulationMidPoint';
+    params.nTrainingSamples = 16;
     
     
     % Only the max contrast level
@@ -68,7 +70,7 @@ function run_ConditionToVisualizePhotocurrentAndEyeMovements
     params.nContrastsPerDirection = 1;
         
     % Simulation steps to perform
-    params.computeResponses = true;
+    params.computeResponses = ~true;
     params.computeMosaic = ~true; 
     params.visualizeMosaic = ~true;
     

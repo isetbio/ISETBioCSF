@@ -7,6 +7,8 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
         return;
     end
 
+    timeAxis = 1000*noStimData.responseInstanceArray.timeAxis;
+    
     hFigsInfo = {};
     
     if (visualizeOuterSegmentFilters)
@@ -16,17 +18,70 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
     end
     
     % Visualize the mosaic and some EM paths
-    hFig = visualizeMosaicAndSomeEMpaths(theMosaic, stimData);
+    emColors = [...
+        0 1 0; ...     % green
+        1 1 0; ...     % yellow
+        1 0 1; ...     % magenta
+        1 0.5 0.3; ... % orange
+        1 1 1; ...     % white
+        0.6 0.6 0.6; ... % gray
+        1 0.6 0.6; ...   % pink
+        0 1 1; ...     % cyan
+        0.2 0.5 1; ... % blue
+        0.5 1 0.5; ...   % light green
+        ];
+    
+    
+    visualizedResponseInstances = [3 6 14 16];
+    visualizedSingleResponseInstances = visualizedResponseInstances;
+    
+    showIndividualConeResponses = false;
+    if (showIndividualConeResponses)
+        % Select 2 cones to visualize their responses
+        visualizedConePosMicrons = [...
+                0 0; ...
+                -14 0 ...
+                ];
+        for coneIdx = 1:2
+            visualizedConePosDegs = squeeze(visualizedConePosMicrons(coneIdx,:)) / theMosaic.micronsPerDegree;
+            [coneIndices, conePositions, coneTypes, coneIndicesInSerializedList] = theMosaic.indicesForConesAtPositions(visualizedConePosDegs);
+            visualizedConeIndex(coneIdx) = coneIndicesInSerializedList(1);
+            visualizedConeType(coneIdx) = coneTypes(1);
+            visualizedConePosDegs = conePositions(1,:)
+            visualizedConePosMicrons(coneIdx,:) = visualizedConePosDegs * theMosaic.micronsPerDegree;
+        end
+        visualizedConeIndex
+        visualizedConeType
+        exampleConeIsomerizationResponses = stimData.responseInstanceArray.theMosaicIsomerizations(visualizedResponseInstances, visualizedConeIndex, :);
+        exampleConePhotocurrentResponses = stimData.responseInstanceArray.theMosaicPhotocurrents(visualizedResponseInstances, visualizedConeIndex, :);
+
+        for k = 1:numel(visualizedSingleResponseInstances)
+            visualizedSingleResponseInstance = visualizedSingleResponseInstances(k);
+            hFig = visualizeExampleConeResponses(timeAxis, ...
+                                                 squeeze(exampleConeIsomerizationResponses(k,:,:)), ...
+                                                 squeeze(exampleConePhotocurrentResponses(k,:,:)) ...
+                                                 );
+            hFigsInfo{numel(hFigsInfo)+1} = struct(...
+                'filename', sprintf('instance%1.0fExampleConeResponses',visualizedSingleResponseInstance),...
+                'hFig', hFig);
+        end
+    end
+    
+    
+    hFig = visualizeMosaicAndSomeEMpaths(theMosaic, stimData, squeeze(emColors(1:numel(visualizedResponseInstances),:)), visualizedResponseInstances);
     hFigsInfo{numel(hFigsInfo)+1} = struct(...
             'filename', 'mosaicAndSomeEMpaths',...
             'hFig', hFig);
         
+    
         
-    % Visualize mosaic activations over time
-    hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData);
-    hFigsInfo{numel(hFigsInfo)+1} = struct(...
-            'filename', 'mosaicActivationsMovieFrames',...
-            'hFig', hFig);
+        
+    % Make the old paper2, figure 2 (Visualize mosaic activations over
+    % time)
+%     hFig = makeOLDPaper2Figure2(theMosaic, stimData);
+%     hFigsInfo{numel(hFigsInfo)+1} = struct(...
+%             'filename', 'mosaicActivationsMovieFrames',...
+%             'hFig', hFig);
         
         
     if (~isempty(noStimData.responseInstanceArray.theMosaicIsomerizations))
@@ -36,9 +91,8 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
         stimData.responseInstanceArray.theMosaicIsomerizations = stimData.responseInstanceArray.theMosaicIsomerizations / theMosaic.integrationTime;
         noStimData.responseInstanceArray.theMosaicIsomerizations = noStimData.responseInstanceArray.theMosaicIsomerizations / theMosaic.integrationTime;
     end
-
-    timeAxis = 1000*noStimData.responseInstanceArray.timeAxis;
-    
+     
+        
     if (numel(timeAxis) == 1)
         stimData.noiseFreeIsomerizations = stimData.noiseFreeIsomerizations(:);
         noStimData.noiseFreeIsomerizations = noStimData.noiseFreeIsomerizations(:);
@@ -70,10 +124,10 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
         signalsToVisualizeInstances = {'Isomerization'};
     end
     
-    % Instance to visualize
-    visualizedResponseInstance = 1;
+    
         
     for signalIndex = 1:numel(signalsToVisualizeInstances)
+        
         signalName = signalsToVisualizeInstances{signalIndex};
         
         if (strcmp(signalName, 'Isomerization'))
@@ -90,46 +144,56 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
         
         makeVideos = false;
         
-        hFigs = visualizeNoiseFreeAndFirstInstanceWithActivationProfile(...
-                 stimData, noStimData, theMosaic, signalName, ...
-                 visualizedSignalRange, visualizedResponseInstance, ...
-                 makeVideos);   
-
-        hFigsInfo{numel(hFigsInfo)+1} = struct(...
-                'filename', sprintf('noiseFreeXY%sResponseSTIM', signalName),...
-                'hFig', hFigs{1});  
-        hFigsInfo{numel(hFigsInfo)+1} = struct(...
-                'filename', sprintf('firstInstanceXY%sResponseSTIM',signalName),...
-                'hFig', hFigs{2}); 
-        hFigsInfo{numel(hFigsInfo)+1} = struct(...
-                'filename', sprintf('noiseFree%sActivationProfileSTIM',signalName),...
-                'hFig', hFigs{3});  
-        hFigsInfo{numel(hFigsInfo)+1} = struct(...
-                'filename', sprintf('firstInstance%sActivationProfileSTIM',signalName),...
-                'hFig', hFigs{4});
-
-        hFigsInfo{numel(hFigsInfo)+1} = struct(...
-                'filename', sprintf('firstInstanceXTActivation%sProfileSTIM',signalName),...
-                'hFig', hFigs{5});
-
-
-        hFigsInfo{numel(hFigsInfo)+1} = struct(...
-                'filename', sprintf('noiseFreeXY%sResponseNULL',signalName),...
-                'hFig', hFigs{6});  
-        hFigsInfo{numel(hFigsInfo)+1} = struct(...
-                'filename', sprintf('firstInstanceXY%sResponseNULL',signalName),...
-                'hFig', hFigs{7}); 
-        hFigsInfo{numel(hFigsInfo)+1} = struct(...
-                'filename', sprintf('noiseFree%sActivationProfileNULL',signalName),...
-                'hFig', hFigs{8});  
-        hFigsInfo{numel(hFigsInfo)+1} = struct(...
-                'filename', sprintf('firstInstance%sActivationProfileNULL',signalName),...
-                'hFig', hFigs{9});
-
-        hFigsInfo{numel(hFigsInfo)+1} = struct(...
-                'filename', sprintf('firstInstanceXT%sActivationProfileNULL',signalName),...
-                'hFig', hFigs{10});
+        
+        for k = 1:numel(visualizedSingleResponseInstances)
             
+            visualizedSingleResponseInstance = visualizedSingleResponseInstances(k);
+            
+            hFigs = visualizeNoiseFreeAndFirstInstanceWithActivationProfile(...
+                     stimData, noStimData, theMosaic, signalName, ...
+                     visualizedSignalRange, visualizedSingleResponseInstance, ...
+                     squeeze(emColors(k,:)), ...
+                     k, ...
+                     makeVideos);   
+
+            hFigsInfo{numel(hFigsInfo)+1} = struct(...
+                    'filename', sprintf('instance%1.0fnoiseFreeXY%sResponseSTIM', visualizedSingleResponseInstance , signalName),...
+                    'hFig', hFigs{1});  
+            hFigsInfo{numel(hFigsInfo)+1} = struct(...
+                    'filename', sprintf('instance%1.0fXY%sResponseSTIM', visualizedSingleResponseInstance,signalName),...
+                    'hFig', hFigs{2}); 
+            hFigsInfo{numel(hFigsInfo)+1} = struct(...
+                    'filename', sprintf('instance%1.0fnoiseFree%sActivationProfileSTIM', visualizedSingleResponseInstance ,signalName),...
+                    'hFig', hFigs{3});  
+            hFigsInfo{numel(hFigsInfo)+1} = struct(...
+                    'filename', sprintf('instance%1.0f%sActivationProfileSTIM', visualizedSingleResponseInstance ,signalName),...
+                    'hFig', hFigs{4});
+
+            hFigsInfo{numel(hFigsInfo)+1} = struct(...
+                    'filename', sprintf('instance%1.0fXTActivation%sProfileSTIM', visualizedSingleResponseInstance ,signalName),...
+                    'hFig', hFigs{5});
+
+
+            hFigsInfo{numel(hFigsInfo)+1} = struct(...
+                    'filename', sprintf('instance%1.0fnoiseFreeXY%sResponseNULL', visualizedSingleResponseInstance ,signalName),...
+                    'hFig', hFigs{6});  
+            hFigsInfo{numel(hFigsInfo)+1} = struct(...
+                    'filename', sprintf('instance%1.0fXY%sResponseNULL',visualizedSingleResponseInstance, signalName),...
+                    'hFig', hFigs{7}); 
+            hFigsInfo{numel(hFigsInfo)+1} = struct(...
+                    'filename', sprintf('instance%1.0fnoiseFree%sActivationProfileNULL', visualizedSingleResponseInstance,signalName),...
+                    'hFig', hFigs{8});  
+            hFigsInfo{numel(hFigsInfo)+1} = struct(...
+                    'filename', sprintf('instance%1.0fe%sActivationProfileNULL', visualizedSingleResponseInstance ,signalName),...
+                    'hFig', hFigs{9});
+
+            hFigsInfo{numel(hFigsInfo)+1} = struct(...
+                    'filename', sprintf('instance%1.0fXT%sActivationProfileNULL',visualizedSingleResponseInstance, signalName),...
+                    'hFig', hFigs{10});
+                
+            
+        end
+        
     end % signalIndex
 
     
@@ -196,149 +260,48 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
 end
 
 
-function hFig = visualizeMosaicActivationsOverTime(theMosaic, stimData)
-
-    spaceLimsDegs = 7/60*[-1 1];
-    spaceLimsMeters = spaceLimsDegs * theMosaic.micronsPerDegree * 1e-6;
+function hFig = visualizeExampleConeResponses(timeAxis, exampleConeIsomerizationResponses, exampleConePhotocurrentResponses)
+    isomerizationResponseRange = [min(exampleConeIsomerizationResponses(:)) max(exampleConeIsomerizationResponses(:))];
+    photocurrentResponseRange = [min(exampleConePhotocurrentResponses(:)) max(exampleConePhotocurrentResponses(:))];
+    hFig = figure(250); clf;
+    set(hFig, 'Position', [10 10 1300 400], 'Color', [1 1 1]);
     
-    timeLims = [0 200];
-    isomerizationsLimits = [0 30];
-    photocurrentLimits = [-85 -70];
-    
-    timeTicks = 0:50:300;
-    isomerizationTicks = 0:5:300;
-    photocurrentTicks = -90:5:-60;
-    
-    fontSize = 16;
-    mosaicZoomedInTicksArcMin = -21:3:21;
-    mosaicZoomedInTicksMeters = mosaicZoomedInTicksArcMin/60*theMosaic.micronsPerDegree*1e-6;
-    mosaicZoomedInTicksLabels = sprintf('%2.0f\n', mosaicZoomedInTicksArcMin);
-    
-    targetPosDegs = [0 0];
-    [targetConeIndexInFullArray, conePositions, coneTypes, targetConeIndex] = indicesForConesAtPositions(theMosaic, targetPosDegs);
-    
-    
-    timeAxis = 1000*stimData.responseInstanceArray.timeAxis;
-    isomerizationInstances = stimData.responseInstanceArray.theMosaicIsomerizations;
-    meanIsomerizations = stimData.noiseFreeIsomerizations;
-    photocurrentInstances = stimData.responseInstanceArray.theMosaicPhotocurrents;
-    meanPhotocurrents = stimData.noiseFreePhotocurrents;
-    
-    
-    visualizedResponseInstance = 2; % 13; 24
-    meanIsomerizations = squeeze(meanIsomerizations(targetConeIndex,:));
-    
-    meanPhotocurrent = squeeze(meanPhotocurrents(targetConeIndex,:));
-    isomerizationInstanceMean = squeeze(mean(isomerizationInstances(:, targetConeIndex,:),1));
-    isomerizationInstance = squeeze(isomerizationInstances(visualizedResponseInstance, targetConeIndex,:));
-    
-    
-    if (~isempty(photocurrentInstances))
-        photocurrentInstanceMean = squeeze(mean(photocurrentInstances(:, targetConeIndex,:),1));
-        photocurrentInstance = squeeze(photocurrentInstances(visualizedResponseInstance, targetConeIndex,:));
-    else
-        photocurrentInstanceMean = [];
-        photocurrentInstance = [];
-    end
-    
-    theEMpathMicrons = squeeze(stimData.responseInstanceArray.theMosaicEyeMovementsMicrons(visualizedResponseInstance,:,:));
-    theEMpathMeters = theEMpathMicrons / 1e6;
-    theEMpathDegs = theEMpathMicrons/theMosaic.micronsPerDegree;
-    
-    
-    retinalImage = stimData.thePeakOI.RGBimage;
-    
-    
-    visualizationTimes = [40 45];
-    hFig = figure(345); clf;
-    set(hFig, 'Position', [10 10 1700 1000], 'Color', [1 1 1]);
-    
-    width = 0.1088;
-    height = 0.185;
-    dX = width*0.4;
-    dY = height*0.6;
-    
-    % Plot the optical image and the optical image sequence in the middle
-    for k = 1:(1+numel(visualizationTimes))
-        if (k == 1)
-            % Full size optical image
-            ax = axes('Position',[0.04875 0.546 width height]);
-            renderOpticalImage(ax, stimData.thePeakOI.xAxisDegs, stimData.thePeakOI.yAxisDegs, retinalImage, fontSize);
+    subplotPosVectors = NicePlot.getSubPlotPosVectors(...
+           'rowsNum', 1, ...
+           'colsNum', 2, ...
+           'heightMargin',   0.08, ...
+           'widthMargin',    0.06, ...
+           'leftMargin',     0.08, ...
+           'rightMargin',    0.001, ...
+           'bottomMargin',   0.06, ...
+           'topMargin',      0.03);
+       
+    for coneIndex = 1:size(exampleConeIsomerizationResponses,1)
+        
+        if (coneIndex == 1)
+            coneResponseColor = [1 0 0];
+            pCurrentResponseColor = [0.5 0 0];
         else
-            % Small portion of optical images
-            ax = axes('Position',[0.235+(k-2)*dX 0.6-(k-2)*dY width height]);
-            if (k == 1+numel(visualizationTimes))
-                showXLabel = true;
-            else
-                showXLabel = false;
-            end
-            renderOpticalImageEyePathComboPlot(ax, timeAxis, visualizationTimes(k-1), theEMpathDegs, 'k',...
-                stimData.thePeakOI.xAxisDegs, stimData.thePeakOI.yAxisDegs, retinalImage, spaceLimsDegs, mosaicZoomedInTicksArcMin, showXLabel, fontSize);
+            coneResponseColor = [0 0 1];
+            pCurrentResponseColor = [0 0 0.5];
         end
+        set(hFig, 'defaultAxesColorOrder', [coneResponseColor; pCurrentResponseColor]);
+        
+        subplot('Position', subplotPosVectors(1,coneIndex).v);
+        yyaxis left
+        plot(timeAxis, exampleConeIsomerizationResponses(coneIndex,:), '-', 'LineWidth', 2.0); 
+        ylim(isomerizationResponseRange);
+        ylabel('\it R*/c/5msec');
+        yyaxis right
+        plot(timeAxis, exampleConePhotocurrentResponses(coneIndex,:), '-',  'LineWidth', 2.0); 
+        ylim(photocurrentResponseRange);
+        set(gca, 'FontSize', 36);
+        xlabel('\it time (msec)');
+        ylabel('\it pAmps');
+        box on;
+        grid on;
     end
     
-    
-    % Plot the sequence of cone mosaic activations (small portion) at the very top
-    signalRange = [min(isomerizationInstances(:)) max(isomerizationInstances(:))];
-    for k = 1:numel(visualizationTimes)
-        ax = axes('Position',[0.425+(k-1)*dX 0.6-(k-1)*dY width height]);
-        if (k == numel(visualizationTimes))
-             showXLabel = true;
-        else
-             showXLabel = false;
-        end
-        showActivationMap(ax, theMosaic, timeAxis, visualizationTimes(k),  ...
-            squeeze(isomerizationInstances(visualizedResponseInstance, :,:)), spaceLimsDegs, spaceLimsMeters,signalRange, mosaicZoomedInTicksArcMin, showXLabel, fontSize);
-    end   
-    colormap(gray(256));
-    
-    
-   
-    
-    % Plot the isomerization mean and instance time traces in the middle
-    axes('Position',[0.61 0.546 width height]);
-    dt = timeAxis(2)-timeAxis(1);
-    renderMeanResponseAndInstance('steps', timeAxis, meanIsomerizations, isomerizationInstance, isomerizationsLimits, timeLims, isomerizationTicks, timeTicks, sprintf('\\it R*/%1.0fmsec', dt), fontSize);
-    
-    % Plot the x-axis emPath time course
-    %axes('Position',[0.61 0.7 width height/3]);
-    %renderEMpath(timeAxis, theEMpathDegs, timeLims, timeTicks, fontSize);
-    
-    % Plot the photocurrent mean and instance time traces in the middle
-    axes('Position',[0.78 0.546 width height]);
-    if (~isempty(photocurrentInstance))
-        renderMeanResponseAndInstance('lines', timeAxis, meanPhotocurrent, photocurrentInstance, photocurrentLimits, timeLims, photocurrentTicks, timeTicks, 'pAmps', fontSize);
-    end
-
-    % Plot the mosaic with one emPath at the bottom
-    ax = axes('Position',[0.15 0.10 width height]);
-    renderMosaicAndSingleEMPath(theMosaic, timeAxis, theEMpathMeters, spaceLimsMeters, mosaicZoomedInTicksMeters, mosaicZoomedInTicksLabels, fontSize);
-    
-    
-    % Plot the cone mosaic (small portion) at the bottom
-    ax = axes('Position',[0.397 0.10 width height]);
-    theMosaic.visualizeGrid('axesHandle', ax, ...
-        'apertureShape', 'disks', ...
-        'visualizedConeAperture', 'lightCollectingArea', ...
-        'labelConeTypes', true,...
-        'ticksInVisualDegs', true, ...
-        'noXaxisLabel',  true, ...
-        'noYaxisLabel', true, ...
-        'backgroundColor', [0 0 0] ...
-    );
-    set(ax, 'XTick', mosaicZoomedInTicksMeters, 'XTickLabel',  mosaicZoomedInTicksLabels, 'YTickLabel',  {}, 'XLim', spaceLimsMeters, 'YLim', spaceLimsMeters, 'FontSize', fontSize);
-    xlabel('space (arc min)');
-    
-    
-    if (~isempty(photocurrentInstance))
-        % Plot the photocurrent impulse responses at the bottom
-        axes('Position',[0.60 0.10 width height]);
-        renderPhotocurrentImpulseResponses(timeAxis,  timeLims, stimData, timeTicks, -0.05:0.05:0.2, fontSize);
-
-        % Plot the photocurrent noise at the bottom
-        axes('Position',[0.75 0.10 width height]);
-        renderPhotocurrentNoise(timeAxis, timeLims, photocurrentInstance(:)-meanPhotocurrent(:), fontSize);
-    end
 end
 
 function renderMosaicAndSingleEMPath(theMosaic, timeAxis, theEMpathMeters, spaceLimsMeters, mosaicZoomedInTicksMeters, mosaicZoomedInTicksLabels, fontSize)
@@ -592,9 +555,8 @@ function idx0 = renderOpticalImageEyePathComboPlot(ax, timeAxis, visualizationTi
     %set(ax, 'YAxisLocation','right');
 end
 
-function hFig = visualizeMosaicAndSomeEMpaths(theMosaic, stimData)
+function hFig = visualizeMosaicAndSomeEMpaths(theMosaic, stimData, emColors, visualizedResponseInstances)
 
-    visualizedResponseInstances = 1:4;
     theEMpathMicrons = squeeze(stimData.responseInstanceArray.theMosaicEyeMovementsMicrons(visualizedResponseInstances,:,:));
     theEMpathMeters = theEMpathMicrons / 1e6;
     
@@ -609,7 +571,7 @@ function hFig = visualizeMosaicAndSomeEMpaths(theMosaic, stimData)
         'backgroundColor', [0 0 0] ...
     );
     hold(ax, 'on');
-    emColors = [0 1 0; 0 1 1; 1 1 0; 1 0.5 0.3];
+    
     for emIndex = 1:numel(visualizedResponseInstances)
         emPathX = squeeze(theEMpathMeters(emIndex,:,1));
         emPathY = squeeze(theEMpathMeters(emIndex,:,2));
@@ -919,7 +881,7 @@ end
 
 function hFigs = visualizeNoiseFreeAndFirstInstanceWithActivationProfile(...
              stimData, noStimData, theMosaic, signalName, ...
-             visualizedSignalRange, visualizedResponseInstance, makeVideos)
+             visualizedSignalRange, visualizedResponseInstance, visualizedEMColor, instanceNo, makeVideos)
     
     if (strcmp(signalName, 'Isomerization'))
         % Transform rates to counts
@@ -939,7 +901,7 @@ function hFigs = visualizeNoiseFreeAndFirstInstanceWithActivationProfile(...
         signalRange = determineVisualizedIsomerizationsRange(theMosaic, stimData, timeBinOfPeakResponse);
         
         signalLabel = 'cone excitation';
-        signalNameFigNo = 0;
+        signalNameFigNo = 0+instanceNo*100000;
     elseif (strcmp(signalName, 'Photocurrent'))
 
         % Determine visualized time bin of max response
@@ -954,7 +916,7 @@ function hFigs = visualizeNoiseFreeAndFirstInstanceWithActivationProfile(...
         signalRange = determineVisualizedPhotocurrentsRange(theMosaic, stimData, timeBinOfPeakResponse);
         signalLabel = 'p-current (pA)';
     
-        signalNameFigNo = 10000;
+        signalNameFigNo = 10000 + instanceNo*100000;
     end
     
     
@@ -963,7 +925,7 @@ function hFigs = visualizeNoiseFreeAndFirstInstanceWithActivationProfile(...
     % The responses to the STIM 
     hFigs = {};
     coneLinePlotType = 'stim';
-    hFigsTmp = renderFigure(1222+signalNameFigNo, theMosaic, visualizedResponseInstance, ...
+    hFigsTmp = renderFigure(1222+signalNameFigNo, theMosaic, visualizedResponseInstance, visualizedEMColor, ...
         stimData, noStimData, timeBinOfPeakResponse, ...
         signalRange, signalName, timeAxis, ...
         coneLinePlotType, signalLabel, makeVideos);   
@@ -973,7 +935,7 @@ function hFigs = visualizeNoiseFreeAndFirstInstanceWithActivationProfile(...
     
     % The actual responses to the NULL
     coneLinePlotType = 'null';
-    hFigsTmp = renderFigure(1333+signalNameFigNo, theMosaic, visualizedResponseInstance, ...
+    hFigsTmp = renderFigure(1333+signalNameFigNo, theMosaic, visualizedResponseInstance, visualizedEMColor, ...
         noStimData, noStimData, timeBinOfPeakResponse, ...
         signalRange, signalName, timeAxis, ...
         coneLinePlotType, signalLabel, makeVideos);    
@@ -983,7 +945,7 @@ function hFigs = visualizeNoiseFreeAndFirstInstanceWithActivationProfile(...
     
 end
 
-function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
+function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, visualizedEMColor, ...
     stimData, noStimData, timeBinOfPeakResponse, ...
     signalRange, signalName, timeAxis, ...
     coneLinePlotType, yLabelTitle, makeVideos)
@@ -1032,6 +994,7 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
         [timelinePlot, timelineArrowPlot] = generateXTConeLinePlot(ax, theMosaic, ...
             stimDataEMpathMicrons, ...
             noStimDataEMpathMicrons, ...
+            visualizedEMColor, ...
             stimDataSignalInstanceFull, ...
             noStimDataNoiseFreeSignalFull, ...
             signalRange, timeAxis, ...
@@ -1151,6 +1114,7 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
     generateXTConeLinePlot(ax, theMosaic, ...
         stimDataEMpathMicrons, ...
         noStimDataEMpathMicrons, ...
+        visualizedEMColor, ...
         stimDataSignalInstanceFull, ...
         noStimDataNoiseFreeSignalFull, ...
         signalRange, timeAxis, 'differential_activations', signalName, ...
@@ -1160,7 +1124,7 @@ function hFig = renderFigure(figNo, theMosaic, visualizedResponseInstance, ...
 end
 
 function [timelinePlot, timelineArrowPlot] = generateXTConeLinePlot(ax, theMosaic, EMpath, ...
-        nullStimEMpath, activation, nullStimActivation, signalRange, timeAxis, coneLinePlotType, signalName, xLabelTitle, yLabelTitle, showXTicks, colorbarTitle)
+        nullStimEMpath, emPathColor, activation, nullStimActivation, signalRange, timeAxis, coneLinePlotType, signalName, xLabelTitle, yLabelTitle, showXTicks, colorbarTitle)
 
     sampledHexMosaicXaxis = squeeze(theMosaic.patternSupport(1, :, 1)) + ...
         theMosaic.center(1);
@@ -1231,8 +1195,8 @@ function [timelinePlot, timelineArrowPlot] = generateXTConeLinePlot(ax, theMosai
     imagesc(ax, coneXcoordsDegs, timeAxis, signalXT);
     axis(ax, 'xy');
     hold(ax, 'on');
-    plot(emTRajectoryXposDegs, timeAxis, '-', 'LineWidth', 5, 'Color', [0 0.7 0]);
-    plot(emTRajectoryXposDegs, timeAxis, '-', 'LineWidth', 3, 'Color', [0 1 0]);
+    plot(emTRajectoryXposDegs, timeAxis, '-', 'LineWidth', 5, 'Color', emPathColor*0.5);
+    plot(emTRajectoryXposDegs, timeAxis, '-', 'LineWidth', 3, 'Color', emPathColor);
     
     %timelinePlot = plot(ax, [min(coneXcoordsDegs) max(coneXcoordsDegs)], [nan nan], 'g-', 'LineWidth', 2);
     %timelineArrowPlot = plot(ax, min(coneXcoordsDegs), nan, 'gs', 'MarkerSize', 12, 'LineWidth', 1.5, 'MarkerFaceColor', [0.6 1.0 0.6]);
@@ -1415,4 +1379,150 @@ function photocurrentsRange = determineVisualizedPhotocurrentsRange(theMosaic, s
 
     photocurrentsRange = noiseFreeRange +[-3 3];
     
+end
+
+
+function hFig = makeOLDPaper2Figure2(theMosaic, stimData)
+
+    spaceLimsDegs = 7/60*[-1 1];
+    spaceLimsMeters = spaceLimsDegs * theMosaic.micronsPerDegree * 1e-6;
+    
+    timeLims = [0 200];
+    isomerizationsLimits = [0 30];
+    photocurrentLimits = [-85 -70];
+    
+    timeTicks = 0:50:300;
+    isomerizationTicks = 0:5:300;
+    photocurrentTicks = -90:5:-60;
+    
+    fontSize = 16;
+    mosaicZoomedInTicksArcMin = -21:3:21;
+    mosaicZoomedInTicksMeters = mosaicZoomedInTicksArcMin/60*theMosaic.micronsPerDegree*1e-6;
+    mosaicZoomedInTicksLabels = sprintf('%2.0f\n', mosaicZoomedInTicksArcMin);
+    
+    targetPosDegs = [0 0];
+    [targetConeIndexInFullArray, conePositions, coneTypes, targetConeIndex] = indicesForConesAtPositions(theMosaic, targetPosDegs);
+    
+    
+    timeAxis = 1000*stimData.responseInstanceArray.timeAxis;
+    isomerizationInstances = stimData.responseInstanceArray.theMosaicIsomerizations;
+    meanIsomerizations = stimData.noiseFreeIsomerizations;
+    photocurrentInstances = stimData.responseInstanceArray.theMosaicPhotocurrents;
+    meanPhotocurrents = stimData.noiseFreePhotocurrents;
+    
+    
+    visualizedSingleResponseInstance = 2; % 13; 24
+    meanIsomerizations = squeeze(meanIsomerizations(targetConeIndex,:));
+    
+    meanPhotocurrent = squeeze(meanPhotocurrents(targetConeIndex,:));
+    isomerizationInstanceMean = squeeze(mean(isomerizationInstances(:, targetConeIndex,:),1));
+    isomerizationInstance = squeeze(isomerizationInstances(visualizedSingleResponseInstance, targetConeIndex,:));
+    
+    
+    if (~isempty(photocurrentInstances))
+        photocurrentInstanceMean = squeeze(mean(photocurrentInstances(:, targetConeIndex,:),1));
+        photocurrentInstance = squeeze(photocurrentInstances(visualizedSingleResponseInstance, targetConeIndex,:));
+    else
+        photocurrentInstanceMean = [];
+        photocurrentInstance = [];
+    end
+    
+    theEMpathMicrons = squeeze(stimData.responseInstanceArray.theMosaicEyeMovementsMicrons(visualizedResponseInstance,:,:));
+    theEMpathMeters = theEMpathMicrons / 1e6;
+    theEMpathDegs = theEMpathMicrons/theMosaic.micronsPerDegree;
+    
+    
+    retinalImage = stimData.thePeakOI.RGBimage;
+    
+    
+    visualizationTimes = [40 45];
+    hFig = figure(345); clf;
+    set(hFig, 'Position', [10 10 1700 1000], 'Color', [1 1 1]);
+    
+    width = 0.1088;
+    height = 0.185;
+    dX = width*0.4;
+    dY = height*0.6;
+    
+    % Plot the optical image and the optical image sequence in the middle
+    for k = 1:(1+numel(visualizationTimes))
+        if (k == 1)
+            % Full size optical image
+            ax = axes('Position',[0.04875 0.546 width height]);
+            renderOpticalImage(ax, stimData.thePeakOI.xAxisDegs, stimData.thePeakOI.yAxisDegs, retinalImage, fontSize);
+        else
+            % Small portion of optical images
+            ax = axes('Position',[0.235+(k-2)*dX 0.6-(k-2)*dY width height]);
+            if (k == 1+numel(visualizationTimes))
+                showXLabel = true;
+            else
+                showXLabel = false;
+            end
+            renderOpticalImageEyePathComboPlot(ax, timeAxis, visualizationTimes(k-1), theEMpathDegs, 'k',...
+                stimData.thePeakOI.xAxisDegs, stimData.thePeakOI.yAxisDegs, retinalImage, spaceLimsDegs, mosaicZoomedInTicksArcMin, showXLabel, fontSize);
+        end
+    end
+    
+    
+    % Plot the sequence of cone mosaic activations (small portion) at the very top
+    signalRange = [min(isomerizationInstances(:)) max(isomerizationInstances(:))];
+    for k = 1:numel(visualizationTimes)
+        ax = axes('Position',[0.425+(k-1)*dX 0.6-(k-1)*dY width height]);
+        if (k == numel(visualizationTimes))
+             showXLabel = true;
+        else
+             showXLabel = false;
+        end
+        showActivationMap(ax, theMosaic, timeAxis, visualizationTimes(k),  ...
+            squeeze(isomerizationInstances(visualizedResponseInstance, :,:)), spaceLimsDegs, spaceLimsMeters,signalRange, mosaicZoomedInTicksArcMin, showXLabel, fontSize);
+    end   
+    colormap(gray(256));
+    
+    
+   
+    
+    % Plot the isomerization mean and instance time traces in the middle
+    axes('Position',[0.61 0.546 width height]);
+    dt = timeAxis(2)-timeAxis(1);
+    renderMeanResponseAndInstance('steps', timeAxis, meanIsomerizations, isomerizationInstance, isomerizationsLimits, timeLims, isomerizationTicks, timeTicks, sprintf('\\it R*/%1.0fmsec', dt), fontSize);
+    
+    % Plot the x-axis emPath time course
+    %axes('Position',[0.61 0.7 width height/3]);
+    %renderEMpath(timeAxis, theEMpathDegs, timeLims, timeTicks, fontSize);
+    
+    % Plot the photocurrent mean and instance time traces in the middle
+    axes('Position',[0.78 0.546 width height]);
+    if (~isempty(photocurrentInstance))
+        renderMeanResponseAndInstance('lines', timeAxis, meanPhotocurrent, photocurrentInstance, photocurrentLimits, timeLims, photocurrentTicks, timeTicks, 'pAmps', fontSize);
+    end
+
+    % Plot the mosaic with one emPath at the bottom
+    ax = axes('Position',[0.15 0.10 width height]);
+    renderMosaicAndSingleEMPath(theMosaic, timeAxis, theEMpathMeters, spaceLimsMeters, mosaicZoomedInTicksMeters, mosaicZoomedInTicksLabels, fontSize);
+    
+    
+    % Plot the cone mosaic (small portion) at the bottom
+    ax = axes('Position',[0.397 0.10 width height]);
+    theMosaic.visualizeGrid('axesHandle', ax, ...
+        'apertureShape', 'disks', ...
+        'visualizedConeAperture', 'lightCollectingArea', ...
+        'labelConeTypes', true,...
+        'ticksInVisualDegs', true, ...
+        'noXaxisLabel',  true, ...
+        'noYaxisLabel', true, ...
+        'backgroundColor', [0 0 0] ...
+    );
+    set(ax, 'XTick', mosaicZoomedInTicksMeters, 'XTickLabel',  mosaicZoomedInTicksLabels, 'YTickLabel',  {}, 'XLim', spaceLimsMeters, 'YLim', spaceLimsMeters, 'FontSize', fontSize);
+    xlabel('space (arc min)');
+    
+    
+    if (~isempty(photocurrentInstance))
+        % Plot the photocurrent impulse responses at the bottom
+        axes('Position',[0.60 0.10 width height]);
+        renderPhotocurrentImpulseResponses(timeAxis,  timeLims, stimData, timeTicks, -0.05:0.05:0.2, fontSize);
+
+        % Plot the photocurrent noise at the bottom
+        axes('Position',[0.75 0.10 width height]);
+        renderPhotocurrentNoise(timeAxis, timeLims, photocurrentInstance(:)-meanPhotocurrent(:), fontSize);
+    end
 end
