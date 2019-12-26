@@ -34,10 +34,10 @@ function run_paper2_FinalConditionsUsing2mmPupil
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
     findPerformance = ~true;
-    visualizePerformance = ~true;
+    visualizePerformance = true;
     
     % Pupil diameter to be used
     pupilDiamMm = 2.0;
@@ -82,15 +82,15 @@ function run_paper2_FinalConditionsUsing2mmPupil
     examinedCond(condIndex).centeredEMPaths = true;
     
     
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = 'SVM-Temp-L, pCurr., noEM';
-%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-%     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
-%     examinedCond(condIndex).performanceSignal = performanceSignal;
-%     examinedCond(condIndex).emPathType = 'frozen0';
-%     examinedCond(condIndex).centeredEMPaths = true;
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'SVM-Temp-L, pCurr., noEM';
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+    examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = true;
 
         
     condIndex = condIndex+1;
