@@ -92,6 +92,15 @@ function run_paper2_FinalConditionsUsing2mmPupil
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = true;
 
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'SVM-Temp-E, pCurr., noEM';
+    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+    examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = true;
         
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-Temp-E, pCurr., drift';
@@ -159,7 +168,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
         
 
         theRatioLims = [0.05 0.7];
-        theRatioTicks = [0.05 0.1 0.3 0.5 1.0];
+        theRatioTicks = [0.05 0.1 0.2 0.3 0.5 1.0];
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
@@ -169,10 +178,28 @@ function run_paper2_FinalConditionsUsing2mmPupil
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.23,0.87,0.75,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.23,0.86,0.75,0.08], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );
+        
+        theRatioLims = [0.25 1.1];
+        theRatioTicks = [0.1 0.3 0.5 0.7 1.0];
+        formatLabel = 'ComparedToBanksSubjects_Sequential';
+        generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
+            'figureType', 'CSF', ...
+            'showSubjectData', ~true, ...
+            'showSubjectMeanData', ~true, ...
+            'plotFirstConditionInGray', true, ...
+            'plotRatiosOfOtherConditionsToFirst', ~true, ...
+            'plotRatiosOfSubsequentConditions', true, ...
+            'theRatioLims', theRatioLims, ...
+            'theRatioTicks', theRatioTicks, ... 
+            'theLegendPosition', [0.23,0.88,0.75,0.08], ...   % custom legend position and size
+            'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
+            'figureHasFinalSize', true ...                      % publication-ready size
+            );
+        
     end
 end
 
