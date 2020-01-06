@@ -34,9 +34,9 @@ function run_paper2_ComboFemAndPcurrent
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = ~true;
+    computeResponses = true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -55,12 +55,12 @@ function run_paper2_ComboFemAndPcurrent
     % Compute photocurrent responses
     computePhotocurrents = true;
     
-    performanceSignal = 'photocurrents'; %'isomerizations'; % 'photocurrents';
+    performanceSignal = 'isomerizations'; % 'photocurrents'; %'isomerizations'; % 'photocurrents';
     emPath = 'randomNoSaccades';
     
     % Different stategy for  drift fixational EMs
     centeredEMPaths =  'atStimulusModulationMidPoint';
-    nTrainingSamples = 1030;
+    nTrainingSamples = 1016;
      
     
     showDataFromLinearPooling = ~true;
@@ -71,39 +71,37 @@ function run_paper2_ComboFemAndPcurrent
     condIndex = 0;
     
     % Reference CSF (gray)
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Temp-L, R*, noEM';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).performanceSignal = 'isomerizations';
-    examinedCond(condIndex).emPathType = 'frozen0';
-    examinedCond(condIndex).centeredEMPaths = true;
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = 'SVM-Temp-L, R*, noEM';
+%     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+%     examinedCond(condIndex).performanceSignal = 'isomerizations';
+%     examinedCond(condIndex).emPathType = 'frozen0';
+%     examinedCond(condIndex).centeredEMPaths = true;
+%     
+% 
+%     if (showDataFromLinearPooling)
+%         condIndex = condIndex+1;
+%         examinedCond(condIndex).label = 'SVM-Temp-L, pCurr., noEM';
+%         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+%         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+%         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+%         examinedCond(condIndex).performanceSignal = performanceSignal;
+%         examinedCond(condIndex).emPathType = 'frozen0';
+%         examinedCond(condIndex).centeredEMPaths = true;
+%     end
     
+    if (showDataFromQuadraturePooling)
+%         condIndex = condIndex+1;
+%         examinedCond(condIndex).label = 'SVM-Temp-E, pCurr., noEM';
+%         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+%         examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+%         examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+%         examinedCond(condIndex).performanceSignal = performanceSignal;
+%         examinedCond(condIndex).emPathType = 'frozen0';
+%         examinedCond(condIndex).centeredEMPaths = true;
 
-    if (showDataFromLinearPooling)
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Temp-L, pCurr., noEM';
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-        examinedCond(condIndex).performanceSignal = performanceSignal;
-        examinedCond(condIndex).emPathType = 'frozen0';
-        examinedCond(condIndex).centeredEMPaths = true;
-    end
-    
-    if (showDataFromQuadraturePooling)
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Temp-E, pCurr., noEM';
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-        examinedCond(condIndex).performanceSignal = performanceSignal;
-        examinedCond(condIndex).emPathType = 'frozen0';
-        examinedCond(condIndex).centeredEMPaths = true;
-    end
-    
-    if (showDataFromQuadraturePooling)
         condIndex = condIndex+1;
         examinedCond(condIndex).label = 'SVM-Temp-E, pCurr., drift';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
@@ -132,7 +130,7 @@ function run_paper2_ComboFemAndPcurrent
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
         
-        params.cyclesPerDegreeExamined = [4 8 12 16 24 32 50 60];
+        params.cyclesPerDegreeExamined = [16]; % [4 8 12 16 24 32 50 60];
         % Update params
         cond = examinedCond(condIndex);
         params.performanceClassifier = cond.performanceClassifier;
@@ -153,7 +151,6 @@ function run_paper2_ComboFemAndPcurrent
             computePhotocurrents, computeResponses, computeMosaic, ...
             visualizeResponses, findPerformance, visualizePerformance); 
         
-        params
         % Go !
         [~,~, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
     end % condIndex
