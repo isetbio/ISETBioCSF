@@ -35,8 +35,8 @@ function run_paper2FixationalEyeMovementsVsNone
     % Whether to compute responses
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
-    visualizePerformance = ~true;
+    findPerformance = ~true;
+    visualizePerformance = true;
     
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
@@ -54,7 +54,7 @@ function run_paper2FixationalEyeMovementsVsNone
     % Compute photocurrent responses
     computePhotocurrents = true;
     
-    performanceSignal = 'photocurrents'; % 'isomerizations';  % 'photocurrents', 'isomerizations';
+    performanceSignal = 'isomerizations';
     
     showDataFromLinearPooling = ~true;
     showDataFromQuadraturePooling = ~showDataFromLinearPooling;
@@ -63,13 +63,9 @@ function run_paper2FixationalEyeMovementsVsNone
     % Init condition index
     condIndex = 0;
     
-    % Recompute responses in which we have eye movements to fix issue with
-    % mean currents
-    recomputeWithFixedCurrents = ~true;
-    
+   
     
     % Reference CSF
-    if (~recomputeWithFixedCurrents)
         condIndex = condIndex+1;
         examinedCond(condIndex).label = 'SVM-Template-L, noEM';
         examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
@@ -114,18 +110,7 @@ function run_paper2FixationalEyeMovementsVsNone
             examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
         end
     
-    else
-        computeResponses = true;
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Template-L, drift';
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-        examinedCond(condIndex).performanceSignal = performanceSignal;
-        examinedCond(condIndex).emPathType = 'randomNoSaccades';
-        examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
-            
-    end
+
     
     
     % Go
@@ -136,15 +121,11 @@ function run_paper2FixationalEyeMovementsVsNone
         
         % Use 1030 vs 1024 trials to differentiate results from when the
         % mosaic size is matched to the stimulus (see below params.minimumMosaicFOVdegs)
-        params.nTrainingSamples = 1030;
+        params.nTrainingSamples = 1016;
         
         % Default spatial frequencies
-        params.cyclesPerDegreeExamined = [32 50 60]; % [4 8 12 16 24 32 50 60];
+        params.cyclesPerDegreeExamined =  [4 8 12 16 24 32 50 60];
         
-        if (recomputeWithFixedCurrents)
-            % High spatial frequencies only
-            params.cyclesPerDegreeExamined = [32 50 60];
-        end
         
         % Do not use mosaics smaller than 0.5 degs 
         %params.minimumMosaicFOVdegs = -0.328; % 0.492 IS NOT GOOD. TRY: 0.328 , 0.246, 0.158 TRY THIS TO SEE IF WE DO BETTER AT 60 C/DEG WITH ISOMERIZATIONS

@@ -38,7 +38,7 @@ function run_paper2IsomerizationsVsPhotocurrents
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
     findPerformance = ~true;
     visualizePerformance = true;
