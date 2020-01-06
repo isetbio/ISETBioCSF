@@ -13,6 +13,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     p.addParameter('plotFirstConditionInGray', true, @islogical);
     p.addParameter('plotUsingLargeBlueDisks', false, @islogical);
     p.addParameter('plotRatiosOfOtherConditionsToFirst', false, @islogical);
+    p.addParameter('plotRatiosOfSubsequentConditions', false, @islogical);
     p.addParameter('theRatioLims', []);
     p.addParameter('theRatioTicks', []);
     p.addParameter('theLegendPosition', []);
@@ -41,6 +42,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     inGraphTextPos = p.Results.inGraphTextPos;
     inGraphTextFontSize = p.Results.inGraphTextFontSize;
     plotRatiosOfOtherConditionsToFirst = p.Results.plotRatiosOfOtherConditionsToFirst;
+    plotRatiosOfSubsequentConditions = p.Results.plotRatiosOfSubsequentConditions;
     theRatioLims = p.Results.theRatioLims;
     theRatioTicks = p.Results.theRatioTicks;
     theLegendPosition = p.Results.theLegendPosition;
@@ -63,6 +65,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     [theAxes, theRatioAxes] = formatFigureForPaper(hFig, ...
         'figureType', figureType, ...
         'plotRatiosOfOtherConditionsToFirst', plotRatiosOfOtherConditionsToFirst, ...
+        'plotRatiosOfSubsequentConditions', plotRatiosOfSubsequentConditions, ...
         'figureHasFinalSize', figureHasFinalSize);
     
     
@@ -269,8 +272,6 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
         % Legends
         variedParamLegends{numel(variedParamLegends)+1} = 'Subject MSB';
         variedParamLegends{numel(variedParamLegends)+1} = 'Subject JAC';
-        
-        
     end
     
     % Add legend
@@ -284,7 +285,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     % Add text
     if (~isempty(inGraphText))
         if (isempty(inGraphTextPos))
-            if (plotRatiosOfOtherConditionsToFirst)
+            if (plotRatiosOfOtherConditionsToFirst) || (plotRatiosOfSubsequentConditions)
                 inGraphTextPos(1) = 1.6;
                 inGraphTextPos(2) = 10000;
             else
@@ -298,7 +299,32 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     end
     hold(theAxes, 'off');
     
-    if (plotRatiosOfOtherConditionsToFirst)
+    if (plotRatiosOfSubsequentConditions)
+        hold(theRatioAxes, 'on');
+        
+        for condIndex = 2:numel(theFigData)
+            refSensitivity = contrastSensitivity{condIndex-1};
+            condSensitivity = contrastSensitivity{condIndex};
+            refCPD = cpd{condIndex-1};
+            condCPD = cpd{condIndex};
+            saturationFactor = 0;
+            edgeColor = max(0, squeeze(colors(condIndex,:))-faceColor);
+            faceColor2 = min(1, squeeze(colors(condIndex,:)) + faceColor);
+            ratios = zeros(1,numel(refCPD));
+            for k = 1:numel(condCPD)
+                idx = find(condCPD(k) == refCPD);
+                if (~isempty(idx))
+                    ratios(k) = condSensitivity(idx)./refSensitivity(idx);
+                end
+            end
+            plot(theRatioAxes, refCPD, ratios, ...
+                'ko-', 'Color', edgeColor, ...
+                'MarkerEdgeColor', edgeColor, ...
+                'MarkerFaceColor', faceColor2, ...
+                'MarkerSize',markerSize,'LineWidth',lineWidth);
+        end
+        hold(theRatioAxes, 'off');
+    elseif (plotRatiosOfOtherConditionsToFirst)
         
         hold(theRatioAxes, 'on');
         refCPD = cpd{1};
@@ -341,6 +367,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     formatFigureForPaper(hFig, ...
         'figureType', figureType, ...
         'plotRatiosOfOtherConditionsToFirst', plotRatiosOfOtherConditionsToFirst, ...
+        'plotRatiosOfSubsequentConditions', plotRatiosOfSubsequentConditions, ...
         'theAxes', theAxes, ...
         'theRatioAxes', theRatioAxes, ...
         'theRatioLims', theRatioLims, ...

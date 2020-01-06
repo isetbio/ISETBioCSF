@@ -38,7 +38,7 @@ function run_paper2IsomerizationsVsPhotocurrents
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = ~true;
+    computeResponses = true;
     visualizeResponses = ~true;
     findPerformance = ~true;
     visualizePerformance = true;
@@ -49,6 +49,9 @@ function run_paper2IsomerizationsVsPhotocurrents
     % Integration time to use: Here set to 5.0 ms, but 2.5 ms may be better 
     % for capturing the dynamcs of fixationalEM
     integrationTimeMilliseconds = 5.0;
+    
+    
+    nTrainingSamples = 1016;
     
     % How long the stimulus is.
     % We might be changing the duration. 100 ms is the default
@@ -83,7 +86,7 @@ function run_paper2IsomerizationsVsPhotocurrents
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds,  frameRate, stimulusDurationInSeconds, computationInstance);
         
         % Use 1028 vs 1024 trials to differentiate results from old photocurrent computation
-        params.nTrainingSamples = 1030;
+        params.nTrainingSamples = nTrainingSamples;
         
         % Try out for subset of SFs
         params.cyclesPerDegreeExamined = [4 8 12 16 24 32 50 60];

@@ -2,6 +2,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
     p = inputParser;
     p.addParameter('figureType', 'CSF', @ischar);
     p.addParameter('plotRatiosOfOtherConditionsToFirst', false, @islogical);
+    p.addParameter('plotRatiosOfSubsequentConditions', false, @islogical);
     p.addParameter('theAxes', []);
     p.addParameter('theAxes2', []);
     p.addParameter('theRatioAxes', []);
@@ -24,7 +25,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
     
     figureType = p.Results.figureType;
     plotRatiosOfOtherConditionsToFirst = p.Results.plotRatiosOfOtherConditionsToFirst;
-    
+    plotRatiosOfSubsequentConditions = p.Results.plotRatiosOfSubsequentConditions;
     theAxes =  p.Results.theAxes;
     theAxes2 =  p.Results.theAxes2;
     theRatioAxes = p.Results.theRatioAxes;
@@ -343,7 +344,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
             
                 
             if (isempty(theAxes)) && (isempty(theLegend))
-                if (plotRatiosOfOtherConditionsToFirst)
+                if (plotRatiosOfOtherConditionsToFirst)||(plotRatiosOfSubsequentConditions)
                     if (figureHasFinalSize)
                         set(hFig, 'Color', [1 1 1], 'Position', [10 10 190 340]);
                         varargout{1} = subplot('Position', [0.215 0.31 0.78 0.68]);
@@ -410,7 +411,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
                     'LineWidth', 1.0);
             end
             
-            if (plotRatiosOfOtherConditionsToFirst)
+            if (plotRatiosOfOtherConditionsToFirst) || (plotRatiosOfSubsequentConditions)
                 if (~isempty(theRatioAxes))
                     set(theRatioAxes, 'YScale', 'log', 'XScale', 'log', 'YTick', csTicks, 'XTick', sfTicks, ...
                         'XLim', [sfLims(1)-dx1 sfLims(2)+dx2]);
@@ -440,7 +441,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
         set(theAxes,'MinorGridLineStyle','-')
         set(theAxes,'MinorGridAlpha', 0.1);
         
-        if (plotRatiosOfOtherConditionsToFirst)
+        if (plotRatiosOfOtherConditionsToFirst)||(plotRatiosOfSubsequentConditions)
             if (~isempty(theRatioAxes))
                 set(theRatioAxes,'GridLineStyle','-');
                 set(theRatioAxes,'GridAlpha', 0.15);
