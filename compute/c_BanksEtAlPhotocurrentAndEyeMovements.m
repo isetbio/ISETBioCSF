@@ -544,7 +544,10 @@ function rParams = updateOpticalImageParams(rParams, userParams, fieldOfViewDegs
 
     if (~isempty(userParams.opticalImagePadSizeDegs)) && (userParams.opticalImagePadSizeDegs > fieldOfViewDegs) 
         padSizeDegs = userParams.opticalImagePadSizeDegs;
-        fprintf(2,'scene FOV (%f) is smaller than opticalImagePadSizeDeg (%f). Will pad\n', fieldOfViewDegs, padSizeDegs);
+        if (abs(fieldOfViewDegs-0.49222)<0.1) && (padSizeDegs == 0.5)
+            padSizeDegs = 1.0;
+        end
+        fprintf(2,'scene FOV (%g) is smaller than opticalImagePadSizeDeg (%g). Will pad\n', fieldOfViewDegs, padSizeDegs);
     else
         padSizeDegs = [];
     end
