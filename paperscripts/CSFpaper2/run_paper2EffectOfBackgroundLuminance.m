@@ -35,9 +35,9 @@ function run_paper2EffectOfBackgroundLuminance
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = ~true;
+    computeResponses = true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -56,9 +56,9 @@ function run_paper2EffectOfBackgroundLuminance
     % Compute photocurrent responses
     computePhotocurrents = true;
         
+    nTrainingSamples = 1016;
     
-    
-    performanceSignal = 'photocurrents'; %'isomerizations'; % 'photocurrents';
+    performanceSignal = 'isomerizations'; %'photocurrents'; %'isomerizations'; % 'photocurrents';
     performanceClassifier = 'svmV1FilterBank';
     spatialPoolingKernelType = 'V1CosUnit';            % choose between 'V1CosUnit' and 'V1QuadraturePair';
     spatialPoolingKernelActivationFunction = 'linear'; % choose between 'linear' and 'energy';
@@ -83,7 +83,7 @@ function run_paper2EffectOfBackgroundLuminance
     condIndex = condIndex+1;
     examinedCond(condIndex).label = '100 cd/m2';
     examinedCond(condIndex).backgroundLuminance = 100;
-%     
+     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = '340 cd/m2';
     examinedCond(condIndex).backgroundLuminance = 340;
@@ -106,7 +106,7 @@ function run_paper2EffectOfBackgroundLuminance
         params.luminancesExamined = [cond.backgroundLuminance];
         
         % Use 1028 vs 1024 trials to differentiate results from old photocurrent computation
-        params.nTrainingSamples = 1030;
+        params.nTrainingSamples = nTrainingSamples;
         
         % Try out for subset of SFs
         params.cyclesPerDegreeExamined = [8 16 24 32 50 60]; % [8 16 24 32 50 60]; % [16 24 32 50 60];
@@ -132,6 +132,8 @@ function run_paper2EffectOfBackgroundLuminance
         
         theRatioLims = [0.09 17];
         theRatioTicks = [0.1 0.3 1.0 3 10];
+        theRatioLims = [0.1 5];
+        theRatioTicks = [0.1 0.2 0.5 1 2 5];
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
