@@ -36,8 +36,8 @@ function run_paper2InferenceEngine
     computeMosaic = ~true;
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
-    visualizePerformance = true;
+    findPerformance = true;
+    visualizePerformance = ~true;
     
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
@@ -60,7 +60,7 @@ function run_paper2InferenceEngine
     centeredEMPaths =  'atStimulusModulationMidPoint';
     
     % * * * * * * * * * * * * * * * 
-    nTrainingSamples = 1032;       % 1032 to differential the no OIPad case
+    nTrainingSamples = 1016;       % 1032 to differente the no OIPad case
     opticalImagePadSizeDegs = [];  % do not pad the OI to a fixed size - this will in effect increase the pCurrnet impulse response gain
     % * * * * * * * * * * * * * * * 
     
@@ -90,7 +90,7 @@ function run_paper2InferenceEngine
     examinedCond(condIndex).emPathType = emPathType;
     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
     
-
+    if (1==2)
     condIndex = condIndex+1;
     examinedCond(condIndex).label = '0.3 degs, drift';
     examinedCond(condIndex).minimumMosaicFOVdegs = 0.328;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
@@ -169,7 +169,7 @@ function run_paper2InferenceEngine
         end                
                                
     end
-    
+    end
                   
     % Go
     examinedLegends = {};
@@ -177,7 +177,7 @@ function run_paper2InferenceEngine
     for condIndex = 1:numel(examinedCond)
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
-        params.cyclesPerDegreeExamined = [32 40 50 60]; % [24 32 50 60];
+        params.cyclesPerDegreeExamined = [40]; % [32 40 50 60]; % [24 32 50 60];
         params.opticalImagePadSizeDegs = opticalImagePadSizeDegs;
         
         
@@ -220,8 +220,8 @@ function run_paper2InferenceEngine
    
     if (makeSummaryFigure)
         variedParamName = performanceSignal;
-        theRatioLims = [0.25 1.4];
-        theRatioTicks = [0.3 0.5 0.7 1.0 1.4];
+        theRatioLims = [0.1 5];
+        theRatioTicks = [0.1 0.2 0.5 1 2 5];
         formatLabel = 'InferenceEngine';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF_high SF range', ...
