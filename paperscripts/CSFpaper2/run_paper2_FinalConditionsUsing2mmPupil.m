@@ -167,8 +167,8 @@ function run_paper2_FinalConditionsUsing2mmPupil
         end
         
 
-        theRatioLims = [0.05 0.7];
-        theRatioTicks = [0.05 0.1 0.2 0.3 0.5 1.0];
+        theRatioLims = [0.01 1.2];
+        theRatioTicks = [0.01 0.03 0.1 0.3 1.0];
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
