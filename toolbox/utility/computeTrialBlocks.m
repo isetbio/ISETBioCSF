@@ -1,4 +1,5 @@
-function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, temporalParams, spatialParams, colorModulationParams, integrationTime, displayTrialBlockPartitionDiagnostics, employStandardHostComputerResources)      
+function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, coneMosaicPatternSize, coneMosaicActivePatternSize, ...
+    temporalParams, spatialParams, oiRowsCols, colorModulationParams, integrationTime, displayTrialBlockPartitionDiagnostics, employStandardHostComputerResources)      
     % Determine system resources
     [numberOfWorkers, ramSizeGBytes, sizeOfDoubleInBytes] = determineSystemResources(employStandardHostComputerResources);
    
@@ -26,8 +27,10 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     emPathLength = eyeMovementsNumPerOpticalImage*numel(stimulusTimeAxis);
     
     wavelengths = floor((colorModulationParams.endWl-colorModulationParams.startWl)/colorModulationParams.deltaWl);
-    opticalImageSize = 1.25*spatialParams.row*spatialParams.col*wavelengths;
-    
+    opticalImageSize = 1.25*oiRowsCols(1)*oiRowsCols(2)*wavelengths;
+
+    ratioOfOI = oiRowsCols(1)*oiRowsCols(2)/(spatialParams.row*spatialParams.col)
+        
     % estimate sizes of the various matrices used
     trialBlockSize = floor(nTrials/numberOfWorkers);
     totalMemoryPerWorker = computeTotalMemoryPerWorker();
