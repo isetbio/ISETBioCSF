@@ -82,7 +82,8 @@ function run_paper2InferenceEngine
     examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = true;
-
+    end
+    
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'stim-matched, drift';
     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
@@ -95,7 +96,7 @@ function run_paper2InferenceEngine
     end
     
     
-    if (1==1)
+    if (1==2)
     condIndex = condIndex+1;
     examinedCond(condIndex).label = '0.3 degs, drift';
     examinedCond(condIndex).minimumMosaicFOVdegs = 0.328;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
@@ -185,7 +186,7 @@ if (1==2)
     for condIndex = 1:numel(examinedCond)
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
-        params.cyclesPerDegreeExamined = [50 60]; % [32 40 50 60]; % [24 32 50 60];
+        params.cyclesPerDegreeExamined = [60]; % [50 60]; % [32 40 50 60]; % [24 32 50 60];
         params.opticalImagePadSizeDegs = opticalImagePadSizeDegs;
         
         params.lowContrast = lowContrast; 
