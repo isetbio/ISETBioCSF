@@ -65,6 +65,7 @@ function run_paper2InferenceEngine
     lowContrast = 0.01;
     highContrast = 1.0;
     nContrastsPerDirection = 10;
+    parforWorkersNum = 12;
     % * * * * * * * * * * * * * * * 
     
     
@@ -93,7 +94,7 @@ function run_paper2InferenceEngine
     examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = emPathType;
     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-    end
+   
     
     
     if (1==2)
@@ -193,6 +194,7 @@ if (1==2)
         params.highContrast =  highContrast; 
         params.nContrastsPerDirection = nContrastsPerDirection;
     
+        params.parforWorkersNum = parforWorkersNum;
         
         % Update params
         cond = examinedCond(condIndex);

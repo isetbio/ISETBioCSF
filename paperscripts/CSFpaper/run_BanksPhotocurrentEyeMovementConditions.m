@@ -1,19 +1,22 @@
 function varargout = run_BanksPhotocurrentEyeMovementConditions(params)
  
-varargout = {};
-varargout{1} = [];  % the mosaic
-varargout{2} = [];  % psychometric functions
-varargout{3} = [];  % the figData
+    varargout = {};
+    varargout{1} = [];  % the mosaic
+    varargout{2} = [];  % psychometric functions
+    varargout{3} = [];  % the figData
 
-    % Assign parfor workers num based on computer name
-    [~, computerNetworkName] = system('uname -n');
-    if (contains(computerNetworkName, 'ionean'))
-        params.parforWorkersNum = 10;
-    elseif (contains(computerNetworkName, 'leviathan'))
-        params.parforWorkersNum = 20;
-    else
-        params.parforWorkersNum = 4;
+    if (~isfield(params, 'parforWorkersNum'))
+        % Assign parfor workers num based on computer name
+        [~, computerNetworkName] = system('uname -n');
+        if (contains(computerNetworkName, 'ionean'))
+            params.parforWorkersNum = 10;
+        elseif (contains(computerNetworkName, 'leviathan'))
+            params.parforWorkersNum = 20;
+        else
+            params.parforWorkersNum = 4;
+        end
     end
+    
     fprintf('\nWill use %d workers\n', params.parforWorkersNum);
 
     if (params.deleteResponseInstances)

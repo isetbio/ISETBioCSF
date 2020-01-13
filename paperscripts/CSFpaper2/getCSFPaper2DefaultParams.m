@@ -113,7 +113,6 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
         params.parforWorkersNumForClassification = 3;
     elseif (computationInstance  == 3)
         % All other sizes
-        params.ramPercentageEmployed = 0.9;  
         params.cyclesPerDegreeExamined =  [8 16 32 50 60];
         params.parforWorkersNumForClassification = 3;
     elseif (computationInstance  == 4)  

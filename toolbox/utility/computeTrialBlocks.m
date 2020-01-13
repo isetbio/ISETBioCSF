@@ -10,8 +10,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     
     % Ensure ramPercentageEmployed is in [0.05 1]
     ramPercentageEmployed = max([0.05 ramPercentageEmployed]);
-    ramSizeGBytes
-    ramSizeGBytes = ramPercentageEmployed * ramSizeGBytes
+    ramSizeGBytes = ramPercentageEmployed * ramSizeGBytes;
     
     % Subtract RAM used by the OS
     ramUsedByOSGBytes = 1.2;
@@ -28,7 +27,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     emPathLength = eyeMovementsNumPerOpticalImage*numel(stimulusTimeAxis);
     
     wavelengths = floor((colorModulationParams.endWl-colorModulationParams.startWl)/colorModulationParams.deltaWl);
-    opticalImageSize = 4*oiRowsCols(1)*oiRowsCols(2)*wavelengths;
+    opticalImageSize = 2*oiRowsCols(1)*oiRowsCols(2)*wavelengths;
 
     % estimate sizes of the various matrices used
     trialBlockSize = floor(nTrials/numberOfWorkers);
