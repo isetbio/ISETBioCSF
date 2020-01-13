@@ -98,7 +98,7 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
     params.spatialPoolingKernelParams.shrinkageFactor = 1.0;  % > 1, results in expansion, < 1 results in shrinking 
     
     % Split computations and specify RAM memory
-    params.ramPercentageEmployed = 1.2;
+    params.ramPercentageEmployed = 0.9;
     if (computationInstance == 0)
         % All mosaic sizes in 1 MATLAB session
         params.cyclesPerDegreeExamined =  [2 4 8 12 16 24 32 50 60]; 
@@ -113,7 +113,7 @@ function params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMillisec
         params.parforWorkersNumForClassification = 3;
     elseif (computationInstance  == 3)
         % All other sizes
-        params.ramPercentageEmployed = 1.2;  
+        params.ramPercentageEmployed = 0.9;  
         params.cyclesPerDegreeExamined =  [8 16 32 50 60];
         params.parforWorkersNumForClassification = 3;
     elseif (computationInstance  == 4)  
