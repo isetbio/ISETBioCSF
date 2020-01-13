@@ -10,7 +10,8 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     
     % Ensure ramPercentageEmployed is in [0.05 1]
     ramPercentageEmployed = max([0.05 ramPercentageEmployed]);
-    ramSizeGBytes = ramPercentageEmployed * ramSizeGBytes;
+    ramSizeGBytes
+    ramSizeGBytes = ramPercentageEmployed * ramSizeGBytes
     
     % Subtract RAM used by the OS
     ramUsedByOSGBytes = 1.2;
