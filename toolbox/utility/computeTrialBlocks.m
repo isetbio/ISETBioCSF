@@ -29,8 +29,6 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     wavelengths = floor((colorModulationParams.endWl-colorModulationParams.startWl)/colorModulationParams.deltaWl);
     opticalImageSize = 1.25*oiRowsCols(1)*oiRowsCols(2)*wavelengths;
 
-    ratioOfOI = oiRowsCols(1)*oiRowsCols(2)/(spatialParams.row*spatialParams.col)
-        
     % estimate sizes of the various matrices used
     trialBlockSize = floor(nTrials/numberOfWorkers);
     totalMemoryPerWorker = computeTotalMemoryPerWorker();

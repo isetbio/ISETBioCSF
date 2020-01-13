@@ -399,9 +399,25 @@ if (p.Results.compute)
         fprintf('<strong> ONLY using %d of the %d available workers, each doing 1 trial</strong> \n', testDirectionParams.trialsNum, parforWorkersNum);
         parforWorkersNum = testDirectionParams.trialsNum;
     else
+        %% Find the size of the optical image
+        % Get pupil size out of OI, which is sometimes needed by colorSceneCreate
+        oiParamsTemp.pupilDiamMm = 1000*opticsGet(oiGet(theOI,'optics'),'aperture diameter');
+        % Create the background scene
+        theBaseColorModulationParams = rParams.colorModulationParams;
+        theBaseColorModulationParams.coneContrasts = [0 0 0]';
+        theBaseColorModulationParams.contrast = 0;
+        [backgroundScene, ~, ~] = colorSceneCreate(rParams.spatialParams, rParams.backgroundParams, ...
+            theBaseColorModulationParams, oiParamsTemp);
+        % Compute the background OI
+        oiBackground = theOI;
+        oiBackground = oiCompute(oiBackground, backgroundScene);
+        % Get rows and cols of the oi
+        oiRowsCols = [oiGet(oiBackground, 'rows') oiGet(oiBackground, 'cols')];
+        
+        %% Now compute the trials per block
         nParforTrials = computeTrialBlocks(p.Results.ramPercentageEmployed, testDirectionParams.trialsNum, ....
             numel(theMosaic.pattern), numel(theMosaic.pattern(theMosaic.pattern>1)), ...
-            rParams.temporalParams, rParams.spatialParams, [oiGet(theOI, 'rows') oiGet(theOI, 'cols')], rParams.colorModulationParams, theMosaic.integrationTime, ...
+            rParams.temporalParams, rParams.spatialParams, oiRowsCols, rParams.colorModulationParams, theMosaic.integrationTime, ...
             p.Results.displayTrialBlockPartitionDiagnostics, p.Results.employStandardHostComputerResources);
     end
     
