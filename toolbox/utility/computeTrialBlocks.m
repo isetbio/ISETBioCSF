@@ -37,6 +37,7 @@ function nParforTrials = computeTrialBlocks(ramPercentageEmployed, nTrials, cone
     
     allowedRAMcompression = 1.0;
     while (totalMemoryUsed > allowedRAMcompression*ramSizeGBytesAvailable)
+        [totalMemoryUsed  allowedRAMcompression*ramSizeGBytesAvailable trialBlockSize]
         trialBlockSize = trialBlockSize-1;
         totalMemoryPerWorker = computeTotalMemoryPerWorker();
         totalMemoryUsed = totalMemoryPerWorker * numberOfWorkers;
