@@ -71,46 +71,46 @@ function params = getCSFpaperDefaultParams(mosaicName,  computationInstance)
     % Split computations and specify RAM memory
     if (computationInstance == 0)
         % All mosaic sizes in 1 MATLAB session
-        params.ramPercentageEmployed = 1.2; 
+        params.ramPercentageEmployed = 0.9; 
         params.cyclesPerDegreeExamined =  [2 4 8 16 32 50 60]; 
         params.parforWorkersNumForClassification = 3;
     elseif (computationInstance  == 1)
         % Largest mosaic
-        params.ramPercentageEmployed = 1.2; 
+        params.ramPercentageEmployed = 0.9; 
         params.cyclesPerDegreeExamined =  [2];
         params.parforWorkersNumForClassification = 3;
     elseif (computationInstance  == 2)
         % Second largest mosaic
-        params.ramPercentageEmployed = 1.2;  
+        params.ramPercentageEmployed = 0.9;  
         params.cyclesPerDegreeExamined =  [4];
         params.parforWorkersNumForClassification = 3;
     elseif (computationInstance  == 3)
         % All other sizes
-        params.ramPercentageEmployed = 1.2;  
+        params.ramPercentageEmployed = 0.9;  
         params.cyclesPerDegreeExamined =  [8 16 32 50 60];
         params.parforWorkersNumForClassification = 3;
     elseif (computationInstance  == 4)
-        params.ramPercentageEmployed = 1.2;  
+        params.ramPercentageEmployed = 0.9;  
         params.cyclesPerDegreeExamined = [4];
         params.parforWorkersNumForClassification = 3;
     elseif (computationInstance  == 8)
-        params.ramPercentageEmployed = 1.2;  
+        params.ramPercentageEmployed = 0.9;  
         params.cyclesPerDegreeExamined = [8];
         params.parforWorkersNumForClassification = 6;
     elseif (computationInstance  == 16)
-        params.ramPercentageEmployed = 1.2;  
+        params.ramPercentageEmployed = 0.9;  
         params.cyclesPerDegreeExamined = [16];
         params.parforWorkersNumForClassification = 10;
     elseif (computationInstance  == 32)
-        params.ramPercentageEmployed = 1.2;  
+        params.ramPercentageEmployed = 0.9;  
         params.cyclesPerDegreeExamined = [32];
         params.parforWorkersNumForClassification = 12;
     elseif (computationInstance  == 50)
-        params.ramPercentageEmployed = 1.2;  
+        params.ramPercentageEmployed = 0.9;  
         params.cyclesPerDegreeExamined = [50];
         params.parforWorkersNumForClassification = 12;
     elseif (computationInstance  == 60)
-        params.ramPercentageEmployed = 1.2;  
+        params.ramPercentageEmployed = 0.9;  
         params.cyclesPerDegreeExamined = [60];
         params.parforWorkersNumForClassification = 12;
     else
