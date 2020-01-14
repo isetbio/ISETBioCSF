@@ -158,10 +158,11 @@ function run_paper2InferenceEngine
         spatialPositionOffsetArcMinList = [0.3 0.5 0.7 0.9 1.1 1.3];
         cyclesPerRFsList = [6 5.5 5.0 4.5];
         
+        for posNums = 1:2
         for l = 1:numel(cyclesPerRFsList)
             for k = 1:numel(spatialPositionOffsetArcMinList)
                 condIndex = condIndex+1;
-                defaultCond.ensembleFilterParams.spatialPositionsNum = 1;
+                defaultCond.ensembleFilterParams.spatialPositionsNum = posNums;
                 defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = spatialPositionOffsetArcMinList(k)/60;
                 defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFsList(l)+spatialPositionOffsetArcMinList(k)*0.1;  % encode variation in offset (k) in the cycles
                 examinedCond(condIndex) = defaultCond;
@@ -172,7 +173,7 @@ function run_paper2InferenceEngine
                     defaultCond.ensembleFilterParams.cyclesPerRFs);
             end
         end
-        
+        end
         
     
 %         defaultCond.minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
