@@ -85,7 +85,7 @@ function run_paper2InferenceEngine
 %     examinedCond(condIndex).centeredEMPaths = true;
 %    
     
-if (1==3)
+    if (1==3)
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'stim-matched, drift';
     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
@@ -113,8 +113,8 @@ if (1==3)
                     'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
                     'orientations', 0);
     
-end
-
+    end
+    
 
 
 %     condIndex = condIndex+1;
@@ -155,8 +155,8 @@ end
                             'cyclesPerRFs', [], ...                   % each template contains 5 cycles of the stimulus
                             'orientations', 0);
 
-        spatialPositionOffsetArcMinList = [0.9 1.1 1.3 1.5 1.7];
-        cyclesPerRFsList = [6 5.5 5.0];
+        spatialPositionOffsetArcMinList = [0.7 0.9 1.1 1.3 1.5];
+        cyclesPerRFsList = [4.5]; % [6 5.5 5.0];
         
         for l = 1:numel(cyclesPerRFsList)
             for k = 1:numel(spatialPositionOffsetArcMinList)
@@ -249,7 +249,7 @@ end
     if (makeSummaryFigure)
         variedParamName = performanceSignal;
         theRatioLims = [0.5 1.2];
-        theRatioTicks = [0.1 0.2 0.5 1 2 5];
+        theRatioTicks = [0.1 0.2 0.5 0.75 1 1.1 1.2];
         formatLabel = 'InferenceEngine';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF_high SF range', ...
