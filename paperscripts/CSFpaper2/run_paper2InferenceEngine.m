@@ -34,9 +34,9 @@ function run_paper2InferenceEngine
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -55,7 +55,7 @@ function run_paper2InferenceEngine
     % Compute photocurrent responses
     computePhotocurrents = true;
     
-    performanceSignal = 'isomerizations'; % 'photocurrents'; %'isomerizations'; % 'photocurrents';
+    performanceSignal = 'isomerizations'; % 'photocurrents';
     emPathType = 'randomNoSaccades';
     centeredEMPaths =  'atStimulusModulationMidPoint';
     
@@ -73,7 +73,7 @@ function run_paper2InferenceEngine
     % Init condition index
     condIndex = 0;
     
-    if (1==2)
+    
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'stim-matched, no EM';
     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
@@ -83,7 +83,7 @@ function run_paper2InferenceEngine
     examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = true;
-    end
+   
     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'stim-matched, drift';
@@ -94,10 +94,9 @@ function run_paper2InferenceEngine
     examinedCond(condIndex).performanceSignal = performanceSignal;
     examinedCond(condIndex).emPathType = emPathType;
     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
-   
     
     
-    if (1==2)
+    
     condIndex = condIndex+1;
     examinedCond(condIndex).label = '0.3 degs, drift';
     examinedCond(condIndex).minimumMosaicFOVdegs = 0.328;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
@@ -112,8 +111,10 @@ function run_paper2InferenceEngine
                     'spatialPositionOffsetDegs', 0, ... 
                     'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
                     'orientations', 0);
-
     
+     
+
+
 %     condIndex = condIndex+1;
 %     examinedCond(condIndex).label = '0.5 degs, drift';
 %     examinedCond(condIndex).minimumMosaicFOVdegs = 0.492;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
@@ -129,10 +130,8 @@ function run_paper2InferenceEngine
 %                     'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
 %                     'orientations', 0);
                     
-    end  
     
     
-if (1==2)
     
         
     if (~computeResponses)
@@ -145,41 +144,89 @@ if (1==2)
         defaultCond.performanceSignal = performanceSignal;
         defaultCond.emPathType = 'randomNoSaccades';
         defaultCond.centeredEMPaths = centeredEMPaths;
+
         defaultCond.ensembleFilterParams = struct(...
                             'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid, 2 in 5x5
                             'spatialPositionOffsetDegs', 0.0328, ... % cannot save this variation is different data files - not encoded
-                            'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
+                            'cyclesPerRFs', 6, ...           % each template contains 5 cycles of the stimulus
                             'orientations', 0);
 
 
-        cyclesPerRFlist = [6]; 
-        for i = 1:numel(cyclesPerRFlist)
-            condIndex = condIndex+1;
-            cyclesPerRF = cyclesPerRFlist(i); 
-            posNum = defaultCond.ensembleFilterParams.spatialPositionsNum;
-            examinedCond(condIndex) = defaultCond;
-            examinedCond(condIndex).label = sprintf('%2.1f degs, %2.0fx%2.0f, %2.1f', abs(defaultCond.minimumMosaicFOVdegs), 2*posNum+1, 2*posNum+1, cyclesPerRF);
-            examinedCond(condIndex).ensembleFilterParams.cyclesPerRFs = cyclesPerRF;
-        end
 
-
-        defaultCond.minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
-        defaultCond.ensembleFilterParams = struct(...
-                            'spatialPositionsNum',  2, ...   % 1 results in a 3x3 grid, 2 in 5x5
-                            'spatialPositionOffsetDegs', 0.025, ... 
-                            'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
-                            'orientations', 0);
-        for i = 1:numel(cyclesPerRFlist)
-            condIndex = condIndex+1;
-            cyclesPerRF = cyclesPerRFlist(i); 
-            posNum = defaultCond.ensembleFilterParams.spatialPositionsNum;
-            examinedCond(condIndex) = defaultCond;
-            examinedCond(condIndex).label = sprintf('%2.1f degs, %2.0fx%2.0f, %2.1f', abs(defaultCond.minimumMosaicFOVdegs), 2*posNum+1, 2*posNum+1, cyclesPerRF);
-            examinedCond(condIndex).ensembleFilterParams.cyclesPerRFs = cyclesPerRF;
-        end                
+        condIndex = condIndex+1;
+        examinedCond(condIndex) = defaultCond;
+        examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
+            abs(defaultCond.minimumMosaicFOVdegs), ...
+            (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
+            defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60);
+        
+        condIndex = condIndex+1;
+        defaultCond.ensembleFilterParams.spatialPositionsNum = 1;
+        defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.025;
+        examinedCond(condIndex) = defaultCond;
+        examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
+            abs(defaultCond.minimumMosaicFOVdegs), ...
+            (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
+            defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60, ....
+            defaultCond.ensembleFilterParams.cyclesPerRFs);
+        
+        condIndex = condIndex+1;
+        defaultCond.ensembleFilterParams.spatialPositionsNum = 1;
+        defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.020;
+        examinedCond(condIndex) = defaultCond;
+        examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
+            abs(defaultCond.minimumMosaicFOVdegs), ...
+            (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
+            defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60, ....
+            defaultCond.ensembleFilterParams.cyclesPerRFs);
+        
+        
+        condIndex = condIndex+1;
+        defaultCond.ensembleFilterParams.spatialPositionsNum = 2;
+        defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.0328;
+        examinedCond(condIndex) = defaultCond;
+        examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
+            abs(defaultCond.minimumMosaicFOVdegs), ...
+            (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
+            defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60, ....
+            defaultCond.ensembleFilterParams.cyclesPerRFs);
+        
+        condIndex = condIndex+1;
+        defaultCond.ensembleFilterParams.spatialPositionsNum = 2;
+        defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.025;
+        examinedCond(condIndex) = defaultCond;
+        examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
+            abs(defaultCond.minimumMosaicFOVdegs), ...
+            (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
+            defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60);
+        
+        condIndex = condIndex+1;
+        defaultCond.ensembleFilterParams.spatialPositionsNum = 2;
+        defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.020;
+        examinedCond(condIndex) = defaultCond;
+        examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
+            abs(defaultCond.minimumMosaicFOVdegs), ...
+            (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
+            defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60);
+        
+        
+%         defaultCond.minimumMosaicFOVdegs = -0.492;   % nagative sign means that stimuli smaller than this, will use spatial ensemble pooling based on this mosaic size
+%         defaultCond.ensembleFilterParams = struct(...
+%                             'spatialPositionsNum',  2, ...   % 1 results in a 3x3 grid, 2 in 5x5
+%                             'spatialPositionOffsetDegs', 0.025, ... 
+%                             'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
+%                             'orientations', 0);
+%         for i = 1:numel(cyclesPerRFlist)
+%             condIndex = condIndex+1;
+%             cyclesPerRF = cyclesPerRFlist(i); 
+%             posNum = defaultCond.ensembleFilterParams.spatialPositionsNum;
+%             examinedCond(condIndex) = defaultCond;
+%             examinedCond(condIndex).label = sprintf('%2.1f degs, %2.0fx%2.0f, %2.1f', abs(defaultCond.minimumMosaicFOVdegs), 2*posNum+1, 2*posNum+1, cyclesPerRF);
+%             examinedCond(condIndex).ensembleFilterParams.cyclesPerRFs = cyclesPerRF;
+%         end                
                                
     end
-    end
+    
                   
     % Go
     examinedLegends = {};
@@ -187,7 +234,7 @@ if (1==2)
     for condIndex = 1:numel(examinedCond)
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
-        params.cyclesPerDegreeExamined = [60]; % [50 60]; % [32 40 50 60]; % [24 32 50 60];
+        params.cyclesPerDegreeExamined = [50 60]; % [32 40 50 60]; % [24 32 50 60];
         params.opticalImagePadSizeDegs = opticalImagePadSizeDegs;
         
         params.lowContrast = lowContrast; 
@@ -195,6 +242,7 @@ if (1==2)
         params.nContrastsPerDirection = nContrastsPerDirection;
     
         params.parforWorkersNum = parforWorkersNum;
+        params.parforWorkersNumForClassification = 20;
         
         % Update params
         cond = examinedCond(condIndex);
