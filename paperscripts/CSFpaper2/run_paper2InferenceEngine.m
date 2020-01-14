@@ -112,7 +112,7 @@ function run_paper2InferenceEngine
                     'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
                     'orientations', 0);
     
-  
+    end
 
 
 %     condIndex = condIndex+1;
@@ -131,7 +131,7 @@ function run_paper2InferenceEngine
 %                     'orientations', 0);
                     
     
-    end
+    
     
     
         
@@ -146,97 +146,30 @@ function run_paper2InferenceEngine
         defaultCond.emPathType = 'randomNoSaccades';
         defaultCond.centeredEMPaths = centeredEMPaths;
 
-        cyclesPerRFs = 6;
+        
         defaultCond.ensembleFilterParams = struct(...
                             'spatialPositionsNum',  1, ...           % 1 results in a 3x3 grid, 2 in 5x5
                             'spatialPositionOffsetDegs', 0.0328, ... % cannot save this variation is different data files - not encoded
-                            'cyclesPerRFs', cyclesPerRFs, ...                   % each template contains 5 cycles of the stimulus
+                            'cyclesPerRFs', [], ...                   % each template contains 5 cycles of the stimulus
                             'orientations', 0);
 
-
-        if (1==3)
-        condIndex = condIndex+1;
-        examinedCond(condIndex) = defaultCond;
-        examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
-            abs(defaultCond.minimumMosaicFOVdegs), ...
-            (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
-            defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60);
+        spatialPositionOffsetDegsList = [0.025 0.020 0.015];
+        cyclesPerRFs = [5.0]; % [6 5.5];
         
-        condIndex = condIndex+1;
-        defaultCond.ensembleFilterParams.spatialPositionsNum = 1;
-        defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.025;
-        defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFs+0.01;
-        examinedCond(condIndex) = defaultCond;
-        examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
-            abs(defaultCond.minimumMosaicFOVdegs), ...
-            (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
-            defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60);
-        
-        condIndex = condIndex+1;
-        defaultCond.ensembleFilterParams.spatialPositionsNum = 1;
-        defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.020;
-        defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFs+0.02;
-        examinedCond(condIndex) = defaultCond;
-        examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
-            abs(defaultCond.minimumMosaicFOVdegs), ...
-            (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
-            defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60);
-        
-        
-        condIndex = condIndex+1;
-        defaultCond.ensembleFilterParams.spatialPositionsNum = 1;
-        defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.015;
-        defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFs+0.03;
-        examinedCond(condIndex) = defaultCond;
-        examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
-            abs(defaultCond.minimumMosaicFOVdegs), ...
-            (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
-            defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60);
-        
+        for l = 1:numel(cyclesPerRFs)
+            for k = 1:numel(spatialPositionOffsetDegsList)
+                condIndex = condIndex+1;
+                defaultCond.ensembleFilterParams.spatialPositionsNum = 1;
+                defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = spatialPositionOffsetDegsList(k);
+                defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFs(l)+k*0.01;
+                examinedCond(condIndex) = defaultCond;
+                examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f'', %2.0f cycles', ...
+                    abs(defaultCond.minimumMosaicFOVdegs), ...
+                    (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
+                    defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60, ...
+                    defaultCond.ensembleFilterParams.cyclesPerRFs);
+            end
         end
-        
-        
-        cyclesPerRFs = 5.5;
-        defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFs;
-        
-        condIndex = condIndex+1;
-        examinedCond(condIndex) = defaultCond;
-        examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
-            abs(defaultCond.minimumMosaicFOVdegs), ...
-            (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
-            defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60);
-        
-        condIndex = condIndex+1;
-        defaultCond.ensembleFilterParams.spatialPositionsNum = 1;
-        defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.025;
-        defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFs+0.01;
-        examinedCond(condIndex) = defaultCond;
-        examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
-            abs(defaultCond.minimumMosaicFOVdegs), ...
-            (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
-            defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60);
-        
-        condIndex = condIndex+1;
-        defaultCond.ensembleFilterParams.spatialPositionsNum = 1;
-        defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.020;
-        defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFs+0.02;
-        examinedCond(condIndex) = defaultCond;
-        examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
-            abs(defaultCond.minimumMosaicFOVdegs), ...
-            (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
-            defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60);
-        
-        
-        condIndex = condIndex+1;
-        defaultCond.ensembleFilterParams.spatialPositionsNum = 1;
-        defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.015;
-        defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFs+0.03;
-        examinedCond(condIndex) = defaultCond;
-        examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
-            abs(defaultCond.minimumMosaicFOVdegs), ...
-            (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
-            defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60);
-        
         
         
     
