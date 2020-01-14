@@ -36,7 +36,7 @@ function run_paper2InferenceEngine
     computeMosaic = ~true;
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -73,7 +73,7 @@ function run_paper2InferenceEngine
     % Init condition index
     condIndex = 0;
     
-    
+    if (1==2)
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'stim-matched, no EM';
     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
@@ -112,7 +112,7 @@ function run_paper2InferenceEngine
                     'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
                     'orientations', 0);
     
-     
+    end
 
 
 %     condIndex = condIndex+1;
@@ -145,10 +145,11 @@ function run_paper2InferenceEngine
         defaultCond.emPathType = 'randomNoSaccades';
         defaultCond.centeredEMPaths = centeredEMPaths;
 
+        cyclesPerRFs = 6;
         defaultCond.ensembleFilterParams = struct(...
-                            'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid, 2 in 5x5
+                            'spatialPositionsNum',  1, ...           % 1 results in a 3x3 grid, 2 in 5x5
                             'spatialPositionOffsetDegs', 0.0328, ... % cannot save this variation is different data files - not encoded
-                            'cyclesPerRFs', 6, ...           % each template contains 5 cycles of the stimulus
+                            'cyclesPerRFs', cyclesPerRFs, ...                   % each template contains 5 cycles of the stimulus
                             'orientations', 0);
 
 
@@ -163,6 +164,7 @@ function run_paper2InferenceEngine
         condIndex = condIndex+1;
         defaultCond.ensembleFilterParams.spatialPositionsNum = 1;
         defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.025;
+        defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFs+0.01;
         examinedCond(condIndex) = defaultCond;
         examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
             abs(defaultCond.minimumMosaicFOVdegs), ...
@@ -173,6 +175,7 @@ function run_paper2InferenceEngine
         condIndex = condIndex+1;
         defaultCond.ensembleFilterParams.spatialPositionsNum = 1;
         defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.020;
+        defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFs+0.02;
         examinedCond(condIndex) = defaultCond;
         examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
             abs(defaultCond.minimumMosaicFOVdegs), ...
@@ -184,6 +187,8 @@ function run_paper2InferenceEngine
         condIndex = condIndex+1;
         defaultCond.ensembleFilterParams.spatialPositionsNum = 2;
         defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.0328;
+        defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFs;
+        
         examinedCond(condIndex) = defaultCond;
         examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
             abs(defaultCond.minimumMosaicFOVdegs), ...
@@ -194,6 +199,7 @@ function run_paper2InferenceEngine
         condIndex = condIndex+1;
         defaultCond.ensembleFilterParams.spatialPositionsNum = 2;
         defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.025;
+        defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFs+0.01;
         examinedCond(condIndex) = defaultCond;
         examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
             abs(defaultCond.minimumMosaicFOVdegs), ...
@@ -203,6 +209,7 @@ function run_paper2InferenceEngine
         condIndex = condIndex+1;
         defaultCond.ensembleFilterParams.spatialPositionsNum = 2;
         defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = 0.020;
+        defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFs+0.02;
         examinedCond(condIndex) = defaultCond;
         examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f''', ...
             abs(defaultCond.minimumMosaicFOVdegs), ...
