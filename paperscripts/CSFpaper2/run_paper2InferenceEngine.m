@@ -65,7 +65,7 @@ function run_paper2InferenceEngine
     lowContrast = 0.01;
     highContrast = 1.0;
     nContrastsPerDirection = 10;
-    parforWorkersNum = 12;
+    parforWorkersNum = 20;
     % * * * * * * * * * * * * * * * 
     
     
