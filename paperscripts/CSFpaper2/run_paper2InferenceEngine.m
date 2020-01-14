@@ -34,10 +34,10 @@ function run_paper2InferenceEngine
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = ~true;
+    computeResponses = true;
     visualizeResponses = ~true;
-    findPerformance = true;
-    visualizePerformance = true;
+    findPerformance = ~true;
+    visualizePerformance = ~true;
     
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
@@ -85,7 +85,7 @@ function run_paper2InferenceEngine
 %     examinedCond(condIndex).centeredEMPaths = true;
 %    
     
-    if (1==2)
+
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'stim-matched, drift';
     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
@@ -113,7 +113,7 @@ function run_paper2InferenceEngine
                     'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
                     'orientations', 0);
     
-    end
+
 
 
 
@@ -155,10 +155,10 @@ function run_paper2InferenceEngine
                             'cyclesPerRFs', [], ...                   % each template contains 5 cycles of the stimulus
                             'orientations', 0);
 
-        spatialPositionOffsetArcMinList = [0.3 0.5 0.7 0.9 1.1 1.3];
-        cyclesPerRFsList = [6 5.5 5.0 4.5];
+        spatialPositionOffsetArcMinList = [0.3]; % [0.3 0.5 0.7 0.9 1.1 1.3];
+        cyclesPerRFsList = [4.0]; % [6 5.5 5.0 4.5 4.0];
         
-        for posNums = 1:2
+        for posNums = 1:1
         for l = 1:numel(cyclesPerRFsList)
             for k = 1:numel(spatialPositionOffsetArcMinList)
                 condIndex = condIndex+1;
@@ -200,7 +200,7 @@ function run_paper2InferenceEngine
     for condIndex = 1:numel(examinedCond)
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
-        params.cyclesPerDegreeExamined = [50 60]; % [32 40 50 60]; % [24 32 50 60];
+        params.cyclesPerDegreeExamined = [40]; % [32 40 50 60]; % [24 32 50 60];
         params.opticalImagePadSizeDegs = opticalImagePadSizeDegs;
         
         params.lowContrast = lowContrast; 
