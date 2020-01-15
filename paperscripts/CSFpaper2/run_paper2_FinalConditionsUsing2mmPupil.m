@@ -36,7 +36,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
     computeMosaic = ~true;
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -71,6 +71,17 @@ function run_paper2_FinalConditionsUsing2mmPupil
     % Init condition index
     condIndex = 0;
     
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = 'ideal observer';
+    examinedCond(condIndex).performanceClassifier = 'mlpt';
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+    examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
+    examinedCond(condIndex).performanceSignal = 'isomerizations';
+    examinedCond(condIndex).emPathType = 'frozen0';
+    examinedCond(condIndex).centeredEMPaths = true;
+    
+    if (1==2)
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-Temp-L, R*, noEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
@@ -112,6 +123,8 @@ function run_paper2_FinalConditionsUsing2mmPupil
     examinedCond(condIndex).emPathType = 'randomNoSaccades';
     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
 
+    end
+    
     
     % Go
     examinedLegends = {};
