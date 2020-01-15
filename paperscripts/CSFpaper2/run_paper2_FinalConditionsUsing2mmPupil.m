@@ -36,7 +36,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
     computeMosaic = ~true;
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -54,18 +54,12 @@ function run_paper2_FinalConditionsUsing2mmPupil
     
     % Compute photocurrent responses
     computePhotocurrents = true;
-    
-    performanceSignal = 'photocurrents'; %'isomerizations'; % 'photocurrents';
-    emPath = 'randomNoSaccades';
-    
+   
     
     % Different stategy for  drift fixational EMs
     centeredEMPaths =  'atStimulusModulationMidPoint';
     nTrainingSamples = 1016;
      
-    showDataFromLinearPooling = ~true;
-    showDataFromQuadraturePooling = ~showDataFromLinearPooling;
-    
     
     % Assemble conditions list to be examined
     % Init condition index
@@ -74,14 +68,11 @@ function run_paper2_FinalConditionsUsing2mmPupil
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'ideal observer';
     examinedCond(condIndex).performanceClassifier = 'mlpt';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
     examinedCond(condIndex).performanceSignal = 'isomerizations';
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = true;
     
-    if (1==2)
+   
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'SVM-Temp-L, R*, noEM';
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
@@ -99,7 +90,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
-    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).performanceSignal = 'photocurrents';
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = true;
 
@@ -109,7 +100,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
-    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).performanceSignal = 'photocurrents';
     examinedCond(condIndex).emPathType = 'frozen0';
     examinedCond(condIndex).centeredEMPaths = true;
         
@@ -119,12 +110,11 @@ function run_paper2_FinalConditionsUsing2mmPupil
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
-    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).performanceSignal = 'photocurrents';
     examinedCond(condIndex).emPathType = 'randomNoSaccades';
     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
 
-    end
-    
+ 
     
     % Go
     examinedLegends = {};
@@ -141,6 +131,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
         params.emPathType = cond.emPathType;
         params.centeredEMPaths = cond.centeredEMPaths;
         params.nTrainingSamples = nTrainingSamples;
+        params.minimumMosaicFOVdegs = [];
         
         examinedLegends{numel(examinedLegends) + 1} = cond.label;
     
@@ -157,10 +148,12 @@ function run_paper2_FinalConditionsUsing2mmPupil
                 fName = fNames{fNameIndex};
                 params.spatialPoolingKernelParams.(fName) = cond.ensembleFilterParams.(fName);
             end
+        elseif (strcmp(params.performanceClassifier,'mlpt'))
+            ; % do nothing
         else
             error('Unknown performance classifier: ''%s''.',params.performanceClassifier);
         end
-        params.minimumMosaicFOVdegs = cond.minimumMosaicFOVdegs;
+        
         
         % Update params
         params = getRemainingDefaultParams(params, ...
@@ -173,11 +166,7 @@ function run_paper2_FinalConditionsUsing2mmPupil
     
    
     if (makeSummaryFigure)
-        if (showDataFromQuadraturePooling)
-            variedParamName = sprintf('QuadraturePoolingEyeMovements_%s_2mmPupil', performanceSignal);
-        else
-            variedParamName = sprintf('LinearPoolingEyeMovements_%s_2mmPupil', performanceSignal);
-        end
+        variedParamName = '2mmPupil';
         
 
         theRatioLims = [0.01 1.2];
