@@ -34,10 +34,10 @@ function run_paper2InferenceEngine
     
     % Whether to compute responses
     computeMosaic = ~true;
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
-    visualizePerformance = ~true;
+    findPerformance = true;
+    visualizePerformance = true;
     
     % Pupil diameter to be used
     pupilDiamMm = 3.0;
@@ -55,7 +55,7 @@ function run_paper2InferenceEngine
     % Compute photocurrent responses
     computePhotocurrents = true;
     
-    performanceSignal = 'isomerizations'; % 'photocurrents';
+    performanceSignal ='photocurrents';
     emPathType = 'randomNoSaccades';
     centeredEMPaths =  'atStimulusModulationMidPoint';
     
@@ -85,9 +85,9 @@ function run_paper2InferenceEngine
 %     examinedCond(condIndex).centeredEMPaths = true;
 %    
     
-
+    if (1==1)
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'stim-matched, drift';
+    examinedCond(condIndex).label = 'stim-matched';
     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -99,7 +99,7 @@ function run_paper2InferenceEngine
     
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = '0.3 degs, drift';
+    examinedCond(condIndex).label = '0.3 degs (single)';
     examinedCond(condIndex).minimumMosaicFOVdegs = 0.328;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -113,9 +113,8 @@ function run_paper2InferenceEngine
                     'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
                     'orientations', 0);
     
-
-
-
+    end
+    
 
 %     condIndex = condIndex+1;
 %     examinedCond(condIndex).label = '0.5 degs, drift';
@@ -131,10 +130,7 @@ function run_paper2InferenceEngine
 %                     'spatialPositionOffsetDegs', 0, ... 
 %                     'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
 %                     'orientations', 0);
-                    
-    
-    
-    
+                 
     
         
     if (~computeResponses)
@@ -155,12 +151,13 @@ function run_paper2InferenceEngine
                             'cyclesPerRFs', [], ...                   % each template contains 5 cycles of the stimulus
                             'orientations', 0);
 
-        spatialPositionOffsetArcMinList = [0.3]; % [0.3 0.5 0.7 0.9 1.1 1.3];
-        cyclesPerRFsList = [4.0]; % [6 5.5 5.0 4.5 4.0];
+        spatialPositionOffsetArcMinList = [0.1 0.2 0.3 0.4 0.5 0.6]; % [0.3 0.5 0.7 0.9 1.1 1.3];
+        cyclesPerRFsList = [6.5 6 5.5 5.0 4.5 4.0]; % [6 5.5 5.0 4.5 4.0];
         
-        for posNums = 1:1
+        for posNums = 3:3 % 1:2
         for l = 1:numel(cyclesPerRFsList)
             for k = 1:numel(spatialPositionOffsetArcMinList)
+                [posNums l k condIndex+1]
                 condIndex = condIndex+1;
                 defaultCond.ensembleFilterParams.spatialPositionsNum = posNums;
                 defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = spatialPositionOffsetArcMinList(k)/60;
@@ -171,6 +168,7 @@ function run_paper2InferenceEngine
                     (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
                     defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60, ...
                     defaultCond.ensembleFilterParams.cyclesPerRFs);
+                examinedCond(condIndex).label = sprintf('%2.1f degs (ensemble)', abs(defaultCond.minimumMosaicFOVdegs));
             end
         end
         end
@@ -198,9 +196,10 @@ function run_paper2InferenceEngine
     examinedLegends = {};
 
     for condIndex = 1:numel(examinedCond)
+        condIndex
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
-        params.cyclesPerDegreeExamined = [40]; % [32 40 50 60]; % [24 32 50 60];
+        params.cyclesPerDegreeExamined = [50]; % [32 40 50 60];
         params.opticalImagePadSizeDegs = opticalImagePadSizeDegs;
         
         params.lowContrast = lowContrast; 
@@ -244,15 +243,50 @@ function run_paper2InferenceEngine
         
         % Go !
         [~,~, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
+        close('all');
     end % condIndex
     
    
     if (makeSummaryFigure)
         variedParamName = performanceSignal;
-        theRatioLims = [0.5 1.2];
-        theRatioTicks = [0.1 0.2 0.5 0.75 1 1.1 1.2];
+        theRatioLims = [0.6 1.1];
+        theRatioTicks = [0.1 0.2 0.5 0.75 0.8 0.9 1 1.1 1.2];
         formatLabel = 'InferenceEngine';
-        generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
+        
+        % ===== Replace all the ensemble data for cond = 3 .. end with the minTreshold
+        for theCondIndex = 3:numel(theFigData)
+            d = theFigData{theCondIndex};
+            d = d.banksEtAlReplicate.mlptThresholds;
+            for k = 1:numel(d)
+                d(k).thresholdContrasts
+                t(theCondIndex-2,k) = d(k).thresholdContrasts;
+            end
+        end
+        
+        % Save the first 3 figData only, replacing the 3rd one with the max
+        % sensitivity over all > 3 conditions
+        if (numel(theFigData)>=3)
+            for k = 1:3
+                theFigData2{k} = theFigData{k};
+            end
+
+            % Replace 3rd figData thresholdContrasts with min
+            % thresholdContrasts over all conds
+            minThresholdContrasts = min(t,[],1);
+
+            d = theFigData2{3};
+            condsNum = numel(d.banksEtAlReplicate.mlptThresholds);
+            for theCondIndex = 1:condsNum
+                d.banksEtAlReplicate.mlptThresholds(theCondIndex).thresholdContrasts = minThresholdContrasts(theCondIndex);
+            end
+            theFigData2{3} = d;
+             % ===== Replace all the ensemble data ====
+        else
+            theFigData2 = theFigData;
+        end
+        
+        
+        generateFigureForPaper(theFigData2, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF_high SF range', ...
             'showSubjectData', ~true, ...
             'showSubjectMeanData', ~true, ...
@@ -269,7 +303,6 @@ end
 
 function params = getRemainingDefaultParams(params, computePhotocurrents, computeResponses, computeMosaic, visualizeResponses, findPerformance, visualizePerformance)
                          
-    
     % Simulation steps to perform
     params.computeMosaic = computeMosaic; 
     params.visualizeMosaic = ~true;
