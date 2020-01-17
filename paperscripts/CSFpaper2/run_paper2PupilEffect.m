@@ -1,16 +1,12 @@
-function run_paper2IsomerizationsVsPhotocurrents
-% Compute and contrast performance at the level of isomerizations vs
-% photocurrents.m
+function run_paper2PupilEffect
+% Contrast performance for 2 vs 3 mm pupils
 %
 % Syntax:
-%   run_paper2IsomerizationsVsPhotocurrents
+%   run_paper2PupilEffect
 %
 % Description:
-%    Compute and contrast performance at the level of isomerizations vs photocurrents.
-%    This is done in the absence of eye movements and contrasts 
-%    1. isomerizations using the mlpt inference engine VS
-%    2. isomerizations using the SVM-Template-Linear inference engine VS
-%    3. photocurrents using the SVM-Template-Linear inference engine
+%    Compute and contrast performance for 2 vs 3 mm pupils
+%    This is done in the absence of eye movements using the SVM-Template-Linear inference
 %
 %    The computation is done via the ecc-based cone efficiency & macular pigment
 %    mosaic and the default Thibos subject. We use a 5 msec integration
@@ -38,20 +34,15 @@ function run_paper2IsomerizationsVsPhotocurrents
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
-    % Pupil diameter to be used
-    pupilDiamMm = 3.0;
     
     % Integration time to use: Here set to 5.0 ms, but 2.5 ms may be better 
     % for capturing the dynamcs of fixationalEM
     integrationTimeMilliseconds = 5.0;
-    
-    
-    nTrainingSamples = 1016;
     
     % How long the stimulus is.
     % We might be changing the duration. 100 ms is the default
@@ -60,55 +51,54 @@ function run_paper2IsomerizationsVsPhotocurrents
     % Will need to change this to study shorter stimulus durations.
     frameRate = 10; 
     
+    performanceClassifier = 'svmV1FilterBank';
+    performanceSignal = 'isomerizations';
+    emPathType = 'frozen0';
+    
     % Assemble conditions list to be examined
     % Init condition index
     condIndex = 0;
-    
-    if (~computeResponses)
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Template-Linear, R*';
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-        examinedCond(condIndex).performanceSignal = 'isomerizations';
-    end
+   
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'SVM-Template-Linear, pCurr.';
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+    examinedCond(condIndex).label = '3mm pupil';
+    examinedCond(condIndex).performanceClassifier = performanceClassifier;
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).performanceSignal = 'photocurrents';
+    examinedCond(condIndex).pupilDiamMm = 3.0;
+    
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = '2mm pupil';
+    examinedCond(condIndex).performanceClassifier = performanceClassifier;
+    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+    examinedCond(condIndex).pupilDiamMm = 2.0;
     
     % Go
     examinedLegends = {};
     for condIndex = 1:numel(examinedCond)
-        params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds,  frameRate, stimulusDurationInSeconds, computationInstance);
+        
+        cond = examinedCond(condIndex);
+        
+        params = getCSFPaper2DefaultParams(cond.pupilDiamMm, integrationTimeMilliseconds,  frameRate, stimulusDurationInSeconds, computationInstance);
         
         % Use 1028 vs 1024 trials to differentiate results from old photocurrent computation
-        params.nTrainingSamples = nTrainingSamples;
+        params.nTrainingSamples = 1016;
         
         % Try out for subset of SFs
         params.cyclesPerDegreeExamined = [4 8 12 16 24 32 50 60];
         
-        cond = examinedCond(condIndex);
-        
         examinedLegends{numel(examinedLegends) + 1} = cond.label;
         params.performanceClassifier = cond.performanceClassifier;
-        params.performanceSignal = cond.performanceSignal;
-        params.emPathType = 'frozen0';
+        params.performanceSignal = performanceSignal;
+        params.emPathType = emPathType;
         
-        if (strcmp(params.performanceClassifier, 'svmV1FilterBank'))
-            params.spatialPoolingKernelParams.type = cond.spatialPoolingKernelParams.type;
-            params.spatialPoolingKernelParams.activationFunction = cond.spatialPoolingKernelParams.activationFunction;
-        end
+        params.spatialPoolingKernelParams.type = cond.spatialPoolingKernelParams.type;
+        params.spatialPoolingKernelParams.activationFunction = cond.spatialPoolingKernelParams.activationFunction;
         
         % Update params
-        if (strcmp(cond.label, 'Ideal observer, isomerizations'))
-            computePhotocurrents = false;
-        else
-            computePhotocurrents = true;
-        end
+        computePhotocurrents = true;
+        
         
         params = getRemainingDefaultParams(params, computePhotocurrents, computeResponses, visualizeResponses, findPerformance, visualizePerformance);  
         [~,~, theFigData{condIndex}] = run_BanksPhotocurrentEyeMovementConditions(params);
@@ -116,10 +106,13 @@ function run_paper2IsomerizationsVsPhotocurrents
     
     
     if (makeSummaryFigure)
-        variedParamName = 'SignalType';
+        variedParamName = sprintf('PupilSize_%s', performanceSignal)';
         
         theRatioLims = [0.07 1.15];
         theRatioTicks = [0.05 0.1 0.2 0.5 1.0];
+        theRatioLims = [0.1 5];
+        theRatioTicks = [0.1 0.2 0.5 1 2 5];
+        
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
@@ -129,7 +122,7 @@ function run_paper2IsomerizationsVsPhotocurrents
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.30,0.905,0.67,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.50,0.87,0.47,0.08], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );
