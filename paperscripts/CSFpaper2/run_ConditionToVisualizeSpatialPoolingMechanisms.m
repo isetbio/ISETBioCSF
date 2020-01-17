@@ -57,24 +57,24 @@ function run_ConditionToVisualizeSpatialPoolingMechanisms
     params.nContrastsPerDirection = 1;
     
     % (iv) only 20 c/deg
-    params.cyclesPerDegreeExamined = [32]; % [24 32 50 60];
+    params.cyclesPerDegreeExamined = [40]; % [32 40 50 60];
     
     % (v) minimum oi size (0.5 for visualization purposes)
-    params.opticalImagePadSizeDegs = 0.5; 
+    params.opticalImagePadSizeDegs = 0.7; 
     
     % (vi) * * * SPATIAL POOLING SELECTION  * * * 
     % Negative sign for the 'minimumMosaicFOVdegs' means use an ensemble of pooling mechanisms
     % on a mosaic whose FOV is the absolute value of the 'minimumMosaicFOVdegs'
-    params.minimumMosaicFOVdegs = -0.328; %-0.492;
+    params.minimumMosaicFOVdegs = 0.328; %-0.492;
     params.spatialPoolingKernelParams.type = 'V1QuadraturePair';
     params.spatialPoolingKernelParams.activationFunction = 'energy';
     
-    params.performanceClassifier = 'svmV1FilterEnsemble'; % 'svmV1FilterEnsemble'; %'svmV1FilterBank' or 'svmV1FilterEnsemble'
+    params.performanceClassifier = 'svmV1FilterBank'; % 'svmV1FilterEnsemble'; %'svmV1FilterBank' or 'svmV1FilterEnsemble'
     
     if (strcmp(params.performanceClassifier, 'svmV1FilterEnsemble'))
         ensembleFilterParams = struct(...
                             'spatialPositionsNum',  1, ...   % 1 results in a 3x3 grid of spatial pooling templates
-                            'spatialPositionOffsetDegs', 0.0328, ... 
+                            'spatialPositionOffsetDegs', 1.7/60, ... 
                             'cyclesPerRFs', 6, ...           % each template contains 4 cycles of the stimulus
                             'orientations', 0);
         fNames = fieldnames(ensembleFilterParams);
@@ -88,7 +88,7 @@ function run_ConditionToVisualizeSpatialPoolingMechanisms
     % Simulation steps to perform
     params.computeResponses = ~true;
     params.computeMosaic = ~true; 
-    params.visualizeMosaic = ~true;
+    params.visualizeMosaic = true;
     
     params.computePhotocurrentResponseInstances = true;
     params.visualizeDisplay = ~true;

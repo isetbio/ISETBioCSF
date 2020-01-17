@@ -32,7 +32,7 @@ function hFigsInfo = visualizeResponseInstances(theMosaic, ...
         ];
     
     
-    visualizedResponseInstances = [3 6 14 16];
+    visualizedResponseInstances = [1:2]; %[3 6 14 16];
     visualizedSingleResponseInstances = visualizedResponseInstances;
     
     showIndividualConeResponses = false;

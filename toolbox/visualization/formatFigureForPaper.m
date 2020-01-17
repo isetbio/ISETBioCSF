@@ -334,11 +334,11 @@ function varargout = formatFigureForPaper(hFig, varargin)
             
             if (strcmp(figureType, 'CSF_high SF range'))
                 csTicks = [1 2 5 10 20 50 100 200 500 1000 2000 5000 10000];
-                csLims = [1.0 20];
+                csLims = [1.5 20];
             
                 sfTicks = [1 2 5 10 20 30 40 50 60 80 100];
-                sfLims  = [26 70];
-                dx1 = 0.2; dx2 = 5; dy1 = 0.1; dy2 = 15;
+                sfLims  = [29.5 60];
+                dx1 = 0.2; dx2 = 5; dy1 = 0.1; dy2 = 2;
             end
             
             
@@ -346,9 +346,9 @@ function varargout = formatFigureForPaper(hFig, varargin)
             if (isempty(theAxes)) && (isempty(theLegend))
                 if (plotRatiosOfOtherConditionsToFirst)||(plotRatiosOfSubsequentConditions)
                     if (figureHasFinalSize)
-                        set(hFig, 'Color', [1 1 1], 'Position', [10 10 190 340]);
-                        varargout{1} = subplot('Position', [0.215 0.31 0.78 0.68]);
-                        varargout{2} = subplot('Position', [0.215 0.08 0.78 0.22]);
+                        set(hFig, 'Color', [1 1 1], 'Position', [10 10 190 360]);
+                        varargout{1} = subplot('Position', [0.215 0.30 0.78 0.66]);
+                        varargout{2} = subplot('Position', [0.215 0.08 0.78 0.21]);
                     else
                         set(hFig, 'Color', [1 1 1], 'Position', [10 10 500 900]);
                         varargout{1} = subplot('Position', [0.19 0.30 0.80 0.69]);
