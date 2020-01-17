@@ -34,7 +34,7 @@ function run_paper2EffectOfPulseDuration
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = ~true;
+    computeResponses = true;
     visualizeResponses = ~true;
     findPerformance = ~true;
     visualizePerformance = true;
@@ -120,7 +120,7 @@ function run_paper2EffectOfPulseDuration
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds,  frameRate, stimulusDurationInSeconds, computationInstance);
         
         % Use 1028 vs 1024 trials to differentiate results from old photocurrent computation
-        params.nTrainingSamples = 1030;
+        params.nTrainingSamples = 1016;
         
         % Try out for subset of SFs
         params.cyclesPerDegreeExamined = [8 16 24 32 50 60]; % [16 24 32 50 60];
@@ -149,6 +149,8 @@ function run_paper2EffectOfPulseDuration
         
         theRatioLims = [0.3 2];
         theRatioTicks = [0.5 0.7 1.0 1.5 2];
+        theRatioLims = [0.1 5];
+        theRatioTicks = [0.1 0.2 0.5 1 2 5];
         formatLabel = 'ComparedToBanksSubjects';
         generateFigureForPaper(theFigData, examinedLegends, variedParamName, formatLabel, ...
             'figureType', 'CSF', ...
