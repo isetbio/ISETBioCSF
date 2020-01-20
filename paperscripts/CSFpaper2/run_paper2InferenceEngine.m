@@ -36,7 +36,7 @@ function run_paper2InferenceEngine
     computeMosaic = ~true;
     computeResponses = ~true;
     visualizeResponses = ~true;
-    findPerformance = true;
+    findPerformance = ~true;
     visualizePerformance = true;
     
     % Pupil diameter to be used
@@ -73,7 +73,7 @@ function run_paper2InferenceEngine
     % Init condition index
     condIndex = 0;
     
-    if (1==2)
+    if (1==1)
     condIndex = condIndex+1;
     examinedCond(condIndex).label = 'stim-matched, no EM';
     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
@@ -87,7 +87,7 @@ function run_paper2InferenceEngine
     
 
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'stim-matched';
+    examinedCond(condIndex).label = 'stim-matched, drift';
     examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -99,7 +99,7 @@ function run_paper2InferenceEngine
     
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = '0.3 degs (single)';
+    examinedCond(condIndex).label = '0.3 degs (single), drift';
     examinedCond(condIndex).minimumMosaicFOVdegs = 0.328;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -114,6 +114,7 @@ function run_paper2InferenceEngine
                     'orientations', 0);
     
     end 
+    startingCondIndexForEnsemble = condIndex;
 
 %     condIndex = condIndex+1;
 %     examinedCond(condIndex).label = '0.5 degs, drift';
@@ -150,24 +151,32 @@ function run_paper2InferenceEngine
                             'cyclesPerRFs', [], ...                   % each template contains 5 cycles of the stimulus
                             'orientations', 0);
 
-        spatialPositionOffsetArcMinList = [1.5 1.7 1.9 2.1]; % [0.1 0.3 0.5 0.7 0.9 1.1 1.3]; % [0.1 0.2 0.3 0.4 0.5 0.6]; % [0.3 0.5 0.7 0.9 1.1 1.3];
-        cyclesPerRFsList = [6.5 6 5.5 5.0 4.5 4.0]; % [6 5.5 5.0 4.5 4.0];
+        spatialPositionOffsetArcMinList = [0.5 0.7 0.9 1.1 1.3 1.5 1.7 1.9 2.1];
+        cyclesPerRFsList = [6 5.5 5.0 4.5 4.0]; 
+        totalPositions = 3;
         
-        for posNums = 1:3
+        spatialPositionOffsetArcMinList = [0.1 0.3 0.5 0.7 0.9 1.1 1.3 1.5 1.7 1.9 2.1];
+        cyclesPerRFsList = [6.5 6 5.5 5.0 4.5 4.0]; 
+        
+        
+%         spatialPositionOffsetArcMinList = 1.7;
+%         cyclesPerRFsList = 6;
+%         totalPositions = 1;
+        
+        for posNums = 1:totalPositions
         for l = 1:numel(cyclesPerRFsList)
             for k = 1:numel(spatialPositionOffsetArcMinList)
-                [posNums l k condIndex+1]
                 condIndex = condIndex+1;
                 defaultCond.ensembleFilterParams.spatialPositionsNum = posNums;
                 defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = spatialPositionOffsetArcMinList(k)/60;
                 defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFsList(l)+spatialPositionOffsetArcMinList(k)*0.1;  % encode variation in offset (k) in the cycles
                 examinedCond(condIndex) = defaultCond;
-                examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f'', %2.1f cycles', ...
-                    abs(defaultCond.minimumMosaicFOVdegs), ...
-                    (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
-                    defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60, ...
-                    defaultCond.ensembleFilterParams.cyclesPerRFs);
-                examinedCond(condIndex).label = sprintf('%2.1f degs (ensemble)', abs(defaultCond.minimumMosaicFOVdegs));
+%                 examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f'', %2.1f cycles', ...
+%                     abs(defaultCond.minimumMosaicFOVdegs), ...
+%                     (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
+%                     defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60, ...
+%                     defaultCond.ensembleFilterParams.cyclesPerRFs);
+                examinedCond(condIndex).label = sprintf('%2.1f degs (ensemble), drift', abs(defaultCond.minimumMosaicFOVdegs));
             end
         end
         end
@@ -195,7 +204,7 @@ function run_paper2InferenceEngine
     examinedLegends = {};
 
     for condIndex = 1:numel(examinedCond)
-        condIndex
+        [condIndex numel(examinedCond)]
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
         params.cyclesPerDegreeExamined = [32 40 50 60];
@@ -215,6 +224,13 @@ function run_paper2InferenceEngine
         params.emPathType = cond.emPathType;
         params.centeredEMPaths = cond.centeredEMPaths;
         params.nTrainingSamples = nTrainingSamples;
+        
+        if (isfield(cond, 'ensembleFilterParams')) && (~isempty(cond.ensembleFilterParams))
+            cond
+         [cond.ensembleFilterParams.spatialPositionsNum ...
+         cond.ensembleFilterParams.spatialPositionOffsetDegs*60 ...
+         cond.ensembleFilterParams.cyclesPerRFs]
+        end
         
         examinedLegends{numel(examinedLegends) + 1} = cond.label;
     
@@ -248,37 +264,36 @@ function run_paper2InferenceEngine
    
     if (makeSummaryFigure)
         variedParamName = performanceSignal;
-        theRatioLims = [0.8 1.1];
+        theRatioLims = [0.55 1.0];
         theRatioTicks = [0.6 0.7 0.8 0.9 1.0 1.1 1.2];
         formatLabel = 'InferenceEngine';
         
-        % ===== Replace all the ensemble data for cond = 3 .. end with the minTreshold
-        for theCondIndex = 3:numel(theFigData)
+        % ===== Replace all the ensemble data for cond = (startingCondIndexForEnsemble+1) .. end with the minTreshold
+        for theCondIndex = (startingCondIndexForEnsemble+1):numel(theFigData)
             d = theFigData{theCondIndex};
             d = d.banksEtAlReplicate.mlptThresholds;
             for k = 1:numel(d)
-                d(k).thresholdContrasts
-                t(theCondIndex-2,k) = d(k).thresholdContrasts;
+                t(theCondIndex-startingCondIndexForEnsemble,k) = d(k).thresholdContrasts;
             end
         end
         
-        % Save the first 3 figData only, replacing the 3rd one with the max
-        % sensitivity over all > 3 conditions
-        if (numel(theFigData)>=3)
-            for k = 1:3
+        % Save the first 3 figData only, replacing the startingCondIndexForEnsemble+1 one with the max
+        % sensitivity over all > startingCondIndexForEnsemble+1 conditions
+        if (numel(theFigData)>=startingCondIndexForEnsemble+1)
+            for k = 1:(startingCondIndexForEnsemble+1)
                 theFigData2{k} = theFigData{k};
             end
 
-            % Replace 3rd figData thresholdContrasts with min
+            % Replace startingCondIndexForEnsemble+1 figData thresholdContrasts with min
             % thresholdContrasts over all conds
             minThresholdContrasts = min(t,[],1);
 
-            d = theFigData2{3};
+            d = theFigData2{startingCondIndexForEnsemble+1};
             condsNum = numel(d.banksEtAlReplicate.mlptThresholds);
             for theCondIndex = 1:condsNum
                 d.banksEtAlReplicate.mlptThresholds(theCondIndex).thresholdContrasts = minThresholdContrasts(theCondIndex);
             end
-            theFigData2{3} = d;
+            theFigData2{startingCondIndexForEnsemble+1} = d;
              % ===== Replace all the ensemble data ====
         else
             theFigData2 = theFigData;
@@ -293,7 +308,7 @@ function run_paper2InferenceEngine
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.45,0.86,0.5,0.08], ...    % custom legend position and size
+            'theLegendPosition', [0.43,0.86,0.48,0.08], ...    % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );
