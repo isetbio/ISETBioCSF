@@ -181,46 +181,46 @@ function hFig = generatePhotoCurrentFig(figNo, timeAxis, noiseTraces, pCurrentIm
        'colsNum', 1, ...
        'heightMargin',  0.03, ...
        'widthMargin',    0.09, ...
-       'leftMargin',     0.13, ...
-       'rightMargin',    0.03, ...
-       'bottomMargin',   0.15, ...
+       'leftMargin',     0.17, ...
+       'rightMargin',    0.04, ...
+       'bottomMargin',   0.16, ...
        'topMargin',      0.02);
    
-    ax = subplot('Position', subplotPosVectors(1,1).v);
+    subplot('Position', subplotPosVectors(1,1).v);
     dt = timeAxis(2)-timeAxis(1);
     t = (0:(size(pCurrentImpulseResponses,1)-1))*dt;
-    plot(t, pCurrentImpulseResponses(:,1), 'r-', 'Color', [1 0.2 0.4], 'LineWidth', 2.0); hold on
-    plot(t, pCurrentImpulseResponses(:,2), 'g-', 'Color', [0.2 1.0 0.5], 'LineWidth', 2.0);
-    plot(t, pCurrentImpulseResponses(:,3), 'b-', 'Color', [0.5 0.2 1.0], 'LineWidth', 2.0);
+    plot(t, pCurrentImpulseResponses(:,1), 'r-', 'Color', [1 0.2 0.4], 'LineWidth', 3.0); hold on
+    plot(t, pCurrentImpulseResponses(:,2), 'g-', 'Color', [0.2 1.0 0.5], 'LineWidth', 3.0);
+    plot(t, pCurrentImpulseResponses(:,3), 'b-', 'Color', [0.5 0.2 1.0], 'LineWidth', 3.0);
     
-    plot(t, pCurrentImpulseResponses(:,1), 'r-', 'Color', [0 0 0], 'LineWidth', 3.0);
-    plot(t, pCurrentImpulseResponses(:,2), 'g-', 'Color', [0 0 0], 'LineWidth', 3.0);
-    plot(t, pCurrentImpulseResponses(:,3), 'b-', 'Color', [0 0 0], 'LineWidth', 3.0);
+    plot(t, pCurrentImpulseResponses(:,1), 'r-', 'Color', [0 0 0], 'LineWidth', 4.0);
+    plot(t, pCurrentImpulseResponses(:,2), 'g-', 'Color', [0 0 0], 'LineWidth', 4.0);
+    plot(t, pCurrentImpulseResponses(:,3), 'b-', 'Color', [0 0 0], 'LineWidth', 4.0);
     
-    plot(t, pCurrentImpulseResponses(:,1), 'r-', 'Color', [1 0.2 0.4], 'LineWidth', 2.0);
-    plot(t, pCurrentImpulseResponses(:,2), 'g-', 'Color', [0.2 1.0 0.5], 'LineWidth', 2.0);
-    plot(t, pCurrentImpulseResponses(:,3), 'b-', 'Color', [0.5 0.2 1.0], 'LineWidth', 2.0);
+    plot(t, pCurrentImpulseResponses(:,1), 'r-', 'Color', [1 0.2 0.4], 'LineWidth', 3.0);
+    plot(t, pCurrentImpulseResponses(:,2), 'g-', 'Color', [0.2 1.0 0.5], 'LineWidth', 3.0);
+    plot(t, pCurrentImpulseResponses(:,3), 'b-', 'Color', [0.5 0.2 1.0], 'LineWidth', 3.0);
     legend({'L-cone', 'M-cone', 'S-cone'})
    
 
     grid on;
     set(gca, 'XLim', [t(1) t(end)]); 
     set(gca, 'XTick', [0:100:1000], 'YTick', [], 'YColor', 'none', 'XColor', 'none', 'XTickLabel', {});
-    set(gca, 'FontSize', 20);
+    set(gca, 'FontSize', 24);
     box off
     
-    ax = subplot('Position', subplotPosVectors(2,1).v);
-    hPlot = plot(timeAxis(1:size(noiseTraces,2)),  noiseTraces, 'k-', 'LineWidth', 2);
+    subplot('Position', subplotPosVectors(2,1).v);
+    hPlot = plot(timeAxis(1:size(noiseTraces,2)),  noiseTraces(1:256,:), 'k-', 'LineWidth', 2);
     for k = 1:numel(hPlot)
-       hPlot(k).Color(4) = 0.02;  % 5% transparent
+       hPlot(k).Color(4) = 0.06;  % 5% transparent
     end
     
     grid on;
     set(gca, 'XLim', [t(1) t(end)]); 
-    set(gca, 'XTick', [0:100:1000], 'YTick', [-10:5:10], 'YLim', [-9 9]);
-    xlabel('time (msec)');
-    ylabel('pAmps');
-    set(gca, 'FontSize', 20);
+    set(gca, 'XTick', [0:100:1000], 'YTick', [-10:5:10], 'YLim', [-12 12]);
+    xlabel('\it time (msec)');
+    ylabel('\it pAmps');
+    set(gca, 'FontSize', 24);
     box off
     
 end
@@ -303,13 +303,13 @@ function plotMeanAndSingleResponseInstances(ax, timeAxis, meanResponse, response
     end
     
     if (displayTitle)
-        title(sprintf('%s', yAxisLabel));
+        title(sprintf('%s', yAxisLabel), 'FontWeight', 'normal');
     end
     if (strcmp(yAxisLabel, 'cone excitations (R*/c/5 msec)'))
         text(415, 75, coneType, 'Color', color, 'FontSize', 24, 'FontWeight', 'bold');
     end
     
-    
+    set(gca, 'FontSize', 24);
 end
 
 

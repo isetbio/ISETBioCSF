@@ -55,13 +55,13 @@ function run_paper2InferenceEngine
     % Compute photocurrent responses
     computePhotocurrents = true;
     
-    performanceSignal = 'isomerizations'; % 'photocurrents'; % 'isomerizations'; % 'photocurrents';
+    performanceSignal =  'isomerizations'; % 'photocurrents'; % 'isomerizations'; % 'photocurrents';
     emPathType = 'randomNoSaccades';
     centeredEMPaths =  'atStimulusModulationMidPoint';
     
     % * * * * * * * * * * * * * * * 
-    nTrainingSamples = 1016;       % 1032 to differente the no OIPad case
-    opticalImagePadSizeDegs = 0.7;  % do not pad the OI to a fixed size - this will in effect increase the pCurrnet impulse response gain
+    nTrainingSamples = 1016;        
+    opticalImagePadSizeDegs = 0.7;   
     lowContrast = 0.01;
     highContrast = 1.0;
     nContrastsPerDirection = 10;
@@ -73,16 +73,17 @@ function run_paper2InferenceEngine
     % Init condition index
     condIndex = 0;
     
-    if (1==1)
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = 'stim-matched, no EM';
-    examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
-    examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-    examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = 'frozen0';
-    examinedCond(condIndex).centeredEMPaths = true;
+    if (1==2)
+        condIndex = condIndex+1;
+        examinedCond(condIndex).label = 'stim-matched, no EM';
+        examinedCond(condIndex).minimumMosaicFOVdegs = [];  % no minimum mosaic size, so spatial pooling is matched to stimulus
+        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+        examinedCond(condIndex).performanceSignal = performanceSignal;
+        examinedCond(condIndex).emPathType = 'frozen0';
+        examinedCond(condIndex).centeredEMPaths = true;
+    end
 %    
     
 
@@ -99,7 +100,7 @@ function run_paper2InferenceEngine
     
     
     condIndex = condIndex+1;
-    examinedCond(condIndex).label = '0.3 degs (single), drift';
+    examinedCond(condIndex).label = '0.3 degs, drift';
     examinedCond(condIndex).minimumMosaicFOVdegs = 0.328;   % stimuli smaller than this, will use spatial pooling based on this mosaic size
     examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
@@ -113,7 +114,7 @@ function run_paper2InferenceEngine
                     'cyclesPerRFs', 0, ...           % each template contains 5 cycles of the stimulus
                     'orientations', 0);
     
-    end 
+
     startingCondIndexForEnsemble = condIndex;
 
 %     condIndex = condIndex+1;
@@ -151,23 +152,16 @@ function run_paper2InferenceEngine
                             'cyclesPerRFs', [], ...                   % each template contains 5 cycles of the stimulus
                             'orientations', 0);
 
-        spatialPositionOffsetArcMinList = [0.5 0.7 0.9 1.1 1.3 1.5 1.7 1.9 2.1];
+        spatialPositionOffsetArcMinList = [0.7 0.9 1.1 1.3 1.5 1.7 1.9 2.1];
         cyclesPerRFsList = [6 5.5 5.0 4.5 4.0]; 
-        totalPositions = 3;
+        totalPositions = [1 2 3];
+       
         
-        spatialPositionOffsetArcMinList = [0.1 0.3 0.5 0.7 0.9 1.1 1.3 1.5 1.7 1.9 2.1];
-        cyclesPerRFsList = [6.5 6 5.5 5.0 4.5 4.0]; 
-        
-        
-%         spatialPositionOffsetArcMinList = 1.7;
-%         cyclesPerRFsList = 6;
-%         totalPositions = 1;
-        
-        for posNums = 1:totalPositions
+        for m = 1:numel(totalPositions)
         for l = 1:numel(cyclesPerRFsList)
             for k = 1:numel(spatialPositionOffsetArcMinList)
                 condIndex = condIndex+1;
-                defaultCond.ensembleFilterParams.spatialPositionsNum = posNums;
+                defaultCond.ensembleFilterParams.spatialPositionsNum = totalPositions(m);
                 defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = spatialPositionOffsetArcMinList(k)/60;
                 defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFsList(l)+spatialPositionOffsetArcMinList(k)*0.1;  % encode variation in offset (k) in the cycles
                 examinedCond(condIndex) = defaultCond;
@@ -176,7 +170,7 @@ function run_paper2InferenceEngine
 %                     (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
 %                     defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60, ...
 %                     defaultCond.ensembleFilterParams.cyclesPerRFs);
-                examinedCond(condIndex).label = sprintf('%2.1f degs (ensemble), drift', abs(defaultCond.minimumMosaicFOVdegs));
+                examinedCond(condIndex).label = sprintf('Ensemble, drift');
             end
         end
         end
@@ -226,7 +220,6 @@ function run_paper2InferenceEngine
         params.nTrainingSamples = nTrainingSamples;
         
         if (isfield(cond, 'ensembleFilterParams')) && (~isempty(cond.ensembleFilterParams))
-            cond
          [cond.ensembleFilterParams.spatialPositionsNum ...
          cond.ensembleFilterParams.spatialPositionOffsetDegs*60 ...
          cond.ensembleFilterParams.cyclesPerRFs]
@@ -264,7 +257,7 @@ function run_paper2InferenceEngine
    
     if (makeSummaryFigure)
         variedParamName = performanceSignal;
-        theRatioLims = [0.55 1.0];
+        theRatioLims = [0.65 1.1];
         theRatioTicks = [0.6 0.7 0.8 0.9 1.0 1.1 1.2];
         formatLabel = 'InferenceEngine';
         
@@ -308,7 +301,7 @@ function run_paper2InferenceEngine
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.43,0.86,0.48,0.08], ...    % custom legend position and size
+            'theLegendPosition', [0.45,0.86,0.46,0.08], ...    % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );
