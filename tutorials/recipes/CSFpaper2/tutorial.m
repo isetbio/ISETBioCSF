@@ -9,7 +9,7 @@ stimParams = struct(...
     'spatialFrequencyCyclesPerDeg', 6, ...  % 6 cycles/deg
     'orientationDegs', 0, ...               % 0 degrees
     'widthDegs', 0.5, ...                   % 0.5 x 0.5 deg size
-    'contrast', 0.5,...                     % 50% Michelson contrast
+    'contrast', 0.8,...                     % 80% Michelson contrast
     'meanLuminanceCdPerM2', 40);            % 40 cd/m2 mean luminance
 
 fprintf('\n1.Generating stimulus scene ...');
@@ -103,9 +103,20 @@ absorptionsRange = [0 max(absorptionsCountSequence(:))];
 photoCurrentRange = prctile(photoCurrentSequence(:), [5 95]);
 emRange = max(abs(theEMPathsDegs(:)))*[-1 1];
     
-% Indices of L/M/S cones
-[lConeIndices, mConeIndices,sConeIndices] = theConeMosaic.indicesForCones();
-    
+% Select some cones positioned around (0.05, -0.05)
+horizontalPositionsDegs = 0.05+(-0.02:0.01:0.02);
+verticalPositionsDegs = -0.05+(-0.02:0.01:0.02);
+[xx,yy] = meshgrid(horizontalPositionsDegs, verticalPositionsDegs);
+targetPosDegs = [xx(:) yy(:)];
+[coneIndices, conePositionsDegs, coneTypes, coneIndicesInSerializedList] = ...
+            theConeMosaic.indicesForConesAtPositions(targetPosDegs);
+        
+lConeIndices = coneIndicesInSerializedList(coneTypes == 2);
+mConeIndices = coneIndicesInSerializedList(coneTypes == 3);
+sConeIndices = coneIndicesInSerializedList(coneTypes == 4);
+
+        
+        
 visualizedTrial = 1;
 visualizedAbsorptions = squeeze(absorptionsCountSequence(visualizedTrial,:,:));
 visualizedPhotocurrents = squeeze(photoCurrentSequence(visualizedTrial,:,:));
@@ -162,9 +173,16 @@ for tBin = 2:numel(responseTimeAxis)
 
     % Plot time series of absorptions
     subplot(3,2,4);
-    stairs(responseTimeAxis(1:tBin)*1000, squeeze(differentialAbsorptions(lConeIndices, 1:tBin))', 'r', 'LineWidth', 1.5); hold on
-    stairs(responseTimeAxis(1:tBin)*1000, squeeze(differentialAbsorptions(mConeIndices, 1:tBin))', 'g', 'LineWidth', 1.5);
-    stairs(responseTimeAxis(1:tBin)*1000, squeeze(differentialAbsorptions(sConeIndices, 1:tBin))', 'b', 'LineWidth', 1.5);
+    if (~isempty(lConeIndices))
+        plot(responseTimeAxis(1:tBin)*1000, differentialAbsorptions(lConeIndices, 1:tBin), 'r-', 'LineWidth', 1.5); 
+    end
+    hold on;
+    if (~isempty(mConeIndices))
+        plot(responseTimeAxis(1:tBin)*1000, differentialAbsorptions(mConeIndices, 1:tBin), 'g-', 'LineWidth', 1.5); 
+    end
+    if (~isempty(sConeIndices))
+        plot(responseTimeAxis(1:tBin)*1000, differentialAbsorptions(sConeIndices, 1:tBin), 'b-', 'LineWidth', 1.5); 
+    end
     hold off
 
     set(gca, 'XLim', [responseTimeAxis(1) responseTimeAxis(end)]*1000, 'YLim', diffAbsorptionsRange);
@@ -174,9 +192,16 @@ for tBin = 2:numel(responseTimeAxis)
 
     % Plot time series of photocurrents
     subplot(3,2,6);
-    plot(responseTimeAxis(1:tBin)*1000, differentialPhotocurrents(lConeIndices, 1:tBin), 'r-'); hold on
-    plot(responseTimeAxis(1:tBin)*1000, differentialPhotocurrents(mConeIndices, 1:tBin), 'g-');
-    plot(responseTimeAxis(1:tBin)*1000, differentialPhotocurrents(sConeIndices, 1:tBin), 'b-');
+    if (~isempty(lConeIndices))
+        plot(responseTimeAxis(1:tBin)*1000, differentialPhotocurrents(lConeIndices, 1:tBin), 'r-', 'LineWidth', 1.5); 
+    end
+    hold on
+    if (~isempty(mConeIndices))
+        plot(responseTimeAxis(1:tBin)*1000, differentialPhotocurrents(mConeIndices, 1:tBin), 'g-','LineWidth', 1.5);
+    end
+    if (~isempty(sConeIndices))
+        plot(responseTimeAxis(1:tBin)*1000, differentialPhotocurrents(sConeIndices, 1:tBin), 'b-','LineWidth', 1.5);
+    end
     hold off
     set(gca, 'XLim', [responseTimeAxis(1) responseTimeAxis(end)]*1000, 'YLim', diffPhotoCurrentRange );
     set(gca, 'FontSize', 16);
