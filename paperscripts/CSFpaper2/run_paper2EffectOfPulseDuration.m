@@ -34,7 +34,7 @@ function run_paper2EffectOfPulseDuration
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = true;
+    computeResponses = ~true;
     visualizeResponses = ~true;
     findPerformance = ~true;
     visualizePerformance = true;
@@ -50,7 +50,7 @@ function run_paper2EffectOfPulseDuration
     % Init condition index
     condIndex = 0;
     
-    performanceSignal = 'isomerizations'; %'photocurrents';
+    performanceSignal = 'photocurrents'; % 'isomerizations'; %'photocurrents';
     performanceClassifier = 'svmV1FilterBank';
     spatialPoolingKernelType = 'V1CosUnit';            % choose between 'V1CosUnit' and 'V1QuadraturePair';
     spatialPoolingKernelActivationFunction = 'linear'; % choose between 'linear' and 'energy';
@@ -86,16 +86,16 @@ function run_paper2EffectOfPulseDuration
 
     
 
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = '50 ms';
-    examinedCond(condIndex).frameRate = 40;
-    examinedCond(condIndex).stimulusDurationInSeconds = 50/1000;
-    examinedCond(condIndex).performanceClassifier = performanceClassifier;
-    examinedCond(condIndex).spatialPoolingKernelParams.type = spatialPoolingKernelType;
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = spatialPoolingKernelActivationFunction;
-    examinedCond(condIndex).performanceSignal = performanceSignal;
-    examinedCond(condIndex).emPathType = emPathType;
-    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = '50 ms';
+%     examinedCond(condIndex).frameRate = 40;
+%     examinedCond(condIndex).stimulusDurationInSeconds = 50/1000;
+%     examinedCond(condIndex).performanceClassifier = performanceClassifier;
+%     examinedCond(condIndex).spatialPoolingKernelParams.type = spatialPoolingKernelType;
+%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = spatialPoolingKernelActivationFunction;
+%     examinedCond(condIndex).performanceSignal = performanceSignal;
+%     examinedCond(condIndex).emPathType = emPathType;
+%     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = '25 ms';
@@ -123,7 +123,7 @@ function run_paper2EffectOfPulseDuration
         params.nTrainingSamples = 1016;
         
         % Try out for subset of SFs
-        params.cyclesPerDegreeExamined = [8 16 24 32 50 60]; % [16 24 32 50 60];
+        params.cyclesPerDegreeExamined = [8 16 24 32 50 60];
         
         
         examinedLegends{numel(examinedLegends) + 1} = cond.label;
@@ -160,7 +160,7 @@ function run_paper2EffectOfPulseDuration
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.57 0.835 0.41 0.15], ...    % custom legend position and size
+            'theLegendPosition', [0.57 0.80 0.41 0.15], ...    % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );
