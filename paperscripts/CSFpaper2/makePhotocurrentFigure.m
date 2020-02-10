@@ -1,5 +1,5 @@
 function makePhotocurrentFigure
-
+ 
     % Define background luminace levels examined & the pedestal step (cd/m2)
     backgroundLuminances = [34];
     lumStep = 20;
