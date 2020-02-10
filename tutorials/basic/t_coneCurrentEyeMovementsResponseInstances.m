@@ -445,7 +445,12 @@ if (p.Results.compute)
     % Zero eye movements for the null condition to make sure mean currents
     % and impulse responses are fixed.
     tmpTemporalParams = rParams.temporalParams;
-    tmpTemporalParams.emPathType = 'frozen0';
+    % If we are doing a validation run (employStandardHostComputerResources == true), 
+    % do not change the emPathType for the null stimulus condition. 
+    % Only change it when we are in real simulations mode.
+    if (~p.Results.employStandardHostComputerResources)
+        tmpTemporalParams.emPathType = 'frozen0';
+    end
     
     % Start timing the null reponses computation
     tBegin = clock;
