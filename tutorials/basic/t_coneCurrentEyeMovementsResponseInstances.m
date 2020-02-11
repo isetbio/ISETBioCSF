@@ -108,7 +108,6 @@ if (numberOfWorkers < parforWorkersNum)
     parforWorkersNum = numberOfWorkers;
 end
 
-
 % Initialize varargout
 varargout{1} = [];   % Impulse responses if (visualizeOuterSegmentFilters is true)
 varargout{2} = [];   % noise-free responses
