@@ -3,6 +3,10 @@ function visualizeScene(scene, maxPhotons, displayedWavelengths, figNo, sceneNam
     spatialSupportMilliMeters = sceneGet(scene, 'spatial support', 'mm');
     % Extract wavevelength support
     wavelengths = sceneGet(scene, 'wave');
+    if (isempty(displayedWavelengths))
+        skip = round(numel(wavelengths)/12);
+        displayedWavelengths = wavelengths(1:skip:numel(wavelengths));
+    end
     % Extact field of view (degs) and viewing distance (meters)
     fovDegrees = sceneGet(scene, 'wAngular');
     viewingDistanceMeters = sceneGet(scene, 'distance');
@@ -19,6 +23,9 @@ function visualizeScene(scene, maxPhotons, displayedWavelengths, figNo, sceneNam
     
     % Extract scene radiance (photon rate)
     photons = sceneGet(scene, 'photons');
+    if (isempty(maxPhotons))
+        maxPhotons = max(photons(:));
+    end
     
     % Extract scene as linear RGB primary values
     rgbImage = sceneGet(scene, 'rgb image');
@@ -38,7 +45,7 @@ function visualizeScene(scene, maxPhotons, displayedWavelengths, figNo, sceneNam
     
   
     photonRange = [0 maxPhotons];  
-    for k = 2:numel(displayedWavelengths)
+    for k = 2:min([12 numel(displayedWavelengths)])
         subplot(3,4,k);
         [~,idx] = min(abs(displayedWavelengths(k)-wavelengths));
         photonsAtWavelengthBand = squeeze(photons(:,:,idx));
