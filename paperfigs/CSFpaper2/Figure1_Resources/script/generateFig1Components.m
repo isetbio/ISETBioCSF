@@ -2,12 +2,12 @@ function generateFig1Components
     % This is the function used to make the components of Fig1  for the paper2 second submission.
     nTrialsNum = 2;
     dataFileName = sprintf('dynamicDataTrials%1.0f.mat', nTrialsNum);
+    [rootPath,~] = fileparts(which(mfilename));
+    rootPath = strrep(rootPath, 'script', 'isetbio_resources');
     
     redoComputations = ~true;
     if (redoComputations)
-        
-        [rootPath,~] = fileparts(which(mfilename));
-        rootPath = strrep(rootPath, 'script', 'isetbio_resources');
+
 
         generateDisplayFig(rootPath);
 
@@ -63,6 +63,7 @@ function generateFig1Components
         % Load the data
         load(dataFileName, 'theConeMosaic', 'theFixationalEMobject', 'theEMPaths',  'pCurrentImpulseResponses', 'coneExcitations', 'photoCurrents', 'coneExcitationsMean', 'photoCurrentsMean');
         
+        generateDisplayFig(rootPath);
         generateMosaicFig([], [], theConeMosaic);
         
         % Visualize the first EMPath on the cone mosaic using a
@@ -100,7 +101,7 @@ function generateFig1Components
         NicePlot.exportFigToPDF('componentFigs/EMpath.pdf', hFig, 300);
 
         % Generate figure of the cone mosaic with EMPath superimposed
-        generateMosaicWithEMPathFig(theConeMosaic, theEMPathsMeters, tBins, cMap);
+        generateMosaicWithEMPathFig(theConeMosaic, theEMPathsMeters, tBins, ones(tBins,3)*0.3);
         
         % Generate figure of the photocurrent impulse response and
         % photocurrent noise
@@ -181,46 +182,61 @@ function hFig = generatePhotoCurrentFig(figNo, timeAxis, noiseTraces, pCurrentIm
        'colsNum', 1, ...
        'heightMargin',  0.03, ...
        'widthMargin',    0.09, ...
-       'leftMargin',     0.17, ...
+       'leftMargin',     0.15, ...
        'rightMargin',    0.04, ...
-       'bottomMargin',   0.16, ...
-       'topMargin',      0.02);
+       'bottomMargin',   0.14, ...
+       'topMargin',      0.01);
    
+    lConeColor = [1 0.5 0.4];
+    mConeColor = [0.2 1 0.5];
+    sConeColor = [0.5 0.2 1.0];
+    
     subplot('Position', subplotPosVectors(1,1).v);
     dt = timeAxis(2)-timeAxis(1);
     t = (0:(size(pCurrentImpulseResponses,1)-1))*dt;
-    plot(t, pCurrentImpulseResponses(:,1), 'r-', 'Color', [1 0.2 0.4], 'LineWidth', 3.0); hold on
-    plot(t, pCurrentImpulseResponses(:,2), 'g-', 'Color', [0.2 1.0 0.5], 'LineWidth', 3.0);
-    plot(t, pCurrentImpulseResponses(:,3), 'b-', 'Color', [0.5 0.2 1.0], 'LineWidth', 3.0);
+    plot(t, pCurrentImpulseResponses(:,1), '-', 'Color', lConeColor, 'LineWidth', 3.0); hold on
+    plot(t, pCurrentImpulseResponses(:,2), '-', 'Color', mConeColor, 'LineWidth', 3.0);
+    plot(t, pCurrentImpulseResponses(:,3), '-', 'Color', sConeColor, 'LineWidth', 3.0);
     
-    plot(t, pCurrentImpulseResponses(:,1), 'r-', 'Color', [0 0 0], 'LineWidth', 4.0);
-    plot(t, pCurrentImpulseResponses(:,2), 'g-', 'Color', [0 0 0], 'LineWidth', 4.0);
-    plot(t, pCurrentImpulseResponses(:,3), 'b-', 'Color', [0 0 0], 'LineWidth', 4.0);
+    plot(t, pCurrentImpulseResponses(:,1), '-', 'Color', [0 0 0], 'LineWidth', 4.0);
+    plot(t, pCurrentImpulseResponses(:,2), '-', 'Color', [0 0 0], 'LineWidth', 4.0);
+    plot(t, pCurrentImpulseResponses(:,3), '-', 'Color', [0 0 0], 'LineWidth', 4.0);
     
-    plot(t, pCurrentImpulseResponses(:,1), 'r-', 'Color', [1 0.2 0.4], 'LineWidth', 3.0);
-    plot(t, pCurrentImpulseResponses(:,2), 'g-', 'Color', [0.2 1.0 0.5], 'LineWidth', 3.0);
-    plot(t, pCurrentImpulseResponses(:,3), 'b-', 'Color', [0.5 0.2 1.0], 'LineWidth', 3.0);
-    legend({'L-cone', 'M-cone', 'S-cone'})
-   
+    plot(t, pCurrentImpulseResponses(:,1), '-', 'Color', lConeColor, 'LineWidth', 3.0);
+    plot(t, pCurrentImpulseResponses(:,2), '-', 'Color', mConeColor, 'LineWidth', 3.0);
+    plot(t, pCurrentImpulseResponses(:,3), '-', 'Color', sConeColor, 'LineWidth', 3.0);
+    
+    dy = 0.04*(max(pCurrentImpulseResponses(:))-min(pCurrentImpulseResponses(:)));
+    
 
-    grid on;
-    set(gca, 'XLim', [t(1) t(end)]); 
+    text(301, max(pCurrentImpulseResponses(:))-dy-dy*0.1, 'L-cone', 'Color', [0.35 0.35 0.35], 'FontSize', 20, 'FontName', 'Source Code Pro', 'FontWeight', 'normal');
+    text(301, max(pCurrentImpulseResponses(:))-5*dy-dy*0.1, 'M-cone', 'Color', [0.35 0.35 0.35], 'FontSize', 20, 'FontName', 'Source Code Pro', 'FontWeight', 'normal');
+    text(301, max(pCurrentImpulseResponses(:))-9*dy-dy*0.1, 'S-cone', 'Color', [0.35 0.35 0.35], 'FontSize', 20, 'FontName', 'Source Code Pro', 'FontWeight', 'normal');
+    
+
+    
+    text(300, max(pCurrentImpulseResponses(:))-dy, 'L-cone', 'Color', lConeColor, 'FontSize', 20, 'FontName', 'Source Code Pro', 'FontWeight', 'normal');
+    text(300, max(pCurrentImpulseResponses(:))-5*dy, 'M-cone', 'Color', mConeColor, 'FontSize', 20, 'FontName', 'Source Code Pro', 'FontWeight', 'normal');
+    text(300, max(pCurrentImpulseResponses(:))-9*dy, 'S-cone', 'Color', sConeColor, 'FontSize', 20, 'FontName', 'Source Code Pro', 'FontWeight', 'normal');
+    
+
+    
+    set(gca, 'XLim', [t(1) t(end)], 'YLim', [min(pCurrentImpulseResponses(:))-dy max(pCurrentImpulseResponses(:))+dy]);
     set(gca, 'XTick', [0:100:1000], 'YTick', [], 'YColor', 'none', 'XColor', 'none', 'XTickLabel', {});
-    set(gca, 'FontSize', 24);
+    set(gca, 'FontSize', 20, 'Color', [0.65 0.65 0.65]);
     box off
     
     subplot('Position', subplotPosVectors(2,1).v);
     hPlot = plot(timeAxis(1:size(noiseTraces,2)),  noiseTraces(1:256,:), 'k-', 'LineWidth', 2);
     for k = 1:numel(hPlot)
-       hPlot(k).Color(4) = 0.06;  % 5% transparent
+       hPlot(k).Color(4) = 0.2;  % 5% transparent
     end
     
-    grid on;
     set(gca, 'XLim', [t(1) t(end)]); 
-    set(gca, 'XTick', [0:100:1000], 'YTick', [-10:5:10], 'YLim', [-12 12]);
-    xlabel('\it time (msec)');
-    ylabel('\it pAmps');
-    set(gca, 'FontSize', 24);
+    set(gca, 'XTick', [0:100:1000], 'YTick', [-10:5:10], 'YLim', [-12 12], 'Color', [0.65 0.65 0.65]);
+    xlabel('time (msec)');
+    ylabel('pAmps');
+    set(gca, 'FontSize', 20);
     box off
     
 end
@@ -231,17 +247,17 @@ function hFig = generateSingleConeResponsePlots(figNo, timeAxis, visualizedTimeR
     visualizedMeanPhotocurrentResponse, visualizedPhotocurrentResponses, visualizedConeType, cMap)
 
     hFig = figure(figNo); clf
-    set(hFig, 'Position', [10 10 780 1050], 'Color', [1 1 1]);
+    set(hFig, 'Position', [10 10 400 500], 'Color', [1 1 1]);
     
     subplotPosVectors = NicePlot.getSubPlotPosVectors(...
        'rowsNum', 3, ...
        'colsNum', 2, ...
-       'heightMargin',  0.03, ...
-       'widthMargin',    0.09, ...
-       'leftMargin',     0.05, ...
-       'rightMargin',    0.01, ...
-       'bottomMargin',   0.07, ...
-       'topMargin',      0.02);
+       'heightMargin',  0.01, ...
+       'widthMargin',    0.08, ...
+       'leftMargin',     0.06, ...
+       'rightMargin',    0.00, ...
+       'bottomMargin',   0.09, ...
+       'topMargin',      0.03);
    
     XLim = visualizedTimeRange;
     XTick = 0:100:600;
@@ -256,14 +272,14 @@ function hFig = generateSingleConeResponsePlots(figNo, timeAxis, visualizedTimeR
         plotMeanAndSingleResponseInstances(ax, timeAxis, squeeze(visualizedMeanConeExcitationResponse(coneIdx,:)), ...
             squeeze(visualizedConeExcitationResponses(coneIdx,:,:)), ...
             XLim, YLimConeExcitations, XTick, YTickConeExcitations, 'cone excitations (R*/c/5 msec)', ...
-            cMap, visualizedConeType(coneIdx), coneIdx == 3,coneIdx == 1);
+            cMap, visualizedConeType(coneIdx), coneIdx == 3);
 
         % Render pCurrent responses at the bottom
         ax = subplot('Position', subplotPosVectors(coneIdx,2).v);
         plotMeanAndSingleResponseInstances(ax, timeAxis, squeeze(visualizedMeanPhotocurrentResponse(coneIdx,:)), ...
             squeeze(visualizedPhotocurrentResponses(coneIdx,:,:)), ...
             XLim, YLimPhotocurrents, XTick, YTickPhotocurrents, 'photocurrent (pAmps)', ...
-            cMap, visualizedConeType(coneIdx), coneIdx == 3, coneIdx == 1);
+            cMap, visualizedConeType(coneIdx), coneIdx == 3);
     end
     
     
@@ -271,18 +287,37 @@ end
 
 
 function plotMeanAndSingleResponseInstances(ax, timeAxis, meanResponse, responseInstances, ...
-            XLim, YLim, XTick, YTick, yAxisLabel, cMap, visualizedConeType, displayXLabel, displayTitle)
+            XLim, YLim, XTick, YTick, yAxisLabel, cMap, visualizedConeType, displayXLabel)
         
     tBins = numel(timeAxis);
-    plot(timeAxis, responseInstances, 'k-', 'Color', [0.5 0.5 0.5], 'LineWidth', 2); hold on
-    plot(ax, timeAxis, meanResponse, 'k-', 'LineWidth', 6);
+    plot(timeAxis, responseInstances, 'k-', 'Color', [0.34 0.34 0.34], 'LineWidth', 1.5); hold on
+    
+    for k = 1:tBins-1
+       plot([timeAxis(k) timeAxis(k+1)], [meanResponse(k) meanResponse(k+1)], ...
+          '-', 'Color', squeeze(cMap(k,:))*0.3, 'LineWidth', 4);
+    end
+    
     % Overlay the trace in color
     for k = 1:tBins-1
        plot([timeAxis(k) timeAxis(k+1)], [meanResponse(k) meanResponse(k+1)], ...
-          '-', 'Color', squeeze(cMap(k,:)), 'LineWidth', 4);
+          '-', 'Color', squeeze(cMap(k,:)), 'LineWidth', 2);
     end
-    set(gca, 'XLim', XLim, 'XTick', XTick, 'YLim', YLim, 'YTick', YTick, 'FontSize', 20, 'LineWidth', 1.0);
-    grid on; box on;
+    for k = 1:numel(XTick)
+        if (mod(k,2) == 1)
+            xTickLabels{k} = sprintf('%2.0f', XTick(k));
+        else
+            xTickLabels{k} = '';
+        end
+    end
+    for k = 1:numel(YTick)
+        if (mod(k,2) == 1)
+            yTickLabels{k} = sprintf('%2.0f', YTick(k));
+        else
+            yTickLabels{k} = '';
+        end
+    end
+    
+    
     switch(visualizedConeType-1)
         case 1
             coneType = 'L-cone';
@@ -296,20 +331,29 @@ function plotMeanAndSingleResponseInstances(ax, timeAxis, meanResponse, response
     end
 
         
-    if (displayXLabel)
-        xlabel('\it time (msec)');
+    
+    
+    
+    if (strcmp(yAxisLabel, 'cone excitations (R*/c/5 msec)'))
+        text(401, 74.5, coneType, 'Color', [0.35 0.35 0.35], 'FontSize', 14, 'FontName', 'Source Code Pro', 'FontWeight', 'normal');
+        text(400, 75, coneType, 'Color', color, 'FontSize', 14, 'FontName', 'Source Code Pro', 'FontWeight', 'normal');
+    end
+    
+    set(gca, 'XLim', XLim, 'XTick', XTick, 'XTickLabel', xTickLabels, 'YLim', YLim, 'YTick', YTick, 'YTickLabel', yTickLabels, 'LineWidth', 0.5, 'Color', [0.55 0.55 0.55]);
+    grid on; box off;
+    set(gca, 'FontSize', 15);
+    
+    if (strcmp(coneType,'L-cone'))
+        title(sprintf('%s', yAxisLabel), 'FontWeight', 'normal', 'FontSize', 14);
+    end
+    
+    if (strcmp(coneType,'S-cone'))
+        xlabel('time (msec)');
     else
         set(gca, 'XTickLabel', {});
+        set(gca, 'YTickLabel', {});
     end
     
-    if (displayTitle)
-        title(sprintf('%s', yAxisLabel), 'FontWeight', 'normal');
-    end
-    if (strcmp(yAxisLabel, 'cone excitations (R*/c/5 msec)'))
-        text(415, 75, coneType, 'Color', color, 'FontSize', 24, 'FontWeight', 'bold');
-    end
-    
-    set(gca, 'FontSize', 24);
 end
 
 
@@ -339,7 +383,9 @@ function hFig = generateMosaicResponseWithEMPathFig(figNo, theConeMosaic, theEMP
     
     plotCrossHairs(ax, theEMPathsMeters, tBin, cMap);
     textPosMicrons = [-82 80];
-    text(ax, textPosMicrons(1)*1e-6, textPosMicrons(2)*1e-6, sprintf('%2.0f msec', timeMsec), 'Color', 'w', 'FontSize', 26);
+    if (timeMsec > 0)
+        text(ax, textPosMicrons(1)*1e-6, textPosMicrons(2)*1e-6, sprintf('%2.0f msec', timeMsec), 'Color', 'w', 'BackgroundColor', [0 0 0], 'FontSize', 26, 'FontWeight', 'Bold');
+    end
     hold off;
     set(ax,'XColor', 'none', 'YColor', 'none');
     set(ax,'XTickLabels', {});
@@ -409,7 +455,7 @@ function selectedEMPathIndex = selectEMPath(theEMPaths, theConeMosaic)
             theConeMosaic.visualizeGrid('axesHandle', ax, ...
                 'visualizedConeAperture', 'geometricArea', ...
                 'apertureShape', 'disks', ...
-                'backgroundColor', [1 1 1]);
+                'backgroundColor', [0.65 0.65 0.65]);
             hold on;
             plotCrossHairs(ax, theEMPathMeters, tBin, cMap);
             hold off;
@@ -423,11 +469,22 @@ end
 
 function plotCrossHairs(ax, theEMPath, tBin, cMap)
     % Plot the cross-hairs at (0,0)
-    plot(ax, 100*1e-6*[-1 1], [0 0], 'w-', 'LineWidth', 1.5);
-    plot(ax, [0 0], 100*1e-6*[-1 1], 'w-', 'LineWidth', 1.5);
+    plot(ax, 100*1e-6*[-1 1], [0 0], 'k-', 'LineWidth', 2.0);
+    plot(ax, [0 0], 100*1e-6*[-1 1], 'k-', 'LineWidth', 2.0);
     
-    % Plot the trace in black
-    plot(ax, theEMPath(1:tBin, 1), -theEMPath(1:tBin, 2), 'k-', 'LineWidth', 5);
+
+    % Plot the trace in dark color
+    for k = 1:tBin-1
+        plot(ax, [theEMPath(k, 1) theEMPath(k+1, 1)], ...
+            -[theEMPath(k, 2) theEMPath(k+1, 2)] , '-', 'Color', squeeze(cMap(k,:))*0.1, 'LineWidth', 3);
+    end
+
+    % Plot the trace in dark color
+    for k = 1:tBin-1
+        plot(ax, [theEMPath(k, 1) theEMPath(k+1, 1)], ...
+            -[theEMPath(k, 2) theEMPath(k+1, 2)] , '-', 'Color', squeeze(cMap(k,:))*0.5, 'LineWidth', 2);
+    end
+
     
     % Overlay the trace in color
     for k = 1:tBin-1
@@ -445,7 +502,7 @@ function generateMosaicWithEMPathFig(theConeMosaic, theEMPathsMeters, tBins, cMa
     theConeMosaic.visualizeGrid('axesHandle', ax, ...
         'visualizedConeAperture', 'geometricArea', ...
         'apertureShape', 'disks', ...
-        'backgroundColor', [1 1 1], ...
+        'backgroundColor', 0.65*[1 1 1], ...
         'noXaxisLabel', true, 'noYaxisLabel', true);
     hold on;
     plotCrossHairs(ax, theEMPathsMeters, tBins, cMap);
@@ -484,13 +541,11 @@ function generateDisplayFig(rootPath)
     hold(ax, 'on');
     area(ax, wave, green, 'EdgeColor',[0 1.0 0.0], 'LineWidth', 1.5, 'FaceColor',[0.5 1.0 0.5],'FaceAlpha',.5,'EdgeAlpha',.8);
     area(ax, wave, blue, 'EdgeColor',[0 0.0 1.0], 'LineWidth', 1.5, 'FaceColor',[0.5 0.5 1],'FaceAlpha',.5,'EdgeAlpha',.8);
-    grid on;
+    grid off;
     set(gca, 'XLim', [display.wave(1) display.wave(end)]); 
-    set(gca, 'XTick', [400:50:800], 'YTick', [], 'YColor', 'none');
+    set(gca, 'XTick', [400:50:800], 'YTick', [], 'YColor', 'none', 'Color', [0.65 0.65 0.65]);
     xlabel('wavelength, \lambda (nm)');
     set(gca, 'FontSize', 20);
-    box off
-    pwd
     NicePlot.exportFigToPDF('componentFigs/DisplayComponent.pdf', hFig, 300);
 end
 
