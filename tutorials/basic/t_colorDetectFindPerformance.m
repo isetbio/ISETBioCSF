@@ -139,6 +139,7 @@ writeProgram = mfilename;
 constantParamsList = {rParams.topLevelDirParams, rParams.mosaicParams, rParams.oiParams, rParams.spatialParams,  rParams.temporalParams,  rParams.backgroundParams, testDirectionParams};
 
 
+if (p.Results.compute) 
 %% svmV1FilterBank - related checks and computations
 if (~strcmp(rParams.mosaicParams.conePacking, 'hex')) && (~strcmp(rParams.mosaicParams.conePacking, 'hexReg')) && ... 
    ((strcmp(thresholdParams.method, 'svmV1FilterBank')))
@@ -191,6 +192,7 @@ if (strcmp(thresholdParams.method, 'svmGaussianRF')) || (strcmp(thresholdParams.
     gaussianPoolingKernel = generateSpatialPoolingKernel(rParams.spatialParams, rParams.mosaicParams, rParams.topLevelDirParams, p.Results.visualizeSpatialScheme, thresholdParams, constantParamsList);
     thresholdParams = modifyStructParams(thresholdParams, ...
         'spatialPoolingKernel', gaussianPoolingKernel);
+end
 end
 
 
