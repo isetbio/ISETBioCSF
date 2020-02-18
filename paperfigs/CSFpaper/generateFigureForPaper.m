@@ -383,7 +383,7 @@ function hFig = generateFigureForPaper(theFigData, variedParamLegends, variedPar
     %end
     
     
-    exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', sprintf('projects/IBIOColorDetect/paperfigs/%s/exports', paperDir));
+    exportsDir = strrep(isetRootPath(), 'toolboxes/isetbio/isettools', sprintf('projects/ISETBioCSF/paperfigs/%s/exports', paperDir));
     figureName = fullfile(exportsDir, sprintf('%sVary%s.pdf', variedParamName, fixedParamName));
     NicePlot.exportFigToPDF(figureName, hFig, 300);
 end

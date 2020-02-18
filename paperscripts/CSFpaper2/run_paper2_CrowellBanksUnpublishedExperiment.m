@@ -48,7 +48,7 @@ function run_paper2_CrowellBanksUnpublishedExperiment
     luminanceCdM2 = 100;                                % Crowell & Banks employed 100 cd/m2 stimuli
     
     % Patch sizes examined
-    patchSize2SigmaCycles = 0.8;  % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
+    patchSize2SigmaCycles = 1.7;  % [3.3 1.7 0.8 0.4];  % Gabor patch sizes (2 x sigma in degrees) employed by Crowell & Banks
     
     switch (patchSize2SigmaCycles)
         case 3.3

@@ -54,9 +54,9 @@ function run_paper2FixationalEyeMovementsVsNone
     % Compute photocurrent responses
     computePhotocurrents = true;
     
-    performanceSignal = 'isomerizations';
+    performanceSignal = 'photocurrents'; %'isomerizations';
     
-    showDataFromLinearPooling = true;
+    showDataFromLinearPooling = ~true;
     showDataFromQuadraturePooling = ~showDataFromLinearPooling;
 
     % Assemble conditions list to be examined
@@ -77,38 +77,38 @@ function run_paper2FixationalEyeMovementsVsNone
 
 
 
-    if (~computeResponses) && (showDataFromQuadraturePooling) 
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Template-E, noEM';
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-        examinedCond(condIndex).performanceSignal = performanceSignal;
-        examinedCond(condIndex).emPathType = 'frozen0';
-        examinedCond(condIndex).centeredEMPaths = true;
-    end
+        if (~computeResponses) && (showDataFromQuadraturePooling) 
+            condIndex = condIndex+1;
+            examinedCond(condIndex).label = 'SVM-Template-E, noEM';
+            examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+            examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+            examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+            examinedCond(condIndex).performanceSignal = performanceSignal;
+            examinedCond(condIndex).emPathType = 'frozen0';
+            examinedCond(condIndex).centeredEMPaths = true;
+        end
 
-    if (showDataFromLinearPooling)
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Template-L, drift';
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-        examinedCond(condIndex).performanceSignal = performanceSignal;
-        examinedCond(condIndex).emPathType = 'randomNoSaccades';
-        examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
-    end
-%     
-    if (~computeResponses) && (showDataFromQuadraturePooling)
-        condIndex = condIndex+1;
-        examinedCond(condIndex).label = 'SVM-Template-E, drift';
-        examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
-        examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
-        examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
-        examinedCond(condIndex).performanceSignal = performanceSignal;
-        examinedCond(condIndex).emPathType = 'randomNoSaccades';
-        examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
-    end
+        if (showDataFromLinearPooling)
+            condIndex = condIndex+1;
+            examinedCond(condIndex).label = 'SVM-Template-L, drift';
+            examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+            examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+            examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+            examinedCond(condIndex).performanceSignal = performanceSignal;
+            examinedCond(condIndex).emPathType = 'randomNoSaccades';
+            examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
+        end
+    %     
+        if (~computeResponses) && (showDataFromQuadraturePooling)
+            condIndex = condIndex+1;
+            examinedCond(condIndex).label = 'SVM-Template-E, drift';
+            examinedCond(condIndex).performanceClassifier = 'svmV1FilterBank';
+            examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1QuadraturePair';
+            examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'energy';
+            examinedCond(condIndex).performanceSignal = performanceSignal;
+            examinedCond(condIndex).emPathType = 'randomNoSaccades';
+            examinedCond(condIndex).centeredEMPaths = 'atStimulusModulationMidPoint';
+        end
     
 
     

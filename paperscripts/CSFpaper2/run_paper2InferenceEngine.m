@@ -55,7 +55,7 @@ function run_paper2InferenceEngine
     % Compute photocurrent responses
     computePhotocurrents = true;
     
-    performanceSignal =  'isomerizations'; % 'photocurrents'; % 'isomerizations'; % 'photocurrents';
+    performanceSignal =  'photocurrents'; % 'isomerizations'; % 'photocurrents';
     emPathType = 'randomNoSaccades';
     centeredEMPaths =  'atStimulusModulationMidPoint';
     
@@ -165,11 +165,6 @@ function run_paper2InferenceEngine
                 defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = spatialPositionOffsetArcMinList(k)/60;
                 defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFsList(l)+spatialPositionOffsetArcMinList(k)*0.1;  % encode variation in offset (k) in the cycles
                 examinedCond(condIndex) = defaultCond;
-%                 examinedCond(condIndex).label = sprintf('%2.1f degs, n=%2.0f, s=%2.1f'', %2.1f cycles', ...
-%                     abs(defaultCond.minimumMosaicFOVdegs), ...
-%                     (2*defaultCond.ensembleFilterParams.spatialPositionsNum+1)^2, ...
-%                     defaultCond.ensembleFilterParams.spatialPositionOffsetDegs*60, ...
-%                     defaultCond.ensembleFilterParams.cyclesPerRFs);
                 examinedCond(condIndex).label = sprintf('Ensemble, drift');
             end
         end
@@ -198,7 +193,6 @@ function run_paper2InferenceEngine
     examinedLegends = {};
 
     for condIndex = 1:numel(examinedCond)
-        [condIndex numel(examinedCond)]
         % Get default params
         params = getCSFPaper2DefaultParams(pupilDiamMm, integrationTimeMilliseconds, frameRate, stimulusDurationInSeconds, computationInstance);
         params.cyclesPerDegreeExamined = [32 40 50 60];
@@ -218,12 +212,6 @@ function run_paper2InferenceEngine
         params.emPathType = cond.emPathType;
         params.centeredEMPaths = cond.centeredEMPaths;
         params.nTrainingSamples = nTrainingSamples;
-        
-        if (isfield(cond, 'ensembleFilterParams')) && (~isempty(cond.ensembleFilterParams))
-         [cond.ensembleFilterParams.spatialPositionsNum ...
-         cond.ensembleFilterParams.spatialPositionOffsetDegs*60 ...
-         cond.ensembleFilterParams.cyclesPerRFs]
-        end
         
         examinedLegends{numel(examinedLegends) + 1} = cond.label;
     
@@ -301,7 +289,7 @@ function run_paper2InferenceEngine
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.45,0.86,0.46,0.08], ...    % custom legend position and size
+            'theLegendPosition', [0.35,0.86,0.46,0.08], ...    % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );

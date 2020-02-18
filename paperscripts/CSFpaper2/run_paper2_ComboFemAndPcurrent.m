@@ -55,8 +55,8 @@ function run_paper2_ComboFemAndPcurrent
     % Compute photocurrent responses
     computePhotocurrents = true;
     
-    performanceSignal = 'photocurrents'; %'isomerizations'; % 'photocurrents';
-    emPath = 'randomNoSaccades';
+    performanceSignal = 'photocurrents';
+
     
     % Different stategy for  drift fixational EMs
     centeredEMPaths =  'atStimulusModulationMidPoint';
@@ -174,7 +174,7 @@ function run_paper2_ComboFemAndPcurrent
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.47,0.905,0.37,0.08], ...   % custom legend position and size
+            'theLegendPosition', [0.46,0.87,0.37,0.08], ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );

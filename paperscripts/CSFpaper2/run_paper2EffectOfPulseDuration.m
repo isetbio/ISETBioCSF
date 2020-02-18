@@ -86,16 +86,16 @@ function run_paper2EffectOfPulseDuration
 
     
 
-%     condIndex = condIndex+1;
-%     examinedCond(condIndex).label = '50 ms';
-%     examinedCond(condIndex).frameRate = 40;
-%     examinedCond(condIndex).stimulusDurationInSeconds = 50/1000;
-%     examinedCond(condIndex).performanceClassifier = performanceClassifier;
-%     examinedCond(condIndex).spatialPoolingKernelParams.type = spatialPoolingKernelType;
-%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = spatialPoolingKernelActivationFunction;
-%     examinedCond(condIndex).performanceSignal = performanceSignal;
-%     examinedCond(condIndex).emPathType = emPathType;
-%     examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
+    condIndex = condIndex+1;
+    examinedCond(condIndex).label = '50 ms';
+    examinedCond(condIndex).frameRate = 40;
+    examinedCond(condIndex).stimulusDurationInSeconds = 50/1000;
+    examinedCond(condIndex).performanceClassifier = performanceClassifier;
+    examinedCond(condIndex).spatialPoolingKernelParams.type = spatialPoolingKernelType;
+    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = spatialPoolingKernelActivationFunction;
+    examinedCond(condIndex).performanceSignal = performanceSignal;
+    examinedCond(condIndex).emPathType = emPathType;
+    examinedCond(condIndex).centeredEMPaths = centeredEMPaths;
     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = '25 ms';

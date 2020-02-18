@@ -398,6 +398,7 @@ function varargout = formatFigureForPaper(hFig, varargin)
                 else
                     set(theLegend, 'FontSize', legendFontSize, 'Location', 'NorthEast');
                 end
+                set(theLegend, 'EdgeColor', 'none', 'TextColor', [0.2 0.2 0.2]);
             end
             
             if (~isempty(theText))

@@ -58,7 +58,7 @@ function run_paper2EffectOfBackgroundLuminance
         
     nTrainingSamples = 1016;
     
-    performanceSignal = 'isomerizations'; %'photocurrents'; %'isomerizations'; % 'photocurrents';
+    performanceSignal = 'photocurrents'; %'isomerizations'; % 'photocurrents';
     performanceClassifier = 'svmV1FilterBank';
     spatialPoolingKernelType = 'V1CosUnit';            % choose between 'V1CosUnit' and 'V1QuadraturePair';
     spatialPoolingKernelActivationFunction = 'linear'; % choose between 'linear' and 'energy';
@@ -143,7 +143,7 @@ function run_paper2EffectOfBackgroundLuminance
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.57 0.844 0.41 0.14],  ...   % custom legend position and size
+            'theLegendPosition', [0.57 0.81 0.41 0.14],  ...   % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );
