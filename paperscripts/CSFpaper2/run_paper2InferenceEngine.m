@@ -55,7 +55,7 @@ function run_paper2InferenceEngine
     % Compute photocurrent responses
     computePhotocurrents = true;
     
-    performanceSignal =  'photocurrents'; % 'isomerizations'; % 'photocurrents';
+    performanceSignal =  'photocurrents';
     emPathType = 'randomNoSaccades';
     centeredEMPaths =  'atStimulusModulationMidPoint';
     
@@ -165,7 +165,7 @@ function run_paper2InferenceEngine
                 defaultCond.ensembleFilterParams.spatialPositionOffsetDegs = spatialPositionOffsetArcMinList(k)/60;
                 defaultCond.ensembleFilterParams.cyclesPerRFs = cyclesPerRFsList(l)+spatialPositionOffsetArcMinList(k)*0.1;  % encode variation in offset (k) in the cycles
                 examinedCond(condIndex) = defaultCond;
-                examinedCond(condIndex).label = sprintf('Ensemble, drift');
+                examinedCond(condIndex).label = sprintf('ensemble, drift');
             end
         end
         end
@@ -289,7 +289,7 @@ function run_paper2InferenceEngine
             'plotRatiosOfOtherConditionsToFirst', true, ...
             'theRatioLims', theRatioLims, ...
             'theRatioTicks', theRatioTicks, ... 
-            'theLegendPosition', [0.35,0.86,0.46,0.08], ...    % custom legend position and size
+            'theLegendPosition', [0.48,0.85,0.46,0.08], ...    % custom legend position and size
             'paperDir', 'CSFpaper2', ...                        % sub-directory where figure will be exported
             'figureHasFinalSize', true ...                      % publication-ready size
             );
