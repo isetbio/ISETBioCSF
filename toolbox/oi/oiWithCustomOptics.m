@@ -56,7 +56,7 @@ function [theCustomOI, Zcoeffs, theWVF] = oiWithCustomOptics(opticsModel, wavefr
     
     [Zcoeffs_SampleMean, Zcoeffs_S, subject_coeffs] = wvfLoadThibosVirtualEyes(measPupilDiameterMM);
     ZcoeffSubjects = subject_coeffs.bothEyes;
-       
+ 
     switch opticsModel
         case {'WvfHumanMeanOTFmagMeanOTFphase', 'WvfHumanMeanOTFmagZeroOTFphase'}
             subjectsNum = 100;
@@ -91,11 +91,11 @@ function [theCustomOI, Zcoeffs, theWVF] = oiWithCustomOptics(opticsModel, wavefr
         else
             fprintf('Generating wavefront object for ''%s'' optics \n', opticsModel);
         end
-        
-%         if (measPupilDiameterMM ~= calcPupilDiameterMM)
-%             wHandle = warndlg(sprintf('Measured (%f) and calculated (%d) pupil diameters do not agree', measPupilDiameterMM, calcPupilDiameterMM),'WARNING');
-%             uiwait(wHandle);
-%         end
+               
+        % Temporary override to track down validation failure
+        if (measPupilDiameterMM==7.5) && (calcPupilDiameterMM==7)
+            measPupilDiameterMM=calcPupilDiameterMM;
+        end
         
         [thePSF, theOTF, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = computePSFandOTF(...
             squeeze(Zcoeffs(:,subjectIndex)), ...
