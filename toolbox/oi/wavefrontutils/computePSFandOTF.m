@@ -1,8 +1,8 @@
-function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = computePSFandOTF(Zcoeffs, wavelengthsListToCompute, wavefrontSpatialSamples, targetPupilDiamMM, centeringWavelength, showTranslation)
+function [PSFs, OTFs, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = computePSFandOTF(Zcoeffs, wavelengthsListToCompute, wavefrontSpatialSamples, measPupilDiamMM, targetPupilDiamMM, centeringWavelength, showTranslation)
     %% Compute WVF
     umPerDegree = 300;
     theWVF = makeWVF(wavefrontSpatialSamples, Zcoeffs, wavelengthsListToCompute, ...
-            targetPupilDiamMM, targetPupilDiamMM, umPerDegree, '');
+            measPupilDiamMM, targetPupilDiamMM, umPerDegree, '');
     
     xSfCyclesPerRetinalMicron = wvfGet(theWVF, 'otf support', 'um', wavelengthsListToCompute(1));
     xSfCyclesDeg = xSfCyclesPerRetinalMicron * wvfGet(theWVF,'um per degree');

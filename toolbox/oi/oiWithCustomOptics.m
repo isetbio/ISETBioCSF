@@ -92,9 +92,15 @@ function [theCustomOI, Zcoeffs, theWVF] = oiWithCustomOptics(opticsModel, wavefr
             fprintf('Generating wavefront object for ''%s'' optics \n', opticsModel);
         end
         
+%         if (measPupilDiameterMM ~= calcPupilDiameterMM)
+%             wHandle = warndlg(sprintf('Measured (%f) and calculated (%d) pupil diameters do not agree', measPupilDiameterMM, calcPupilDiameterMM),'WARNING');
+%             uiwait(wHandle);
+%         end
+        
         [thePSF, theOTF, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes, theWVF] = computePSFandOTF(...
             squeeze(Zcoeffs(:,subjectIndex)), ...
-            wavelengthsListToCompute, wavefrontSpatialSamples, calcPupilDiameterMM, ...
+            wavelengthsListToCompute, wavefrontSpatialSamples, ...
+            measPupilDiameterMM, calcPupilDiameterMM, ...
             p.Results.centeringWavelength, showTranslation);
         
         if (subjectIndex == 1)
