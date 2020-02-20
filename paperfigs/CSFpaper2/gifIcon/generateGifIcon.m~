@@ -104,14 +104,14 @@ function renderFrame(axHandle, tBin, theMosaic, theMosaicResponse, theEMPath, re
     
     Tcritical = min(responseTimeAxis) + 0.5*(max(responseTimeAxis)-min(responseTimeAxis));
     if (responseTimeAxis(tBin)<Tcritical)
-        zoomInFactor = min([4 1+0.8*(abs((responseTimeAxis(tBin)-Tcritical)/Tcritical))]);
+        zoomInFactor = min([2 1+0.3*(abs((responseTimeAxis(tBin)-Tcritical)/Tcritical))]);
     else
-        zoomInFactor = min([4 1+0.8*(abs((responseTimeAxis(tBin)-Tcritical)/Tcritical))]);
+        zoomInFactor = min([2 1+0.3*(abs((responseTimeAxis(tBin)-Tcritical)/Tcritical))]);
     end
 
-    spaceLims = 0.2/zoomInFactor*[-1 1]*300*1e-6;
+    spaceLims = 0.16/zoomInFactor*[-1 1]*300*1e-6;
     emScale = 300*1e-6;
-    signalRange = max(abs(theMosaicResponse(:)))*[-0.8 0.8];
+    signalRange = max(abs(theMosaicResponse(:)))*[-1 1];
     theResponse = theMosaicResponse(:,tBin);
     theMosaic.renderActivationMap(axHandle, theResponse, ...
         'visualizedConeAperture', 'geometricArea', ...
@@ -151,25 +151,20 @@ function hFig = generateGIFVideo(theMosaic, theMosaicResponse, theEMPath, respon
         gaussSigmaPixels = 0.75;
         frame.cdata = data(marginPixels+(1:gifSizePixels), marginPixels+(1:gifSizePixels),:);
         data = frame.cdata;
-        data2 = data(:,:,2);
-        
+        data2 = data(    
         if (blurGif)
              dataGray = squeeze(sum(data,3))/3;
              dataGray = imgaussfilt(dataGray, gaussSigmaPixels);
              maxNow = prctile(dataGray(:), 98);
              dataGray = 256 * dataGray / maxNow;
              dataGray(dataGray>256) = 256;
-             
-             
+
              for plane = 1:3
                  data(:,:,plane) = uint8(dataGray);
              end
-             data(:,:,2) = data2;
              frame.cdata = data;
         end
 
-        frame.cdata = lin2rgb(frame.cdata);
-        
         im = frame2im(frame); 
         [imind,cm] = rgb2ind(im,256, 'nodither');
         % Write to the GIF File 
