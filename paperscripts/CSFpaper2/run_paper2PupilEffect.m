@@ -34,9 +34,9 @@ function run_paper2PupilEffect
     makeSummaryFigure = true;
     
     % Whether to compute responses
-    computeResponses = ~true;
+    computeResponses =  true;
     visualizeResponses = ~true;
-    findPerformance = ~true;
+    findPerformance = true;
     visualizePerformance = true;
     
     
@@ -52,7 +52,7 @@ function run_paper2PupilEffect
     frameRate = 10; 
     
     performanceClassifier = 'svmV1FilterBank';
-    performanceSignal = 'photocurrents'; % 'isomerizations';
+    performanceSignal = 'isomerizations'; %'photocurrents'; % 'isomerizations';
     emPathType = 'frozen0';
     
     % Assemble conditions list to be examined
@@ -60,19 +60,19 @@ function run_paper2PupilEffect
     condIndex = 0;
    
     
-    condIndex = condIndex+1;
-    examinedCond(condIndex).label = '3mm pupil';
-    examinedCond(condIndex).performanceClassifier = performanceClassifier;
-    examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
-    examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).pupilDiamMm = 3.0;
+%     condIndex = condIndex+1;
+%     examinedCond(condIndex).label = '3mm pupil';
+%     examinedCond(condIndex).performanceClassifier = performanceClassifier;
+%     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
+%     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
+%     examinedCond(condIndex).pupilDiamMm = 3.0;
     
     condIndex = condIndex+1;
     examinedCond(condIndex).label = '2mm pupil';
     examinedCond(condIndex).performanceClassifier = performanceClassifier;
     examinedCond(condIndex).spatialPoolingKernelParams.type = 'V1CosUnit';
     examinedCond(condIndex).spatialPoolingKernelParams.activationFunction = 'linear';
-    examinedCond(condIndex).pupilDiamMm = 2.0;
+    examinedCond(condIndex).pupilDiamMm = 2.1;
     
     % Go
     examinedLegends = {};
@@ -86,7 +86,7 @@ function run_paper2PupilEffect
         params.nTrainingSamples = 1016;
         
         % Try out for subset of SFs
-        params.cyclesPerDegreeExamined = [4 8 12 16 24 32 50 60];
+        params.cyclesPerDegreeExamined = [24 32 50]; %[4 8 12 16 24 32 50 60];
         
         examinedLegends{numel(examinedLegends) + 1} = cond.label;
         params.performanceClassifier = cond.performanceClassifier;
