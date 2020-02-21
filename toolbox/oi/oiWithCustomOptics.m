@@ -36,7 +36,7 @@ function [theCustomOI, Zcoeffs, theWVF] = oiWithCustomOptics(opticsModel, wavefr
         Zcoeffs = Zcoeffs_SampleMean * 0;
         measPupilDiameterMM = calcPupilDiameterMM;
         % Generate the WVF    
-        theWVF = makeWVF(wavefrontSpatialSamples, Zcoeffs, wavelengthsListToCompute, ...
+        theWVF = makeWVF(wavefrontSpatialSamples, Zcoeffs, p.Results.centeringWavelength, wavelengthsListToCompute, ...
             measPupilDiameterMM, calcPupilDiameterMM, umPerDegree, opticsModel);
         % Compute an optics structure from the WVF
         optics = oiGet(wvf2oi(theWVF),'optics');
