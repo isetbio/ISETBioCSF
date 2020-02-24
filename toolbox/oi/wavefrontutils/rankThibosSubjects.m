@@ -203,13 +203,15 @@ end
 function d = computeOTFsAndPSFsForAllThibosSubjects(wavelengthsListToCompute,centeringWavelength,targetPupilDiamMM, wavefrontSpatialSamples, psfRange, otfRange, showTranslation)
     % Load the ZernikeCoeffs for the target pupil size
     [Zcoeffs_SampleMean, ~, subject_coeffs] = wvfLoadThibosVirtualEyes(targetPupilDiamMM);
+    measPupilDiamMM = targetPupilDiamMM;
     ZcoeffSubjects = subject_coeffs.bothEyes;
     subjectsNum = size(ZcoeffSubjects,2);
     
     % Compute the meanZcoeff PSF and OTF
     fprintf('computing mean Zcoeff PSF/OTF\n');
     [meanZcoeffPSF, meanZcoeffOTF, xSfCyclesDeg, ySfCyclesDeg, xMinutes, yMinutes] = ...
-        computePSFandOTF(Zcoeffs_SampleMean, wavelengthsListToCompute, wavefrontSpatialSamples, targetPupilDiamMM, centeringWavelength, showTranslation);
+        computePSFandOTF(Zcoeffs_SampleMean, wavelengthsListToCompute, wavefrontSpatialSamples, ...
+        measPupilDiamMM, targetPupilDiamMM,  centeringWavelength, showTranslation);
     
     % Only keep PSF data within the psfRange
     psfColsToKeep = find(abs(xMinutes) < max(psfRange));
@@ -234,7 +236,7 @@ function d = computeOTFsAndPSFsForAllThibosSubjects(wavelengthsListToCompute,cen
         fprintf('computing PSF/OTF for subject %d\n', subjectIndex);
         z = squeeze(ZcoeffSubjects(:,subjectIndex));    
         [psf, otf, ~, ~, ~, ~] = ...
-            computePSFandOTF(z, wavelengthsListToCompute, wavefrontSpatialSamples, targetPupilDiamMM, centeringWavelength, showTranslation);
+            computePSFandOTF(z, wavelengthsListToCompute, wavefrontSpatialSamples, measPupilDiamMM, targetPupilDiamMM, centeringWavelength, showTranslation);
         subjectPSF(subjectIndex,:,:,:) = psf(psfRowsToKeep, psfColsToKeep,:);
         subjectOTF(subjectIndex,:,:,:) = otf(otfRowsToKeep, otfColsToKeep,:);
     end

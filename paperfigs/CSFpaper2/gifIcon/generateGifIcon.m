@@ -102,14 +102,14 @@ end
 
 function renderFrame(axHandle, tBin, theMosaic, theMosaicResponse, theEMPath, responseTimeAxis)
     
-    Tcritical = min(responseTimeAxis) + 0.5*(max(responseTimeAxis)-min(responseTimeAxis));
+    Tcritical = min(responseTimeAxis);% + 0.5*(max(responseTimeAxis)-min(responseTimeAxis));
     if (responseTimeAxis(tBin)<Tcritical)
-        zoomInFactor = min([4 1+0.8*(abs((responseTimeAxis(tBin)-Tcritical)/Tcritical))]);
+        zoomInFactor = min([2 0.7+0.4*(abs((responseTimeAxis(tBin)-Tcritical)/Tcritical))]);
     else
-        zoomInFactor = min([4 1+0.8*(abs((responseTimeAxis(tBin)-Tcritical)/Tcritical))]);
+        zoomInFactor = min([2 0.7+0.4*(abs((responseTimeAxis(tBin)-Tcritical)/Tcritical))]);
     end
 
-    spaceLims = 0.2/zoomInFactor*[-1 1]*300*1e-6;
+    spaceLims = 0.15/zoomInFactor*[-1 1]*300*1e-6;
     emScale = 300*1e-6;
     signalRange = max(abs(theMosaicResponse(:)))*[-0.8 0.8];
     theResponse = theMosaicResponse(:,tBin);
@@ -119,7 +119,9 @@ function renderFrame(axHandle, tBin, theMosaic, theMosaicResponse, theEMPath, re
         'tickInc', 0.1);
     set(axHandle, 'XLim', spaceLims, 'YLim', spaceLims);
     hold on;
-    plot(theEMPath(1:tBin,1)*emScale, -theEMPath(1:tBin,2)*emScale, 'g-', 'LineWidth', 1.0); hold on;
+    to = max([1 tBin-8]);
+    plot(theEMPath(to:tBin-1,1)*emScale, -theEMPath(to:tBin-1,2)*emScale, 'r-', 'LineWidth', 2.0);
+    plot(theEMPath(to:tBin-1,1)*emScale, -theEMPath(to:tBin-1,2)*emScale, 'y-', 'LineWidth', 1.0);hold on;
     hold off;
 end
 
@@ -147,13 +149,12 @@ function hFig = generateGIFVideo(theMosaic, theMosaicResponse, theEMPath, respon
         frame = getframe(hFig);
 
         % Smooth with the smoothing kernel
-         data = frame.cdata;
-        gaussSigmaPixels = 0.75;
-        frame.cdata = data(marginPixels+(1:gifSizePixels), marginPixels+(1:gifSizePixels),:);
         data = frame.cdata;
-        data2 = data(:,:,2);
+        frame.cdata = data(marginPixels+(1:gifSizePixels), marginPixels+(1:gifSizePixels),:);
         
         if (blurGif)
+            gaussSigmaPixels = 0.75;
+             data = frame.cdata;
              dataGray = squeeze(sum(data,3))/3;
              dataGray = imgaussfilt(dataGray, gaussSigmaPixels);
              maxNow = prctile(dataGray(:), 98);
@@ -168,7 +169,7 @@ function hFig = generateGIFVideo(theMosaic, theMosaicResponse, theEMPath, respon
              frame.cdata = data;
         end
 
-        frame.cdata = lin2rgb(frame.cdata);
+        %frame.cdata = uint8(255*SRGBGammaCorrect(double(frame.cdata)/255)); %lin2rgb(uint8(round(255*(double(frame.cdata)/255.0).^1.2)));
         
         im = frame2im(frame); 
         [imind,cm] = rgb2ind(im,256, 'nodither');
