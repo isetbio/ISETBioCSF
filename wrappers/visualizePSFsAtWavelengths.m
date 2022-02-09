@@ -1,4 +1,4 @@
-function visualizePSF(opticalImage, displayedWavelengths, figNo)
+function visualizePSFaAtWavelengths(opticalImage, displayedWavelengths, figNo)
 
     % Get the optics data
     optics = oiGet(opticalImage, 'optics');

@@ -1,4 +1,4 @@
-function visualizeOpticalImage(opticalImage, displayedWavelengths, figNo)
+function visualizeOpticalImageAtWavelengths(opticalImage, displayedWavelengths, figNo)
     
     spatialSupportMM = oiGet(opticalImage, 'spatial support', 'mm');
     

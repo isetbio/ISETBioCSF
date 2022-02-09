@@ -1,4 +1,4 @@
-function visualizeScene(scene, maxPhotons, displayedWavelengths, figNo, sceneName)
+function visualizeSceneAtWavelengths(scene, maxPhotons, displayedWavelengths, figNo, sceneName)
     % Extract spatial support
     spatialSupportMilliMeters = sceneGet(scene, 'spatial support', 'mm');
     % Extract wavevelength support
